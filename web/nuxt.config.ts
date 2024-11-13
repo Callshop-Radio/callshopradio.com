@@ -19,7 +19,7 @@ export default defineNuxtConfig({
 		'@vueuse/nuxt',
 		'nuxt-gtag',
 		'@nuxt/eslint',
-		'@nuxtjs/sitemap'
+		// '@nuxtjs/sitemap'
 	],
 	gtag: {
 		id: process.env.NUXT_GTAG_ID,
