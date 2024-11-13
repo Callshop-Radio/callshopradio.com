@@ -1,11 +1,5 @@
 export default defineNuxtConfig({
 	// TODO: Remove this once Nuxt 4 has launched
-	future: {
-		compatibilityVersion: 4
-	},
-	site: {
-		debug: true
-	},
 	devtools: { enabled: true },
 	ssr: true,
 	app: {
@@ -26,14 +20,14 @@ export default defineNuxtConfig({
 		initialConsent: false
 	},
 	sanity: {
-		projectId: '0smxd0yv',
-		dataset: 'production',
+		projectId: process.env.NUXT_SANITY_PROJECT_ID,
+		dataset: process.env.NUXT_SANITY_DATASET,
 		apiVersion: '2024-01-01',
 		useCdn: false,
 		perspective: 'published',
 		visualEditing: {
-			studioUrl: 'http://callshopradio.sanity.studio',
-			token: 'sknVx0hvN6esLD66RBQcsYHzltMUPQ0o69eM9Oqgi2V2ITkfRI4CLCyTxLYYoSLtHkAUv2xPXExschz8aME3SGQSPZRh8WPCsqXkNTKnMfQ3k6j7D8Z2Xp9dR5zRhc5XuKBkueZLdoGNXwDvBQ9d4eJ2wHhobdufqGz1xDbnmhmxzYsIeNyE',
+			studioUrl: process.env.NUXT_SANITY_STUDIO_URL || 'http://localhost:3333',
+			token: process.env.NUXT_SANITY_API_READ_TOKEN,
 			stega: false // activate once FFox problem has been resolved
 		}
 	},
