@@ -1,5 +1,11 @@
 export default defineNuxtConfig({
 	// TODO: Remove this once Nuxt 4 has launched
+	future: {
+		compatibilityVersion: 4
+	},
+	site: {
+		debug: true
+	},
 	devtools: { enabled: true },
 	ssr: true,
 	app: {
