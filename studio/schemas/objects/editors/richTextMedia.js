@@ -1,0 +1,25 @@
+// import {styles} from './text/styles'
+import {annotations} from './text/annotations'
+import {decorators} from './text/decorators'
+
+export const richTextMedia = {
+  title: 'Editor',
+  name: 'richTextMedia',
+  type: 'array',
+  of: [
+    {
+      type: 'block',
+      // styles,
+      lists: [
+        {title: 'Bullet', value: 'bullet'},
+        {title: 'Number', value: 'number'},
+      ],
+      marks: {
+        decorators,
+        annotations,
+      },
+    },
+    {type: 'module.media'},
+    {type: 'module.carousel'},
+  ],
+}

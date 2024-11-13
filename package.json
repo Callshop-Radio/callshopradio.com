@@ -1,0 +1,21 @@
+{
+  "name": "sanity-nuxt-starter",
+  "version": "1.0.0",
+  "description": "Sanity and Nuxt Starter",
+  "scripts": {
+    "dev": "pnpm --stream -r run dev",
+    "web:dev": "pnpm --filter web run dev",
+    "studio:dev": "pnpm --filter studio run dev",
+    "build": "pnpm --stream -r run build",
+    "web:build": "pnpm --filter web run build",
+    "studio:build": "pnpm --filter studio run build",
+    "studio:deploy": "pnpm --filter studio run deploy",
+    "web:generate": "pnpm --filter studio run generate",
+    "web:preview": "pnpm --filter web run preview",
+    "update": "pnpm up --stream -r",
+    "studio:update": "pnpm up --filter studio",
+    "web:update": "pnpm up --filter web"
+  },
+  "author": "Marco Land",
+  "license": "ISC"
+}

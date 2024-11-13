@@ -1,0 +1,4 @@
+[build]
+  base = "web/"
+  publish = "dist"
+  command = "pnpm run build"

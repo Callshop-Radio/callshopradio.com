@@ -1,0 +1,1658 @@
+[
+    {
+        "slug": {
+            "current": "air",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "AIR"
+    },
+    {
+        "slug": {
+            "current": "acid-lambada-showcase",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Acid Lambada Showcase"
+    },
+    {
+        "slug": {
+            "current": "air-waves",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Air Waves"
+    },
+    {
+        "slug": {
+            "current": "another-chapter",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Another Chapter"
+    },
+    {
+        "slug": {
+            "current": "another-thought",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Another Thought"
+    },
+    {
+        "slug": {
+            "current": "audiovisionelles-showcase",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Audiovisionelles Showcase"
+    },
+    {
+        "slug": {
+            "current": "avontuur",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Avontuur"
+    },
+    {
+        "slug": {
+            "current": "bff",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "BFF"
+    },
+    {
+        "slug": {
+            "current": "by-any-means",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "BY ANY MEANS"
+    },
+    {
+        "slug": {
+            "current": "babuko-radio",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Babuko Radio"
+    },
+    {
+        "slug": {
+            "current": "basic-bottom",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Basic Bottom"
+    },
+    {
+        "slug": {
+            "current": "blechsonne",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Blechsonne"
+    },
+    {
+        "slug": {
+            "current": "blooms-of-house",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Blooms of House"
+    },
+    {
+        "slug": {
+            "current": "breakfest-showcase",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Breakfest Showcase"
+    },
+    {
+        "slug": {
+            "current": "callosum",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Callosum"
+    },
+    {
+        "slug": {
+            "current": "callshop-radio",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Callshop Radio"
+    },
+    {
+        "slug": {
+            "current": "callshop-radio-live",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Callshop Radio Live"
+    },
+    {
+        "slug": {
+            "current": "casa-cainelli",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Casa Cainelli"
+    },
+    {
+        "slug": {
+            "current": "catching-worms",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Catching Worms"
+    },
+    {
+        "slug": {
+            "current": "chesney",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Chesney"
+    },
+    {
+        "slug": {
+            "current": "come-closer",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Come Closer"
+    },
+    {
+        "slug": {
+            "current": "concrete-recording",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Concrete Recording"
+    },
+    {
+        "slug": {
+            "current": "cooked",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Cooked"
+    },
+    {
+        "slug": {
+            "current": "cyclic-existence",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Cyclic Existence"
+    },
+    {
+        "slug": {
+            "current": "d-nite",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "D-Nite"
+    },
+    {
+        "slug": {
+            "current": "dackelklub",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Dackelklub"
+    },
+    {
+        "slug": {
+            "current": "datscha-radio",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Datscha Radio"
+    },
+    {
+        "slug": {
+            "current": "die-jungen-spengelfreunde",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Die jungen Spengelfreunde"
+    },
+    {
+        "slug": {
+            "current": "dinger-fizz",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Dinger Fizz"
+    },
+    {
+        "slug": {
+            "current": "disobedient-bodies",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Disobedient Bodies"
+    },
+    {
+        "slug": {
+            "current": "disposable-time",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Disposable Time"
+    },
+    {
+        "slug": {
+            "current": "dive",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Dive"
+    },
+    {
+        "slug": {
+            "current": "domestic-mind-wanderer",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Domestic Mind Wanderer"
+    },
+    {
+        "slug": {
+            "current": "don't-stop-the-dance",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Don't Stop The Dance"
+    },
+    {
+        "slug": {
+            "current": "dulcet-radio",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Dulcet Radio"
+    },
+    {
+        "slug": {
+            "current": "ej-barnemej",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "EJ Barnemej"
+    },
+    {
+        "slug": {
+            "current": "ej-manana",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "EJ Manana"
+    },
+    {
+        "slug": {
+            "current": "easy-hands-music-club",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Easy Hands Music Club"
+    },
+    {
+        "slug": {
+            "current": "ecstatic-air-waves",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Ecstatic Air Waves"
+    },
+    {
+        "slug": {
+            "current": "ecstatic-origins",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Ecstatic Origins"
+    },
+    {
+        "slug": {
+            "current": "electrolyt-frequency",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Electrolyt Frequency"
+    },
+    {
+        "slug": {
+            "current": "electronic-underground",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Electronic Underground"
+    },
+    {
+        "slug": {
+            "current": "emotional-library",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Emotional Library"
+    },
+    {
+        "slug": {
+            "current": "euphoria",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Euphoria"
+    },
+    {
+        "slug": {
+            "current": "euphoria",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Euphoria"
+    },
+    {
+        "slug": {
+            "current": "flucc-radio",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "FLUCC Radio"
+    },
+    {
+        "slug": {
+            "current": "flucc-talks",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "FLUCC Talks"
+    },
+    {
+        "slug": {
+            "current": "finds-with-fiends",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Finds With Fiends"
+    },
+    {
+        "slug": {
+            "current": "folding-realities",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Folding Realities"
+    },
+    {
+        "slug": {
+            "current": "frank-d\u00b4arpino",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Frank D\u00b4Arpino"
+    },
+    {
+        "slug": {
+            "current": "f\u00eate-souterraine",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "F\u00eate Souterraine"
+    },
+    {
+        "slug": {
+            "current": "gibba-showcase",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Gibba Showcase"
+    },
+    {
+        "slug": {
+            "current": "guestshow",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Guestshow"
+    },
+    {
+        "slug": {
+            "current": "halftime",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Halftime"
+    },
+    {
+        "slug": {
+            "current": "hauch-records",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Hauch Records"
+    },
+    {
+        "slug": {
+            "current": "high-energy-showcase",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "High Energy Showcase"
+    },
+    {
+        "slug": {
+            "current": "high-noon-soundstation",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "High Noon Soundstation"
+    },
+    {
+        "slug": {
+            "current": "hitsville-radioshow",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Hitsville Radioshow"
+    },
+    {
+        "slug": {
+            "current": "ifz-showcase",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "IFZ Showcase"
+    },
+    {
+        "slug": {
+            "current": "illusion-radioshow",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Illusion Radioshow"
+    },
+    {
+        "slug": {
+            "current": "improvised-friends",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Improvised Friends"
+    },
+    {
+        "slug": {
+            "current": "inch-to-feed",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Inch To Feed"
+    },
+    {
+        "slug": {
+            "current": "intergalactic-rhythms",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Intergalactic Rhythms"
+    },
+    {
+        "slug": {
+            "current": "it\u00b4s-more-fun-to-vinyl",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "It\u00b4s more fun to vinyl"
+    },
+    {
+        "slug": {
+            "current": "kfpnyx-showcase",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Kfpnyx Showcase"
+    },
+    {
+        "slug": {
+            "current": "komos",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Komos"
+    },
+    {
+        "slug": {
+            "current": "kreislauf-records",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Kreislauf Records"
+    },
+    {
+        "slug": {
+            "current": "krickelkrakel",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Krickelkrakel"
+    },
+    {
+        "slug": {
+            "current": "kyr",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Kyr"
+    },
+    {
+        "slug": {
+            "current": "lala",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Lala"
+    },
+    {
+        "slug": {
+            "current": "le-bercail-family",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Le Bercail Family"
+    },
+    {
+        "slug": {
+            "current": "le-phare-morningshow",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Le Phare Morningshow"
+    },
+    {
+        "slug": {
+            "current": "les-fla\u0302neurs",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Les Fla\u0302neurs"
+    },
+    {
+        "slug": {
+            "current": "lilongwe-radio",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Lilongwe Radio"
+    },
+    {
+        "slug": {
+            "current": "linger-for-a-moment",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Linger For A Moment"
+    },
+    {
+        "slug": {
+            "current": "lo-ve-fi",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Lo-ve-Fi"
+    },
+    {
+        "slug": {
+            "current": "long-vehicle",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Long Vehicle"
+    },
+    {
+        "slug": {
+            "current": "low-end-blends",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Low End Blends"
+    },
+    {
+        "slug": {
+            "current": "moc-riddims",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "MOC Riddims"
+    },
+    {
+        "slug": {
+            "current": "mauke-radioshow",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Mauke Radioshow"
+    },
+    {
+        "slug": {
+            "current": "metro-showcase",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Metro Showcase"
+    },
+    {
+        "slug": {
+            "current": "minigolf-hangout",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Minigolf Hangout"
+    },
+    {
+        "slug": {
+            "current": "music-4",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Music 4"
+    },
+    {
+        "slug": {
+            "current": "music-of-color-riddims",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Music Of Color Riddims"
+    },
+    {
+        "slug": {
+            "current": "nachtifm",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "NachtiFM"
+    },
+    {
+        "slug": {
+            "current": "namnam",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Namnam"
+    },
+    {
+        "slug": {
+            "current": "neglectic-fm",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Neglectic fm"
+    },
+    {
+        "slug": {
+            "current": "noods-radio",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Noods Radio"
+    },
+    {
+        "slug": {
+            "current": "nostalgic-mess",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Nostalgic Mess"
+    },
+    {
+        "slug": {
+            "current": "offenbach-love-soundscapes",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Offenbach Love Soundscapes"
+    },
+    {
+        "slug": {
+            "current": "palastrauschen",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Palastrauschen"
+    },
+    {
+        "slug": {
+            "current": "parallele-radioshow",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Parallele Radioshow"
+    },
+    {
+        "slug": {
+            "current": "parlour-radioshow",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Parlour Radioshow"
+    },
+    {
+        "slug": {
+            "current": "phonovision-radioshow",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Phonovision Radioshow"
+    },
+    {
+        "slug": {
+            "current": "polymorphism",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Polymorphism"
+    },
+    {
+        "slug": {
+            "current": "rap-show",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "RAP Show"
+    },
+    {
+        "slug": {
+            "current": "rvtc\u00b4s-monday-morningshow",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "RVTC\u00b4s Monday Morningshow"
+    },
+    {
+        "slug": {
+            "current": "rosa-brisante-showcase",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Rosa Brisante Showcase"
+    },
+    {
+        "slug": {
+            "current": "ruff-&-tuff-home-show",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Ruff & Tuff Home-Show"
+    },
+    {
+        "slug": {
+            "current": "sda",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "SDA"
+    },
+    {
+        "slug": {
+            "current": "sello's-friday-special",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Sello's Friday Special"
+    },
+    {
+        "slug": {
+            "current": "shipwreck-chamapage",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Shipwreck Chamapage"
+    },
+    {
+        "slug": {
+            "current": "soft-drive",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Soft Drive"
+    },
+    {
+        "slug": {
+            "current": "sonic-revelations",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Sonic Revelations"
+    },
+    {
+        "slug": {
+            "current": "sonido-perdido",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Sonido Perdido"
+    },
+    {
+        "slug": {
+            "current": "soularium",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Soularium"
+    },
+    {
+        "slug": {
+            "current": "sound-cinema",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Sound Cinema"
+    },
+    {
+        "slug": {
+            "current": "sound-cruise",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Sound Cruise"
+    },
+    {
+        "slug": {
+            "current": "sound-gymnastics",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Sound Gymnastics"
+    },
+    {
+        "slug": {
+            "current": "sound-of-chimteka",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Sound of Chimteka"
+    },
+    {
+        "slug": {
+            "current": "soundcruise",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Soundcruise"
+    },
+    {
+        "slug": {
+            "current": "sparkling-grooves",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Sparkling Grooves"
+    },
+    {
+        "slug": {
+            "current": "spin",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Spin"
+    },
+    {
+        "slug": {
+            "current": "spinning-square-space",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Spinning Square Space"
+    },
+    {
+        "slug": {
+            "current": "spumante",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Spumante"
+    },
+    {
+        "slug": {
+            "current": "switching-frequencies",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Switching Frequencies"
+    },
+    {
+        "slug": {
+            "current": "tastes-in-music",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Tastes in Music"
+    },
+    {
+        "slug": {
+            "current": "the-bubble",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "The Bubble"
+    },
+    {
+        "slug": {
+            "current": "the-hermit-show",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "The Hermit Show"
+    },
+    {
+        "slug": {
+            "current": "train-your-mental-strength",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Train your mental Strength"
+    },
+    {
+        "slug": {
+            "current": "tropical-thunder",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Tropical Thunder"
+    },
+    {
+        "slug": {
+            "current": "uncut-gems",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Uncut Gems"
+    },
+    {
+        "slug": {
+            "current": "ventral-vibrations",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Ventral Vibrations"
+    },
+    {
+        "slug": {
+            "current": "version-radioshow",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Version Radioshow"
+    },
+    {
+        "slug": {
+            "current": "whatever-floats-your-boat",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Whatever Floats Your Boat"
+    },
+    {
+        "slug": {
+            "current": "zentralw\u00e4scherei",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "Zentralw\u00e4scherei"
+    },
+    {
+        "slug": {
+            "current": "ambient-summe",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "ambient summe"
+    },
+    {
+        "slug": {
+            "current": "amplifyyourfriends",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "amplifyyourfriends"
+    },
+    {
+        "slug": {
+            "current": "bin-aural",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "bin aural"
+    },
+    {
+        "slug": {
+            "current": "blechsonne-radio",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "blechsonne radio"
+    },
+    {
+        "slug": {
+            "current": "concrete-recording",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "concrete recording"
+    },
+    {
+        "slug": {
+            "current": "cooked",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "cooked"
+    },
+    {
+        "slug": {
+            "current": "down.-radio",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "down. Radio"
+    },
+    {
+        "slug": {
+            "current": "down.-show",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "down. Show"
+    },
+    {
+        "slug": {
+            "current": "mass-appeal",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "mass appeal"
+    },
+    {
+        "slug": {
+            "current": "mjut",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "mjut"
+    },
+    {
+        "slug": {
+            "current": "radioclub.lel",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "radioclub.lel"
+    },
+    {
+        "slug": {
+            "current": "turn-the-blanket",
+            "_type": "slug"
+        },
+        "animations": {
+            "_type": "animations.page",
+            "active": true
+        },
+        "_type": "show",
+        "title": "turn the blanket"
+    }
+]

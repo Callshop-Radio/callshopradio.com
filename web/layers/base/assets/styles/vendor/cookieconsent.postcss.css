@@ -1,0 +1,59 @@
+body {
+  --cc-font-family: inherit;
+  --cc-modal-border-radius: 0rem;
+  --cc-btn-border-radius: 0rem;
+  --cc-modal-transition-duration: 0.25s;
+  --cc-link-color: var(--cc-btn-primary-bg);
+  --cc-modal-margin: 1rem;
+  --cc-z-index: 2147483647;
+  --cc-bg: var(--color-bg);
+  --cc-primary-color: var(--color-font);
+  --cc-secondary-color: var(--cc-primary-color);
+  --cc-btn-primary-bg: var(--color-font);
+  --cc-btn-primary-color: var(--color-bg);
+  --cc-btn-primary-border-color: var(--cc-btn-primary-bg);
+  --cc-btn-primary-hover-bg: var(--color-bg);
+  --cc-btn-primary-hover-color: var(--color-font);
+  --cc-btn-primary-hover-border-color: var(--cc-btn-primary-hover-bg);
+  --cc-btn-secondary-bg: #878787;
+  --cc-btn-secondary-color: #000;
+  --cc-btn-secondary-border-color: var(--cc-btn-secondary-bg);
+  --cc-btn-secondary-hover-bg: #979797;
+  --cc-btn-secondary-hover-color: var(--cc-btn-secondary-color);
+  --cc-btn-secondary-hover-border-color: var(--cc-btn-secondary-hover-bg);
+  --cc-separator-border-color: transparent;
+  --cc-toggle-on-bg: var(--cc-btn-primary-bg);
+  --cc-toggle-off-bg: #667481;
+  --cc-toggle-on-knob-bg: #9f9f9f;
+  --cc-toggle-off-knob-bg: var(--cc-toggle-on-knob-bg);
+  --cc-toggle-enabled-icon-color: var(--cc-bg);
+  --cc-toggle-disabled-icon-color: var(--cc-bg);
+  --cc-toggle-readonly-bg: #8a8a8a;
+  --cc-toggle-readonly-knob-bg: #fff;
+  --cc-toggle-readonly-knob-icon-color: var(--cc-toggle-readonly-bg);
+  --cc-section-category-border: var(--cc-cookie-category-block-bg);
+  --cc-cookie-category-block-bg: var(--color-bg);
+  --cc-cookie-category-block-border: var(--cc-cookie-category-block-bg);
+  --cc-cookie-category-block-hover-bg: var(--cc-cookie-category-block-bg);
+  --cc-cookie-category-block-hover-border: var(--color-font);
+  --cc-cookie-category-expanded-block-bg: transparent;
+  --cc-cookie-category-expanded-block-hover-bg: var(--color-font);
+  --cc-overlay-bg: rgb(0 0 0 / 65%);
+  --cc-webkit-scrollbar-bg: var(--cc-section-category-border);
+  --cc-webkit-scrollbar-hover-bg: var(--cc-btn-primary-hover-bg);
+  --cc-footer-bg: var(--cc-btn-secondary-bg);
+  --cc-footer-color: var(--cc-secondary-color);
+  --cc-footer-border-color: #e4eaed;
+  --cc-pm-toggle-border-radius: 4em;
+}
+
+/* stylelint-disable-next-line selector-class-pattern */
+#cc-main .pm__body::-webkit-scrollbar {
+  display: none;
+}
+
+/* stylelint-disable-next-line selector-class-pattern */
+#cc-main .pm__body {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
