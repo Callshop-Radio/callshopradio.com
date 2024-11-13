@@ -64,6 +64,11 @@ export default defineNuxtConfig({
 			crawlLinks: true
 		}
 	},
+	runtimeConfig: {
+		public: {
+		  baseUrl: process.env.NUXT_PUBLIC_SITE_URL
+		}
+	},
 	build: {
 		transpile: ['rxjs']
 	},

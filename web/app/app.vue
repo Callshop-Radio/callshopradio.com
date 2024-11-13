@@ -1,7 +1,7 @@
 <script setup>
 const { creditLog, favicon } = useUtils()
-favicon()
-creditLog()
+// favicon()
+// creditLog()
 </script>
 
 <template>
