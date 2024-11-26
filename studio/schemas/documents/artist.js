@@ -63,9 +63,36 @@ export const artist = {
       group: 'editorial',
     },
     {
+      name: 'based',
+      title: 'Based in',
+      type: 'array',
+      group: 'editorial',
+      of: [
+        {
+          name: 'tag',
+          type: 'reference',
+          title: 'Tag',
+          to: [{type: 'tag.city'}],
+        },
+      ],
+    },
+    {
       title: 'Description',
       name: 'content',
       type: 'richTextMedia',
+      group: 'editorial',
+    },
+    {
+      title: 'Contact',
+      name: 'contact',
+      description: 'Must be mail or phone number, no empty spaces',
+      type: 'string',
+      group: 'editorial'
+    },
+    {
+      title: 'Social Media',
+      name: 'socialmedia',
+      type: 'string',
       group: 'editorial',
     },
     {

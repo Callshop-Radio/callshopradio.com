@@ -74,11 +74,16 @@ export const set = {
       type: 'string',
       group: 'editorial',
     },
+    // {
+    //   name: 'soundcloudUrl',
+    //   title: 'Soundcloud URL',
+    //   type: 'url',
+    //   validation: (Rule) => Rule.uri({scheme: ['http', 'https', 'mailto', 'tel']}).required(),
+    // },
     {
-      name: 'soundcloudUrl',
-      title: 'Soundcloud URL',
-      type: 'url',
-      validation: (Rule) => Rule.uri({scheme: ['http', 'https', 'mailto', 'tel']}).required(),
+      name: 'soundcloud',
+      type: 'soundcloud', // Use the custom type from the plugin here
+      title: 'SoundCloud Track Selection',
     },
     {
       title: 'About this Episode',

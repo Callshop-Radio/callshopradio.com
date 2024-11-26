@@ -9,7 +9,7 @@ export const siteFallbacks = {
   icon: UnarchiveIcon,
   groups: [
     {
-      title: 'Fallback Content',
+      title: 'Content',
       name: 'content',
       icon: UnarchiveIcon,
       default: true,

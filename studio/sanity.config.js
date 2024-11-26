@@ -7,12 +7,15 @@ import {structureTool} from 'sanity/structure'
 import {netlifyWidget} from 'sanity-plugin-dashboard-widget-netlify'
 import {media} from 'sanity-plugin-media'
 import {muxInput} from 'sanity-plugin-mux-input'
+import {internationalizedArray} from 'sanity-plugin-internationalized-array'
 import {colorInput} from '@sanity/color-input'
 import {Logo} from './components/icons/Logo'
 import {initialValueTemplates} from './config/initialValueTemplates'
 import {structure} from './config/structure'
 import {resolveProductionUrl} from './config/views'
 import {schemaTypes} from './schemas'
+
+import {soundcloudInput} from '/.yalc/sanity-plugin-soundcloud-input'
 
 const devPlugins = [visionTool()]
 
@@ -44,6 +47,18 @@ export default defineConfig({
     }),
     media(),
     muxInput({mp4_support: 'standard'}),
+    internationalizedArray({
+      languages: [
+        {id: 'en', title: 'English'},
+        {id: 'de', title: 'Deutsch'}
+      ],
+      defaultLanguages: ['de'],
+      fieldTypes: ['string'],
+    }),
+    soundcloudInput({
+      clientId: process.env.SANITY_STUDIO_SOUNDCLOUD_CLIENT_ID,
+      clientSecret: process.env.SANITY_STUDIO_SOUNDCLOUD_CLIENT_SECRET,
+    }),
     dashboardTool({
       widgets: [
         netlifyWidget({
