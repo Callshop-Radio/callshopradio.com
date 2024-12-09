@@ -1,11 +1,19 @@
-import {StarIcon, PlayIcon, DocumentTextIcon, SearchIcon, TagIcon, TextIcon, CogIcon} from '@sanity/icons'
+import {
+  StarIcon,
+  PlayIcon,
+  DocumentTextIcon,
+  SearchIcon,
+  TagIcon,
+  TextIcon,
+  CogIcon,
+} from '@sanity/icons'
 
 import {validateSlug} from '@/utils/validateSlug'
 
-export const artist = {
-  name: 'artist',
+export const person = {
+  name: 'person',
   type: 'document',
-  title: 'Artist',
+  title: 'Person',
   icon: StarIcon,
   groups: [
     {
@@ -14,7 +22,7 @@ export const artist = {
       icon: TextIcon,
     },
     {
-      title: 'Shows & Sets',
+      title: 'Shows & Local',
       name: 'related',
       icon: PlayIcon,
     },
@@ -50,7 +58,7 @@ export const artist = {
     {
       name: 'slug',
       type: 'slug',
-      description: 'callshopradio.com/pool/artist/slug',
+      description: 'callshopradio.com/pool/person/slug',
       options: {source: 'title'},
       validation: validateSlug,
       group: 'editorial',
@@ -63,45 +71,105 @@ export const artist = {
       group: 'editorial',
     },
     {
-      name: 'based',
-      title: 'Based in',
-      type: 'array',
-      group: 'editorial',
-      of: [
-        {
-          name: 'tag',
-          type: 'reference',
-          title: 'Tag',
-          to: [{type: 'tag.city'}],
-        },
-      ],
-    },
-    {
       title: 'Description',
       name: 'content',
       type: 'richTextMedia',
       group: 'editorial',
     },
     {
-      title: 'Contact',
-      name: 'contact',
-      description: 'Must be mail or phone number, no empty spaces',
-      type: 'string',
-      group: 'editorial'
+      name: 'tags',
+      title: 'Tags',
+      type: 'array',
+      group: 'tags',
+      of: [
+        {
+          name: 'tag',
+          type: 'reference',
+          title: 'Tag',
+          to: [
+            {type: 'tag.global'},
+            {type: 'tag.subGenre'},
+            {type: 'tag.city'},
+            {type: 'tag.musician'},
+            {type: 'tag.service'},
+          ],
+        },
+      ],
     },
     {
-      title: 'Social Media',
-      name: 'socialmedia',
+      title: 'Contact',
+      name: 'contact',
+      description: 'Must be mail or phone number, no empty spaces.',
       type: 'string',
       group: 'editorial',
     },
     {
-      title: 'Pool Visibility',
-      name: 'poolVisibility',
-      type: 'boolean',
-      group: 'settings',
-      initialValue: false,
-      options: {layout: 'checkbox'},
+      title: 'Socials',
+      name: 'socials',
+      type: 'object',
+      group: 'editorial',
+      fields: [
+        {
+          name: 'instagram',
+          type: 'url',
+          title: 'Instagram',
+          validation: (Rule) =>
+        Rule.custom((value, context) => {
+          if (context.parent.type === 'external' && !value) {
+            return 'This field is required'
+          }
+          return true
+        }).uri({scheme: ['http', 'https','www']}),
+        },
+        {
+          name: 'soundcloud',
+          type: 'url',
+          title: 'Soundcloud',
+          validation: (Rule) =>
+        Rule.custom((value, context) => {
+          if (context.parent.type === 'external' && !value) {
+            return 'This field is required'
+          }
+          return true
+        }).uri({scheme: ['http', 'https','www']}),
+        },
+        {
+          name: 'web',
+          type: 'url',
+          title: 'Website',
+          validation: (Rule) =>
+        Rule.custom((value, context) => {
+          if (context.parent.type === 'external' && !value) {
+            return 'This field is required'
+          }
+          return true
+        }).uri({scheme: ['http', 'https','www']}),
+        },
+      ],
+    },
+    {
+      title: 'Modules',
+      description: 'Modules for additional content, will appear after person bio',
+      name: 'modules',
+      type: 'modules',
+      group: 'editorial',
+    },
+    {
+      name: 'locals',
+      title: 'Local',
+      type: 'array',
+      group: 'related',
+      of: [
+        {
+          name: 'local',
+          type: 'reference',
+          title: 'Venue',
+          to: [{type: 'local'}],
+          options: {
+            disableNew: true,
+          },
+        },
+      ],
     },
     {
       name: 'shows',
@@ -121,35 +189,12 @@ export const artist = {
       ],
     },
     {
-      name: 'sets',
-      title: 'Featured Sets',
-      type: 'array',
-      group: 'related',
-      of: [
-        {
-          name: 'set',
-          type: 'reference',
-          title: 'Set',
-          to: [{type: 'set'}],
-          options: {
-            disableNew: true,
-          },
-        },
-      ],
-    },
-    {
-      name: 'tags',
-      title: 'Tags',
-      type: 'array',
-      group: 'tags',
-      of: [
-        {
-          name: 'tag',
-          type: 'reference',
-          title: 'Tag',
-          to: [{type: 'tag.global'}, {type: 'tag.subGenre'}, {type: 'tag.city'}],
-        },
-      ],
+      title: 'Pool Visibility',
+      name: 'poolVisibility',
+      type: 'boolean',
+      group: 'settings',
+      initialValue: true,
+      options: {layout: 'checkbox'},
     },
     // {
     //   name: 'categories',

@@ -1,3 +1,3 @@
 export const artistTags = (S) =>
-    S.listItem().title('Artist Tags').schemaType('tag.artist').child(S.documentTypeList('tag.artist'))
+    S.listItem().title('Artist').schemaType('tag.artist').child(S.documentTypeList('tag.artist'))
   

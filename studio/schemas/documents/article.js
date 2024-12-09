@@ -84,14 +84,14 @@ export const article = {
       name: 'contentReferences',
       title: 'Article References',
       type: 'array',
-      description: 'Artists, shows or venues the article is about/referring to.',
+      description: 'Persons, shows or locals the article is about/referring to.',
       group: 'related',
       of: [
         {
           name: 'contentReference',
           type: 'reference',
           title: 'Content Reference',
-          to: [{type: 'artist'}, {type: 'show'}, {type: 'venue'}],
+          to: [{type: 'person'}, {type: 'show'}, {type: 'local'}],
         },
       ],
     },
@@ -130,11 +130,11 @@ export const article = {
           name: 'tag',
           type: 'reference',
           title: 'Tags',
-          to: [{type: 'tag.article'}, {type: 'tag.city'}],
+          to: [{type: 'tag.article'}, {type: 'tag.city'}, {type: 'tag.subGenre'}],
         },
       ],
     },
-    // {
+    // { 
     //   name: 'categories',
     //   title: 'Categories',
     //   type: 'array',
@@ -149,14 +149,14 @@ export const article = {
     //     },
     //   ],
     // },
-    {
-      title: 'Pool Visibility',
-      name: 'poolVisibility',
-      type: 'boolean',
-      group: 'settings',
-      initialValue: true,
-      group: 'settings',
-    },
+    // {
+    //   title: 'Pool Visibility',
+    //   name: 'poolVisibility',
+    //   type: 'boolean',
+    //   group: 'settings',
+    //   initialValue: true,
+    //   group: 'settings',
+    // },
     // {
     //   name: 'category',
     //   type: 'reference',

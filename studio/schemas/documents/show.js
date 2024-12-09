@@ -22,7 +22,7 @@ export const show = {
       icon: TextIcon
     },
     {
-      title: 'Sets & Artists',
+      title: 'Sets & Persons',
       name: 'related',
       icon: PlayIcon,
     },
@@ -85,16 +85,16 @@ export const show = {
       ],
     },
     {
-      name: 'artists',
-      title: 'Artists',
+      name: 'persons',
+      title: 'Persons',
       type: 'array',
       group: 'related',
       of: [
         {
-          name: 'artist',
+          name: 'person',
           type: 'reference',
-          title: 'Artist',
-          to: [{type: 'artist'}],
+          title: 'Person',
+          to: [{type: 'person'}],
         },
       ],
     },

@@ -22,8 +22,8 @@ export const siteFallbacks = {
   ],
   fields: [
     {
-      title: 'Fallback Content for single Artist',
-      name: 'fallbackArtist',
+      title: 'Fallback Content for single Person',
+      name: 'fallbackPerson',
       type: 'fallback.content',
       group: 'content',
       options: {
@@ -72,8 +72,8 @@ export const siteFallbacks = {
       },
     },
     {
-      title: 'Fallback SEO for single Artist',
-      name: 'seoArtist',
+      title: 'Fallback SEO for single Person',
+      name: 'seoPerson',
       type: 'seo.singletons',
       options: {
         collapsible: true,

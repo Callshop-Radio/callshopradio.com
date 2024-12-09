@@ -68,12 +68,12 @@ export const moduleContentReferenceGrid = {
             value: 'all',
           },
           {
-            title: 'Artists only',
-            value: 'artists',
+            title: 'Persons only',
+            value: 'persons',
           },
           {
-            title: 'Venues only',
-            value: 'venues',
+            title: 'Local only',
+            value: 'locals',
           },
         ],
         layout: 'radio',
@@ -112,19 +112,19 @@ export const moduleContentReferenceGrid = {
         ( parent?.type !== 'pool' ),
       of: [
         {
-          name: 'artist',
+          name: 'person',
           type: 'reference',
-          title: 'Artist',
-          to: [{type: 'artist'}],
+          title: 'Person',
+          to: [{type: 'person'}],
           options: {
             disableNew: true,
           },
         },
         {
-          name: 'venue',
+          name: 'local',
           type: 'reference',
           title: 'Venue',
-          to: [{type: 'venue'}],
+          to: [{type: 'local'}],
           options: {
             disableNew: true,
           },

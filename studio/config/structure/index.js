@@ -1,28 +1,31 @@
 import {StarIcon, TagsIcon, ControlsIcon, EditIcon, PlayIcon} from '@sanity/icons'
 
-import {error} from './items/error'
-import {artists} from './items/artists'
 import {articles} from './items/articles'
 import {articleTags} from './items/articleTags'
 import {artistTags} from './items/artistTags'
-import {cityTags} from './items/cityTags'
-import {globalTags} from './items/globalTags'
 import {categories} from './items/categories'
+import {cityTags} from './items/cityTags'
+import {error} from './items/error'
+import {globalTags} from './items/globalTags'
 import {genres} from './items/genres'
 import {home} from './items/home'
-import {pool} from './items/pool'
-import {showsArchive} from './items/showsArchive'
-import {timetable} from './items/timetable'
+import {locals} from './items/locals'
+import {localTags} from './items/localTags'
+import {musicianTags} from './items/musicianTags'
 import {words} from './items/words'
 import {pages} from './items/pages'
+import {persons} from './items/persons'
+import {pool} from './items/pool'
+import {serviceTags} from './items/serviceTags'
 import {sets} from './items/sets'
 import {shows} from './items/shows'
+import {showsArchive} from './items/showsArchive'
 import {showTags} from './items/showTags'
 import {siteCookieBanner} from './items/siteCookieBanner'
 import {siteNav} from './items/siteNav'
 import {siteFallbacks} from './items/siteFallbacks'
 import {siteSettings} from './items/siteSettings'
-import {venues} from './items/venues'
+import {timetable} from './items/timetable'
 
 const hiddenDocTypes = (listItem) => {
   const id = listItem.getId()
@@ -33,7 +36,7 @@ const hiddenDocTypes = (listItem) => {
 
   return ![
     'error',
-    'artist',
+    'person',
     'article',
     'category',
     'category.sub',
@@ -44,6 +47,9 @@ const hiddenDocTypes = (listItem) => {
     'tag.city',
     'tag.genre',
     'tag.global',
+    'tag.local',
+    'tag.musician',
+    'tag.service',
     'tag.show',
     'tag.subGenre',
     'home',
@@ -58,7 +64,7 @@ const hiddenDocTypes = (listItem) => {
     'siteNav',
     'siteCookieBanner',
     'siteSettings',
-    'venue',
+    'local',
   ].includes(id)
 }
 
@@ -73,7 +79,7 @@ export const structure = (S) =>
         .child(
           S.list()
             .title('Pool')
-            .items([pool(S), artists(S), venues(S)]),
+            .items([pool(S), persons(S), locals(S)]),
         ),
       S.listItem()
         .title('Shows')
@@ -93,13 +99,25 @@ export const structure = (S) =>
         ),
       S.divider(),
       S.listItem()
-      .title('Tags')
-      .icon(TagsIcon)
-      .child(
-        S.list()
-          .title('Tags')
-          .items([globalTags(S), S.divider(), genres(S),cityTags(S),S.divider(), articleTags(S), artistTags(S), showTags(S),]),
-      ),
+        .title('Tags')
+        .icon(TagsIcon)
+        .child(
+          S.list()
+            .title('Tags')
+            .items([
+              globalTags(S),
+              S.divider(),
+              cityTags(S),
+              genres(S),
+              S.divider(),
+              articleTags(S),
+              artistTags(S),
+              localTags(S),
+              musicianTags(S),
+              serviceTags(S),
+              showTags(S),
+            ]),
+        ),
       S.divider(),
       timetable(S),
       S.divider(),

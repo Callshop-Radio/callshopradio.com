@@ -38,9 +38,9 @@ export const moduleHeroEntry = {
     {
       name: 'contentReference',
       type: 'reference',
-      description: 'Choose content from Artist, Venue, Show, Set or Single Article (Words).',
+      description: 'Choose content from Person, Venue, Show, Set or Single Article (Words).',
       title: 'Content',
-      to: [{type: 'artist'}, {type: 'venue'}, {type: 'show'}, {type: 'set'}, {type: 'article'}],
+      to: [{type: 'person'}, {type: 'local'}, {type: 'show'}, {type: 'set'}, {type: 'article'}],
       options: {
         disableNew: true,
       },
