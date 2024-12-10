@@ -7,7 +7,10 @@ export const useMainStore = defineStore({
 	state: () => ({
 		siteCookieBanner: {},
 		siteNav: {},
-		siteSettings: {}
+		siteSettings: {},
+		link: '',
+		titel: '',
+		active: false,
 	}),
 	actions: {
 		async nuxtServerInit() {
@@ -18,6 +21,11 @@ export const useMainStore = defineStore({
 			this.siteCookieBanner = data?.siteCookieBanner
 			this.siteNav = data?.siteNav
 			this.siteSettings = data?.siteSettings
-		}
+		},
+		addToRepro(payload) {
+			this.link = payload.link;
+			this.titel = payload.name;
+			this.active = payload.active;
+		},
 	}
 })

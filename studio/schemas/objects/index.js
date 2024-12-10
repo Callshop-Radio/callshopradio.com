@@ -2,6 +2,7 @@ import {animationsGlobal} from './animations/global'
 import {animationsPage} from './animations/page'
 import {animationsModule} from './animations/module'
 import {fallbackContent} from './content/fallbacks'
+import {fallbackContentLocalized} from './content/fallbacksLocalized'
 import {richText} from './editors/richText'
 import {richTextMedia} from './editors/richTextMedia'
 import {link} from './link'
@@ -26,6 +27,7 @@ export const objects = [
   animationsPage,
   animationsModule,
   fallbackContent,
+  fallbackContentLocalized,
   richText,
   richTextMedia,
   link,

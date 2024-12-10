@@ -47,14 +47,6 @@ export default defineConfig({
     }),
     media(),
     muxInput({mp4_support: 'standard'}),
-    internationalizedArray({
-      languages: [
-        {id: 'en', title: 'English'},
-        {id: 'de', title: 'Deutsch'}
-      ],
-      defaultLanguages: ['de'],
-      fieldTypes: ['string'],
-    }),
     soundcloudInput({
       clientId: process.env.SANITY_STUDIO_SOUNDCLOUD_CLIENT_ID,
       clientSecret: process.env.SANITY_STUDIO_SOUNDCLOUD_CLIENT_SECRET,
@@ -76,6 +68,15 @@ export default defineConfig({
       ],
     }),
     colorInput(),
+    internationalizedArray({
+      languages: [
+        {id: 'de', title: 'Deutsch'},
+        {id: 'en', title: 'English'}
+      ],
+      defaultLanguages: ['en'],
+      fieldTypes: ['string', 'richText', 'richTextMedia'],
+      buttonAddAll: false,
+    }),
     ...(isDev ? devPlugins : []),
   ],
 

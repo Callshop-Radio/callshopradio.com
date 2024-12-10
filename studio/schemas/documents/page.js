@@ -41,7 +41,7 @@ export const page = {
     {
       title: 'Content',
       name: 'content',
-      type: 'richTextMedia',
+      type: 'internationalizedArrayRichTextMedia',
       group: 'editorial',
     },
     {

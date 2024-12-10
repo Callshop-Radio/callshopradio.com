@@ -11,7 +11,7 @@ const client = createClient({
   apiVersion: '2023-11-07',
 })
 
-const filePath = path.join(__dirname, 'shows.txt')
+const filePath = path.join(__dirname, 'artists.txt')
 
 const generateSlug = (title) => {
   return title
@@ -47,12 +47,19 @@ fs.readFile(filePath, 'utf8', async (err, data) => {
 
       return {
         _id: id,
-        _type: 'show', // Standard-Dokumenttyp
+        _type: 'person', // Standard-Dokumenttyp
         title: line,
         slug: {
           _type: 'slug',
           current: slug,
         },
+        tags: [
+          {
+            _type: 'tag',
+            _key: '9057068f2977',
+            _ref: 'c86b2078-56a4-4281-b2aa-f73c786a7099',
+          },
+        ],
       }
     })
 

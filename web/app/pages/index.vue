@@ -10,6 +10,6 @@ usePageSeo(data?.value?.seo)
 
 <template>
 	<div>
-		<RichText v-if="data?.content?.length" :blocks="data?.content" />
+		<MusicController />
 	</div>
 </template>

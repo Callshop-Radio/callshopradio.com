@@ -17,12 +17,12 @@ export const tagCity = {
     {
       title: 'Title',
       name: 'title',
-      type: 'string',
+      type: 'internationalizedArrayString',
     },
     {
       title: 'Short',
       name: 'short',
-      type: 'string',
+      type: 'internationalizedArrayString',
     },
   ],
   preview: {

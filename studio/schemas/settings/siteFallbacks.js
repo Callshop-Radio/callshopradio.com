@@ -22,9 +22,9 @@ export const siteFallbacks = {
   ],
   fields: [
     {
-      title: 'Fallback Content for single Person',
-      name: 'fallbackPerson',
-      type: 'fallback.content',
+      title: 'Fallback Content for single Article',
+      name: 'fallbackArticle',
+      type: 'fallback.contentLocalized',
       group: 'content',
       options: {
         collapsible: true,
@@ -32,9 +32,9 @@ export const siteFallbacks = {
       },
     },
     {
-      title: 'Fallback Content for single Article',
-      name: 'fallbackArticle',
-      type: 'fallback.content',
+      title: 'Fallback Content for single Person',
+      name: 'fallbackPerson',
+      type: 'fallback.contentLocalized',
       group: 'content',
       options: {
         collapsible: true,
@@ -64,7 +64,7 @@ export const siteFallbacks = {
     {
       title: 'Fallback Content for single Venue',
       name: 'fallbackVenue',
-      type: 'fallback.content',
+      type: 'fallback.contentLocalized',
       group: 'content',
       options: {
         collapsible: true,

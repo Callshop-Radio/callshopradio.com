@@ -42,6 +42,7 @@
     "@pinia/nuxt": "^0.5.1",
     "@vueuse/core": "^10.11.0",
     "@vueuse/nuxt": "^10.11.0",
+    "axios": "^1.7.9",
     "embla-carousel-vue": "8.1.5",
     "hls.js": "^1.5.11",
     "normalize.css": "^8.0.1",
@@ -51,6 +52,7 @@
     "stylelint-config-recommended-vue": "^1.5.0",
     "stylelint-config-standard": "^36.0.1",
     "stylelint-order": "^6.0.4",
+    "swrv": "^1.0.4",
     "vanilla-cookieconsent": "^3.0.1"
   }
 }

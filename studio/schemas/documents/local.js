@@ -66,8 +66,8 @@ export const local = {
     },
     {
       title: 'Description',
-      name: 'content',
-      type: 'richTextMedia',
+      name: 'description',
+      type: 'internationalizedArrayRichText',
       group: 'editorial',
     },
     {

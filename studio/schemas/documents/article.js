@@ -59,7 +59,7 @@ export const article = {
     {
       title: 'Article Text',
       name: 'text',
-      type: 'richTextMedia',
+      type: 'internationalizedArrayRichTextMedia',
       group: 'editorial',
     },
     {
@@ -75,7 +75,7 @@ export const article = {
       name: 'textTeaser',
       description:
         'Will be used for content preview alongside the webste. If empty or not used,"Article Text" will be used for preview.',
-      type: 'richTextMedia',
+      type: 'internationalizedArrayRichText',
       group: 'editorial',
       hidden: ({parent}) => parent?.useTeaserText !== true,
       group: 'editorial',
