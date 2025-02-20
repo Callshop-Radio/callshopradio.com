@@ -16,29 +16,30 @@
   ],
   "dependencies": {
     "@sanity/code-input": "^4.1.4",
-    "@sanity/color-input": "^4.0.1",
-    "@sanity/ui": "^2.10.3",
-    "@sanity/vision": "^3.66.1",
+    "@sanity/color-input": "^4.0.3",
+    "@sanity/ui": "^2.14.0",
+    "@sanity/vision": "^3.76.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-is": "^18.3.1",
     "rxjs": "^7.8.1",
-    "sanity": "^3.66.1",
+    "sanity": "^3.76.1",
     "sanity-plugin-dashboard-widget-netlify": "^2.0.1",
-    "sanity-plugin-internationalized-array": "^1.2.0",
+    "sanity-plugin-internationalized-array": "^1.10.9",
     "sanity-plugin-media": "^2.3.2",
-    "sanity-plugin-mux-input": "^2.4.0",
-    "styled-components": "^6.1.13"
+    "sanity-plugin-mux-input": "^2.5.0",
+    "sanity-plugin-soundcloud-input": "file:.yalc/sanity-plugin-soundcloud-input",
+    "styled-components": "^6.1.15"
   },
   "devDependencies": {
     "@sanity/eslint-config-studio": "^3.0.1",
-    "@types/react": "^18.3.14",
+    "@types/react": "^18.3.18",
     "eslint": "^8.57.1",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "lodash.get": "^4.4.2",
-    "prettier": "^3.4.2",
+    "prettier": "^3.5.1",
     "slug": "^8.2.3",
-    "typescript": "^5.7.2"
+    "typescript": "^5.5.4"
   },
   "prettier": {
     "semi": false,

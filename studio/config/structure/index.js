@@ -2,14 +2,14 @@ import {StarIcon, TagsIcon, ControlsIcon, EditIcon, PlayIcon} from '@sanity/icon
 
 import {articles} from './items/articles'
 import {articleTags} from './items/articleTags'
-import {artistTags} from './items/artistTags'
+import {craftTags} from './items/craftTags'
 import {categories} from './items/categories'
 import {cityTags} from './items/cityTags'
 import {error} from './items/error'
 import {globalTags} from './items/globalTags'
 import {genres} from './items/genres'
 import {home} from './items/home'
-import {locals} from './items/locals'
+import {venues} from './items/venues'
 import {localTags} from './items/localTags'
 import {musicianTags} from './items/musicianTags'
 import {words} from './items/words'
@@ -43,11 +43,11 @@ const hiddenDocTypes = (listItem) => {
     'fallback.content',
     'fallback.global',
     'tag.article',
-    'tag.artist',
+    'tag.crafts',
     'tag.city',
     'tag.genre',
     'tag.global',
-    'tag.local',
+    'tag.venue',
     'tag.musician',
     'tag.service',
     'tag.show',
@@ -64,7 +64,7 @@ const hiddenDocTypes = (listItem) => {
     'siteNav',
     'siteCookieBanner',
     'siteSettings',
-    'local',
+    'venue',
   ].includes(id)
 }
 
@@ -79,7 +79,7 @@ export const structure = (S) =>
         .child(
           S.list()
             .title('Pool')
-            .items([pool(S), persons(S), locals(S)]),
+            .items([pool(S), persons(S), venues(S)]),
         ),
       S.listItem()
         .title('Shows')
@@ -111,7 +111,7 @@ export const structure = (S) =>
               genres(S),
               S.divider(),
               articleTags(S),
-              artistTags(S),
+              craftTags(S),
               localTags(S),
               musicianTags(S),
               serviceTags(S),

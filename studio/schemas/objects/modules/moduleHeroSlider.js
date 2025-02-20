@@ -16,11 +16,6 @@ export const moduleHeroSlider = {
         },
       ],
     },
-    {
-      title: 'Animations',
-      name: 'animations',
-      type: 'animations.module',
-    },
   ],
   preview: {
     select: {

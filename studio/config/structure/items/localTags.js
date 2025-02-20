@@ -1,3 +1,3 @@
 export const localTags = (S) =>
-    S.listItem().title('Local').schemaType('tag.local').child(S.documentTypeList('tag.local'))
+    S.listItem().title('Venue').schemaType('tag.venue').child(S.documentTypeList('tag.venue'))
   

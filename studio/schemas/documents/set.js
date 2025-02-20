@@ -6,6 +6,7 @@ import {
   SearchIcon,
   TextIcon,
   CogIcon,
+  UploadIcon,
 } from '@sanity/icons'
 
 import {validateSlug} from '@/utils/validateSlug'
@@ -20,6 +21,11 @@ export const set = {
       title: 'Editorial',
       name: 'editorial',
       icon: TextIcon,
+    },
+    {
+      title: 'SoundCloud',
+      name: 'soundcloud',
+      icon: UploadIcon,
     },
     {
       title: 'Pool',
@@ -74,16 +80,11 @@ export const set = {
       type: 'string',
       group: 'editorial',
     },
-    // {
-    //   name: 'soundcloudUrl',
-    //   title: 'Soundcloud URL',
-    //   type: 'url',
-    //   validation: (Rule) => Rule.uri({scheme: ['http', 'https', 'mailto', 'tel']}).required(),
-    // },
     {
       name: 'soundcloud',
       type: 'soundcloud', // Use the custom type from the plugin here
-      title: 'SoundCloud Track Selection',
+      title: 'SoundCloud Content',
+      group: 'soundcloud',
     },
     {
       title: 'About this Episode',
@@ -106,16 +107,16 @@ export const set = {
       ],
     },
     {
-      name: 'locals',
-      title: 'Local',
+      name: 'venues',
+      title: 'Venue',
       type: 'array',
       group: 'pool',
       of: [
         {
-          name: 'local',
+          name: 'venue',
           type: 'reference',
           title: 'Venue',
-          to: [{type: 'local'}],
+          to: [{type: 'venue'}],
         },
       ],
     },
@@ -142,7 +143,7 @@ export const set = {
           name: 'tag',
           type: 'reference',
           title: 'Tag',
-          to: [{type: 'tag.global'},{type: 'tag.subGenre'}, {type: 'tag.city'}],
+          to: [{type: 'tag.global'}, {type: 'tag.subGenre'}, {type: 'tag.city'}],
         },
       ],
     },

@@ -1,8 +1,8 @@
 import {TagIcon, SearchIcon, StarIcon, TextIcon, EyeOpenIcon} from '@sanity/icons'
 import {validateSlug} from '@/utils/validateSlug'
 
-export const tagArtist = {
-  name: 'tag.artist',
+export const tagCrafts = {
+  name: 'tag.crafts',
   type: 'document',
   title: 'Artist Tag',
   icon: TagIcon,

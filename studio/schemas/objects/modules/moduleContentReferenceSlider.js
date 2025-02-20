@@ -46,7 +46,7 @@ export const moduleContentReferenceSlider = {
             value: 'shows',
           },
           {
-            title: 'Words',
+            title: 'Articles (Words)',
             value: 'words',
           },
         ],
@@ -93,7 +93,9 @@ export const moduleContentReferenceSlider = {
         layout: 'radio',
         direction: 'horizontal',
       },
-      validate: (Rule) => Rule.required().integer().min(1).max(5),
+      validate: (Rule) => Rule.required(),
+      hidden: ({parent}) =>
+        (parent?.autoLoad === false),
     },
     {
       title: 'Pool Content Type',
@@ -112,8 +114,8 @@ export const moduleContentReferenceSlider = {
             value: 'persons',
           },
           {
-            title: 'Local only',
-            value: 'locals',
+            title: 'Venues only',
+            value: 'venues',
           },
         ],
         layout: 'radio',
@@ -127,7 +129,7 @@ export const moduleContentReferenceSlider = {
       name: 'setsContentType',
       type: 'array',
       validate: (Rule) => Rule.integer().min(1).max(16),
-      description: 'Select genres to load sets from.',
+      description: 'Select genres to load sets from. Leave empty to load newest sets.',
       group: 'editorial',
       of: [
         {
@@ -163,10 +165,10 @@ export const moduleContentReferenceSlider = {
           },
         },
         {
-          name: 'local',
+          name: 'venue',
           type: 'reference',
           title: 'Venue',
-          to: [{type: 'local'}],
+          to: [{type: 'venue'}],
           options: {
             disableNew: true,
           },
@@ -277,7 +279,7 @@ export const moduleContentReferenceSlider = {
       return {
         title: 'Content Slider',
         subtitle:
-          "To '" + type.charAt(0).toUpperCase() + type.slice(1) + "', displayed as " + style + '.',
+          "'" + type.charAt(0).toUpperCase() + type.slice(1) + "', displayed as " + style + '.',
       }
     },
   },

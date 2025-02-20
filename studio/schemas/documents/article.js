@@ -57,6 +57,80 @@ export const article = {
       group: 'editorial',
     },
     {
+      title: 'Article Main Image',
+      name: 'image',
+      type: 'image',
+      group: 'editorial',
+    },
+    {
+      title: 'Socials',
+      name: 'socials',
+      type: 'object',
+      group: 'editorial',
+      fields: [
+        {
+          name: 'instagram',
+          type: 'url',
+          title: 'Instagram',
+          validation: (Rule) =>
+            Rule.custom((value, context) => {
+              if (context.parent.type === 'external' && !value) {
+                return 'This field is required'
+              }
+              return true
+            }).uri({scheme: ['http', 'https', 'www']}),
+        },
+        {
+          name: 'soundcloud',
+          type: 'url',
+          title: 'Soundcloud',
+          validation: (Rule) =>
+            Rule.custom((value, context) => {
+              if (context.parent.type === 'external' && !value) {
+                return 'This field is required'
+              }
+              return true
+            }).uri({scheme: ['http', 'https', 'www']}),
+        },
+        {
+          name: 'nina',
+          type: 'url',
+          title: 'Nina',
+          validation: (Rule) =>
+            Rule.custom((value, context) => {
+              if (context.parent.type === 'external' && !value) {
+                return 'This field is required'
+              }
+              return true
+            }).uri({scheme: ['http', 'https', 'www']}),
+        },
+        {
+          name: 'bandcamp',
+          type: 'url',
+          title: 'Bandcamp',
+          validation: (Rule) =>
+            Rule.custom((value, context) => {
+              if (context.parent.type === 'external' && !value) {
+                return 'This field is required'
+              }
+              return true
+            }).uri({scheme: ['http', 'https', 'www']}),
+        },
+        {
+          name: 'web',
+          type: 'url',
+          title: 'Website',
+          validation: (Rule) =>
+            Rule.custom((value, context) => {
+              if (context.parent.type === 'external' && !value) {
+                return 'This field is required'
+              }
+              return true
+            }).uri({scheme: ['http', 'https', 'www']}),
+        },
+      ],
+    },
+    {
       title: 'Article Text',
       name: 'text',
       type: 'internationalizedArrayRichTextMedia',
@@ -91,7 +165,7 @@ export const article = {
           name: 'contentReference',
           type: 'reference',
           title: 'Content Reference',
-          to: [{type: 'person'}, {type: 'show'}, {type: 'local'}],
+          to: [{type: 'person'}, {type: 'show'}, {type: 'venue'}],
         },
       ],
     },
@@ -130,7 +204,7 @@ export const article = {
           name: 'tag',
           type: 'reference',
           title: 'Tags',
-          to: [{type: 'tag.article'}, {type: 'tag.city'}, {type: 'tag.subGenre'}],
+          to: [{type: 'tag.global'}, {type: 'tag.article'}, {type: 'tag.city'}, {type: 'tag.subGenre'}, ],
         },
       ],
     },

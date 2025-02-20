@@ -27,12 +27,14 @@ export const tagCity = {
   ],
   preview: {
     select: {
-      title: 'title',
+      title: 'title.0.value',
+      subtitle: 'short.0.value',
     },
     prepare(selection) {
-      const {title} = selection
+      const {title,subtitle} = selection
       return {
         title: title,
+        subtitle: subtitle,
       }
     },
   },

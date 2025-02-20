@@ -6,6 +6,7 @@ import {fallbackContentLocalized} from './content/fallbacksLocalized'
 import {richText} from './editors/richText'
 import {richTextMedia} from './editors/richTextMedia'
 import {link} from './link'
+import {optionalLink} from './optionallink'
 import {linkFunctions} from './linkFunctions'
 import {modules} from './modules'
 import {moduleCarousel} from './modules/carousel'
@@ -31,6 +32,7 @@ export const objects = [
   richText,
   richTextMedia,
   link,
+  optionalLink,
   linkFunctions,
   modules,
   moduleCarousel,

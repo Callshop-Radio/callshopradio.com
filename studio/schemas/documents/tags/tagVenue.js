@@ -1,10 +1,10 @@
 import {TagIcon, SearchIcon, StarIcon, TextIcon, EyeOpenIcon} from '@sanity/icons'
 import {validateSlug} from '@/utils/validateSlug'
 
-export const tagLocal = {
-  name: 'tag.local',
+export const tagVenue = {
+  name: 'tag.venue',
   type: 'document',
-  title: 'Local Tag',
+  title: 'Venue Tag',
   icon: TagIcon,
   groups: [
     {

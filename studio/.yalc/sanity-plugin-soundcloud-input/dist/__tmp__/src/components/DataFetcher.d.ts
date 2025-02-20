@@ -1,12 +1,18 @@
 import React from 'react';
-interface Track {
+export interface Track {
     id: number;
     title: string;
+    release_date?: string;
+}
+export interface SoundcloudData {
+    _type: 'soundcloud';
+    tracks: Track[];
 }
 interface DataFetcherProps {
     clientId: string;
     clientSecret: string;
-    onSuccess: (selectedTracks: Track[]) => void;
+    userId: string;
+    onSuccess: (data: SoundcloudData) => void;
 }
 declare const DataFetcher: React.FC<DataFetcherProps>;
 export default DataFetcher;

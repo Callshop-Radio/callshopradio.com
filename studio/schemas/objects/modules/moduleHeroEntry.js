@@ -6,14 +6,8 @@ export const moduleHeroEntry = {
   name: 'module.heroEntry',
   type: 'object',
   icon: ClipboardIcon,
-  groups: [
-  ],
+  groups: [],
   fields: [
-    {
-      title: 'Heading',
-      name: 'title',
-      type: 'string',
-    },
     {
       title: 'Layout',
       name: 'layout',
@@ -36,14 +30,55 @@ export const moduleHeroEntry = {
       validation: (Rule) => Rule.required(),
     },
     {
+      title: 'Content Type',
+      name: 'type',
+      type: 'string',
+      initialValue: 'page',
+      options: {
+        list: [
+          {
+            title: 'Page Content',
+            value: 'page',
+          },
+          {
+            title: 'Custom Content',
+            value: 'custom',
+          },
+        ],
+        layout: 'radio',
+        direction: 'horizontal',
+      },
+      validation: (Rule) => Rule.required(),
+    },
+    {
+      title: 'Heading',
+      name: 'title',
+      type: 'string',
+      hidden: ({parent}) => parent?.type !== 'custom',
+    },
+    {
+      title: 'Text',
+      name: 'text',
+      type: 'richText',
+      hidden: ({parent}) => parent?.type !== 'custom',
+    },
+    {
+      title: 'Link',
+      description: 'optional',
+      name: 'link',
+      type: 'optionalLink',
+      hidden: ({parent}) => parent?.type !== 'custom',
+    },
+    {
       name: 'contentReference',
       type: 'reference',
       description: 'Choose content from Person, Venue, Show, Set or Single Article (Words).',
       title: 'Content',
-      to: [{type: 'person'}, {type: 'local'}, {type: 'show'}, {type: 'set'}, {type: 'article'}],
+      to: [{type: 'person'}, {type: 'venue'}, {type: 'show'}, {type: 'set'}, {type: 'article'}],
       options: {
         disableNew: true,
       },
+      hidden: ({parent}) => parent?.type !== 'page',
     },
   ],
   preview: {
@@ -55,7 +90,7 @@ export const moduleHeroEntry = {
       const {layout, type} = selection
 
       return {
-        title: 'Content Reference',
+        title: 'Hero Entry',
         subtitle: type
           ? "To '" +
             type.charAt(0).toUpperCase() +

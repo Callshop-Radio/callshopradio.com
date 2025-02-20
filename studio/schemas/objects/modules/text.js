@@ -10,11 +10,11 @@ export const moduleText = {
       title: 'Text',
       type: 'richText',
     },
-    {
-      title: 'Animations',
-      name: 'animations',
-      type: 'animations.module',
-    },
+    // {
+    //   title: 'Animations',
+    //   name: 'animations',
+    //   type: 'animations.module',
+    // },
   ],
   preview: {
     select: {

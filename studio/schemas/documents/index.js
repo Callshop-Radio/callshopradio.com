@@ -3,17 +3,17 @@ import {person} from './person'
 import {page} from './page'
 import {set} from './set'
 import {show} from './show'
-import {local} from './local'
+import {venue} from './venue'
 //categories
 import {category} from './category/category'
 import {subCategory} from './category/subCategory'
 // tags
 import {tagArticle} from './tags/tagArticle'
-import {tagArtist} from './tags/tagArtist'
+import {tagCrafts} from './tags/tagCrafts'
 import {tagCity} from './tags/global/tagCity'
 import {tagGenre} from './tags/global/genre'
 import {tagGlobal} from './tags/global/global'
-import {tagLocal} from './tags/tagLocal'
+import {tagVenue} from './tags/tagVenue'
 import {tagMusician} from './tags/tagMusician'
 import {tagService} from './tags/tagService'
 import {tagShow} from './tags/tagShow'
@@ -25,15 +25,15 @@ export const documents = [
   page,
   show,
   set,
-  local,
+  venue,
   category,
   subCategory,
   tagArticle,
-  tagArtist,
+  tagCrafts,
   tagCity,
   tagGenre,
   tagGlobal,
-  tagLocal,
+  tagVenue,
   tagMusician,
   tagService,
   tagShow,

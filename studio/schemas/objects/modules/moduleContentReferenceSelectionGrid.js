@@ -1,8 +1,9 @@
+
 import {ProjectsIcon, TextIcon, CogIcon} from '@sanity/icons'
 import {of} from 'rxjs'
 
-export const moduleContentReferenceGrid = {
-  title: 'Content Grid with Filters',
+export const moduleSelectedContentReferenceGrid = {
+  title: 'Selected Content Grid',
   name: 'module.contentReferenceGrid',
   type: 'object',
   icon: ProjectsIcon,
@@ -46,7 +47,7 @@ export const moduleContentReferenceGrid = {
             value: 'shows',
           },
           {
-            title: 'Articles (Words)',
+            title: 'Articles',
             value: 'words',
           },
         ],
@@ -64,7 +65,7 @@ export const moduleContentReferenceGrid = {
       options: {
         list: [
           {
-            title: 'All Pool Content',
+            title: 'All',
             value: 'all',
           },
           {
@@ -82,23 +83,89 @@ export const moduleContentReferenceGrid = {
       hidden: ({parent}) => parent?.type !== 'pool',
     },
     {
-      title: 'Genres',
-      name: 'setsContentType',
+      name: 'pool',
+      title: 'Pool',
+      description: 'Only selected content below will be displayed.',
       type: 'array',
-      description: 'Select genres to load sets from.',
       group: 'editorial',
+      hidden: ({parent}) => parent?.type !== 'pool',
       of: [
         {
-          name: 'subGenre',
+          name: 'person',
           type: 'reference',
-          title: 'Genre',
-          to: [{type: 'tag.subGenre'}],
+          title: 'Person',
+          to: [{type: 'person'}],
+          options: {
+            disableNew: true,
+          },
+        },
+        {
+          name: 'venue',
+          type: 'reference',
+          title: 'Venue',
+          to: [{type: 'venue'}],
           options: {
             disableNew: true,
           },
         },
       ],
+    },
+    {
+      name: 'articles',
+      title: 'Words',
+      description: 'Only selected content below will be displayed.',
+      type: 'array',
+      group: 'editorial',
+      hidden: ({parent}) => parent?.type !== 'words',
+      of: [
+        {
+          name: 'article',
+          type: 'reference',
+          title: 'Article',
+          to: [{type: 'article'}],
+          options: {
+            disableNew: true,
+          },
+        },
+      ],
+    },
+    {
+      name: 'shows',
+      title: 'Shows',
+      description: 'Only selected content below will be displayed.',
+      type: 'array',
+      group: 'editorial',
+      hidden: ({parent}) => parent?.type !== 'shows',
+      of: [
+        {
+          name: 'show',
+          type: 'reference',
+          title: 'Show',
+          to: [{type: 'show'}],
+          options: {
+            disableNew: true,
+          },
+        },
+      ],
+    },
+    {
+      name: 'sets',
+      title: 'Sets',
+      description: 'Only selected content below will be displayed.',
+      type: 'array',
+      group: 'editorial',
       hidden: ({parent}) => parent?.type !== 'sets',
+      of: [
+        {
+          name: 'set',
+          type: 'reference',
+          title: 'Set',
+          to: [{type: 'set'}],
+          options: {
+            disableNew: true,
+          },
+        },
+      ],
     },
     // {
     //   title: 'Animations',
@@ -116,7 +183,7 @@ export const moduleContentReferenceGrid = {
       const {layout, type} = selection
 
       return {
-        title: 'Content Grid',
+        title: 'Content Reference Grid',
         subtitle:
           "Large Grid with Filters. Entries from '" +
           type.charAt(0).toUpperCase() +

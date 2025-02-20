@@ -2,6 +2,7 @@ import React from 'react';
 interface Config {
     clientId: string;
     clientSecret: string;
+    userId: string;
 }
 interface InputProps {
     config: Config;
@@ -9,4 +10,4 @@ interface InputProps {
     value: any;
 }
 export declare const SoundCloudInputField: React.FC<InputProps>;
-export {};
+export default SoundCloudInputField;

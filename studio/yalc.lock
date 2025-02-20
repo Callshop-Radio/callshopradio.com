@@ -2,7 +2,7 @@
   "version": "v1",
   "packages": {
     "sanity-plugin-soundcloud-input": {
-      "signature": "e8fd8ea0a2942616bbee5669afadf633"
+      "signature": "f624edddbbf41b97746e65d577210c79"
     }
   }
 }

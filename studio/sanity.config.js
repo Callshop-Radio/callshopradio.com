@@ -50,6 +50,7 @@ export default defineConfig({
     soundcloudInput({
       clientId: process.env.SANITY_STUDIO_SOUNDCLOUD_CLIENT_ID,
       clientSecret: process.env.SANITY_STUDIO_SOUNDCLOUD_CLIENT_SECRET,
+      userId: process.env.SANITY_STUDIO_SOUNDCLOUD_USER_ID,
     }),
     dashboardTool({
       widgets: [
@@ -76,6 +77,7 @@ export default defineConfig({
       defaultLanguages: ['en'],
       fieldTypes: ['string', 'richText', 'richTextMedia'],
       buttonAddAll: false,
+      languageDisplay: 'codeOnly'
     }),
     ...(isDev ? devPlugins : []),
   ],
