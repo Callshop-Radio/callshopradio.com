@@ -6,7 +6,6 @@ import { useMainStore } from "~/stores/mainStore";
 
 const mainStore = useMainStore();
 
-
 // Props vereinfacht - Module direkt aus Sanity
 const props = defineProps({
   module: {
@@ -86,7 +85,9 @@ onMounted(() => {
 });
 // Hilfsfunktion zum Abrufen des richtigen Bildes
 function getItemImage(item) {
-  return item.image || item.mainImage || mainStore.siteFallbacks.fallbackPerson.image;
+  return (
+    item.image || item.mainImage || mainStore.siteFallbacks.fallbackPerson.image
+  );
 }
 // Hilfsfunktion zum Gruppieren der Items in Dreiergruppen
 function groupItems(items, contentType = null) {
@@ -134,6 +135,38 @@ function groupItems(items, contentType = null) {
   }
   return groups;
 }
+
+// Content-Typ des aktuellen Moduls
+const contentType = computed(() => {
+  if (!props.module) return null;
+
+  // Basis-Typ ist der Modultyp
+  let type = props.module.type || null;
+
+  // Bei "pool" verwenden wir den spezifischen Pool-Content-Typ
+  if (type === "pool" && props.module.poolContentType) {
+    return props.module.poolContentType; // "persons", "venues" oder "all"
+  }
+
+  return type; // "sets", "shows", "words" oder null
+});
+
+// Kategorie-Typ für das UI
+const categoryType = ref("");
+
+// Watcher für den Content-Typ
+watch(contentType, (newValue) => {
+  if (["persons", "venues", "all"].includes(newValue)) {
+    categoryType.value = "Pool";
+  } else if (["sets", "shows"].includes(newValue)) {
+    categoryType.value = "Shows";
+  } else if (newValue === "words") {
+    categoryType.value = "Words";
+  } else {
+    categoryType.value = "";
+  }
+}, { immediate: true });
+
 // Berechne gruppierte Items nach Typ
 const groupedItems = computed(() => {
   if (!props.module) return [];
@@ -161,11 +194,16 @@ const groupedItems = computed(() => {
     v-if="module"
     :class="`embla module-carousel module-carousel--${
       module.style || 'default'
-    }`"
+    } ${categoryType.toLowerCase()}`"
   >
-    <h2 v-if="module.title" class="module-carousel__title">
+  <div class="module-carousel__header">
+    <h3 v-if="module.title" class="module-carousel__title">
       {{ module.title }}
-    </h2>
+    </h3>
+    <section class="module-carousel__header__type">
+      <h2 class="module-carousel__header__type__pill">{{ categoryType }}</h2>
+    </section>
+  </div>
     <nav class="embla__nav">
       <!-- Dot Navigation -->
       <div class="embla__nav__dots" v-if="scrollSnaps.length > 1">
@@ -307,6 +345,7 @@ const groupedItems = computed(() => {
 .module-carousel {
   @apply mb-4;
   max-width: var(--page-max-width);
+  margin: var(--mid-margin) 0;
 
   &__title {
     @apply text-2xl font-bold mb-4;
@@ -322,7 +361,6 @@ const groupedItems = computed(() => {
       .embla__nav__arrows {
         @apply flex;
         gap: 0 var(--mid-padding);
-
 
         .embla__arrow {
           @apply flex items-center justify-center rounded-full transition-colors;

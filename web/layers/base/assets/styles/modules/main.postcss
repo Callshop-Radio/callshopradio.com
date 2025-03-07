@@ -4,9 +4,61 @@
   flex-flow: column wrap;
   justify-content: flex-start;
   align-items: center;
+  gap: var(--content-gap) 0;
   .module {
     width: 100%;
     max-width: var(--page-max-width);
+    .module-carousel {
+      &.pool {
+        .module-carousel__header__type__pill {
+          background-color: var(--color-blue);
+        }
+        .city-tags {
+          .tag {
+            background-color: var(--color-blue);
+          }
+        }
+      }
+    
+      &.words {
+        .module-carousel__header__type__pill {
+          background-color: var(--color-green);
+        }
+        .city-tags {
+          .tag {
+            background-color: var(--color-green);
+          }
+        }
+      }
+
+      &.shows {
+        .module-carousel__header__type__pill {
+          background-color: var(--color-pink);
+
+        }
+        .city-tags {
+          .tag {
+            background-color: var(--color-pink);
+          }
+        }
+      }
+
+      &__header {
+        &__type {
+          @apply flex;
+          justify-content: flex-end;
+          &__pill {
+            @apply uppercase rounded-full;
+            font-size: var(--base-font-size);
+            padding: var(--small-padding) var(--base-padding);
+            min-width: 8.5rem;
+            text-align: center;
+          }
+        }
+      }
+      &__title {
+      }
+    }
   }
 }
 

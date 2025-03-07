@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { SITE_OPTIONS_QUERY, FALLBACK_QUERY } from '~~/queries/sanity.queries'
+import { SITE_OPTIONS_QUERY } from '~~/queries/sanity.queries'
 
 export const useMainStore = defineStore('mainStore', () => {
   // state als refs
@@ -22,8 +22,7 @@ export const useMainStore = defineStore('mainStore', () => {
     siteNav.value = data?.siteNav
     siteSettings.value = data?.siteSettings
     siteFallbacks.value = data?.siteFallbacks
-    console.log(siteFallbacks.value);
-    
+
   }
 
   function addToRepro(payload) {

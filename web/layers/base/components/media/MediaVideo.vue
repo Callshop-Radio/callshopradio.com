@@ -1,7 +1,9 @@
 <script setup>
 import 'plyr/dist/plyr.css'
-import Plyr from 'plyr'
+// import Plyr from 'plyr'
 import { useIntersectionObserver } from '@vueuse/core'
+
+const Plyr = process.client ? await import('plyr').then(m => m.default) : null;
 
 const props = defineProps({
 	video: {
