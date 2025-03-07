@@ -38,13 +38,13 @@ export const siteSettings = {
       type: 'image',
       group: 'site',
     },
-    {
-      title: 'Animations Global',
-      description: 'Activate to see page animations. Will override all animation settings if disabled.',
-      name: 'animations',
-      type: 'animations.global',
-      group: 'settings',
-    },
+    // {
+    //   title: 'Animations Global',
+    //   description: 'Activate to see page animations. Will override all animation settings if disabled.',
+    //   name: 'animations',
+    //   type: 'animations.global',
+    //   group: 'settings',
+    // },
     {
       title: 'SEO',
       name: 'seo',

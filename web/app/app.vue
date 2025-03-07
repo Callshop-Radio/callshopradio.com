@@ -1,18 +1,18 @@
 <script setup>
-const { creditLog, favicon } = useUtils()
+const { creditLog, favicon } = useUtils();
 // favicon()
 // creditLog()
 </script>
 
 <template>
-	<div class="site">
-		<SiteMenu class="menu" />
-		<main>
-			<NuxtPage />
-		</main>
-		<SiteFoot class="footer" />
-		<ElementsPreviewMode />
-	</div>
+  <div class="site">
+    <SiteHead />
+    <main>
+      <NuxtPage />
+    </main>
+    <SiteFoot class="footer" />
+    <ElementsPreviewMode />
+  </div>
 </template>
 
 <style lang="postcss" scoped>
@@ -20,8 +20,12 @@ const { creditLog, favicon } = useUtils()
   @apply min-h-[100svh] flex flex-col items-stretch;
 
   main {
-    @apply p-4 flex-grow-1;
-
+    @apply flex-grow-1;
+    padding: var(--b-margin) var(--base-padding) var(--big-margin);
+    display: flex;
+    flex-direction: column wrap;
+    justify-content: center;
+    align-items: flex-start;
   }
 
   .menu,

@@ -37,6 +37,7 @@
     "vue-router": "^4.4.0"
   },
   "dependencies": {
+    "@nuxtjs/i18n": "^9.2.1",
     "@nuxtjs/sanity": "^1.11.4",
     "@nuxtjs/sitemap": "^5.2.1",
     "@pinia/nuxt": "^0.5.1",

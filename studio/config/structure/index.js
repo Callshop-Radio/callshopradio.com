@@ -20,7 +20,7 @@ import {serviceTags} from './items/serviceTags'
 import {sets} from './items/sets'
 import {shows} from './items/shows'
 import {showsArchive} from './items/showsArchive'
-import {showTags} from './items/showTags'
+import {moodTags} from './items/moodTags'
 import {siteCookieBanner} from './items/siteCookieBanner'
 import {siteNav} from './items/siteNav'
 import {siteFallbacks} from './items/siteFallbacks'
@@ -41,7 +41,7 @@ const hiddenDocTypes = (listItem) => {
     'category',
     'category.sub',
     'fallback.content',
-    'fallback.global',
+    'fallbackGlobal',
     'tag.article',
     'tag.crafts',
     'tag.city',
@@ -50,7 +50,7 @@ const hiddenDocTypes = (listItem) => {
     'tag.venue',
     'tag.musician',
     'tag.service',
-    'tag.show',
+    'tag.mood',
     'tag.subGenre',
     'home',
     'pool',
@@ -115,7 +115,7 @@ export const structure = (S) =>
               localTags(S),
               musicianTags(S),
               serviceTags(S),
-              showTags(S),
+              moodTags(S),
             ]),
         ),
       S.divider(),

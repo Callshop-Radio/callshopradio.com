@@ -3,7 +3,7 @@ import {UnarchiveIcon, DesktopIcon, SearchIcon} from '@sanity/icons'
 const TITLE = 'Fallbacks'
 
 export const siteFallbacks = {
-  name: 'fallback.global',
+  name: 'fallbackGlobal',
   type: 'document',
   title: TITLE,
   icon: UnarchiveIcon,
@@ -71,56 +71,56 @@ export const siteFallbacks = {
         collapsed: true,
       },
     },
-    {
-      title: 'Fallback SEO for single Person',
-      name: 'seoPerson',
-      type: 'seo.singletons',
-      options: {
-        collapsible: true,
-        collapsed: true,
-      },
-      group: 'seo',
-    },
-    {
-      title: 'Fallback SEO for single Article',
-      name: 'seoArticle',
-      type: 'seo.singletons',
-      options: {
-        collapsible: true,
-        collapsed: true,
-      },
-      group: 'seo',
-    },
-    {
-      title: 'Fallback SEO for single Set',
-      name: 'seoSet',
-      type: 'seo.singletons',
-      options: {
-        collapsible: true,
-        collapsed: true,
-      },
-      group: 'seo',
-    },
-    {
-      title: 'Fallback SEO for single Show',
-      name: 'seoShows',
-      type: 'seo.singletons',
-      options: {
-        collapsible: true,
-        collapsed: true,
-      },
-      group: 'seo',
-    },
-    {
-      title: 'Fallback SEO for single Venue',
-      name: 'seoVenue',
-      type: 'seo.singletons',
-      options: {
-        collapsible: true,
-        collapsed: true,
-      },
-      group: 'seo',
-    },
+    // {
+    //   title: 'Fallback SEO for single Person',
+    //   name: 'seoPerson',
+    //   type: 'seo.singletons',
+    //   options: {
+    //     collapsible: true,
+    //     collapsed: true,
+    //   },
+    //   group: 'seo',
+    // },
+    // {
+    //   title: 'Fallback SEO for single Article',
+    //   name: 'seoArticle',
+    //   type: 'seo.singletons',
+    //   options: {
+    //     collapsible: true,
+    //     collapsed: true,
+    //   },
+    //   group: 'seo',
+    // },
+    // {
+    //   title: 'Fallback SEO for single Set',
+    //   name: 'seoSet',
+    //   type: 'seo.singletons',
+    //   options: {
+    //     collapsible: true,
+    //     collapsed: true,
+    //   },
+    //   group: 'seo',
+    // },
+    // {
+    //   title: 'Fallback SEO for single Show',
+    //   name: 'seoShows',
+    //   type: 'seo.singletons',
+    //   options: {
+    //     collapsible: true,
+    //     collapsed: true,
+    //   },
+    //   group: 'seo',
+    // },
+    // {
+    //   title: 'Fallback SEO for single Venue',
+    //   name: 'seoVenue',
+    //   type: 'seo.singletons',
+    //   options: {
+    //     collapsible: true,
+    //     collapsed: true,
+    //   },
+    //   group: 'seo',
+    // },
   ],
   preview: {
     prepare() {

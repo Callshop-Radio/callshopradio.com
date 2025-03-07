@@ -1,10 +1,11 @@
 import {TagIcon, SearchIcon, StarIcon, TextIcon, EyeOpenIcon} from '@sanity/icons'
 import {validateSlug} from '@/utils/validateSlug'
 
-export const tagShow = {
-  name: 'tag.show',
+export const tagMood
+ = {
+  name: 'tag.mood',
   type: 'document',
-  title: 'Show Tag',
+  title: 'Mood Tag',
   icon: TagIcon,
   groups: [
     {

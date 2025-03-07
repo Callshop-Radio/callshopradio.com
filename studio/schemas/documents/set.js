@@ -55,6 +55,7 @@ export const set = {
       name: 'title',
       type: 'string',
       group: 'editorial',
+      validation: (Rule) => Rule.required(),
     },
     {
       title: 'Clickable Show Title (→ Link to show)',
@@ -78,6 +79,12 @@ export const set = {
       description: 'In Case of special editions, features or versions.',
       name: 'additionalTitle',
       type: 'string',
+      group: 'editorial',
+    },
+    {
+      title: 'Artwork',
+      name: 'image',
+      type: 'image',
       group: 'editorial',
     },
     {
@@ -121,8 +128,16 @@ export const set = {
       ],
     },
     {
+      title: 'Tracklist by single Track',
+      name: 'tracklistSingleTrack',
+      type: 'boolean',
+      initialValue: true,
+      group: 'settings',
+    },
+    {
       name: 'tracklist',
-      title: 'Tracklist',
+      title: 'Tracklist (Single Tracks)',
+      description: 'Add single tracks.',
       type: 'array',
       group: 'editorial',
       of: [
@@ -132,6 +147,15 @@ export const set = {
           title: 'Track',
         },
       ],
+      hidden: ({parent}) => parent?.tracklistSingleTrack !== true,
+    },
+    {
+      name: 'tracklistRich',
+      title: 'Tracklist',
+      description: 'Paste a full tracklist from a textfile.',
+      type: 'richText',
+      group: 'editorial',
+      hidden: ({parent}) => parent?.tracklistSingleTrack !== false,
     },
     {
       name: 'tags',
@@ -159,12 +183,12 @@ export const set = {
       type: 'seo.page',
       group: 'seo',
     },
-    {
-      title: 'Animations',
-      name: 'animations',
-      type: 'animations.page',
-      group: 'settings',
-    },
+    // {
+    //   title: 'Animations',
+    //   name: 'animations',
+    //   type: 'animations.page',
+    //   group: 'settings',
+    // },
   ],
   preview: {
     select: {

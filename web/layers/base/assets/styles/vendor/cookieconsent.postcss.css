@@ -7,13 +7,13 @@ body {
   --cc-modal-margin: 1rem;
   --cc-z-index: 2147483647;
   --cc-bg: var(--color-bg);
-  --cc-primary-color: var(--color-font);
+  --cc-primary-color: var(--color-text);
   --cc-secondary-color: var(--cc-primary-color);
-  --cc-btn-primary-bg: var(--color-font);
+  --cc-btn-primary-bg: var(--color-text);
   --cc-btn-primary-color: var(--color-bg);
   --cc-btn-primary-border-color: var(--cc-btn-primary-bg);
   --cc-btn-primary-hover-bg: var(--color-bg);
-  --cc-btn-primary-hover-color: var(--color-font);
+  --cc-btn-primary-hover-color: var(--color-text);
   --cc-btn-primary-hover-border-color: var(--cc-btn-primary-hover-bg);
   --cc-btn-secondary-bg: #878787;
   --cc-btn-secondary-color: #000;
@@ -35,9 +35,9 @@ body {
   --cc-cookie-category-block-bg: var(--color-bg);
   --cc-cookie-category-block-border: var(--cc-cookie-category-block-bg);
   --cc-cookie-category-block-hover-bg: var(--cc-cookie-category-block-bg);
-  --cc-cookie-category-block-hover-border: var(--color-font);
+  --cc-cookie-category-block-hover-border: var(--color-text);
   --cc-cookie-category-expanded-block-bg: transparent;
-  --cc-cookie-category-expanded-block-hover-bg: var(--color-font);
+  --cc-cookie-category-expanded-block-hover-bg: var(--color-text);
   --cc-overlay-bg: rgb(0 0 0 / 65%);
   --cc-webkit-scrollbar-bg: var(--cc-section-category-border);
   --cc-webkit-scrollbar-hover-bg: var(--cc-btn-primary-hover-bg);

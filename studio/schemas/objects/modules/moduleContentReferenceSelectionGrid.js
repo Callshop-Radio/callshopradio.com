@@ -21,7 +21,7 @@ export const moduleSelectedContentReferenceGrid = {
   ],
   fields: [
     {
-      title: 'Heading',
+      title: 'Headline',
       name: 'title',
       type: 'string',
       group: 'editorial',

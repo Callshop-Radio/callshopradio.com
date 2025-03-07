@@ -91,7 +91,7 @@ const liveShows = data.value?.liveShows || [];
 const liveShowsWien = data.value?.liveShowsWien || [];
 const onAirLight = data.value?.onAirLight || null;
 
-console.log(onAirLight);
+// console.log(onAirLight);
 
 
 // Hilfsfunktion zur Formatierung von Datumsangaben

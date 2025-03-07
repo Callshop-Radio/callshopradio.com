@@ -16,7 +16,7 @@ import {tagGlobal} from './tags/global/global'
 import {tagVenue} from './tags/tagVenue'
 import {tagMusician} from './tags/tagMusician'
 import {tagService} from './tags/tagService'
-import {tagShow} from './tags/tagShow'
+import {tagMood} from './tags/tagMood'
 import {tagSubGenre} from './tags/global/subGenre'
 
 export const documents = [
@@ -36,6 +36,6 @@ export const documents = [
   tagVenue,
   tagMusician,
   tagService,
-  tagShow,
+  tagMood,
   tagSubGenre,
 ]

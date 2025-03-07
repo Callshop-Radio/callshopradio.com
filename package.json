@@ -17,5 +17,8 @@
     "web:update": "pnpm up --filter web"
   },
   "author": "Marco Land",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "sanity-plugin-soundcloud-input": "file:.yalc/sanity-plugin-soundcloud-input"
+  }
 }

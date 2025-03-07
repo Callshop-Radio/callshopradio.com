@@ -80,7 +80,7 @@ export const venue = {
           name: 'tag',
           type: 'reference',
           title: 'Tag',
-          to: [{type: 'tag.global'}, {type: 'tag.subGenre'}, {type: 'tag.city'}, {type: 'tag.service'}],
+          to: [{type: 'tag.global'}, {type: 'tag.subGenre'}, {type: 'tag.city'}, {type: 'tag.service'}, {type: 'tag.venue'}],
         },
       ],
     },

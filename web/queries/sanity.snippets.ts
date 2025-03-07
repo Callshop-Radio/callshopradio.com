@@ -2,7 +2,7 @@ export const IMAGE_QUERY = `{
   ...,
   "alt": asset->altText,
 	asset->,
-}`
+}`;
 
 export const LINK_QUERY = `
 	...,
@@ -30,7 +30,7 @@ export const LINK_QUERY = `
 	_type == "linkCookie" => {
 		"linkType": "linkCookie",
 	},
-`
+`;
 
 export const RICH_TEXT_QUERY = `{
 	...,
@@ -54,7 +54,157 @@ export const RICH_TEXT_QUERY = `{
 			video ${IMAGE_QUERY},
 		}
 	},
-}`
+}`;
+
+export const MODULE_QUERY = `{
+	  _type == "module.contentReferenceSlider" => {
+        ...,
+        title,
+        type,
+        style,
+        count,
+        poolContentType,
+        showTags,
+        autoLoad,
+        setsContentType[]->{
+            ...,
+            _id,
+            _type,
+            title,
+            slug,
+        },
+        "poolItems": select(
+            type == 'pool' && autoLoad == true => *[_type in ['person', 'venue']] | order(_updatedAt desc) {
+                ...,
+                _id,
+                _type,
+                title,
+                name,
+                slug,
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    title
+                },
+                location
+            },
+            pool[]->{
+                ...,
+                _id,
+                _type,
+                title,
+                name,
+                slug,
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    title
+                },
+                location
+            }
+        ),
+        "articleItems": select(
+            type == 'words' && autoLoad == true => *[_type == 'article'] | order(publishedAt desc) {
+                _id,
+                _type,
+                title,
+                slug,
+                publishedAt,
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    title
+                }
+            },
+            articles[]->{
+                _id,
+                _type,
+                title,
+                slug,
+                publishedAt,
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    title
+                }
+            }
+        ),
+        "showItems": select(
+            type == 'shows' && autoLoad == true => *[_type == 'show'] | order(publishedAt desc) {
+                _id,
+                _type,
+                title,
+                slug,
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    title
+                }
+            },
+            shows[]->{
+                _id,
+                _type,
+                title,
+                slug,
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    title
+                }
+            }
+        ),
+        "setItems": select(
+            type == 'sets' && autoLoad == true && count(setsContentType) == 0 => *[_type == 'set'] | order(publishedAt desc) {
+                _id,
+                _type,
+                title,
+                slug,
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    title
+                },
+                "genres": genres[]->{
+                    ...,
+                    _id,
+                    title
+                }
+            },
+            type == 'sets' && autoLoad == true && count(setsContentType) > 0 => *[_type == 'set' && count(genres[]->_id in ^.^.setsContentType[]->_id) > 0] | order(publishedAt desc) {
+                _id,
+                _type,
+                title,
+                slug,
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    title
+                },
+                "genres": genres[]->{
+                    ...,
+                    _id,
+                    title
+                }
+            },
+            sets[]->{
+                _id,
+                _type,
+                title,
+                slug,
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    title
+                },
+                "genres": genres[]->{
+                    ...,
+                    _id,
+                    title
+                }
+            }
+        )
+    }
+}`;
 
 export const SEO_QUERY = `
 	"seo": {
@@ -66,4 +216,4 @@ export const SEO_QUERY = `
 			*[_type == "siteSettings"][0].seo.image.asset->url + "?w=1200&h=630&fit=crop&auto=format&fm=jpg"
 		)
 	}
-`
+`;

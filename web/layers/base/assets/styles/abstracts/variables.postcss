@@ -1,35 +1,64 @@
 :root {
+  /* Limits */
+  --page-max-width: 69.5rem;
+  
   /* Colors */
   --color-bg: #fff;
-  --color-font: #000;
+  --color-text: #000;
   --color-link: currentcolor;
-  --color-secondary: yellow;
-  --color-code-bg: #f6f6f8;
-  
+
+  --color-pink: #f794b3;
+  --color-blue: #557fb9;
+  --color-white: #f6f6f8;
+  --color-grey: #e8e8e8;
+  --color-yellow: #f9ab0f;
+  --color-green: #78ce82;
+
   @media (--dark) {
     --color-bg: #222;
-    --color-font: #fff;
-    --color-code-bg: #000;
+    --color-text: #fff;
   }
 
   /* Video Player */
   --video-player-btn-color-rgb: 255 255 255;
   --video-player-btn-color-background: 0 0 0;
 
-  /* Font Options */
+  /* Modules */
 
-  /* Please add paragraph styles in the typography.postcss */
+  --var-city-tag-height: calc(4px + (var(--mini-font-size) * 0.75));
 
   /* Carousel */
   --carousel-spacing: 1rem;
   --carousel-height: 25rem;
 
   /* Sizes */
+  --base-padding: 0.75rem;
+  --big-padding: 1.25rem;
+  --mid-padding: 1rem;
+  --small-padding: 0.5rem;
 
-  /* … */
+  --big-margin: 4.25rem;
+  --base-margin: 2.75rem;
+  --mid-margin: 2rem;
+  --small-margin: 0.875rem;
 
   /* Transitions */
   --transition-normal: 400ms ease;
   --transition-fast: 200ms ease;
-  --transition-slow: 600ms ease;
+  --transition-slow: 400ms ease-out;
+
+  @media (--phone-only) {
+    --base-padding: 0.75rem;
+    --big-padding: 1.25rem;
+    --mid-padding: 1rem;
+    --small-padding: 0.5rem;
+
+    --huge-margin: 13rem;
+    --big-margin: 4.25rem;
+    --base-margin: 2.75rem;
+    --mid-margin: 0.75rem;
+    --small-margin: 0.625rem;
+
+    --base-line-height: calc(var(--base-font-size) * 1.25);
+  }
 }

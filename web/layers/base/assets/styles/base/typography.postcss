@@ -1,18 +1,248 @@
+:root {
+  /* Font Families */
+  --font-text: "Icona-Sans-Regular", system-ui, sans-serif;
+  --font-text-medium: "Icona-Sans-Medium", system-ui, sans-serif;
+
+  /* Font Options */
+  --menu-text-size: 0.8125rem;
+
+  --huge-font-size: 2.5rem;
+  --large-font-size: 1.25rem;
+  --base-font-size: 0.8125rem;
+  --small-font-size: 0.6875rem;
+  --mini-font-size: 0.4375rem;
+
+  --h1-size: 1.5625rem;
+  --h2-size: 1.25rem;
+  --h3-size: 1.125rem;
+
+  --base-line-height: calc(var(--base-font-size) * 1.25);
+
+  @media (--mini-phone-only) {
+    --base-font-size: calc(1rem) !important;
+    --menu-text-size: calc(1rem) !important;
+    --h1-size: var(--base-font-size);
+    --h2-size: var(--base-font-size);
+    --h3-size: var(--base-font-size);
+    --h4-size: var(--base-font-size);
+    --h5-size: var(--base-font-size);
+
+    --base-line-height: calc(var(--base-font-size) * 1.25);
+  }
+
+  @media (--phone-only) {
+    --menu-text-size: 0.75rem;
+
+    --huge-font-size: 2rem;
+    --large-font-size: 1rem;
+    --base-font-size: 0.75rem;
+    --small-font-size: 0.6275rem;
+    --mini-font-size: 0.375rem;
+
+    --h1-size: 1.375rem;
+    --h2-size: 1.125rem;
+    --h3-size: 1rem;
+
+    --base-line-height: calc(var(--base-font-size) * 1.25);
+  }
+
+  @media (--tablet-portrait-up) {
+    --menu-text-size: 0.8125rem;
+
+    --huge-font-size: 2.5rem;
+    --large-font-size: 1.25rem;
+    --base-font-size: 0.8125rem;
+    --small-font-size: 0.6875rem;
+    --mini-font-size: 0.4375rem;
+
+    --h1-size: 1.5625rem;
+    --h2-size: 1.25rem;
+    --h3-size: 1.125rem;
+
+    --base-line-height: calc(var(--base-font-size) * 1.25);
+  }
+
+  @media (--desktop-up) {
+    --menu-text-size: 0.8125rem;
+
+    --huge-font-size: 2.5rem;
+    --large-font-size: 1.25rem;
+    --base-font-size: 0.8125rem;
+    --small-font-size: 0.6875rem;
+    --mini-font-size: 0.4375rem;
+
+    --h1-size: 1.5625rem;
+    --h2-size: 1.25rem;
+    --h3-size: 1.125rem;
+
+    --base-line-height: calc(var(--base-font-size) * 1.25);
+  }
+  @media (--macbook-up) {
+    --menu-text-size: 0.8125rem;
+
+    --huge-font-size: 3rem;
+    --large-font-size: 1.5rem;
+    --base-font-size: 1rem;
+    --small-font-size: 0.8125rem;
+    --mini-font-size: 0.6875rem;
+
+    --h1-size: 1.875rem;
+    --h2-size: 1.5625rem;
+    --h3-size: 1.25rem;
+
+    --base-line-height: calc(var(--base-font-size) * 1.25);
+  }
+}
+
 * {
-  @apply antialiased;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-underline-offset: 0.125rem;
+  text-decoration-thickness: 0.09375rem;
+  text-decoration-color: var(--color-lines);
+  &:hover {
+    text-decoration-color: var(--color-text);
+  }
 }
 
 html,
 body {
-  @apply bg-white color-black font-sans;
+  font-family: var(--font-text), system-ui, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 400;
+}
+
+h1 {
+  font-size: var(--h1-size);
+  margin: 0;
+}
+h2 {
+  font-size: var(--h2-size);
+}
+h3 {
+  font-size: var(--h3-size);
+}
+h4,
+h5,
+h6 {
+  font-size: var(--h4-size);
+}
+
+p {
+  font-size: var(--base-font-size);
+  line-height: var(--base-line-height);
+  & > * {
+    font-size: var(--base-font-size);
+    line-height: var(--base-line-height);
+  }
+}
+
+strong {
+  font-weight: 400;
+}
+
+nav,
+header,
+nav a,
+nav a h2 {
+  font-size: var(--menu-text-size);
+  line-height: var(--menu-line-height);
+  & > * {
+    font-size: var(--menu-text-size);
+    line-height: var(--menu-line-height);
+  }
+}
+
+ul,
+ol {
+}
+
+button.link-style {
+  all: unset;
+}
+
+button.link-style,
+.link-style,
+a {
+  cursor: pointer;
+  color: var(--color-text);
+  text-decoration: none;
+  &.router-link-active {
+    color: var(--color-link);
+    /* text-decoration: underline; */
+  }
+
+  &:hover {
+    text-decoration-color: var(--color-text);
+    text-decoration: underline;
+  }
+}
 
 code,
 pre {
-  @apply font-mono;
+  font-family:
+    "SF Mono", SFMono-Regular, ui-monospace, "DejaVu Sans Mono", Menlo,
+    Consolas, monospace;
 }
 
 code {
-  @apply inline-block bg-gray border-rounded-sm whitespace-pre;
+  display: inline-block;
+  background-color: var(--color-code-bg);
+  border-radius: 2px;
+  white-space: pre;
+}
+
+em,
+strong {
+  font-size: inherit;
+}
+
+.module {
+  .rich-text h1,
+  .rich-text h2,
+  .rich-text h3 {
+    font-size: var(--h3-size);
+  }
+
+  .rich-text h1,
+  .rich-text h2,
+  .rich-text h3,
+  .rich-text h4,
+  .rich-text h5,
+  .rich-text h6,
+  .rich-text p {
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  .rich-text h4,
+  .rich-text h5,
+  .rich-text h6 {
+    font-size: var(--base-font-size);
+  }
+
+  .rich-text h4 a,
+  .rich-text h5 a,
+  .rich-text h6 a,
+  .rich-text a h4,
+  .rich-text a h5,
+  .rich-text a h6 {
+    display: block;
+  }
+
+  .richt-text {
+    p {
+      font-size: var(--base-font-size);
+    }
+  }
 }
