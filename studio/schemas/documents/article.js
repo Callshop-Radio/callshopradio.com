@@ -1,4 +1,12 @@
-import {TagIcon, TransferIcon, EditIcon, DocumentTextIcon, SearchIcon, TextIcon, CogIcon} from '@sanity/icons'
+import {
+  TagIcon,
+  TransferIcon,
+  EditIcon,
+  DocumentTextIcon,
+  SearchIcon,
+  TextIcon,
+  CogIcon,
+} from '@sanity/icons'
 
 import {validateSlug} from '@/utils/validateSlug'
 
@@ -172,7 +180,8 @@ export const article = {
     {
       title: 'Auto Load Related Articles',
       name: 'autoRelatedArticles',
-      description: 'Related articles will be automatically generated from tags & categories. Disable to choose related articles manually.',
+      description:
+        'Related articles will be automatically generated from tags & categories. Disable to choose related articles manually.',
       type: 'boolean',
       initialValue: true,
       group: 'related',
@@ -204,11 +213,16 @@ export const article = {
           name: 'tag',
           type: 'reference',
           title: 'Tags',
-          to: [{type: 'tag.global'}, {type: 'tag.article'}, {type: 'tag.city'}, {type: 'tag.subGenre'}, ],
+          to: [
+            {type: 'tag.global'},
+            {type: 'tag.article'},
+            {type: 'tag.city'},
+            {type: 'tag.subGenre'},
+          ],
         },
       ],
     },
-    // { 
+    // {
     //   name: 'categories',
     //   title: 'Categories',
     //   type: 'array',

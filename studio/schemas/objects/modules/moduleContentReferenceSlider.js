@@ -124,27 +124,27 @@ export const moduleContentReferenceSlider = {
       hidden: ({parent}) =>
         (parent?.type === 'pool' && parent?.autoLoad === false || parent?.type !== 'pool'),
     },
-    {
-      title: 'Genres',
-      name: 'setsContentType',
-      type: 'array',
-      validate: (Rule) => Rule.integer().min(1).max(16),
-      description: 'Select genres to load sets from. Leave empty to load newest sets.',
-      group: 'editorial',
-      of: [
-        {
-          name: 'subGenre',
-          type: 'reference',
-          title: 'Genre',
-          to: [{type: 'tag.subGenre'}],
-          options: {
-            disableNew: true,
-          },
-        },
-      ],
-      hidden: ({parent}) =>
-        (parent?.type === 'sets' && parent?.autoLoad === false || parent?.type !== 'sets'),
-    },
+    // {
+    //   title: 'Genres',
+    //   name: 'setsContentType',
+    //   type: 'array',
+    //   validate: (Rule) => Rule.integer().min(1).max(16),
+    //   description: 'Select genres to load sets from. Leave empty to load newest sets.',
+    //   group: 'editorial',
+    //   of: [
+    //     {
+    //       name: 'subGenre',
+    //       type: 'reference',
+    //       title: 'Genre',
+    //       to: [{type: 'tag.subGenre'}],
+    //       options: {
+    //         disableNew: true,
+    //       },
+    //     },
+    //   ],
+    //   hidden: ({parent}) =>
+    //     (parent?.type === 'sets' && parent?.autoLoad === false || parent?.type !== 'sets'),
+    // },
     {
       name: 'pool',
       title: 'Pool',

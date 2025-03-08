@@ -596,7 +596,6 @@ updateLiveStatus();
       text-transform: uppercase;
       &.live-indicator {
         overflow: visible;
-        align-self: flex-end;
         text-overflow: clip;
         color: var(--color-pink);
         text-transform: uppercase;

@@ -11,16 +11,14 @@ const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
   <div class="header">
     <section class="header__menu-section">
       <div class="header__menu-section__logo">
-        <ElementsCallshopLogo />
-        <ElementsCallshopTextLogo />
+        <ElementsCallshopLogo class="logo"/>
+        <ElementsCallshopTextLogo class="text-logo"/>
       </div>
       <SiteMenu />
     </section>
     <section class="header__audio-player-section">
-       <MusicController /> 
+      <MusicController />
     </section>
-
-
   </div>
 </template>
 
@@ -34,7 +32,9 @@ const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
   top: 0;
   width: 100%;
   margin: var(--big-margin) auto 0;
-  padding: 0 0 ;
+  padding: 0 0;
+  background-color: var(--color-bg);
+  z-index: 99999;
   &__menu-section {
     width: 100%;
     max-width: var(--page-max-width);
@@ -43,15 +43,21 @@ const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
     justify-content: space-between;
     align-items: center;
     &__logo {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: flex-start;
-    align-items: center;
-    gap: var(--small-padding);
-    h1 {
-      font-family: var(--font-text);
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: flex-start;
+      align-items: center;
+      gap: var(--small-padding);
+      h1 {
+        font-family: var(--font-text);
+      }
+      /* Logo Invertierung im Dark Mode */
+      .logo, .text-logo {
+        @media (prefers-color-scheme: dark) {
+          filter: invert(1);
+        }
+      }
     }
-  }
   }
   &__audio-player-section {
     width: 100%;

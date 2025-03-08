@@ -6,6 +6,7 @@
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink"
+    class="image-logo"
   >
     <rect width="29.9765" height="28" fill="url(#pattern0_8177_318)" />
     <defs>

@@ -81,25 +81,25 @@ export const moduleContentReferenceGrid = {
       },
       hidden: ({parent}) => parent?.type !== 'pool',
     },
-    {
-      title: 'Genres',
-      name: 'setsContentType',
-      type: 'array',
-      description: 'Select genres to load sets from.',
-      group: 'editorial',
-      of: [
-        {
-          name: 'subGenre',
-          type: 'reference',
-          title: 'Genre',
-          to: [{type: 'tag.subGenre'}],
-          options: {
-            disableNew: true,
-          },
-        },
-      ],
-      hidden: ({parent}) => parent?.type !== 'sets',
-    },
+    // {
+    //   title: 'Genres',
+    //   name: 'setsContentType',
+    //   type: 'array',
+    //   description: 'Select genres to load sets from.',
+    //   group: 'editorial',
+    //   of: [
+    //     {
+    //       name: 'subGenre',
+    //       type: 'reference',
+    //       title: 'Genre',
+    //       to: [{type: 'tag.subGenre'}],
+    //       options: {
+    //         disableNew: true,
+    //       },
+    //     },
+    //   ],
+    //   hidden: ({parent}) => parent?.type !== 'sets',
+    // },
     // {
     //   title: 'Animations',
     //   name: 'animations',

@@ -1,6 +1,6 @@
 :root {
   /* Limits */
-  --page-max-width: 69.5rem;
+  --page-max-width: clamp(0rem, 69.5rem, 100%);
   
   /* Colors */
   --color-bg: #fff;
@@ -15,7 +15,7 @@
   --color-green: #78ce82;
 
   @media (--dark) {
-    --color-bg: #222;
+    --color-bg: #161616;
     --color-text: #fff;
   }
 
@@ -25,7 +25,7 @@
 
   /* Modules */
 
-  --var-city-tag-height: calc(4px + (var(--mini-font-size) * 0.75));
+  --var-city-tag-height: calc(var(--small-padding) / 2 + var(--small-padding) / 2 + var(--mini-font-size));
 
   /* Carousel */
   --carousel-spacing: 1rem;
@@ -49,17 +49,57 @@
   --transition-slow: 400ms ease-out;
 
   @media (--phone-only) {
-    --base-padding: 0.75rem;
-    --big-padding: 1.25rem;
-    --mid-padding: 1rem;
-    --small-padding: 0.5rem;
+    --base-padding: 0.625rem;
+    --big-padding: 1.125rem;
+    --mid-padding: 0.8125rem;
+    --small-padding: 0.4375rem;
 
-    --huge-margin: 13rem;
-    --big-margin: 4.25rem;
-    --base-margin: 2.75rem;
-    --mid-margin: 0.75rem;
-    --small-margin: 0.625rem;
+    --huge-margin: 11rem;
+    --big-margin: 4rem;
+    --base-margin: 2.5rem;
+    --mid-margin: 0.575rem;
+    --small-margin: 0.4375rem;
 
     --base-line-height: calc(var(--base-font-size) * 1.25);
+  }
+  @media (--tablet-portrait-up) {
+    --base-padding: 0.625rem;
+    --big-padding: 1.125rem;
+    --mid-padding: 0.8125rem;
+    --small-padding: 0.4375rem;
+
+    --huge-margin: 11rem;
+    --big-margin: 4rem;
+    --base-margin: 2.5rem;
+    --mid-margin: 1.575rem;
+    --small-margin: 0.4375rem;
+
+    --base-line-height: calc(var(--base-font-size) * 1.25);
+  }
+  @media (--desktop-up) {
+    --base-padding: 0.625rem;
+    --big-padding: 1.125rem;
+    --mid-padding: 0.8125rem;
+    --small-padding: 0.4375rem;
+
+    --huge-margin: 11rem;
+    --big-margin: 4rem;
+    --base-margin: 2.5rem;
+    --mid-margin: 1.575rem;
+    --small-margin: 0.4375rem;
+
+    --base-line-height: calc(var(--base-font-size) * 1.25);
+  }
+  @media (--xl-up) {
+  --content-gap: var(--big-margin);
+  --base-padding: 0.75rem;
+  --big-padding: 1.25rem;
+  --mid-padding: 1rem;
+  --small-padding: 0.5rem;
+
+  --big-margin: 4.25rem;
+  --base-margin: 2.75rem;
+  --mid-margin: 2rem;
+  --small-margin: 0.875rem;
   }
 }
