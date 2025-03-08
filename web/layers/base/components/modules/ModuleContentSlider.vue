@@ -3,6 +3,8 @@ import emblaCarouselVue from "embla-carousel-vue";
 import { useThrottleFn } from "@vueuse/core";
 import { ref, onMounted, computed } from "vue";
 import { useMainStore } from "~/stores/mainStore";
+import { limitTextBlocks } from '~/composables/useLimitTextBlocks';
+
 
 const mainStore = useMainStore();
 
@@ -216,7 +218,6 @@ const groupedItems = computed(() => {
 });
 
 console.log(props.module.articleItems);
-
 </script>
 
 <template>
@@ -330,12 +331,30 @@ console.log(props.module.articleItems);
                 :image="getItemImage(item)"
                 :class="`media-${module.style}`"
               />
-              <!-- <MediaImage v-else /> -->
               <div class="slide-content">
-                <h3 class="slide-date" v-if="item?._updatedAt" >{{ formatDate(item._updatedAt) }}</h3>
+                <h3 class="slide-date" v-if="item?._updatedAt">
+                  {{ formatDate(item._updatedAt) }}
+                </h3>
                 <h3 class="slide-title">{{ item?.title }}</h3>
-                <RichText v-if="item?.useTeaserText && item?.textTeaser" :blocks="parseI18nObj(item?.textTeaser)" />
-                <RichText v-else-if="!item?.useTeaserText && item?.text && item.text.length > 0" :blocks="parseI18nObj(item.text).slice(0,1)" />
+                <RichText
+                  v-if="item?.useTeaserText && item?.textTeaser"
+                  :blocks="parseI18nObj(item?.textTeaser)"
+                />
+                <RichText
+                  v-else-if="
+                    !item?.useTeaserText && item?.text && item.text.length > 0
+                  "
+                  :blocks="parseI18nObj(item.text).slice(0, 1)"
+                />
+                <RichText
+                  v-else-if="
+                    !item?.text &&
+                    item?.description &&
+                    item.description.length > 0 &&
+                    (item.description[0]?.value || item.description[1]?.value)
+                  "
+                  :blocks="limitTextBlocks(parseI18nObj(item.description).slice(0, 1),100)"
+                />
                 <div
                   v-if="module.showTags && item.tags?.length"
                   class="slide__tags tags"
