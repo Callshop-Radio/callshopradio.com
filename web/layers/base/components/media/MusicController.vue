@@ -416,13 +416,15 @@ updateLiveStatus();
     <div class="audio-player__wrapper">
       <div
         class="audio-player__music-controller track-one"
+        @click="togglePlay1"
         :class="{
           active: isPlaying1 || isLoading1,
           inactive: isPlaying2 || isLoading2,
+          offline: !liveStatus.stream1.onAirLight.on_air_light,
         }"
       >
         <h2>1</h2>
-        <button @click="togglePlay1">
+        <button>
           <div v-if="isLoading1" class="loading-indicator">
             <span class="dot"></span>
             <span class="dot"></span>
@@ -476,13 +478,15 @@ updateLiveStatus();
       </div>
       <div
         class="audio-player__music-controller track-two"
+        @click="togglePlay2"
         :class="{
           active: isPlaying2 || isLoading2,
           inactive: isPlaying1 || isLoading1,
+          offline: !liveStatus.stream2.onAirLight.on_air_light,
         }"
       >
         <h2>2</h2>
-        <button @click="togglePlay2">
+        <button>
           <div v-if="isLoading2" class="loading-indicator">
             <span class="dot"></span>
             <span class="dot"></span>
@@ -567,6 +571,16 @@ updateLiveStatus();
     max-width: calc(var(--page-max-width) / 2);
     width: 50%;
     transition: width 0.15s ease, max-width 0.15s ease;
+    cursor: pointer;
+    &.offline {
+      cursor: not-allowed !important;
+      pointer-events: none;
+      .live-indicator{
+        color: var(--color-grey);
+      }
+
+      opacity: 0.5;
+    }
     button {
       display: flex;
       flex-flow: row wrap;
@@ -578,7 +592,6 @@ updateLiveStatus();
       color: transparent;
       background-color: transparent;
       border: none;
-      cursor: pointer;
 
       svg {
         rect,
@@ -643,10 +656,6 @@ updateLiveStatus();
         text-transform: uppercase;
         margin: 0 0 0 auto;
         line-height: var(--base-line-height);
-        &.offline {
-          color: var(--color-grey);
-          opacity: 0.5;
-        }
       }
     }
     &.track-one {

@@ -89,7 +89,7 @@ export const set = {
     },
     {
       name: 'soundcloud',
-      type: 'soundcloud', // Use the custom type from the plugin here
+      type: 'soundcloud',
       title: 'SoundCloud Content',
       group: 'soundcloud',
     },

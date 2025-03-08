@@ -242,6 +242,35 @@ export const MODULE_QUERY = `{
                 _type,
                 title,
                 slug,
+                "soundcloud": soundcloud{
+                    _type,
+                    "tracks": tracks[]{
+                        id,
+                        created_at,
+                        duration,
+                        tag_list,
+                        streamable,
+                        purchase_url,
+                        genre,
+                        title,
+                        description,
+                        release_year,
+                        release_month,
+                        release_day,
+                        license,
+                        uri,
+                        "user": user{
+                            id,
+                            username,
+                            permalink_url
+                        },
+                        artwork_url,
+                        waveform_url,
+                        stream_url,
+                        playback_count,
+                        favoritings_count
+                    }
+                },  
                 "tags": tags[]->{
                     ...,
                     _id,
@@ -253,6 +282,35 @@ export const MODULE_QUERY = `{
                 _type,
                 title,
                 slug,
+                "soundcloud": soundcloud{
+                    _type,
+                    "tracks": tracks[]{
+                        id,
+                        created_at,
+                        duration,
+                        tag_list,
+                        streamable,
+                        purchase_url,
+                        genre,
+                        title,
+                        description,
+                        release_year,
+                        release_month,
+                        release_day,
+                        license,
+                        uri,
+                        "user": user{
+                            id,
+                            username,
+                            permalink_url
+                        },
+                        artwork_url,
+                        waveform_url,
+                        stream_url,
+                        playback_count,
+                        favoritings_count
+                    }
+                },
                 "tags": tags[]->{
                     ...,
                     _id,

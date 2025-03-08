@@ -3,8 +3,7 @@ import emblaCarouselVue from "embla-carousel-vue";
 import { useThrottleFn } from "@vueuse/core";
 import { ref, onMounted, computed } from "vue";
 import { useMainStore } from "~/stores/mainStore";
-import { limitTextBlocks } from '~/composables/useLimitTextBlocks';
-
+import { limitTextBlocks } from "~/composables/useLimitTextBlocks";
 
 const mainStore = useMainStore();
 
@@ -86,13 +85,13 @@ onMounted(() => {
 
 // helper function for image fetching and fallbacks
 function getItemImage(item) {
+  // Fallbacks je nach Content-Typ
+  const itemType = item._type || "";
+
   // Bild aus dem Item selbst
   if (item.image || item.mainImage) {
     return item.image || item.mainImage;
   }
-
-  // Fallbacks je nach Content-Typ
-  const itemType = item._type || "";
 
   switch (itemType) {
     case "person":
@@ -110,6 +109,25 @@ function getItemImage(item) {
       // Allgemeines Fallback-Bild
       return mainStore?.siteFallbacks?.fallbackPerson?.image;
   }
+}
+
+// Hilfsfunktion für SoundCloud-Artwork mit Fallback
+function getSoundcloudArtwork(item) {
+  // Prüfen auf SoundCloud-Daten und Artwork
+  const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
+  
+  if (artworkUrl) {
+    // Die URL von '-large' zu '-t200x200' Format ändern
+    return artworkUrl.replace('-large', '-t500x500');
+  }
+  
+  // Fallbacks, falls kein SoundCloud-Artwork vorhanden ist
+  if (item._type === 'set') {
+    return mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url || '';
+  }
+  
+  // Generisches Fallback
+  return '';
 }
 
 // Hilfsfunktion zum Gruppieren der Items in Dreiergruppen
@@ -217,7 +235,7 @@ const groupedItems = computed(() => {
   }
 });
 
-console.log(props.module.articleItems);
+console.log(props.module.setItems);
 </script>
 
 <template>
@@ -327,9 +345,15 @@ console.log(props.module.articleItems);
                 class="slide__tags city-tags"
               ></div>
               <MediaImage
-                v-if="getItemImage(item)"
+                v-if="getItemImage(item) && categoryType !== 'Episodes'"
                 :image="getItemImage(item)"
                 :class="`media-${module.style}`"
+              />
+              <img
+                v-else-if="categoryType === 'Episodes'"
+                :src="getSoundcloudArtwork(item)"
+                alt="Episode Image"
+                class="track-artwork"
               />
               <div class="slide-content">
                 <h3 class="slide-date" v-if="item?._updatedAt">
@@ -353,7 +377,12 @@ console.log(props.module.articleItems);
                     item.description.length > 0 &&
                     (item.description[0]?.value || item.description[1]?.value)
                   "
-                  :blocks="limitTextBlocks(parseI18nObj(item.description).slice(0, 1),100)"
+                  :blocks="
+                    limitTextBlocks(
+                      parseI18nObj(item.description).slice(0, 1),
+                      100
+                    )
+                  "
                 />
                 <div
                   v-if="module.showTags && item.tags?.length"
