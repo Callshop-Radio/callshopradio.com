@@ -214,6 +214,9 @@ const groupedItems = computed(() => {
       return [];
   }
 });
+
+console.log(props.module.articleItems);
+
 </script>
 
 <template>
@@ -329,9 +332,10 @@ const groupedItems = computed(() => {
               />
               <!-- <MediaImage v-else /> -->
               <div class="slide-content">
-                <h3 class="slide-date">{{ formatDate(item._updatedAt) }}</h3>
-                <h3 class="slide-title">{{ item.title }}</h3>
-                <RichText v-if="item.text" :blocks="parseI18nObj(item.text)" />
+                <h3 class="slide-date" v-if="item?._updatedAt" >{{ formatDate(item._updatedAt) }}</h3>
+                <h3 class="slide-title">{{ item?.title }}</h3>
+                <RichText v-if="item?.useTeaserText && item?.textTeaser" :blocks="parseI18nObj(item?.textTeaser)" />
+                <RichText v-else-if="!item?.useTeaserText && item?.text && item.text.length > 0" :blocks="parseI18nObj(item.text).slice(0,1)" />
                 <div
                   v-if="module.showTags && item.tags?.length"
                   class="slide__tags tags"
@@ -429,7 +433,7 @@ const groupedItems = computed(() => {
             display: flex;
             flex-flow: row wrap;
             justify-content: flex-start;
-            align-items: flex-start;
+            align-items: center;
             flex: auto;
             min-width: 0;
             .slide-content {

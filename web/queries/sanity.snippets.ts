@@ -184,8 +184,8 @@ export const MODULE_QUERY = `{
                 datetime,
                 slug,
                 useTeaserText,
-                textTeaser ${RICH_TEXT_QUERY},
-                text ${RICH_TEXT_QUERY},
+                textTeaser[] ${RICH_TEXT_QUERY},
+                text[] ${RICH_TEXT_QUERY},
                 publishedAt,
                 "tags": tags[]->{
                     ...,
@@ -200,8 +200,8 @@ export const MODULE_QUERY = `{
                 title,
                 slug,
                 useTeaserText,
-                textTeaser ${RICH_TEXT_QUERY},
-                text ${RICH_TEXT_QUERY},
+                textTeaser[] ${RICH_TEXT_QUERY},
+                text[] ${RICH_TEXT_QUERY},
                 publishedAt,
                 "tags": tags[]->{
                     ...,

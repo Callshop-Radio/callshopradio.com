@@ -456,7 +456,21 @@ updateLiveStatus();
           </svg>
         </button>
         <p class="track-name">{{ getCurrentName1 }}</p>
-        <p class="live-indicator">
+        <p
+          :class="`live-indicator ${
+            liveStatus.stream1.onAirLight.on_air_light ? 'live' : 'offline'
+          }`"
+        >
+          <svg
+            v-if="liveStatus.stream1.onAirLight.on_air_light"
+            width="9"
+            height="9"
+            viewBox="0 0 9 9"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle cx="4.5" cy="4.5" r="4.5" fill="black" />
+          </svg>
           {{ liveStatus.stream1.onAirLight.on_air_light ? "Live" : "Offline" }}
         </p>
       </div>
@@ -502,7 +516,22 @@ updateLiveStatus();
           </svg>
         </button>
         <p class="track-name">{{ getCurrentName2 }}</p>
-        <p class="live-indicator">
+        <p
+          :class="`live-indicator ${
+            liveStatus.stream2.onAirLight.on_air_light ? 'live' : 'offline'
+          }`"
+        >
+          <svg
+            v-if="liveStatus.stream2.onAirLight.on_air_light"
+            width="9"
+            height="9"
+            viewBox="0 0 9 9"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle cx="4.5" cy="4.5" r="4.5" fill="black" />
+          </svg>
+
           {{ liveStatus.stream2.onAirLight.on_air_light ? "Live" : "Offline" }}
         </p>
       </div>
@@ -595,12 +624,29 @@ updateLiveStatus();
       white-space: nowrap;
       text-transform: uppercase;
       &.live-indicator {
+        display: flex;
+        flex-flow: row;
+        align-items: center;
+        gap: var(--small-padding);
+        letter-spacing: var(--menu-letter-spacing);
+        svg {
+          height: var(--base-font-size);
+          height: var(--base-font-size);
+          circle {
+            fill: var(--color-pink);
+          }
+          fill: var(--color-pink);
+        }
         overflow: visible;
         text-overflow: clip;
         color: var(--color-pink);
         text-transform: uppercase;
         margin: 0 0 0 auto;
         line-height: var(--base-line-height);
+        &.offline {
+          color: var(--color-grey);
+          opacity: 0.5;
+        }
       }
     }
     &.track-one {
