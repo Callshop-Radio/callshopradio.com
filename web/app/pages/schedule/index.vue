@@ -8,7 +8,7 @@
       />
     </Head>
 
-    <div v-if="pending">Loading...</div>
+    <!-- <div v-if="pending">Loading...</div>
     <div v-else-if="error">Error loading schedule data.</div>
     <div v-else>
       <h2>Live Shows Düsseldorf</h2>
@@ -49,55 +49,55 @@
         <p>No On-Air Light data available.</p>
       </div>
     </div>
-  </div>
+  </div> -->
 </template>
 
 <script setup>
-const apiKey = process.env.NUXT_LIBRETIME_API_KEY;
+// const apiKey = process.env.NUXT_LIBRETIME_API_KEY;
 
-// Hilfsfunktion für API-Aufrufe mit Authorization-Header
-const fetcher = async (url) => {
-  const response = await fetch(url, {
-    headers: {
-      'Authorization': `Api-Key ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  if (!response.ok) throw new Error(`Error fetching data: ${response.statusText}`);
-  return await response.json();
-};
+// // Hilfsfunktion für API-Aufrufe mit Authorization-Header
+// const fetcher = async (url) => {
+//   const response = await fetch(url, {
+//     headers: {
+//       'Authorization': `Api-Key ${apiKey}`,
+//       'Content-Type': 'application/json',
+//     },
+//   });
+//   if (!response.ok) throw new Error(`Error fetching data: ${response.statusText}`);
+//   return await response.json();
+// };
 
-// Daten asynchron laden
-const { data, pending, error } = await useAsyncData('scheduleData', async () => {
-  const liveInfoUrl = 'https://libretime.callshopradio.com/api/live-info-v2';
-  const liveInfoWienUrl = 'https://wien.callshopradio.com/api/live-info-v2?days=7';
-  const onAirLightUrl = `https://libretime.callshopradio.com/api/on-air-light/format/json?api_key=${apiKey}`;
+// // Daten asynchron laden
+// const { data, pending, error } = await useAsyncData('scheduleData', async () => {
+//   const liveInfoUrl = 'https://libretime.callshopradio.com/api/live-info-v2';
+//   const liveInfoWienUrl = 'https://wien.callshopradio.com/api/live-info-v2?days=7';
+//   const onAirLightUrl = `https://libretime.callshopradio.com/api/on-air-light/format/json?api_key=${apiKey}`;
 
-  const [liveInfo, liveInfoWien, onAirLight] = await Promise.all([
-    fetcher(liveInfoUrl),
-    fetcher(liveInfoWienUrl),
-    fetcher(onAirLightUrl),
-  ]);
+//   const [liveInfo, liveInfoWien, onAirLight] = await Promise.all([
+//     fetcher(liveInfoUrl),
+//     fetcher(liveInfoWienUrl),
+//     fetcher(onAirLightUrl),
+//   ]);
 
-  return {
-    liveShows: liveInfo,
-    liveShowsWien: liveInfoWien,
-    onAirLight: onAirLight,
-  };
-});
+//   return {
+//     liveShows: liveInfo,
+//     liveShowsWien: liveInfoWien,
+//     onAirLight: onAirLight,
+//   };
+// });
 
-// Daten aus der API-Antwort extrahieren
-const liveShows = data.value?.liveShows || [];
-const liveShowsWien = data.value?.liveShowsWien || [];
-const onAirLight = data.value?.onAirLight || null;
+// // Daten aus der API-Antwort extrahieren
+// const liveShows = data.value?.liveShows || [];
+// const liveShowsWien = data.value?.liveShowsWien || [];
+// const onAirLight = data.value?.onAirLight || null;
 
-// console.log(onAirLight);
+// // console.log(onAirLight);
 
 
-// Hilfsfunktion zur Formatierung von Datumsangaben
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleString();
-};
+// // Hilfsfunktion zur Formatierung von Datumsangaben
+// const formatDate = (dateString) => {
+//   return new Date(dateString).toLocaleString();
+// };
 </script>
 
 <style scoped>

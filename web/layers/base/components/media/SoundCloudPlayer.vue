@@ -452,7 +452,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="soundcloud-player" :class="{ 'is-loading': isLoading }">
+  <div v-if="localTrack" class="soundcloud-player" :class="{ 'is-loading': isLoading }">
     <template v-if="localTrack">
       <div v-if="trackError" class="soundcloud-player__error">
         <p>{{ trackError }}</p>
@@ -486,6 +486,8 @@ onBeforeUnmount(() => {
         </iframe>
       </div>
     </template>
+  </div>
+  <div v-else>
   </div>
 </template>
 
