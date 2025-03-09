@@ -28,74 +28,6 @@ const isComponentMounted = ref(false);
 const trackError = ref(null);
 const playerRendered = ref(false); // Neuer State für das Rendering des Players
 
-// Watcher für mainStore.currentTrack - nur initialisieren, wenn sich der Track wirklich ändert
-watch(
-  () => mainStore.currentTrack,
-  (newTrack, oldTrack) => {
-    console.log("Watcher ausgelöst mit Track:", newTrack);
-
-    try {
-      // Prüfen, ob es sich um einen neuen Track handelt oder um den gleichen
-      const newTrackId = newTrack?.id || newTrack?.track_id;
-      const oldTrackId = oldTrack?.id || oldTrack?.track_id;
-
-      // Nur neu initialisieren, wenn es ein anderer Track ist
-      if (
-        newTrackId !== oldTrackId &&
-        newTrack &&
-        typeof newTrack === "object"
-      ) {
-        console.log("Neuer Track aus dem Store:", newTrack);
-        trackError.value = null;
-        playerRendered.value = true;
-
-        // Prüfen, ob der Track eine URL hat oder andere relevante Eigenschaften
-        const hasPermalinkUrl =
-          newTrack.permalink_url ||
-          newTrack.uri ||
-          newTrack.soundcloud?.tracks?.[0]?.permalink_url;
-        console.log("Hat Permalink URL:", !!hasPermalinkUrl);
-
-        // Wenn der Track eine ID hat, aber keine Permalink-URL
-        if (!hasPermalinkUrl && (newTrack.id || newTrack.track_id)) {
-          console.log(
-            "Track hat ID aber keine URL, konstruiere URL basierend auf ID"
-          );
-          newTrack.permalink_url = `https://api.soundcloud.com/tracks/${
-            newTrack.id || newTrack.track_id
-          }`;
-        }
-
-        localTrack.value = newTrack;
-
-        // Player mit dem neuen Track nur initialisieren, wenn die Komponente gemountet ist
-        if (isComponentMounted.value) {
-          isLoading.value = true;
-
-          // Warten auf den nächsten DOM-Zyklus und dann mit Verzögerung initialisieren
-          nextTick(() => {
-            console.log("DOM aktualisiert für neuen Track");
-            setTimeout(() => {
-              checkAndInitializePlayer();
-            }, 200);
-          });
-        } else {
-          console.log("Komponente noch nicht gemountet, warte auf onMounted");
-        }
-      } else if (newTrack === oldTrack && newTrack) {
-        console.log("Gleicher Track, keine Neinitialisierung notwendig");
-        playerRendered.value = true;
-      } else {
-        console.log("Track ist kein Objekt oder null:", newTrack);
-      }
-    } catch (error) {
-      console.error("Fehler im Track-Watcher:", error);
-      trackError.value = "Es ist ein Fehler beim Laden des Tracks aufgetreten.";
-    }
-  },
-  { immediate: true }
-);
-
 // Hilfsfunktion zum Prüfen und Initialisieren des Players
 function checkAndInitializePlayer() {
   console.log("Prüfe Player-Initialisierung...");
@@ -285,36 +217,6 @@ function setupWidget(Widget) {
   }
 }
 
-// Wichtige Änderung in der togglePlay-Funktion
-function togglePlay() {
-  if (!localWidget.value) {
-    console.log("Widget nicht verfügbar");
-    return;
-  }
-
-  try {
-    // Status erst abfragen und dann entsprechend handeln
-    localWidget.value.isPaused((paused) => {
-      console.log("Current state:", paused ? "Paused" : "Playing");
-
-      if (paused) {
-        console.log("Starte Player");
-        localWidget.value.play();
-        // Direkt aktualisieren, statt auf das Event zu warten
-        isPlaying.value = true;
-      } else {
-        console.log("Pausiere Player");
-        localWidget.value.pause();
-        // Direkt aktualisieren, statt auf das Event zu warten
-        isPlaying.value = false;
-      }
-    });
-  } catch (error) {
-    console.error("Fehler beim Umschalten des Players:", error);
-    trackError.value = "Fehler beim Abspielen des Tracks.";
-  }
-}
-
 // Verbesserte setupWidgetEvents-Funktion
 function setupWidgetEvents() {
   if (!localWidget.value || !window.SC) {
@@ -374,7 +276,7 @@ function setupWidgetEvents() {
     localWidget.value.bind(SC.Widget.Events.PAUSE, () => {
       console.log("PAUSE Event empfangen");
       isPlaying.value = false;
-      mainStore.setPlayerStatus(false);  // Aktualisiere den Store
+      mainStore.setPlayerStatus(false); // Aktualisiere den Store
 
       // Doppelprüfung, ob wirklich pausiert ist
       setTimeout(() => {
@@ -393,7 +295,7 @@ function setupWidgetEvents() {
     localWidget.value.bind(SC.Widget.Events.FINISH, () => {
       console.log("FINISH Event empfangen");
       isPlaying.value = false;
-      mainStore.setPlayerStatus(false);  // Aktualisiere den Store
+      mainStore.setPlayerStatus(false); // Aktualisiere den Store
     });
 
     localWidget.value.bind(SC.Widget.Events.ERROR, (e) => {
@@ -427,6 +329,80 @@ onMounted(() => {
       }, 200);
     });
   }
+
+  watch(
+    () => mainStore.currentTrack,
+    (newTrack, oldTrack) => {
+      console.log("Watcher ausgelöst mit Track:", newTrack);
+
+      // Frühzeitig beenden, wenn newTrack null ist
+      if (!newTrack) {
+        console.log("Kein neuer Track vorhanden, überspringe Verarbeitung");
+        return; // Beende frühzeitig, wenn kein Track vorhanden
+      }
+
+      try {
+        // Prüfen, ob es sich um einen neuen Track handelt oder um den gleichen
+        const newTrackId = newTrack?.id || newTrack?.track_id;
+        const oldTrackId = oldTrack?.id || oldTrack?.track_id;
+
+        // Nur neu initialisieren, wenn es ein anderer Track ist
+        if (
+          newTrackId !== oldTrackId &&
+          newTrack &&
+          typeof newTrack === "object"
+        ) {
+          console.log("Neuer Track aus dem Store:", newTrack);
+          trackError.value = null;
+          playerRendered.value = true;
+
+          // Prüfen, ob der Track eine URL hat oder andere relevante Eigenschaften
+          const hasPermalinkUrl =
+            newTrack.permalink_url ||
+            newTrack.uri ||
+            newTrack.soundcloud?.tracks?.[0]?.permalink_url;
+          console.log("Hat Permalink URL:", !!hasPermalinkUrl);
+
+          // Wenn der Track eine ID hat, aber keine Permalink-URL
+          if (!hasPermalinkUrl && (newTrack.id || newTrack.track_id)) {
+            console.log(
+              "Track hat ID aber keine URL, konstruiere URL basierend auf ID"
+            );
+            newTrack.permalink_url = `https://api.soundcloud.com/tracks/${
+              newTrack.id || newTrack.track_id
+            }`;
+          }
+
+          localTrack.value = newTrack;
+
+          // Player mit dem neuen Track nur initialisieren, wenn die Komponente gemountet ist
+          if (isComponentMounted.value) {
+            isLoading.value = true;
+
+            // Warten auf den nächsten DOM-Zyklus und dann mit Verzögerung initialisieren
+            nextTick(() => {
+              console.log("DOM aktualisiert für neuen Track");
+              setTimeout(() => {
+                checkAndInitializePlayer();
+              }, 200);
+            });
+          } else {
+            console.log("Komponente noch nicht gemountet, warte auf onMounted");
+          }
+        } else if (newTrack === oldTrack && newTrack) {
+          console.log("Gleicher Track, keine Neinitialisierung notwendig");
+          playerRendered.value = true;
+        } else {
+          console.log("Track ist kein Objekt oder null:", newTrack);
+        }
+      } catch (error) {
+        console.error("Fehler im Track-Watcher:", error);
+        trackError.value =
+          "Es ist ein Fehler beim Laden des Tracks aufgetreten.";
+      }
+    },
+    { immediate: true }
+  );
 });
 
 onBeforeUnmount(() => {
@@ -452,7 +428,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div v-if="localTrack" class="soundcloud-player" :class="{ 'is-loading': isLoading }">
+  <div
+    v-if="localTrack"
+    class="soundcloud-player"
+    :class="{ 'is-loading': isLoading }"
+  >
     <template v-if="localTrack">
       <div v-if="trackError" class="soundcloud-player__error">
         <p>{{ trackError }}</p>
@@ -487,8 +467,7 @@ onBeforeUnmount(() => {
       </div>
     </template>
   </div>
-  <div v-else>
-  </div>
+  <div v-else></div>
 </template>
 
 <style lang="postcss" scoped>

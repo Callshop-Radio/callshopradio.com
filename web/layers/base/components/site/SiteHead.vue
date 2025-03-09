@@ -60,7 +60,9 @@ const togglePlayerVisibility = () => {
           </button>
         </nav>
       </div>
-      <SoundCloudPlayer />
+      <ClientOnly>
+        <SoundCloudPlayer />
+      </ClientOnly>
     </section>
   </div>
 </template>
