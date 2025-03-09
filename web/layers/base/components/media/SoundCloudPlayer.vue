@@ -438,16 +438,6 @@ onBeforeUnmount(() => {
         <p>{{ trackError }}</p>
       </div>
 
-      <!-- <div v-if="isLoading" class="soundcloud-player__loading">
-        <div class="dots">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <p>Lade Player...</p>
-      </div> -->
-
-      <!-- Direkte Einbindung des SoundCloud-Players ohne eigene Steuerelemente -->
       <div
         ref="iframeContainer"
         class="iframe-container"

@@ -41,7 +41,11 @@ export const useMainStore = defineStore("mainStore", () => {
     isPlayerVisible.value = !isPlayerVisible.value;
   }
 
-  // Expose everything
+  function resetSoundCloudPlayer() {
+    currentTrack.value = null;
+  }
+  
+  // Expose resetSoundCloudPlayer im return-Statement
   return {
     siteCookieBanner,
     siteNav,
@@ -57,5 +61,6 @@ export const useMainStore = defineStore("mainStore", () => {
     addToRepro,
     setPlayerStatus,
     togglePlayerVisibility,
+    resetSoundCloudPlayer, // neue Methode hinzufügen
   };
 });

@@ -40,11 +40,15 @@ const togglePlayerVisibility = () => {
       <MusicController />
     </section>
     <section
+      v-if="currentTrack"
       class="header__soundcloud-player-section"
       :class="{ 'is-hidden': !isVisible, 'is-visible': currentTrack }"
     >
-      <div class="player-controls" :class="{ 'is-loaded': currentTrack }">
-        <div class="track-info" v-if="currentTrack">
+      <div
+        class="player-controls"
+        :class="{ 'is-loaded': currentTrack }"
+      >
+        <div class="track-info">
           <!-- <div class="track-status" :class="{ 'is-playing': isPlaying }"></div> -->
           <div class="track-details">
             <h4 class="track-source">Playing from SoundCloud</h4>
@@ -61,7 +65,7 @@ const togglePlayerVisibility = () => {
         </nav>
       </div>
       <ClientOnly>
-        <SoundCloudPlayer />
+        <SoundCloudPlayer v-if="currentTrack" />
       </ClientOnly>
     </section>
   </div>
@@ -116,7 +120,7 @@ const togglePlayerVisibility = () => {
     width: 100%;
     border-top: 1px solid var(--color-text);
     background-color: var(--color-bg);
-    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    transition: transform 0.15s ease-in-out, opacity 0.15s ease-in-out;
     padding: 0 0 var(--mid-padding);
     opacity: 0;
 
@@ -193,7 +197,7 @@ const togglePlayerVisibility = () => {
           background-color: var(--color-text);
           text-transform: uppercase;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.15s;
           color: var(--color-bg);
           letter-spacing: var(--button-letter-spacing);
 

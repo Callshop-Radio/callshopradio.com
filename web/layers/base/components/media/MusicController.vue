@@ -1,6 +1,9 @@
 <script setup>
 import { ref, computed, watch, onMounted, shallowRef } from "vue";
 import { useAsyncData } from "#imports";
+import { useMainStore } from "~/stores/mainStore";
+
+const mainStore = useMainStore();
 
 // API-Key aus Umgebungsvariablen
 const apiKey = process.env.NUXT_LIBRETIME_API_KEY ?? "DMGSLT4FB25H33034RG4";
@@ -126,6 +129,9 @@ const togglePlay1 = () => {
     audioEl1.src = streamUrl1;
     audioEl1.load();
 
+    // SoundCloud-Player zurücksetzen - verwende die neue Store-Methode
+    mainStore.resetSoundCloudPlayer();
+
     // Audio-Kontext neu erstellen bei jedem Play
     const playPromise = audioEl1.play();
 
@@ -143,7 +149,6 @@ const togglePlay1 = () => {
     }
   }
 };
-
 // Funktion zum Abspielen und Stoppen des Streams für Track 2
 const togglePlay2 = () => {
   if (!audioEl2) return;
@@ -167,6 +172,9 @@ const togglePlay2 = () => {
     // Stream neu laden, um sicherzustellen, dass er von Anfang startet
     audioEl2.src = streamUrl2;
     audioEl2.load();
+    
+    // SoundCloud-Player zurücksetzen - verwende die neue Store-Methode
+    mainStore.resetSoundCloudPlayer();
 
     // Audio-Kontext neu erstellen bei jedem Play
     const playPromise = audioEl2.play();
