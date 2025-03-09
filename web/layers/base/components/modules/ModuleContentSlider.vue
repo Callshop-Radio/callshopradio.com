@@ -413,7 +413,7 @@ function playTrack(item) {
                   v-else-if="
                     !item?.useTeaserText && item?.text && item.text.length > 0
                   "
-                  :blocks="parseI18nObj(item.text).slice(0, 1)"
+                  :blocks="parseI18nObj(item?.text)?.slice(0, 1)"
                 />
                 <RichText
                   v-else-if="
@@ -424,7 +424,7 @@ function playTrack(item) {
                   "
                   :blocks="
                     limitTextBlocks(
-                      parseI18nObj(item.description).slice(0, 1),
+                      parseI18nObj(item?.description)?.slice(0, 1),
                       100
                     )
                   "
