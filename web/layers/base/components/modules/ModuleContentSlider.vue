@@ -115,19 +115,19 @@ function getItemImage(item) {
 function getSoundcloudArtwork(item) {
   // Prüfen auf SoundCloud-Daten und Artwork
   const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
-  
+
   if (artworkUrl) {
     // Die URL von '-large' zu '-t200x200' Format ändern
-    return artworkUrl.replace('-large', '-t500x500');
+    return artworkUrl.replace("-large", "-t500x500");
   }
-  
+
   // Fallbacks, falls kein SoundCloud-Artwork vorhanden ist
-  if (item._type === 'set') {
-    return mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url || '';
+  if (item._type === "set") {
+    return mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url || "";
   }
-  
+
   // Generisches Fallback
-  return '';
+  return "";
 }
 
 // Hilfsfunktion zum Gruppieren der Items in Dreiergruppen
@@ -235,7 +235,32 @@ const groupedItems = computed(() => {
   }
 });
 
-console.log(props.module.setItems);
+function playTrack(item) {
+  console.log("playTrack aufgerufen mit item:", item);
+
+  if (item?.soundcloud?.tracks?.[0]) {
+    const track = item.soundcloud.tracks[0];
+
+    // Sicherstellen, dass permalink_url gesetzt ist
+    if (!track.permalink_url && track.id) {
+      // Wenn keine permalink_url, aber eine ID vorhanden ist, erstellen wir eine
+      console.log(
+        "Keine permalink_url gefunden, erstelle eine basierend auf der ID"
+      );
+      track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
+    }
+
+    console.log("Setze Track im Store mit permalink_url:", track.permalink_url);
+
+    // Track im Store speichern
+    mainStore.currentTrack = track;
+
+    // In der Konsole ausgeben
+    console.log("SoundCloud Track gesetzt:", mainStore.currentTrack);
+  } else {
+    console.warn("Kein SoundCloud-Track für dieses Item verfügbar:", item);
+  }
+}
 </script>
 
 <template>
@@ -356,9 +381,29 @@ console.log(props.module.setItems);
                 class="track-artwork"
               />
               <div class="slide-content">
-                <h3 class="slide-date" v-if="item?._updatedAt">
-                  {{ formatDate(item._updatedAt) }}
-                </h3>
+                <section class="slide-content__interactive">
+                  <h3 class="slide-date" v-if="item?._updatedAt">
+                    {{ formatDate(item._updatedAt) }}
+                  </h3>
+                  <button
+                    @click="playTrack(item)"
+                    v-if="categoryType == 'Episodes'"
+                    class="play"
+                  >
+                    <svg
+                      width="9"
+                      height="12"
+                      viewBox="0 0 9 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M9 6L-4.89399e-07 11.1962L-3.51373e-08 0.803847L9 6Z"
+                        fill="black"
+                      />
+                    </svg>
+                  </button>
+                </section>
                 <h3 class="slide-title">{{ item?.title }}</h3>
                 <RichText
                   v-if="item?.useTeaserText && item?.textTeaser"
@@ -458,6 +503,40 @@ console.log(props.module.setItems);
             }
             &:last-child {
               padding: 0 0 0 var(--big-margin);
+            }
+            .slide-content {
+              &__interactive {
+                width: 100%;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: space-between;
+                align-items: center;
+                gap: var(--mid-padding);
+                .play {
+                  display: flex;
+                  flex-flow: row;
+                  justify-content: center;
+                  align-items: center;
+                  margin: 0 0 0 auto;
+                  color: transparent;
+                  background-color: transparent;
+                  border-radius: 100px;
+                  border: none;
+                  padding: 4px;
+                  width: calc(var(--base-font-size) + 4px);
+                  height: calc(var(--base-font-size) + 4px);
+                  background-color: var(--color-text);
+
+                  svg {
+                    height: var(--base-font-size);
+                    transform: translate(1px,0);
+                    rect,
+                    path {
+                      fill: var(--color-bg);
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -576,6 +655,7 @@ console.log(props.module.setItems);
         justify-content: flex-start;
         align-items: flex-start;
         .slide-content {
+          width: 100%;
           display: flex;
           flex-flow: column wrap;
           justify-content: flex-start;

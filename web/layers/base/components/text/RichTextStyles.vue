@@ -48,6 +48,7 @@ h6 {
 }
 
 p {
-	@apply text-base max-w-80ch my-4 whitespace-pre-wrap;
+	@apply max-w-80ch my-4 whitespace-pre-wrap;
+	font-size: var(--base-font-size);
 }
 </style>

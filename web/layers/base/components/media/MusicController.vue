@@ -586,8 +586,6 @@ updateLiveStatus();
       flex-flow: row wrap;
       justify-content: center;
       align-items: center;
-      width: 24px;
-      height: 24px;
       margin: 0 var(--big-padding) 0 0;
       color: transparent;
       background-color: transparent;
