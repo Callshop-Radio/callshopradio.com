@@ -261,6 +261,12 @@ function playTrack(item) {
     console.warn("Kein SoundCloud-Track für dieses Item verfügbar:", item);
   }
 }
+
+console.log(
+  mainStore?.siteFallbacks?.fallbackPerson?.description,
+  mainStore?.siteFallbacks?.fallbackPerson?.description?.[0]?.value,
+  mainStore?.siteFallbacks?.fallbackPerson?.description?.[1]?.value
+);
 </script>
 
 <template>
@@ -429,6 +435,46 @@ function playTrack(item) {
                     )
                   "
                 />
+                <RichText
+                  v-else-if="
+                    !item?.text &&
+                    module.poolContentType == 'persons' &&
+                    mainStore?.siteFallbacks?.fallbackPerson?.description
+                      .length > 0 &&
+                    (mainStore?.siteFallbacks?.fallbackPerson?.description?.[0]
+                      ?.value ||
+                      mainStore?.siteFallbacks?.fallbackPerson?.description?.[1]
+                        ?.value)
+                  "
+                  :blocks="
+                    limitTextBlocks(
+                      parseI18nObj(
+                        mainStore?.siteFallbacks?.fallbackPerson?.description
+                      )?.slice(0, 1),
+                      100
+                    )
+                  "
+                />
+                <RichText
+                  v-else-if="
+                    !item?.text &&
+                    module.poolContentType == 'venues' &&
+                    mainStore?.siteFallbacks?.fallbackVenue?.description
+                      .length > 0 &&
+                    (mainStore?.siteFallbacks?.fallbackVenue?.description?.[0]
+                      ?.value ||
+                      mainStore?.siteFallbacks?.fallbackPerson?.description?.[1]
+                        ?.value)
+                  "
+                  :blocks="
+                    limitTextBlocks(
+                      parseI18nObj(
+                        mainStore?.siteFallbacks?.fallbackPerson?.description
+                      )?.slice(0, 1),
+                      100
+                    )
+                  "
+                />
                 <div
                   v-if="module.showTags && item.tags?.length"
                   class="slide__tags tags"
@@ -474,15 +520,23 @@ function playTrack(item) {
   /* margin: var(--mid-margin) 0; */
 
   &--cards {
-    .slide-group {
-      .slide-item {
-        &:first-child {
-          padding: 0 var(--big-margin) 0 0;
-          border-right: 1px solid var(--color-text);
+    &.embla {
+      .embla__slide {
+        :deep(img),
+        :deep(.video-wrapper) {
+          aspect-ratio: 3 / 4 !important;
         }
-        &:last-child {
-          padding: 0 0 0 var(--big-margin);
-          border-left: 1px solid var(--color-text);
+        .slide-group {
+          .slide-item {
+            &:first-child {
+              padding: 0 var(--big-margin) 0 0;
+              border-right: 1px solid var(--color-text);
+            }
+            &:last-child {
+              padding: 0 0 0 var(--big-margin);
+              border-left: 1px solid var(--color-text);
+            }
+          }
         }
       }
     }
@@ -529,7 +583,7 @@ function playTrack(item) {
 
                   svg {
                     height: var(--base-font-size);
-                    transform: translate(1px,0);
+                    transform: translate(1px, 0);
                     rect,
                     path {
                       fill: var(--color-bg);
@@ -644,7 +698,6 @@ function playTrack(item) {
       padding: 0 calc(var(--big-margin) / 2);
       :deep(img),
       :deep(.video-wrapper) {
-        aspect-ratio: 3 / 4 !important;
         object-fit: cover;
         @apply max-w-full w-100;
       }
@@ -660,7 +713,7 @@ function playTrack(item) {
           flex-flow: column wrap;
           justify-content: flex-start;
           align-items: flex-start;
-          flex-grow: 1;
+          /* flex-grow: 1; */
           margin: var(--mid-padding) 0 0 0;
           gap: var(--mid-padding);
           .slide-date {

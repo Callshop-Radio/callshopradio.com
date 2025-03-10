@@ -172,7 +172,7 @@ const togglePlay2 = () => {
     // Stream neu laden, um sicherzustellen, dass er von Anfang startet
     audioEl2.src = streamUrl2;
     audioEl2.load();
-    
+
     // SoundCloud-Player zurücksetzen - verwende die neue Store-Methode
     mainStore.resetSoundCloudPlayer();
 
@@ -583,11 +583,20 @@ updateLiveStatus();
     &.offline {
       cursor: not-allowed !important;
       pointer-events: none;
-      .live-indicator{
+      .live-indicator {
         color: var(--color-grey);
       }
-
-      opacity: 0.5;
+      color: var(--color-grey);
+      button {
+        cursor: not-allowed !important;
+        pointer-events: none;
+        svg {
+          rect,
+          path {
+            fill: var(--color-grey);
+          }
+        }
+      }
     }
     button {
       display: flex;
