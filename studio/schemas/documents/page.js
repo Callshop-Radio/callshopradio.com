@@ -45,6 +45,12 @@ export const page = {
       group: 'editorial',
     },
     {
+      title: 'Modules',
+      name: 'modules',
+      type: 'modules',
+      group: 'editorial',
+    },
+    {
       title: 'SEO',
       name: 'seo',
       type: 'seo.page',

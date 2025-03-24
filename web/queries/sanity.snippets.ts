@@ -20,6 +20,10 @@ export const LINK_QUERY = `
             reference->_type == "set" => "set-slug",
             reference->_type == "words" => "words",
             reference->_type == "article" => "words-slug",
+            reference->_type == "pool" => "pool",
+            reference->_type == "person" => "pool-slug",
+            reference->_type == "venue" => "pool-slug",
+            reference->_type == "timetable" => "schedule",
 			"index"
 		),
 		"slug": reference->slug.current

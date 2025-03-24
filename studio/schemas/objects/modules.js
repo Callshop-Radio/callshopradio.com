@@ -21,11 +21,11 @@ export const modules = {
     {
       type: 'module.text',
     },
-    {
-      type: 'module.media',
-    },
-    {
-      type: 'module.mediaPlayer',
-    },
+    // {
+    //   type: 'module.media',
+    // },
+    // {
+    //   type: 'module.mediaPlayer',
+    // },
   ],
 }

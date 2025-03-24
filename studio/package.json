@@ -16,6 +16,7 @@
   ],
   "dependencies": {
     "@damianrosellen/sanity-plugin-soundcloud-input": "^1.0.1",
+    "@sanity/cli": "^3.80.1",
     "@sanity/code-input": "^4.1.4",
     "@sanity/color-input": "^4.0.3",
     "@sanity/studio-secrets": "^3.0.1",
