@@ -61,6 +61,8 @@ async function restoreTranslatePositions() {
 const calculateTrackEndTime = (track) => {
   if (!track.starts || !track.length) return null;
 
+  console.log("start und länge: ", track.starts, track.length);
+
   const startTime = new Date(track.starts);
 
   // Verarbeite den length-Wert (kann verschiedene Formate haben)
@@ -89,7 +91,6 @@ const calculateTrackEndTime = (track) => {
   return endTime;
 };
 
-// Funktion zur Formatierung der Uhrzeiten für Tracks mit Aufrundung auf volle Stunden// Funktion zur Formatierung der Uhrzeiten für Tracks mit Aufrundung auf volle Stunden
 const formatTrackTime = (dateTime) => {
   // Überprüfen, ob dateTime ein gültiges Datum ist
   if (!dateTime || !(dateTime instanceof Date) || isNaN(dateTime.getTime())) {
@@ -99,8 +100,8 @@ const formatTrackTime = (dateTime) => {
   // Kopie des Datums erstellen, um das Original nicht zu verändern
   const roundedTime = new Date(dateTime);
 
-  // Wenn Minuten > 0, zur nächsten vollen Stunde aufrunden
-  if (roundedTime.getMinutes() > 0) {
+  // Bei 30 Minuten oder mehr zur nächsten Stunde aufrunden, sonst abrunden
+  if (roundedTime.getMinutes() >= 30) {
     roundedTime.setHours(roundedTime.getHours() + 1);
   }
 
@@ -111,6 +112,8 @@ const formatTrackTime = (dateTime) => {
 
   // Formatieren als "HH:00"
   const hours = roundedTime.getHours().toString().padStart(2, "0");
+
+  console.log("gerundet: ", hours);
 
   return `${hours}:00`;
 };
@@ -129,9 +132,10 @@ const getTrackTimeRange = (track) => {
   if (!endTime) return startFormatted;
 
   const endFormatted = formatTrackTime(endTime);
+  console.log("formattierte range:", startFormatted, "-", endFormatted);
 
   // Nur einen vollständigen String zurückgeben, wenn beide Teile vorhanden sind
-  return `${startFormatted} - ${endFormatted}`;
+  return `${startFormatted} – ${endFormatted}`;
 };
 
 // Neue Funktion zum Flatten der Shows und Tracks
@@ -348,7 +352,6 @@ const getItemPositionStyle = (item) => {
   return {
     top: `calc(${top}%)`,
     height: `calc(${Math.max(height, minHeight)}%)`,
-    backgroundColor: `#d9d9d9`
   };
 };
 
@@ -390,7 +393,7 @@ const currentTimePosition = computed(() => {
 });
 </script>
 <template>
-  <div clas="module-schedule-slider">
+  <div class="module-schedule-slider">
     <div class="navigation-controls">
       <div class="location-switch">
         <button
@@ -473,17 +476,6 @@ const currentTimePosition = computed(() => {
       </div>
     </div>
     <!-- Zeitmarkierungen -->
-    <div class="time-markers__container">
-      <div class="time-markers">
-        <div v-for="hour in 17" :key="'hour-' + hour" class="time-marker">
-          {{ String(7 + hour).padStart(2, "0") }}:00
-        </div>
-        <!-- Neuer aktueller Zeitmarker -->
-        <div class="current-time-marker" :style="currentTimePosition">
-          <div class="current-time-marker__pulse"></div>
-        </div>
-      </div>
-    </div>
     <section ref="emblaNode" class="embla schedule__city">
       <div
         v-if="groups.length >= 0"
@@ -497,7 +489,7 @@ const currentTimePosition = computed(() => {
           :class="{ 'show-day--today': group.isToday }"
         >
           <h3 class="show-day__heading">
-            <span v-if="group.isToday" class="today-badge">Heute</span
+            <span v-if="group.isToday" class="today-badge">Today</span
             >{{ formatDate(group.date, false) }}
           </h3>
 
@@ -517,7 +509,7 @@ const currentTimePosition = computed(() => {
                   }"
                   :style="getItemPositionStyle(item)"
                 >
-                  <div class="event-item__content">
+                  <div class="event-item__content" :class="{live : isLiveShow(item)}">
                     <div class="event-item__time">{{ item.formattedTime }}</div>
                     <div class="event-item__title">{{ item.title }}</div>
                   </div>
@@ -527,20 +519,45 @@ const currentTimePosition = computed(() => {
           </div>
         </div>
       </div>
+      <div class="time-markers__container">
+        <div class="time-markers">
+          <div v-for="hour in 17" :key="'hour-' + hour" class="time-marker">
+            {{ String(7 + hour).padStart(2, "0") }}:00
+          </div>
+          <!-- Neuer aktueller Zeitmarker -->
+          <div class="current-time-marker" :style="currentTimePosition">
+            <div class="current-time-marker__pulse"></div>
+          </div>
+        </div>
+      </div>
     </section>
   </div>
 </template>
 
 <style scoped lang="postcss">
+
+.module-schedule-slider {
+  overflow-x: visible;
+
+}
+
 .embla {
   @apply overflow-hidden;
+  height: max-content;
+  position: relative;
+  margin: 0 0 0 -3.125rem;
 
   &__container {
-    @apply flex backface-hidden ml-[calc(var(--carousel-spacing)*-1)] touch-pan-y;
+    @apply flex backface-hidden touch-pan-y;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    padding: 0 0 0;
   }
 
   &__slide {
-    @apply flex flex-grow-0 flex-shrink-0 flex-basis-auto max-w-full min-w-0 pl-[var(--carousel-spacing)] relative;
+    @apply flex flex-grow-0 flex-shrink-0 flex-basis-auto max-w-full min-w-0 relative;
+    padding: 0 0 0 2.75rem;
 
     :deep(img),
     :deep(.video-wrapper) {
@@ -550,6 +567,8 @@ const currentTimePosition = computed(() => {
 }
 
 .navigation-controls {
+  position: sticky;
+  top: 200px;
   @apply flex items-center justify-start flex-row flex-wrap items-stretch;
   gap: 0 var(--mid-padding);
   height: calc(var(--base-font-size) + var(--small-padding) * 2);
@@ -660,25 +679,38 @@ const currentTimePosition = computed(() => {
   flex-flow: column wrap;
   justify-content: flex-start;
   align-items: flex-start;
+  & > * {
+    font-weight: 550;
+    text-transform: uppercase;
+  }
+  &__heading {
+    .today-badge {
+      color: var(--color-pink);
+      text-transform: uppercase;
+      margin: 0 var(--small-margin) 0 0;
+    }
+    }
 }
 
 .time-markers__container {
   position: absolute;
-  transform: translate(calc(-100% - var(--base-padding)), 0);
-  margin: calc(var(--h3-size) + var(--base-padding) + var(--small-padding)) 0 0;
+  top: 0;
+  /* transform: translate(calc(-100% - var(--base-padding)), 0); */
+  margin: calc(var(--h3-size) + var(--base-padding) / 2) 0 0;
   height: 150vh;
   display: flex;
+  width: 3.125rem;
   .time-markers {
-    @apply text-gray-400;
-    font-size: var(--small-font-size);
-    width: 50px;
+    font-size: var(--base-font-size);
+    font-weight: 550;
     position: relative;
     height: 100%;
+    width: 25px;
 
     .time-marker {
       @apply absolute w-full text-right pr-2;
       height: 20px;
-      margin: var(--base-padding) 0 0 0;
+      margin: var(--small-padding) 0 0 0;
 
       &:nth-child(1) {
         top: 0%;
@@ -748,18 +780,21 @@ const currentTimePosition = computed(() => {
     position: absolute;
     width: 10px;
     height: 10px;
-    right: var(--base-padding);
+    right: 0;
     border-radius: 50%;
     background-color: var(--color-pink);
     z-index: 2;
+    transform: translate(-50%, 50%);
+
+
 
     &::before {
       content: "";
       position: absolute;
       top: 50%;
       left: 50%;
-      width: var(--base-margin);
-      height: var(--mid-margin);
+      width: 20px;
+      height: 15px;
       border-radius: 50%;
       background-color: var(--color-pink);
       transform: translate(-50%, -50%);
@@ -770,7 +805,7 @@ const currentTimePosition = computed(() => {
     }
   }
 
-  &__line {
+  /* &__line {
     position: absolute;
     width: calc(100% + 100vw);
     height: 2px;
@@ -793,7 +828,7 @@ const currentTimePosition = computed(() => {
     padding: 2px 6px;
     border-radius: 4px;
     transform: translateY(-50%);
-  }
+  } */
 }
 
 @keyframes pulseOpacity {
@@ -814,7 +849,6 @@ const currentTimePosition = computed(() => {
 /* Zeitraster */
 .events {
   @apply relative;
-  margin-top: var(--base-padding);
   height: 150vh;
   display: flex;
   width: clamp(400px, 33svw, 50svh);
@@ -822,20 +856,27 @@ const currentTimePosition = computed(() => {
   .events-grid {
     @apply flex-grow relative;
     display: flex;
-    flex-flow: column wrap;
+    flex-flow: column nowrap;
     gap: var(--base-padding) 0;
   }
 }
 
 /* Event Items */
 .event-item {
-  @apply absolute rounded shadow-sm overflow-hidden;
-  background: white;
+  @apply absolute overflow-hidden;
   min-height: 24px;
-  padding: var(--small-padding) var(--small-padding) 0 var(--small-padding);
+  padding: var(--base-padding) 0 0 0;
   width: calc(100% - 20px);
   z-index: 1;
   transition: transform 0.2s, box-shadow 0.2s;
+
+  .event-item__content {
+    background-color: #d9d9d9;
+    padding: calc(var(--small-padding) / 2) var(--small-padding);
+    &.live {
+      background-color: var(--color-pink);
+    }
+  }
 
   &:hover {
     /* transform: scale(1.02); */
@@ -844,7 +885,6 @@ const currentTimePosition = computed(() => {
   }
 
   &--show {
-    @apply bg-gray-50 border-l-4 border-blue-500;
   }
 
   &--track {
@@ -857,7 +897,9 @@ const currentTimePosition = computed(() => {
   }
 
   &__time {
-    @apply text-gray-500 text-xs;
+    font-size: var(--small-font-size);
+    margin: 0 0 var(--small-padding) 0;
+    opacity: 75%;
   }
 
   &__title {

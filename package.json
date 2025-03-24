@@ -19,6 +19,7 @@
   "author": "Marco Land",
   "license": "ISC",
   "dependencies": {
+    "@intlify/message-compiler": "^11.1.2",
     "sanity-plugin-soundcloud-input": "file:.yalc/sanity-plugin-soundcloud-input"
   }
 }

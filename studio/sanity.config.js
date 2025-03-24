@@ -15,7 +15,7 @@ import {structure} from './config/structure'
 import {resolveProductionUrl} from './config/views'
 import {schemaTypes} from './schemas'
 
-import {soundcloudInput} from '/.yalc/sanity-plugin-soundcloud-input'
+import {soundcloudInput} from '@damianrosellen/sanity-plugin-soundcloud-input'
 
 const devPlugins = [visionTool()]
 

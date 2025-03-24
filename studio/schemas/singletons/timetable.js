@@ -32,6 +32,13 @@ export const timetable = {
       group: 'editorial',
     },
     {
+      title: 'Artwork',
+      description: 'Cover Artwork, minimum resolution 1000x1000px',
+      name: 'backgroundImage',
+      type: 'image',
+      group: 'editorial',
+    },
+    {
       title: 'Modules',
       name: 'modules',
       description: 'Modules will appear below the timetable.',

@@ -1,5 +1,6 @@
 import {
   LINK_QUERY,
+  IMAGE_QUERY,
   RICH_TEXT_QUERY,
   SEO_QUERY,
   MODULE_QUERY,
@@ -27,6 +28,15 @@ export const SLUG_PAGE_QUERY = `
   ...,
   content[] ${RICH_TEXT_QUERY},
   ${SEO_QUERY}
+}`;
+
+export const SCHEDULE_QUERY = `
+*[_type == "timetable"] | order(_updatedAt desc)[0] {
+  ...,
+  backgroundImage ${IMAGE_QUERY},
+  content[] ${RICH_TEXT_QUERY},
+  modules [] ${MODULE_QUERY},
+  ${SEO_QUERY},
 }`;
 
 export const SITE_OPTIONS_QUERY = `{

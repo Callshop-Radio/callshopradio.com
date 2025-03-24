@@ -9,7 +9,6 @@ const query = groq`${HOMEPAGE_QUERY}`;
 const { data } = await useSanityQuery(query);
 
 usePageSeo(data?.value?.seo);
-
 </script>
 
 <template>

@@ -18,6 +18,8 @@ const { creditLog, favicon } = useUtils();
 <style lang="postcss" scoped>
 .site {
   @apply min-h-[100svh] flex flex-col items-stretch;
+  max-width: 100vw;
+  overflow-x: hidden;
 
   main {
     @apply flex-grow-1;

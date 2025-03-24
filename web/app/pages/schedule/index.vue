@@ -1,6 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { SCHEDULE_QUERY } from "~~/queries/sanity.queries.ts";
 import { useMainStore } from "~/stores/mainStore";
+
+const query = groq`${SCHEDULE_QUERY}`;
+const { data } = await useSanityQuery(query);
 
 // Store einbinden
 const mainStore = useMainStore();
@@ -191,6 +195,8 @@ const isLocationVisible = (location) => {
 const refreshData = () => {
   loadData();
 };
+
+usePageSeo(data?.value?.seo);
 </script>
 
 <template>

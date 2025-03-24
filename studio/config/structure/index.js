@@ -65,6 +65,7 @@ const hiddenDocTypes = (listItem) => {
     'siteCookieBanner',
     'siteSettings',
     'venue',
+    'mux.videoAsset',
   ].includes(id)
 }
 
