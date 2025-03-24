@@ -3,7 +3,6 @@ import emblaCarouselVue from "embla-carousel-vue";
 import { useThrottleFn } from "@vueuse/core";
 import { ref, onMounted, computed } from "vue";
 import { useMainStore } from "~/stores/mainStore";
-import { limitTextBlocks } from "~/composables/useLimitTextBlocks";
 
 const mainStore = useMainStore();
 
@@ -13,6 +12,7 @@ const props = defineProps({
     required: true,
   },
 });
+
 
 const currentIndex = ref(0);
 
@@ -187,25 +187,27 @@ function groupItems(items, contentType = null) {
   // Rest der Funktion bleibt unverändert
   // Anzahl begrenzen, falls count angegeben ist
   let limitedItems = filteredItems;
-  if (
-    props.module.count &&
-    props.module.count > 0 &&
-    props.module.style !== "image"
-  ) {
-    limitedItems = filteredItems.slice(0, props.module.count * 3);
-  } else if (props.module.style == "image") {
+  
+  // Bei "image" Style begrenzen wir die Anzahl auf count
+  if (props.module.count && props.module.count > 0 && props.module.style === "image") {
     limitedItems = filteredItems.slice(0, props.module.count);
+  } 
+  // Bei anderen Styles begrenzen wir auf count * 3 (für die Dreiergruppen)
+  else if (props.module.count && props.module.count > 0) {
+    limitedItems = filteredItems.slice(0, props.module.count * 3);
   }
 
-  // In Dreiergruppen aufteilen
+  // In Gruppen aufteilen
   const groups = [];
   if (props.module.style !== "image") {
+    // In Dreiergruppen aufteilen, aber Reihenfolge beibehalten
     for (let i = 0; i < limitedItems.length; i += 3) {
       groups.push(limitedItems.slice(i, i + 3));
     }
   } else {
+    // Bei "image" Style: Ein Item pro Gruppe
     for (let i = 0; i < limitedItems.length; i += 1) {
-      groups.push(limitedItems.slice(i, i + 1));
+      groups.push([limitedItems[i]]); // Jedes Item in ein Array verpacken
     }
   }
   return groups;
@@ -252,6 +254,7 @@ watch(
 const groupedItems = computed(() => {
   if (!props.module) return [];
 
+  // Hole die bereits sortierten Items aus dem Modul entsprechend dem Typ
   switch (props.module.type) {
     case "pool":
       return groupItems(

@@ -15,6 +15,11 @@ export const LINK_QUERY = `
 		"route": select(
 			reference->_type == "home" => "index",
 			reference->_type == "page" => "slug",
+            reference->_type == "showsArchive" => "shows",
+            reference->_type == "show" => "shows-slug",
+            reference->_type == "set" => "set-slug",
+            reference->_type == "words" => "words",
+            reference->_type == "article" => "words-slug",
 			"index"
 		),
 		"slug": reference->slug.current
@@ -127,6 +132,66 @@ export const RICH_TEXT_QUERY = `{
 		}
 	},
 }`;
+export const TAG_QUERY = `
+    "availableTags": {
+        "genres": *[_type == 'tag.genre']| order(lower(title)) {
+            _id,
+            _type,
+            title,
+            "subGenres": subGenres[]->{
+                _id,
+                _type,
+                title
+            }
+        },
+        "subGenres": *[_type == 'tag.subGenre']| order(lower(title)) {
+            _id,
+            _type,
+            title
+        },
+        "cities": *[_type == 'tag.city']| order(lower(title)) {
+            _id,
+            _type,
+            title,
+            short
+        },
+        "global": *[_type == 'tag.global']| order(lower(title)) {
+            _id,
+            _type,
+            title
+        },
+        "mood": *[_type == 'tag.mood']| order(lower(title)) {
+            _id,
+            _type,
+            title
+        },
+        "venue": *[_type == 'tag.venue']| order(lower(title)) {
+            _id,
+            _type,
+            title,
+            short
+        },
+        "musician": *[_type == 'tag.musician']| order(lower(title)) {
+            _id,
+            _type,
+            title
+        },
+        "article": *[_type == 'tag.article']| order(lower(title)) {
+            _id,
+            _type,
+            title
+        },
+        "service": *[_type == 'tag.service']| order(lower(title)) {
+            _id,
+            _type,
+            title
+        },
+        "crafts": *[_type == 'tag.crafts']| order(lower(title)) {
+            _id,
+            _type,
+            title
+        }
+    }`;
 
 export const MODULE_QUERY = `{
     _type == "module.heroSlider" => {
@@ -151,7 +216,7 @@ export const MODULE_QUERY = `{
                 ...,
                 _id,
                 title
-            },
+            } | order(lower(title)),
             "soundcloud": soundcloud{
                     _type,
                     "tracks": tracks[]{
@@ -216,7 +281,7 @@ export const MODULE_QUERY = `{
                 ...,
                 _id,
                 title
-            },
+            }| order(lower(title)),
             "soundcloud": soundcloud{
                     _type,
                     "tracks": tracks[]{
@@ -257,10 +322,14 @@ export const MODULE_QUERY = `{
                     title,
                     slug,
                     image { asset-> },
+                     "city": *[_type == "show" && references(^._id)][0]{
+                        ...,
+                        title,
+                    },
             }
         }
     },
-	  _type == "module.contentReferenceSlider" => {
+	_type == "module.contentReferenceSlider" => {
         ...,
         title,
         type,
@@ -288,7 +357,7 @@ export const MODULE_QUERY = `{
                     ...,
                     _id,
                     title
-                },
+                }| order(lower(title)),
                 location
             },
             pool[]->{
@@ -302,7 +371,7 @@ export const MODULE_QUERY = `{
                     ...,
                     _id,
                     title
-                },
+                }| order(lower(title)),
                 location,
             }
         ),
@@ -322,7 +391,7 @@ export const MODULE_QUERY = `{
                     ...,
                     _id,
                     title
-                },
+                }| order(lower(title)),
             },
             articles[]->{
                 ...,
@@ -351,7 +420,7 @@ export const MODULE_QUERY = `{
                     ...,
                     _id,
                     title
-                }
+                }| order(lower(title)),
             },
             shows[]->{
                 ...,
@@ -364,11 +433,11 @@ export const MODULE_QUERY = `{
                     ...,
                     _id,
                     title
-                }
+                }| order(lower(title)),
             }
         ),
         "setItems": select(
-            type == 'sets' && autoLoad == true => *[_type == 'set'] | order(datetime desc) {
+            type == 'sets' && autoLoad == true => *[_type == 'set'] | order(publishedAt desc) {
                 ...,
                 _id,
                 _type,
@@ -407,7 +476,7 @@ export const MODULE_QUERY = `{
                     ...,
                     _id,
                     title
-                },
+                }| order(lower(title)),
                 persons[]->{
                     ...,
                     _id,
@@ -419,6 +488,12 @@ export const MODULE_QUERY = `{
                     title,
                     slug,
                     image { asset-> },
+                    "city": *[_type == "tag.city" && references(^._id)][0]{
+                        _id,
+                        _type,
+                        title,
+                        short
+                    },
                 }
             },
             sets[]->{
@@ -464,7 +539,7 @@ export const MODULE_QUERY = `{
                     ...,
                     _id,
                     title
-                },
+                }| order(lower(title)),
                 "parentShow": *[_type == "show" && references(^._id)][0]{
                     ...,
                     _id,
@@ -474,7 +549,134 @@ export const MODULE_QUERY = `{
                 }
             }
         )
-    }
+    },
+    _type == "module.contentReferenceGrid" => {
+        ...,
+        title,
+        type,
+        style,
+        count,
+        poolContentType,
+        showTags,
+        autoLoad,
+        ${TAG_QUERY},
+        "poolItems": *[_type in ['person', 'venue'] && poolVisibility == true] | order(_updatedAt desc) {
+            ...,
+            _id,
+            _type,
+            title,
+            name,
+            slug,
+            image ${IMAGE_QUERY},
+            bio ${RICH_TEXT_QUERY},
+            description ${RICH_TEXT_QUERY},
+            "tags": tags[]->{
+                ...,
+                _id,
+                title,
+                short
+            }| order(lower(title)),
+            location
+        },
+        "articleItems": *[_type == 'article'] | order(publishedAt desc) [0...99]{
+            ...,
+            _id,
+            _type,
+            title,
+            datetime,
+            slug,
+            image ${IMAGE_QUERY},
+            useTeaserText,
+            textTeaser[] ${RICH_TEXT_QUERY},
+            text[] ${RICH_TEXT_QUERY},
+            publishedAt,
+            "tags": tags[]->{
+                ...,
+                _id,
+                title,
+                short
+            }| order(lower(title)),
+        },
+        "showItems": *[_type == 'show'] | order(datetime desc) [0...99] {
+            ...,
+            _id,
+            _type,
+            title,
+            slug,
+            image ${IMAGE_QUERY},
+            description ${RICH_TEXT_QUERY},
+            "tags": tags[]->{
+                ...,
+                _id,
+                title,
+                short
+            }| order(lower(title)),
+        },
+        "setItems": *[_type == 'set'] | order(datetime desc) [0...99]{
+            ...,
+            _id,
+            _type,
+            title,
+            slug,
+            datetime,
+            image ${IMAGE_QUERY},
+            "soundcloud": soundcloud{
+                _type,
+                "tracks": tracks[]{
+                    id,
+                    created_at,
+                    duration,
+                    tag_list,
+                    streamable,
+                    purchase_url,
+                    genre,
+                    title,
+                    description,
+                    release_year,
+                    release_month,
+                    release_day,
+                    license,
+                    uri,
+                    permalink_url,
+                    "user": user{
+                        id,
+                        username,
+                        permalink_url
+                    },
+                    artwork_url,
+                    waveform_url,
+                    stream_url,
+                    playback_count,
+                    favoritings_count
+                }
+            },
+            "tags": tags[]->{
+                ...,
+                _id,
+                title,
+                short
+            }| order(lower(title)),
+            persons[]->{
+                ...,
+                _id,
+                title
+            },
+            "parentShow": *[_type == "show" && references(^._id)][0]{
+                ...,
+                _id,
+                title,
+                slug,
+                image { asset-> },
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    _type,
+                    title,
+                    short
+                }| order(lower(title)),
+            }
+        }
+    },
 }`;
 
 export const SEO_QUERY = `

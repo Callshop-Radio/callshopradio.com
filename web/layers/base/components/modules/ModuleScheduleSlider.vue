@@ -533,7 +533,7 @@ const currentTimePosition = computed(() => {
   height: max-content;
   width: calc(var(--page-max-width) + (100vw - var(--page-max-width)) / 2);
   position: relative;
-  margin: 0 0 0 -3.125rem;
+  margin: 0 0 0 -2.75rem;
 
   &__container {
     @apply flex backface-hidden touch-pan-y;
@@ -684,7 +684,7 @@ const currentTimePosition = computed(() => {
     margin: calc(var(--h3-size) + var(--base-padding) / 2) 0 0;
     height: 150vh;
     display: flex;
-    width: 3.125rem;
+    width: 2.75;
   }
   
   font-size: var(--base-font-size);

@@ -39,6 +39,20 @@ export const SCHEDULE_QUERY = `
   ${SEO_QUERY},
 }`;
 
+export const SHOWSARCHIVE_QUERY = `
+*[_type == "showsArchive"] | order(_updatedAt desc)[0] {
+  ...,
+  modules [] ${MODULE_QUERY},
+  ${SEO_QUERY},
+}`;
+
+export const WORDS_QUERY = `
+*[_type == "words"] | order(_updatedAt desc)[0] {
+  ...,
+  modules [] ${MODULE_QUERY},
+  ${SEO_QUERY},
+}`;
+
 export const SITE_OPTIONS_QUERY = `{
   "siteCookieBanner" : *[_type == "siteCookieBanner"][0] {
     ...,

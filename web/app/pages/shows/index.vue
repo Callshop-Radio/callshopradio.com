@@ -1,11 +1,11 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-import { HOMEPAGE_QUERY } from "~~/queries/sanity.queries.ts";
+import { SHOWSARCHIVE_QUERY } from "~~/queries/sanity.queries.ts";
 import { useMainStore } from "~/stores/mainStore";
 
 const mainStore = useMainStore();
 
-const query = groq`${HOMEPAGE_QUERY}`;
+const query = groq`${SHOWSARCHIVE_QUERY}`;
 const { data } = await useSanityQuery(query);
 
 usePageSeo(data?.value?.seo);
