@@ -14,6 +14,7 @@ export const useMainStore = defineStore("mainStore", () => {
   const active = ref(false);
   const isPlayerPlaying = ref(false); // Neue Variable für den Abspielstatus
   const isPlayerVisible = ref(true); // Neue Variable für die Sichtbarkeit
+  const activeScheduleLocation = ref("channelOne"); // Neue Variable für den aktiven Schedule-Standort
 
   // actions als Funktionen
   async function nuxtServerInit() {
@@ -45,6 +46,11 @@ export const useMainStore = defineStore("mainStore", () => {
     currentTrack.value = null;
   }
   
+  // Neue Methode für den Schedule-Standort
+  function setActiveScheduleLocation(location) {
+    activeScheduleLocation.value = location;
+  }
+  
   // Expose resetSoundCloudPlayer im return-Statement
   return {
     siteCookieBanner,
@@ -57,10 +63,12 @@ export const useMainStore = defineStore("mainStore", () => {
     active,
     isPlayerPlaying,
     isPlayerVisible,
+    activeScheduleLocation,
     nuxtServerInit,
     addToRepro,
     setPlayerStatus,
     togglePlayerVisibility,
-    resetSoundCloudPlayer, // neue Methode hinzufügen
+    resetSoundCloudPlayer,
+    setActiveScheduleLocation,
   };
 });

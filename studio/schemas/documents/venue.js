@@ -171,7 +171,7 @@ export const venue = {
       name: 'poolVisibility',
       type: 'boolean',
       group: 'settings',
-      initialValue: true,
+      initialValue: false,
       options: {layout: 'checkbox'},
     },
     {
@@ -223,12 +223,12 @@ export const venue = {
       type: 'seo.page',
       group: 'seo',
     },
-    {
-      title: 'Animations',
-      name: 'animations',
-      type: 'animations.page',
-      group: 'settings',
-    },
+    // {
+    //   title: 'Animations',
+    //   name: 'animations',
+    //   type: 'animations.page',
+    //   group: 'settings',
+    // },
   ],
   preview: {
     select: {

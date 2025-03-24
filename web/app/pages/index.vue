@@ -9,6 +9,7 @@ const query = groq`${HOMEPAGE_QUERY}`;
 const { data } = await useSanityQuery(query);
 
 usePageSeo(data?.value?.seo);
+
 </script>
 
 <template>
@@ -23,6 +24,14 @@ usePageSeo(data?.value?.seo);
     >
       <ModuleContentSlider
         v-if="module._type == 'module.contentReferenceSlider'"
+        :module="module"
+      />
+      <ModuleHeroEntry
+        v-if="module._type == 'module.heroEntry'"
+        :module="module"
+      />
+      <ModuleHeroSlider
+        v-if="module._type == 'module.heroSlider'"
         :module="module"
       />
     </div>

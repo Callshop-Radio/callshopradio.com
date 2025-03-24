@@ -167,20 +167,20 @@ const togglePlayerVisibility = () => {
           gap: var(--small-padding);
 
           .track-source {
-            font-weight: 400;
+            font-weight: 550;
             font-size: var(--base-font-size);
             line-height: 1;
             color: var(--color-text-light, #888);
           }
 
           .track-title {
-            font-weight: 400;
+            font-weight: 550;
             font-size: var(--base-font-size);
             line-height: 1;
           }
 
           .track-duration {
-            font-weight: 400;
+            font-weight: 550;
             font-size: var(--base-font-size);
             line-height: 1;
             color: var(--color-text-light, #888);

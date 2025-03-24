@@ -1,134 +1,249 @@
-<template>
-  <div>
-    <Head>
-      <Title>Callshop Radio - Schedule</Title>
-      <Meta
-        name="description"
-        content="Stay up to date with our Schedule and don't miss any!"
-      />
-    </Head>
-
-    <!-- <div v-if="pending">Loading...</div>
-    <div v-else-if="error">Error loading schedule data.</div>
-    <div v-else>
-      <h2>Live Shows Düsseldorf</h2>
-      <div v-if="liveShows.length === 0">No live shows in Düsseldorf.</div>
-      <ul v-else>
-        <li v-if="liveShows?.shows?.current">
-          <strong>{{ liveShows?.shows?.current?.name }}</strong><br />
-          Start: {{ formatDate(liveShows?.shows?.current?.starts) }}<br />
-          End: {{ formatDate(liveShows?.shows?.current?.ends) }}
-        </li>
-        <li v-for="(show, index) in liveShows?.shows?.next" :key="index">
-          <strong>{{ show.name }}</strong><br />
-          Start: {{ formatDate(show.starts) }}<br />
-          End: {{ formatDate(show.ends) }}
-        </li>
-      </ul>
-
-      <h2>Live Shows Wien</h2>
-      <div v-if="liveShowsWien.length === 0">No live shows in Wien.</div>
-      <ul v-else>
-        <li v-if="liveShowsWien?.shows?.current">
-          <strong>{{ liveShowsWien?.shows?.current?.name }}</strong><br />
-          Start: {{ formatDate(liveShowsWien?.shows?.current?.starts) }}<br />
-          End: {{ formatDate(liveShowsWien?.shows?.current?.ends) }}
-        </li>
-        <li v-for="(show, index) in liveShowsWien?.shows?.next" :key="index">
-          <strong>{{ show.name }}</strong><br />
-          Start: {{ formatDate(show.starts) }}<br />
-          End: {{ formatDate(show.ends) }}
-        </li>
-      </ul>
-
-      <h2>On-Air Light Status</h2>
-      <div v-if="onAirLight">
-        <p><strong>Status:</strong> {{ onAirLight.on_air_light ? 'Live' : 'Offline' }}</p>
-      </div>
-      <div v-else>
-        <p>No On-Air Light data available.</p>
-      </div>
-    </div> -->
-  </div> 
-</template>
-
 <script setup>
-// const apiKey = process.env.NUXT_LIBRETIME_API_KEY;
+import { ref, computed, onMounted } from "vue";
+import { useMainStore } from "~/stores/mainStore";
 
-// // Hilfsfunktion für API-Aufrufe mit Authorization-Header
-// const fetcher = async (url) => {
-//   const response = await fetch(url, {
-//     headers: {
-//       'Authorization': `Api-Key ${apiKey}`,
-//       'Content-Type': 'application/json',
-//     },
-//   });
-//   if (!response.ok) throw new Error(`Error fetching data: ${response.statusText}`);
-//   return await response.json();
-// };
+// Store einbinden
+const mainStore = useMainStore();
 
-// // Daten asynchron laden
-// const { data, pending, error } = await useAsyncData('scheduleData', async () => {
-//   const liveInfoUrl = 'https://libretime.callshopradio.com/api/live-info-v2';
-//   const liveInfoWienUrl = 'https://wien.callshopradio.com/api/live-info-v2?days=7';
-//   const onAirLightUrl = `https://libretime.callshopradio.com/api/on-air-light/format/json?api_key=${apiKey}`;
+// Status-Variablen
+const loading = ref(true);
+const error = ref(null);
+const dusseldorfInstances = ref([]);
+const instanceTracks = ref({});
 
-//   const [liveInfo, liveInfoWien, onAirLight] = await Promise.all([
-//     fetcher(liveInfoUrl),
-//     fetcher(liveInfoWienUrl),
-//     fetcher(onAirLightUrl),
-//   ]);
+// Service-Composables einbinden
+const { fetchScheduleData, getDusseldorfShows, getWienShows } =
+  useScheduleService();
 
-//   return {
-//     liveShows: liveInfo,
-//     liveShowsWien: liveInfoWien,
-//     onAirLight: onAirLight,
-//   };
-// });
+const {
+  formatDate,
+  formatTimeRange,
+  getShowStart,
+  getShowEnd,
+  getShowTitle,
+  getShowDescription,
+  isLiveShow,
+  shouldShowInSchedule,
+  groupShowsByDay,
+} = useShowFormatters();
 
-// // Daten aus der API-Antwort extrahieren
-// const liveShows = data.value?.liveShows || [];
-// const liveShowsWien = data.value?.liveShowsWien || [];
-// const onAirLight = data.value?.onAirLight || null;
+// Daten laden
+const loadData = async () => {
+  loading.value = true;
+  error.value = null;
 
-// // console.log(onAirLight);
+  try {
+    await fetchScheduleData();
+    extractDusseldorfInstances();
+    await loadAllInstanceTracks(); // Tracks nach dem Extrahieren der Instances laden
+  } catch (err) {
+    console.error("Fehler beim Laden der Daten:", err);
+    error.value =
+      "Es ist ein Fehler beim Laden der Daten aufgetreten. Bitte versuche es später erneut.";
+  } finally {
+    loading.value = false;
+  }
+};
 
+// Extrahiert die instanceID aus allen Düsseldorf-Shows
+const extractDusseldorfInstances = () => {
+  const allShows = getDusseldorfShows();
+  // Set verwenden, um Duplikate zu vermeiden
+  const instancesSet = new Set();
 
-// // Hilfsfunktion zur Formatierung von Datumsangaben
-// const formatDate = (dateString) => {
-//   return new Date(dateString).toLocaleString();
-// };
+  for (const show of allShows) {
+    // Wenn show.description leer ist oder nicht existiert, füge instance_id zum Set hinzu
+    if (
+      (!show.description || show.description.trim() === "") &&
+      show.instance_id
+    ) {
+      instancesSet.add(show.instance_id);
+    }
+  }
+
+  dusseldorfInstances.value = [...instancesSet];
+  console.log(
+    "Extrahierte Düsseldorf Instance IDs:",
+    dusseldorfInstances.value
+  );
+};
+
+// Alle Tracks für alle Instances parallel laden
+const loadAllInstanceTracks = async () => {
+  const tracksData = {};
+
+  // Promises für alle Requests erstellen und parallel ausführen
+  const fetchPromises = dusseldorfInstances.value.map(async (instanceId) => {
+    try {
+      const tracks = await fetchTracksForInstance(instanceId);
+      if (tracks) {
+        return { instanceId, tracks };
+      }
+      return null;
+    } catch (error) {
+      console.error(
+        `Fehler beim Laden der Tracks für Instance ${instanceId}:`,
+        error
+      );
+      return null;
+    }
+  });
+
+  // Auf alle Promises warten und Ergebnisse verarbeiten
+  const results = await Promise.all(fetchPromises);
+
+  // Ergebnisse in tracksData zusammenführen
+  for (const result of results) {
+    if (result && result.instanceId && result.tracks) {
+      tracksData[result.instanceId] = result.tracks;
+    }
+  }
+
+  instanceTracks.value = tracksData;
+  console.log(
+    "Geladene Tracks für alle Instances:",
+    Object.keys(tracksData).length
+  );
+};
+// Daten beim Mounting laden
+onMounted(() => {
+  loadData();
+});
+
+// Tracks für eine Instance-ID laden
+const fetchTracksForInstance = async (instanceId) => {
+  try {
+    const response = await fetch(
+      `https://libretime.callshopradio.com/api/show-tracks/?instance_id=${instanceId}`
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error(
+      `Fehler beim Laden der Tracks für Instance ${instanceId}:`,
+      err
+    );
+    return null;
+  }
+};
+
+const integrateTracks = (shows, trackData) => {
+  if (!shows || !trackData) return shows;
+
+  // Tracks vorab sortieren und in Cache speichern, um wiederholte Sortierungen zu vermeiden
+  const sortedTracksCache = {};
+
+  for (const instanceId in trackData) {
+    if (trackData[instanceId] && Array.isArray(trackData[instanceId])) {
+      // Klonen und sortieren
+      sortedTracksCache[instanceId] = [...trackData[instanceId]].sort(
+        (a, b) => {
+          if (a.starts && b.starts) {
+            return new Date(a.starts) - new Date(b.starts);
+          } else if (a.position !== undefined && b.position !== undefined) {
+            return a.position - b.position;
+          } else {
+            return 0;
+          }
+        }
+      );
+    }
+  }
+
+  // Shows nur einmal durchlaufen und vorsortierten Cache nutzen
+  return shows.map((show) => {
+    const instanceId = show.instance_id;
+    if (instanceId && sortedTracksCache[instanceId]) {
+      return {
+        ...show,
+        tracks: sortedTracksCache[instanceId],
+      };
+    }
+    return show;
+  });
+};
+
+// Computed Properties für Shows
+const dusseldorfShows = computed(() => {
+  const shows = getDusseldorfShows();
+  // Tracks in Shows integrieren vor dem Zurückgeben
+  return integrateTracks(shows, instanceTracks.value);
+});
+
+const wienShows = computed(() => getWienShows());
+
+// Gruppierte Shows für Düsseldorf und Wien
+const groupedDusseldorfShows = computed(() =>
+  groupShowsByDay(dusseldorfShows.value)
+);
+
+const groupedWienShows = computed(() => groupShowsByDay(wienShows.value));
+
+// Computed Property für die Sichtbarkeit basierend auf dem aktiven Standort
+const isLocationVisible = (location) => {
+  return mainStore.activeScheduleLocation === location;
+};
+
+// Neulade-Funktion für manuelles Aktualisieren
+const refreshData = () => {
+  loadData();
+};
 </script>
 
+<template>
+  <div class="schedule">
+    <div v-if="loading" class="schedule__loading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading</div>
+    </div>
+
+    <div v-else-if="error" class="schedule__error">
+      <div class="error-message">{{ error }}</div>
+      <button @click="refreshData" class="refresh-button">Reload</button>
+    </div>
+
+    <div v-else class="schedule__content">
+
+      <!-- Düsseldorf Shows -->
+      <ModuleScheduleSlider
+        v-if="isLocationVisible('channelOne')"
+        :groups="groupedDusseldorfShows"
+        :formatDate="formatDate"
+        :getShowTitle="getShowTitle"
+        :getShowDescription="getShowDescription"
+        :getShowStart="getShowStart"
+        :getShowEnd="getShowEnd"
+        :formatTimeRange="formatTimeRange"
+        :isLiveShow="isLiveShow"
+      />
+
+      <!-- Wien Shows -->
+      <ModuleScheduleSlider
+        v-if="isLocationVisible('channelTwo')"
+        :groups="groupedWienShows"
+        :formatDate="formatDate"
+        :getShowTitle="getShowTitle"
+        :getShowDescription="getShowDescription"
+        :getShowStart="getShowStart"
+        :getShowEnd="getShowEnd"
+        :formatTimeRange="formatTimeRange"
+        :isLiveShow="isLiveShow"
+      />
+    </div>
+  </div>
+</template>
+
 <style scoped>
-h2 {
-  margin-top: 2rem;
-  color: #333;
+.schedule {
+  max-width: var(--page-max-width);
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
-ul {
-  list-style-type: none;
-  padding: 0;
-}
 
-li {
-  background: #f4f4f4;
-  margin-bottom: 1rem;
-  padding: 1rem;
-  border-left: 5px solid #2196f3;
-}
-
-li strong {
-  font-size: 1.2rem;
-}
-
-li + li {
-  border-top: 1px solid #ddd;
-}
-
-p {
-  background: #f4f4f4;
-  padding: 1rem;
-  border-left: 5px solid #ff5722;
-}
 </style>

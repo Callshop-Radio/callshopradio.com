@@ -83,6 +83,7 @@ export const set = {
     },
     {
       title: 'Artwork',
+      description: 'Cover Artwork, minimum resolution 1000x1000px',
       name: 'image',
       type: 'image',
       group: 'editorial',

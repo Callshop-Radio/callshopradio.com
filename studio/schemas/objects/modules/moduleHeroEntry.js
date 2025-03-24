@@ -9,27 +9,6 @@ export const moduleHeroEntry = {
   groups: [],
   fields: [
     {
-      title: 'Layout',
-      name: 'layout',
-      type: 'string',
-      initialValue: 'image',
-      options: {
-        list: [
-          {
-            title: 'Card',
-            value: 'card',
-          },
-          {
-            title: 'Large Image',
-            value: 'image',
-          },
-        ],
-        layout: 'radio',
-        direction: 'horizontal',
-      },
-      validation: (Rule) => Rule.required(),
-    },
-    {
       title: 'Content Type',
       name: 'type',
       type: 'string',
@@ -92,13 +71,11 @@ export const moduleHeroEntry = {
       return {
         title: 'Hero Entry',
         subtitle: type
-          ? "To '" +
+          ? "Content: '" +
             type.charAt(0).toUpperCase() +
             type.slice(1) +
-            "', displayed as " +
-            layout +
-            '.'
-          : 'Empty',
+            "' "
+          : 'Empty Hero Slider',
       }
     },
   },

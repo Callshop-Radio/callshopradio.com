@@ -129,6 +129,137 @@ export const RICH_TEXT_QUERY = `{
 }`;
 
 export const MODULE_QUERY = `{
+    _type == "module.heroSlider" => {
+        ...,
+        slides[] {
+            ...,
+        layout,
+        type,
+        title,
+        text[] ${RICH_TEXT_QUERY},
+        link ${SINGLE_LINK_OPTIONAL_QUERY},
+        contentReference -> {
+            ...,
+            _type,
+            _id,
+            title,
+            slug,
+            image ${IMAGE_QUERY},
+            bio ${RICH_TEXT_QUERY},
+            description ${RICH_TEXT_QUERY},
+            "tags": tags[]->{
+                ...,
+                _id,
+                title
+            },
+            "soundcloud": soundcloud{
+                    _type,
+                    "tracks": tracks[]{
+                        id,
+                        created_at,
+                        duration,
+                        tag_list,
+                        streamable,
+                        purchase_url,
+                        genre,
+                        title,
+                        description,
+                        release_year,
+                        release_month,
+                        release_day,
+                        license,
+                        uri,
+                        "user": user{
+                            id,
+                            username,
+                            permalink_url
+                        },
+                        artwork_url,
+                        waveform_url,
+                        stream_url,
+                        playback_count,
+                        favoritings_count
+                    }
+            },
+            persons[]->{
+                    ...,
+                    _id,
+                    title
+            },
+            "parentShow": *[_type == "show" && references(^._id)][0]{
+                    ...,
+                    _id,
+                    title,
+                    slug,
+                    image { asset-> },
+            }
+        }
+        }
+    },
+    _type == "module.heroEntry" => {
+        ...,
+        layout,
+        type,
+        title,
+        text[] ${RICH_TEXT_QUERY},
+        link ${SINGLE_LINK_OPTIONAL_QUERY},
+        contentReference -> {
+            ...,
+            _type,
+            _id,
+            title,
+            slug,
+            image ${IMAGE_QUERY},
+            bio ${RICH_TEXT_QUERY},
+            description ${RICH_TEXT_QUERY},
+            "tags": tags[]->{
+                ...,
+                _id,
+                title
+            },
+            "soundcloud": soundcloud{
+                    _type,
+                    "tracks": tracks[]{
+                        id,
+                        created_at,
+                        duration,
+                        tag_list,
+                        streamable,
+                        purchase_url,
+                        genre,
+                        title,
+                        description,
+                        release_year,
+                        release_month,
+                        release_day,
+                        license,
+                        uri,
+                        "user": user{
+                            id,
+                            username,
+                            permalink_url
+                        },
+                        artwork_url,
+                        waveform_url,
+                        stream_url,
+                        playback_count,
+                        favoritings_count
+                    }
+            },
+            persons[]->{
+                    ...,
+                    _id,
+                    title
+            },
+            "parentShow": *[_type == "show" && references(^._id)][0]{
+                    ...,
+                    _id,
+                    title,
+                    slug,
+                    image { asset-> },
+            }
+        }
+    },
 	  _type == "module.contentReferenceSlider" => {
         ...,
         title,
@@ -146,7 +277,7 @@ export const MODULE_QUERY = `{
             slug,
         },
         "poolItems": select(
-            type == 'pool' && autoLoad == true => *[_type in ['person', 'venue']] | order(_updatedAt desc) {
+            type == 'pool' && autoLoad == true => *[_type in ['person', 'venue'] && poolVisibility == true] | order(_updatedAt desc) {
                 ...,
                 _id,
                 _type,
@@ -158,7 +289,7 @@ export const MODULE_QUERY = `{
                     _id,
                     title
                 },
-                location,
+                location
             },
             pool[]->{
                 ...,
@@ -228,6 +359,7 @@ export const MODULE_QUERY = `{
                 _type,
                 title,
                 slug,
+                image { asset-> },
                 "tags": tags[]->{
                     ...,
                     _id,
@@ -236,7 +368,7 @@ export const MODULE_QUERY = `{
             }
         ),
         "setItems": select(
-            type == 'sets' && autoLoad == true => *[_type == 'set'] | order(publishedAt desc) {
+            type == 'sets' && autoLoad == true => *[_type == 'set'] | order(datetime desc) {
                 ...,
                 _id,
                 _type,
@@ -276,6 +408,18 @@ export const MODULE_QUERY = `{
                     _id,
                     title
                 },
+                persons[]->{
+                    ...,
+                    _id,
+                    title
+                },
+                "parentShow": *[_type == "show" && references(^._id)][0]{
+                    ...,
+                    _id,
+                    title,
+                    slug,
+                    image { asset-> },
+                }
             },
             sets[]->{
                 _id,
@@ -311,11 +455,23 @@ export const MODULE_QUERY = `{
                         favoritings_count
                     }
                 },
+                persons[]->{
+                    ...,
+                    _id,
+                    title
+                },
                 "tags": tags[]->{
                     ...,
                     _id,
                     title
                 },
+                "parentShow": *[_type == "show" && references(^._id)][0]{
+                    ...,
+                    _id,
+                    title,
+                    slug,
+                    image { asset-> },
+                }
             }
         )
     }

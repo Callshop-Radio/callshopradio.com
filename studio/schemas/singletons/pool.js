@@ -43,12 +43,12 @@ export const pool = {
       type: 'seo.page',
       group: 'seo',
     },
-    {
-      title: 'Animations',
-      name: 'animations',
-      type: 'animations.page',
-      group: 'settings',
-    },
+    // {
+    //   title: 'Animations',
+    //   name: 'animations',
+    //   type: 'animations.page',
+    //   group: 'settings',
+    // },
     {
       name: 'color',
       title: 'Page Color',

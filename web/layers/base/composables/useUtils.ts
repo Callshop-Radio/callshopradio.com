@@ -7,7 +7,7 @@ export const useUtils = () => {
 		const inlineCSS
       = 'padding: 15px; background-color: #f8f8f8; color: black; border-radius: 5px'
 		onMounted(() => {
-			console.log('%cOfficial Marco Land Beautiful Web Solution', inlineCSS)
+			// console.log('%cOfficial Marco Land Beautiful Web Solution', inlineCSS)
 		})
 	}
 

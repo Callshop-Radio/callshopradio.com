@@ -111,22 +111,52 @@ function getItemImage(item) {
   }
 }
 
-// Hilfsfunktion für SoundCloud-Artwork mit Fallback
-function getSoundcloudArtwork(item) {
-  // Prüfen auf SoundCloud-Daten und Artwork
+const artworkUrls = ref(new Map());
+
+// Funktion zum Abrufen und Speichern der Artwork-URL
+async function loadArtworkUrl(item) {
+  if (!item) return;
+  const url = await getSoundcloudArtwork(item);
+  artworkUrls.value.set(item._id, url);
+}
+
+function checkImage(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+}
+
+async function getSoundcloudArtwork(item) {
+  // Definiere die Fallback-URLs explizit
+  const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
+  const storeFallbackUrl =
+    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
   const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
 
+  // Versuche zunächst das SoundCloud-Artwork
   if (artworkUrl) {
-    // Die URL von '-large' zu '-t200x200' Format ändern
-    return artworkUrl.replace("-large", "-t500x500");
+    const originalUrl = artworkUrl.replace("-large", "-original");
+    const exists = await checkImage(originalUrl);
+
+    if (exists) {
+      return originalUrl;
+    }
+  }
+  // SoundCloud-Artwork existiert nicht, verwende Fallbacks
+
+  // Prüfe parentShow Bild als ersten Fallback
+  if (parentShowImageUrl) {
+    return parentShowImageUrl;
   }
 
-  // Fallbacks, falls kein SoundCloud-Artwork vorhanden ist
-  if (item._type === "set") {
-    return mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url || "";
+  // Prüfe Store-Fallback als zweiten Fallback
+  if (storeFallbackUrl) {
+    return storeFallbackUrl;
   }
 
-  // Generisches Fallback
   return "";
 }
 
@@ -236,37 +266,20 @@ const groupedItems = computed(() => {
 });
 
 function playTrack(item) {
-  console.log("playTrack aufgerufen mit item:", item);
-
   if (item?.soundcloud?.tracks?.[0]) {
     const track = item.soundcloud.tracks[0];
 
     // Sicherstellen, dass permalink_url gesetzt ist
     if (!track.permalink_url && track.id) {
       // Wenn keine permalink_url, aber eine ID vorhanden ist, erstellen wir eine
-      console.log(
-        "Keine permalink_url gefunden, erstelle eine basierend auf der ID"
-      );
       track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
     }
 
-    console.log("Setze Track im Store mit permalink_url:", track.permalink_url);
-
     // Track im Store speichern
     mainStore.currentTrack = track;
-
-    // In der Konsole ausgeben
-    console.log("SoundCloud Track gesetzt:", mainStore.currentTrack);
   } else {
-    console.warn("Kein SoundCloud-Track für dieses Item verfügbar:", item);
   }
 }
-
-console.log(
-  mainStore?.siteFallbacks?.fallbackPerson?.description,
-  mainStore?.siteFallbacks?.fallbackPerson?.description?.[0]?.value,
-  mainStore?.siteFallbacks?.fallbackPerson?.description?.[1]?.value
-);
 </script>
 
 <template>
@@ -280,7 +293,13 @@ console.log(
       <h3 v-if="module.title" class="module-carousel__title">
         {{ module.title }}
       </h3>
-      <section class="module-carousel__header__type">
+      <section
+        v-if="categoryType == 'Episodes'"
+        class="module-carousel__header__type"
+      >
+        <h2 class="module-carousel__header__type__pill">Shows</h2>
+      </section>
+      <section v-else class="module-carousel__header__type">
         <h2 class="module-carousel__header__type__pill">{{ categoryType }}</h2>
       </section>
     </div>
@@ -381,14 +400,24 @@ console.log(
                 :class="`media-${module.style}`"
               />
               <img
-                v-else-if="categoryType === 'Episodes'"
-                :src="getSoundcloudArtwork(item)"
+                v-else-if="
+                  categoryType === 'Episodes' && artworkUrls.get(item._id)
+                "
+                :src="artworkUrls.get(item._id)"
                 alt="Episode Image"
                 class="track-artwork"
               />
+              <div
+                v-else-if="categoryType === 'Episodes'"
+                class="track-artwork-placeholder"
+                @vue:mounted="loadArtworkUrl(item)"
+              ></div>
               <div class="slide-content">
                 <section class="slide-content__interactive">
-                  <h3 class="slide-date" v-if="item?._updatedAt">
+                  <h3 class="slide-date" v-if="item?.datetime">
+                    {{ formatDate(item.datetime) }}
+                  </h3>
+                  <h3 class="slide-date" v-else-if="item?._updatedAt">
                     {{ formatDate(item._updatedAt) }}
                   </h3>
                   <button
@@ -410,7 +439,22 @@ console.log(
                     </svg>
                   </button>
                 </section>
-                <h3 class="slide-title">{{ item?.title }}</h3>
+                <h3 class="slide-title show-title">
+                  {{ item?.parentShow?.title }}
+                </h3>
+                <h3 class="slide-title" v-if="contentType !== 'sets'">
+                  {{ item?.title }}
+                </h3>
+                <div class="show-artists" v-if="contentType == 'sets'">
+                  <h3
+                    v-for="(artist, index) in item.persons"
+                    :key="artist._key"
+                    class="slide-title"
+                  >
+                    {{ artist?.title
+                    }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+                  </h3>
+                </div>
                 <RichText
                   v-if="item?.useTeaserText && item?.textTeaser"
                   :blocks="parseI18nObj(item?.textTeaser)"
@@ -527,7 +571,14 @@ console.log(
           aspect-ratio: 3 / 4 !important;
         }
         .slide-group {
+          width: 100%;
           .slide-item {
+            max-width: calc(33% - var(--big-padding));
+            h2,
+            h3 {
+              font-family: var(--font-text-semibold);
+              font-weight: 550;
+            }
             &:first-child {
               padding: 0 var(--big-margin) 0 0;
               border-right: 1px solid var(--color-text);
@@ -535,6 +586,9 @@ console.log(
             &:last-child {
               padding: 0 0 0 var(--big-margin);
               border-left: 1px solid var(--color-text);
+            }
+            .slide-content {
+              flex-grow: 1;
             }
           }
         }
@@ -544,14 +598,16 @@ console.log(
   &--thumbnails {
     &.embla {
       .embla__slide {
+        min-height: 100%;
         :deep(img),
         :deep(.video-wrapper) {
           aspect-ratio: 1 / 1 !important;
           object-fit: cover;
-          @apply max-w-full w-100;
+          @apply max-w-full:;
         }
         .slide-group {
           .slide-item {
+            max-width: calc(100% / 3);
             &:first-child {
               padding: 0 var(--big-margin) 0 0;
             }
@@ -559,13 +615,19 @@ console.log(
               padding: 0 0 0 var(--big-margin);
             }
             .slide-content {
+              gap: 0;
+              flex-grow: 1;
+              h2,
+              h3 {
+                font-family: var(--font-text-semibold);
+                font-weight: 550;
+              }
               &__interactive {
                 width: 100%;
                 display: flex;
                 flex-flow: row wrap;
                 justify-content: space-between;
                 align-items: center;
-                gap: var(--mid-padding);
                 .play {
                   display: flex;
                   flex-flow: row;
@@ -590,6 +652,19 @@ console.log(
                     }
                   }
                 }
+              }
+              .slide-title {
+                margin: 0 0 calc(var(--small-padding) / 2) 0;
+              }
+              &__interactive,
+              .show-artists {
+                margin: 0 0 var(--mid-padding) 0;
+              }
+              .show-artists {
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: flex-start;
+                align-items: center;
               }
             }
           }

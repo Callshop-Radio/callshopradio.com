@@ -1,6 +1,6 @@
 export const timetable = (S) =>
     S.listItem()
-      .title('Timetable')
+      .title('Schedule')
       .schemaType('timetable')
-      .child(S.editor().title('Timetable').schemaType('timetable').documentId('timetable'))
+      .child(S.editor().title('Schedule').schemaType('timetable').documentId('timetable'))
   

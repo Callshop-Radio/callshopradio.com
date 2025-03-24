@@ -1,6 +1,6 @@
 import {CalendarIcon, SearchIcon, TextIcon, CogIcon} from '@sanity/icons'
 
-const TITLE = 'Timetable'
+const TITLE = 'Schedule'
 
 export const timetable = {
   name: 'timetable',
@@ -44,12 +44,12 @@ export const timetable = {
       type: 'seo.page',
       group: 'seo',
     },
-    {
-      title: 'Animations',
-      name: 'animations',
-      type: 'animations.page',
-      group: 'settings',
-    },
+    // {
+    //   title: 'Animations',
+    //   name: 'animations',
+    //   type: 'animations.page',
+    //   group: 'settings',
+    // },
     {
       name: 'color',
       title: 'Page Color',

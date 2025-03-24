@@ -223,12 +223,12 @@ export const show = {
       type: 'seo.page',
       group: 'seo',
     },
-    {
-      title: 'Animations',
-      name: 'animations',
-      type: 'animations.page',
-      group: 'settings',
-    },
+    // {
+    //   title: 'Animations',
+    //   name: 'animations',
+    //   type: 'animations.page',
+    //   group: 'settings',
+    // },
   ],
   preview: {
     select: {

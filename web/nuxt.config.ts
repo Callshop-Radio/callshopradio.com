@@ -4,9 +4,9 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
   site: {
-    debug: true,
+    debug: false,
   },
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   ssr: true,
   app: {
     pageTransition: { name: "page", mode: "out-in" },

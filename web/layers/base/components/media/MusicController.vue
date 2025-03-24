@@ -109,8 +109,6 @@ const updateLiveStatus = async () => {
 const togglePlay1 = () => {
   if (!audioEl1) return;
 
-  console.log("togglePlay1 aufgerufen", isPlaying1.value);
-
   if (isPlaying1.value) {
     audioEl1.pause();
     isPlaying1.value = false;
@@ -140,7 +138,6 @@ const togglePlay1 = () => {
         .then(() => {
           isLoading1.value = false;
           isPlaying1.value = true;
-          console.log("Stream 1 spielt erfolgreich");
         })
         .catch((err) => {
           console.error("Error playing stream 1:", err);
@@ -152,8 +149,6 @@ const togglePlay1 = () => {
 // Funktion zum Abspielen und Stoppen des Streams für Track 2
 const togglePlay2 = () => {
   if (!audioEl2) return;
-
-  console.log("togglePlay2 aufgerufen", isPlaying2.value);
 
   if (isPlaying2.value) {
     audioEl2.pause();
@@ -184,7 +179,6 @@ const togglePlay2 = () => {
         .then(() => {
           isLoading2.value = false;
           isPlaying2.value = true;
-          console.log("Stream 2 spielt erfolgreich");
         })
         .catch((err) => {
           console.error("Error playing stream 2:", err);
@@ -308,7 +302,6 @@ const setupAudioElement = (audioElement, num) => {
       isPlaying2.value = true;
       isLoading2.value = false;
     }
-    console.log(`Stream ${num} is playing`);
   });
 
   audioElement.addEventListener("waiting", () => {
@@ -317,7 +310,6 @@ const setupAudioElement = (audioElement, num) => {
     } else {
       isLoading2.value = true;
     }
-    console.log(`Stream ${num} is buffering`);
   });
 
   audioElement.addEventListener("pause", () => {
@@ -328,7 +320,6 @@ const setupAudioElement = (audioElement, num) => {
       isPlaying2.value = false;
       isLoading2.value = false;
     }
-    console.log(`Stream ${num} paused`);
   });
 
   audioElement.addEventListener("ended", () => {
@@ -337,7 +328,6 @@ const setupAudioElement = (audioElement, num) => {
     } else {
       isPlaying2.value = false;
     }
-    console.log(`Stream ${num} ended`);
   });
 
   audioElement.addEventListener("error", (e) => {
@@ -355,7 +345,6 @@ const setupAudioElement = (audioElement, num) => {
   try {
     // Audio-Streams haben oft MIME-Typ issues. Auf gängige Icecast-Server-Optionen fallback
     audioElement.addEventListener("canplaythrough", () => {
-      console.log(`Stream ${num} can play through`);
     });
 
     // Verhindere automatischen Start
