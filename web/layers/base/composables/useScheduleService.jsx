@@ -3,12 +3,12 @@ import { ref, computed } from "vue";
 export function useScheduleService() {
   const apiKey = process.env.NUXT_LIBRETIME_API_KEY;
 
-  // Daten-Refs
+  // Data refs
   const weekInfoData = ref({});
   const weekInfoWienData = ref({});
   const scheduleData = ref([]);
 
-  // Hilfsfunktion für API-Aufrufe mit Authorization-Header
+  // Helper function for API calls with authorization header
   const fetcher = async (url) => {
     try {
       const response = await fetch(url, {
@@ -24,12 +24,11 @@ export function useScheduleService() {
 
       return await response.json();
     } catch (error) {
-      console.error(`Fehler beim Abrufen von ${url}:`, error);
-      return null; // Rückgabe von null im Fehlerfall
+      return null; // Return null on error
     }
   };
 
-  // Hilfsfunktion zur Berechnung des Zeitfensters für die nächsten 2 Wochen
+  // Helper function to calculate time window for next 2 weeks
   const getNextTwoWeeksWindow = () => {
     const now = new Date();
     const twoWeeksLater = new Date();
@@ -41,76 +40,67 @@ export function useScheduleService() {
     };
   };
 
-  // Alle Daten laden
+  // Load all data
   const fetchScheduleData = async () => {
     try {
       const weekInfoUrl = "https://libretime.callshopradio.com/api/week-info";
       const weekInfoWienUrl = "https://wien.callshopradio.com/api/week-info";
 
-      // Füge Parameter hinzu
+      // Add parameters
       const weekInfoWienUrlWithParams = weekInfoWienUrl + "?days=7";
 
-      // URL für die nächsten Shows generieren
+      // Generate URL for upcoming shows
       const timeWindow = getNextTwoWeeksWindow();
       const scheduleUrl = `https://libretime.callshopradio.com/api/shows?start=${timeWindow.start}&end=${timeWindow.end}`;
 
-      // Düsseldorf mit API-Key abrufen
-      const weekInfo = await fetcher(weekInfoUrl).catch((e) => {
-        console.error("Fehler beim Laden von Düsseldorf-Daten:", e);
+      // Fetch Düsseldorf with API key
+      const weekInfo = await fetcher(weekInfoUrl).catch(() => {
         return {};
       });
 
-      // Wien direkt ohne API-Key abrufen
+      // Fetch Wien directly without API key
       let weekInfoWien = {};
       try {
         const wienResponse = await fetch(weekInfoWienUrlWithParams);
         if (wienResponse.ok) {
           weekInfoWien = await wienResponse.json();
-        } else {
-          console.error(
-            "Wien-Daten Fehler:",
-            wienResponse.status,
-            wienResponse.statusText
-          );
         }
       } catch (wienError) {
-        console.error("Fehler beim Laden von Wien-Daten:", wienError);
+        // Error handled silently
       }
 
-      // Schedule abrufen
-      const schedule = await fetcher(scheduleUrl).catch((e) => {
-        console.error("Fehler beim Laden des Schedules:", e);
+      // Fetch schedule
+      const schedule = await fetcher(scheduleUrl).catch(() => {
         return [];
       });
 
-      // Daten setzen
+      // Set data
       weekInfoData.value = weekInfo || {};
       weekInfoWienData.value = weekInfoWien || {};
       scheduleData.value = schedule || [];
     } catch (err) {
-      console.error("Fehler beim Laden der Daten:", err);
       throw err;
     }
   };
 
-  // Verarbeite Weekinfo-Daten in ein einheitliches Format
+  // Process weekinfo data into a uniform format
   const processWeekInfo = (weekInfo) => {
-    // Wenn keine Daten vorhanden sind, leeres Array zurückgeben
+    // Return empty array if no data
     if (!weekInfo || Object.keys(weekInfo).length === 0) {
       return [];
     }
 
-    // Ignorieren Sie den AIRTIME_API_VERSION-Eintrag
+    // Ignore AIRTIME_API_VERSION entry
     const filtered = Object.entries(weekInfo).filter(
       ([key]) => key !== "AIRTIME_API_VERSION"
     );
 
-    // Alle Events sammeln
+    // Collect all events
     let allEvents = [];
     filtered.forEach(([dayName, dayContent]) => {
-      // Die API-Antworten haben unterschiedliche Strukturen je nach Endpunkt
+      // API responses have different structures depending on endpoint
       if (Array.isArray(dayContent)) {
-        // Einfache Array-Struktur
+        // Simple array structure
         allEvents = allEvents.concat(
           dayContent.map((event) => ({
             ...event,
@@ -119,7 +109,7 @@ export function useScheduleService() {
           }))
         );
       } else if (dayContent && Array.isArray(dayContent[1])) {
-        // Verschachtelte Array-Struktur (z.B. für week-info)
+        // Nested array structure (e.g. for week-info)
         allEvents = allEvents.concat(
           dayContent[1].map((event) => ({
             ...event,
@@ -130,7 +120,7 @@ export function useScheduleService() {
       }
     });
 
-    // Live-Shows markieren
+    // Mark live shows
     allEvents = allEvents.map((event) => ({
       ...event,
       isLive:
@@ -141,13 +131,13 @@ export function useScheduleService() {
     return allEvents;
   };
 
-  // Computed Properties für verarbeitete Daten
+  // Computed properties for processed data
   const processedDusseldorf = computed(() =>
     processWeekInfo(weekInfoData.value)
   );
   const processedWien = computed(() => processWeekInfo(weekInfoWienData.value));
 
-  // Getter für sortierte Shows
+  // Getters for sorted shows
   const getDusseldorfShows = () => {
     return processedDusseldorf.value.sort(
       (a, b) =>

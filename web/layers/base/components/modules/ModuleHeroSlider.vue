@@ -159,6 +159,7 @@ const slides = computed(() => {
     </div>
     <div class="graphics-behind">
       <AnimatedGradient class="animated-gradient" />
+      <AnimatedLogoBackground class="animated-logo-background" />
     </div>
     <div ref="emblaNode" class="embla">
       <div ref="emblaContainer" class="embla__container">
@@ -178,13 +179,17 @@ const slides = computed(() => {
         </div>
       </div>
     </div>
+    <div class="graphics-front">
+      <AnimatedLogo class="animated-logo" />
+    </div>
   </div>
 </template>
 
 <style lang="postcss" scoped>
 .module-hero {
-  @apply overflow-hidden;
+  @apply overflow-visible;
   max-width: clamp(100%, 100%, var(--page-max-width));
+  position: relative;
 
   &__title {
     @apply text-2xl font-bold mb-4;
@@ -205,7 +210,39 @@ const slides = computed(() => {
     width: 100%;
     height: 100%;
     z-index: 0;
-    transform: translate(-25%, -12.5%);
+    .animated-logo-background {
+      width: 575px;
+      height: 415px;
+      position: absolute;
+      right: calc(var(--big-margin) * 2);
+      top: calc(35.3125rem - var(--big-margin)* 2 + var(--mid-margin) + 0.625rem);
+      transform: translate(33%,-100%);
+      z-index: 0;
+    }
+    .animated-gradient {
+      position: absolute;
+      top: -33%;
+      left: -45%;
+      width: 100%;
+      height: 100%;
+    }
+  }
+  .graphics-front {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    .animated-logo {
+      width: 575px;
+      height: 415px;
+      position: absolute;
+      right: calc(var(--big-margin) * 2);
+      top: calc(35.3125rem - var(--big-margin)* 2 + var(--mid-margin) + var(--menu-text-size) / 2);
+      transform: translate(33%,-100%);
+      z-index: 0;
+    }
   }
 
   .embla__nav__container {
