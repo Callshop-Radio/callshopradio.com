@@ -74,15 +74,18 @@ const togglePlayerVisibility = () => {
 <style scoped lang="postcss">
 .header {
   position: sticky;
+  top: 0; /* Stellen Sie sicher, dass top einen expliziten Wert hat */
   display: flex;
   flex-flow: column wrap;
   justify-content: flex-start;
   align-items: center;
-  top: 0;
   width: 100%;
   margin: var(--big-margin) auto 0;
   padding: 0 0;
   background-color: var(--color-bg);
+  /* Stellen Sie sicher, dass der Header eine Höhe hat */
+  height: auto;
+  min-height: max-content;
   z-index: 99999;
   &__menu-section {
     width: 100%;

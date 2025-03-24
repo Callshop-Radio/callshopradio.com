@@ -17,11 +17,12 @@ const props = defineProps({
 const [emblaNode, emblaApi] = emblaCarouselVue({
   align: "start",
   loop: true,
-  slidesToScroll: 1,
 });
 
 // Dots nav
 const selectedIndex = ref(0);
+// Aktuelle Slide-Position
+const currentIndex = ref(0);
 const scrollSnaps = ref<number[]>([]);
 
 // Save position for smooth transitions
@@ -42,11 +43,13 @@ async function restoreTranslatePositions() {
 const onSelect = () => {
   if (!emblaApi.value) return;
   selectedIndex.value = emblaApi.value.selectedScrollSnap();
+  currentIndex.value = selectedIndex.value; // Aktualisiere currentIndex, wenn sich der Slide ändert
 };
 
 const scrollTo = (index: number) => {
   if (!emblaApi.value) return;
   emblaApi.value.scrollTo(index);
+  currentIndex.value = index; // Aktualisiere currentIndex beim manuellen Scrollen
 };
 
 const scrollPrev = () => {
@@ -67,6 +70,7 @@ const setupDots = () => {
 
   // Set current index
   selectedIndex.value = emblaApi.value.selectedScrollSnap();
+  currentIndex.value = selectedIndex.value; // Initialisiere currentIndex
 
   // Event-Listener für Aktualisierung des ausgewählten Index
   emblaApi.value.on("select", onSelect);
@@ -153,13 +157,16 @@ const slides = computed(() => {
         </div>
       </nav>
     </div>
-
+    <div class="graphics-behind">
+      <AnimatedGradient class="animated-gradient" />
+    </div>
     <div ref="emblaNode" class="embla">
       <div ref="emblaContainer" class="embla__container">
         <div
           v-for="(slide, index) in slides"
           :key="slide._key || index"
           class="embla__slide"
+          :class="{ active: index === currentIndex }"
         >
           <!-- Verwende die ModuleHeroEntry-Komponente für jeden Slide -->
           <ModuleHeroEntry
@@ -191,66 +198,76 @@ const slides = computed(() => {
     align-items: center;
   }
 
+  .graphics-behind {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    transform: translate(-25%, -12.5%);
+  }
+
   .embla__nav__container {
     width: 100%;
     height: 100%;
     position: relative;
-      .embla__nav {
-        @apply flex row items-center justify-space-between;
-        position: absolute;
-        top: calc( 35.3125rem - var(--big-margin) * 2);
-        right: var(--big-margin);
-        padding: var(--mid-padding);
-        width: max-content;
-        background-color: var(--color-bg);
-        border-radius: 100px;
-        border: 0.0625rem solid var(--color-text);
-        shape-rendering: crispEdges;
-        z-index: 10;
+    .embla__nav {
+      @apply flex row items-center justify-space-between;
+      position: absolute;
+      top: calc(35.3125rem - var(--big-margin) * 2);
+      right: var(--big-margin);
+      padding: var(--mid-padding);
+      width: max-content;
+      background-color: var(--color-bg);
+      border-radius: 100px;
+      border: 0.0625rem solid var(--color-text);
+      shape-rendering: crispEdges;
+      z-index: 10;
 
-        .embla__nav__arrows {
-          @apply flex;
-          gap: 0 var(--mid-margin);
-          margin: 0;
+      .embla__nav__arrows {
+        @apply flex;
+        gap: 0 var(--mid-margin);
+        margin: 0;
 
-          .embla__arrow {
-            @apply flex items-center justify-center rounded-full transition-colors;
-            background-color: transparent;
+        .embla__arrow {
+          @apply flex items-center justify-center rounded-full transition-colors;
+          background-color: transparent;
 
-            svg {
-              @apply w-5 h-5;
-              path {
-                fill: var(--color-text);
-              }
-            }
-
-            &:focus {
-              @apply outline-none ring-2 ring-black ring-opacity-50;
+          svg {
+            @apply w-5 h-5;
+            path {
+              fill: var(--color-text);
             }
           }
+
+          &:focus {
+            @apply outline-none ring-2 ring-black ring-opacity-50;
+          }
         }
+      }
 
-        .embla__nav__dots {
-          @apply flex row items-center justify-start flex-grow-1;
-          gap: 0 var(--small-padding);
+      .embla__nav__dots {
+        @apply flex row items-center justify-start flex-grow-1;
+        gap: 0 var(--small-padding);
 
-          .embla__dot {
-            @apply rounded-full transition-colors;
-            width: 7px;
-            height: 7px;
-            background-color: var(--color-grey);
+        .embla__dot {
+          @apply rounded-full transition-colors;
+          width: 7px;
+          height: 7px;
+          background-color: var(--color-grey);
 
-            &.is-selected {
-              background-color: var(--color-text);
-            }
+          &.is-selected {
+            background-color: var(--color-text);
+          }
 
-            &:hover {
-              @apply bg-gray-400;
-            }
+          &:hover {
+            @apply bg-gray-400;
           }
         }
       }
     }
+  }
 
   /* Basis-Styles für den Embla Carousel */
   .embla {
@@ -267,6 +284,13 @@ const slides = computed(() => {
       @apply flex flex-grow-0 flex-shrink-0 flex-basis-auto min-w-0 relative;
       width: 100%; /* Jeder Slide nimmt volle Breite ein */
       padding: 0 calc(var(--big-margin) / 2);
+      opacity: 0;
+      transition: opacity .15s ease !important;
+
+      &.active {
+        opacity: 1;
+        transition: opacity 1.5s ease !important;
+      }
     }
   }
 }

@@ -5,24 +5,24 @@ import { useMainStore } from "~/stores/mainStore";
 
 const mainStore = useMainStore();
 
-// API-Key aus Umgebungsvariablen
+// API key from environment variables
 const apiKey = process.env.NUXT_LIBRETIME_API_KEY ?? "DMGSLT4FB25H33034RG4";
 
-// Stream-URLs definieren
+// Define stream URLs
 const streamUrl1 = "https://icecast.callshopradio.com/callshopradio";
 const streamUrl2 = "https://icecast.callshopradio.com/callshopradio-wien";
 
-// Wir speichern die Audio-Elemente außerhalb von Vue's Reaktivitätssystem
+// Store audio elements outside Vue's reactivity system
 let audioEl1 = null;
 let audioEl2 = null;
 
-// Status-Refs
+// Status refs
 const isPlaying1 = ref(false);
 const isPlaying2 = ref(false);
 const isLoading1 = ref(false);
 const isLoading2 = ref(false);
 
-// Separat gespeicherter Live-Status, der nicht automatisch aktualisiert wird
+// Separately stored live status that doesn't update automatically
 const liveStatus = ref({
   stream1: {
     onAirLight: {},
@@ -35,7 +35,7 @@ const liveStatus = ref({
   },
 });
 
-// Hilfsfunktion für API-Aufrufe
+// Helper function for API calls
 const fetcher = async (url, apiKey = null) => {
   try {
     const headers = apiKey
@@ -50,12 +50,11 @@ const fetcher = async (url, apiKey = null) => {
       throw new Error(`Error fetching data: ${response.statusText}`);
     return await response.json();
   } catch (err) {
-    console.error("Fetch error:", err);
     return null;
   }
 };
 
-// Manuelle Status-Aktualisierungsfunktion
+// Manual status update function
 const updateLiveStatus = async () => {
   try {
     // Stream 1
@@ -74,7 +73,7 @@ const updateLiveStatus = async () => {
       fetcher(liveInfoUrl2),
     ]);
 
-    // Format für Stream 2 anpassen
+    // Adapt format for Stream 2
     let onAirLight2 = null;
     if (liveData2) {
       onAirLight2 = {
@@ -88,7 +87,7 @@ const updateLiveStatus = async () => {
       };
     }
 
-    // Status aktualisieren ohne die Audio-Elemente zu stören
+    // Update status without disturbing audio elements
     liveStatus.value = {
       stream1: {
         onAirLight: onAirLight1 || {},
@@ -101,11 +100,11 @@ const updateLiveStatus = async () => {
       },
     };
   } catch (error) {
-    console.error("Error updating live status:", error);
+    // Silent error handling
   }
 };
 
-// Funktion zum Abspielen und Stoppen des Streams für Track 1
+// Function to play and stop stream for Track 1
 const togglePlay1 = () => {
   if (!audioEl1) return;
 
@@ -114,7 +113,7 @@ const togglePlay1 = () => {
     isPlaying1.value = false;
     isLoading1.value = false;
   } else {
-    // Wenn Track 2 gerade spielt, pausieren
+    // If Track 2 is playing, pause it
     if (isPlaying2.value && audioEl2) {
       audioEl2.pause();
       isPlaying2.value = false;
@@ -123,14 +122,14 @@ const togglePlay1 = () => {
 
     isLoading1.value = true;
 
-    // Stream neu laden, um sicherzustellen, dass er von Anfang startet
+    // Reload stream to ensure it starts from beginning
     audioEl1.src = streamUrl1;
     audioEl1.load();
 
-    // SoundCloud-Player zurücksetzen - verwende die neue Store-Methode
+    // Reset SoundCloud player - use the new store method
     mainStore.resetSoundCloudPlayer();
 
-    // Audio-Kontext neu erstellen bei jedem Play
+    // Create new audio context with each play
     const playPromise = audioEl1.play();
 
     if (playPromise !== undefined) {
@@ -140,13 +139,12 @@ const togglePlay1 = () => {
           isPlaying1.value = true;
         })
         .catch((err) => {
-          console.error("Error playing stream 1:", err);
           isLoading1.value = false;
         });
     }
   }
 };
-// Funktion zum Abspielen und Stoppen des Streams für Track 2
+// Function to play and stop stream for Track 2
 const togglePlay2 = () => {
   if (!audioEl2) return;
 
@@ -155,7 +153,7 @@ const togglePlay2 = () => {
     isPlaying2.value = false;
     isLoading2.value = false;
   } else {
-    // Wenn Track 1 gerade spielt, pausieren
+    // If Track 1 is playing, pause it
     if (isPlaying1.value && audioEl1) {
       audioEl1.pause();
       isPlaying1.value = false;
@@ -164,14 +162,14 @@ const togglePlay2 = () => {
 
     isLoading2.value = true;
 
-    // Stream neu laden, um sicherzustellen, dass er von Anfang startet
+    // Reload stream to ensure it starts from beginning
     audioEl2.src = streamUrl2;
     audioEl2.load();
 
-    // SoundCloud-Player zurücksetzen - verwende die neue Store-Methode
+    // Reset SoundCloud player - use the new store method
     mainStore.resetSoundCloudPlayer();
 
-    // Audio-Kontext neu erstellen bei jedem Play
+    // Create new audio context with each play
     const playPromise = audioEl2.play();
 
     if (playPromise !== undefined) {
@@ -181,14 +179,13 @@ const togglePlay2 = () => {
           isPlaying2.value = true;
         })
         .catch((err) => {
-          console.error("Error playing stream 2:", err);
           isLoading2.value = false;
         });
     }
   }
 };
 
-// Parse strings mit Entities
+// Parse strings with entities
 const parseString = (string) => {
   if (!string) return "";
   return string
@@ -198,7 +195,7 @@ const parseString = (string) => {
     .replace(/&quot;/g, '"');
 };
 
-// Berechne den aktuellen Titel für Stream 1
+// Calculate current title for Stream 1
 const getCurrentName1 = computed(() => {
   const { onAirLight, liveData, icecastData } = liveStatus.value.stream1;
 
@@ -240,7 +237,7 @@ const getCurrentName1 = computed(() => {
   return "Stream 1";
 });
 
-// Berechne den aktuellen Titel für Stream 2
+// Calculate current title for Stream 2
 const getCurrentName2 = computed(() => {
   const { onAirLight, liveData } = liveStatus.value.stream2;
 
@@ -284,16 +281,16 @@ const getCurrentName2 = computed(() => {
   return "Stream 2";
 });
 
-// Audio-Elemente konfigurieren
+// Configure audio elements
 const setupAudioElement = (audioElement, num) => {
   if (!audioElement) return;
 
-  // Grundkonfiguration
+  // Basic configuration
   audioElement.volume = 1.0;
-  audioElement.preload = "metadata"; // Nur Metadaten vorab laden
+  audioElement.preload = "metadata"; // Only preload metadata
   audioElement.crossOrigin = "anonymous";
 
-  // Event-Listener
+  // Event listeners
   audioElement.addEventListener("play", () => {
     if (num === 1) {
       isPlaying1.value = true;
@@ -331,7 +328,6 @@ const setupAudioElement = (audioElement, num) => {
   });
 
   audioElement.addEventListener("error", (e) => {
-    console.error(`Stream ${num} error:`, e);
     if (num === 1) {
       isPlaying1.value = false;
       isLoading1.value = false;
@@ -341,33 +337,33 @@ const setupAudioElement = (audioElement, num) => {
     }
   });
 
-  // HLS-Streaming für bessere Kompatibilität hinzufügen
+  // Add HLS streaming for better compatibility
   try {
-    // Audio-Streams haben oft MIME-Typ issues. Auf gängige Icecast-Server-Optionen fallback
+    // Audio streams often have MIME type issues. Fallback to common Icecast server options
     audioElement.addEventListener("canplaythrough", () => {
     });
 
-    // Verhindere automatischen Start
+    // Prevent automatic start
     audioElement.autoplay = false;
   } catch (e) {
-    console.error(`Error configuring audio ${num}:`, e);
+    // Silent error handling
   }
 };
 
-// Live-Status regelmäßig aktualisieren (separater Timer)
+// Regularly update live status (separate timer)
 let statusUpdateInterval = null;
 
-// Nach dem Mounten Audio-Event-Handler einrichten
+// Set up audio event handlers after mounting
 onMounted(() => {
-  // Hole die Audio-Elemente nach dem Mounten
+  // Get audio elements after mounting
   audioEl1 = document.getElementById("audioPlayer1");
   audioEl2 = document.getElementById("audioPlayer2");
 
-  // Konfiguriere Audio-Elemente
+  // Configure audio elements
   setupAudioElement(audioEl1, 1);
   setupAudioElement(audioEl2, 2);
 
-  // MediaSession API für Mediensteuerung
+  // MediaSession API for media control
   if ("mediaSession" in navigator) {
     navigator.mediaSession.setActionHandler("play", () => {
       if (isPlaying1.value && audioEl1) {
@@ -386,25 +382,25 @@ onMounted(() => {
     });
   }
 
-  // Initial die Status-Daten laden
+  // Initially load status data
   updateLiveStatus();
 
-  // Status-Update-Timer einrichten
+  // Set up status update timer
   statusUpdateInterval = setInterval(() => {
-    // Nur aktualisieren, wenn keine Audio-Wiedergabe läuft
-    // oder wenn Metadaten aktualisiert werden sollen
+    // Only update if no audio playback is running
+    // or if metadata should be updated
     updateLiveStatus();
-  }, 10000); // Alle 10 Sekunden aktualisieren
+  }, 10000); // Update every 10 seconds
 });
 
-// Timer aufräumen beim Entfernen der Komponente
+// Clean up timer when removing component
 const onBeforeUnmount = () => {
   if (statusUpdateInterval) {
     clearInterval(statusUpdateInterval);
   }
 };
 
-// Initialer Aufruf, um sofort Daten zu haben
+// Initial call to have data immediately
 updateLiveStatus();
 </script>
 
@@ -538,7 +534,7 @@ updateLiveStatus();
       </div>
     </div>
 
-    <!-- Audio-Elemente komplett außerhalb von Vue's Reaktivitätssystem -->
+    <!-- Audio elements completely outside Vue's reactivity system -->
     <audio id="audioPlayer1" :src="streamUrl1"></audio>
     <audio id="audioPlayer2" :src="streamUrl2"></audio>
   </div>

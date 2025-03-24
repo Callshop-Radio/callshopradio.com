@@ -30,7 +30,8 @@
     "sanity-plugin-internationalized-array": "^1.10.9",
     "sanity-plugin-media": "^2.4.2",
     "sanity-plugin-mux-input": "^2.8.0",
-    "styled-components": "^6.1.16"
+    "styled-components": "^6.1.16",
+    "vite": "5.0.0"
   },
   "devDependencies": {
     "@sanity/eslint-config-studio": "^3.0.1",

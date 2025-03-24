@@ -14,6 +14,8 @@ const props = defineProps({
   },
 });
 
+const currentIndex = ref(0);
+
 // Init Embla Carousel
 const [emblaNode, emblaApi] = emblaCarouselVue({
   align: "start",
@@ -43,11 +45,12 @@ async function restoreTranslatePositions() {
 const onSelect = () => {
   if (!emblaApi.value) return;
   selectedIndex.value = emblaApi.value.selectedScrollSnap();
+  currentIndex.value = selectedIndex.value;
 };
-
 const scrollTo = (index: number) => {
   if (!emblaApi.value) return;
   emblaApi.value.scrollTo(index);
+  currentIndex.value = index; 
 };
 
 const scrollPrev = () => {
@@ -68,6 +71,7 @@ const setupDots = () => {
 
   // Set current index
   selectedIndex.value = emblaApi.value.selectedScrollSnap();
+  currentIndex.value = selectedIndex.value; // Initialisiere currentIndex
 
   // Event-Listener for updating the selected index
   emblaApi.value.on("select", onSelect);
@@ -361,6 +365,7 @@ function playTrack(item) {
           v-for="(group, groupIndex) in groupedItems"
           :key="groupIndex"
           class="embla__slide"
+          :class="{ active: groupIndex === currentIndex }"
         >
           <div :class="`slide-group group-${module.style || 'default'}`">
             <div
@@ -775,6 +780,14 @@ function playTrack(item) {
       :deep(.video-wrapper) {
         object-fit: cover;
         @apply max-w-full w-100;
+      }
+
+      opacity: 0;
+      transition: opacity .15s ease !important;
+
+      &.active {
+        opacity: 1;
+        transition: opacity 1.5s ease !important;
       }
 
       .slide-item {

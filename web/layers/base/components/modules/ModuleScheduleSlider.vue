@@ -61,8 +61,6 @@ async function restoreTranslatePositions() {
 const calculateTrackEndTime = (track) => {
   if (!track.starts || !track.length) return null;
 
-  console.log("start und länge: ", track.starts, track.length);
-
   const startTime = new Date(track.starts);
 
   // Verarbeite den length-Wert (kann verschiedene Formate haben)
@@ -113,8 +111,6 @@ const formatTrackTime = (dateTime) => {
   // Formatieren als "HH:00"
   const hours = roundedTime.getHours().toString().padStart(2, "0");
 
-  console.log("gerundet: ", hours);
-
   return `${hours}:00`;
 };
 
@@ -132,7 +128,6 @@ const getTrackTimeRange = (track) => {
   if (!endTime) return startFormatted;
 
   const endFormatted = formatTrackTime(endTime);
-  console.log("formattierte range:", startFormatted, "-", endFormatted);
 
   // Nur einen vollständigen String zurückgeben, wenn beide Teile vorhanden sind
   return `${startFormatted} – ${endFormatted}`;
@@ -393,7 +388,7 @@ const currentTimePosition = computed(() => {
 });
 </script>
 <template>
-  <div class="module-schedule-slider">
+  <div clas="module-schedule-slider">
     <div class="navigation-controls">
       <div class="location-switch">
         <button
@@ -475,7 +470,6 @@ const currentTimePosition = computed(() => {
         </button>
       </div>
     </div>
-    <!-- Zeitmarkierungen -->
     <section ref="emblaNode" class="embla schedule__city">
       <div
         v-if="groups.length >= 0"
@@ -533,25 +527,18 @@ const currentTimePosition = computed(() => {
     </section>
   </div>
 </template>
-
 <style scoped lang="postcss">
-
-.module-schedule-slider {
-  overflow-x: visible;
-
-}
-
 .embla {
   @apply overflow-hidden;
   height: max-content;
+  width: calc(var(--page-max-width) + (100vw - var(--page-max-width)) / 2);
   position: relative;
   margin: 0 0 0 -3.125rem;
 
   &__container {
     @apply flex backface-hidden touch-pan-y;
     height: 100%;
-    overflow: hidden;
-    position: relative;
+    width: 100%;
     padding: 0 0 0;
   }
 
@@ -567,8 +554,6 @@ const currentTimePosition = computed(() => {
 }
 
 .navigation-controls {
-  position: sticky;
-  top: 200px;
   @apply flex items-center justify-start flex-row flex-wrap items-stretch;
   gap: 0 var(--mid-padding);
   height: calc(var(--base-font-size) + var(--small-padding) * 2);
@@ -622,9 +607,7 @@ const currentTimePosition = computed(() => {
   }
 
   /* Position des Gleiters wenn der zweite Button aktiv ist */
-  &:has(
-      .location-switch__btn:nth-child(2).location-switch__btn--active
-    )::after {
+  &:has(.location-switch__btn:nth-child(2).location-switch__btn--active)::after {
     transform: translateX(calc(100%));
   }
 }
@@ -679,95 +662,62 @@ const currentTimePosition = computed(() => {
   flex-flow: column wrap;
   justify-content: flex-start;
   align-items: flex-start;
+  
   & > * {
     font-weight: 550;
     text-transform: uppercase;
   }
+  
   &__heading {
     .today-badge {
       color: var(--color-pink);
       text-transform: uppercase;
       margin: 0 var(--small-margin) 0 0;
     }
-    }
-}
-
-.time-markers__container {
-  position: absolute;
-  top: 0;
-  /* transform: translate(calc(-100% - var(--base-padding)), 0); */
-  margin: calc(var(--h3-size) + var(--base-padding) / 2) 0 0;
-  height: 150vh;
-  display: flex;
-  width: 3.125rem;
-  .time-markers {
-    font-size: var(--base-font-size);
-    font-weight: 550;
-    position: relative;
-    height: 100%;
-    width: 25px;
-
-    .time-marker {
-      @apply absolute w-full text-right pr-2;
-      height: 20px;
-      margin: var(--small-padding) 0 0 0;
-
-      &:nth-child(1) {
-        top: 0%;
-      }
-      &:nth-child(2) {
-        top: 6.25%;
-      }
-      &:nth-child(3) {
-        top: 12.5%;
-      }
-      &:nth-child(4) {
-        top: 18.75%;
-      }
-      &:nth-child(5) {
-        top: 25%;
-      }
-      &:nth-child(6) {
-        top: 31.25%;
-      }
-      &:nth-child(7) {
-        top: 37.5%;
-      }
-      &:nth-child(8) {
-        top: 43.75%;
-      }
-      &:nth-child(9) {
-        top: 50%;
-      }
-      &:nth-child(10) {
-        top: 56.25%;
-      }
-      &:nth-child(11) {
-        top: 62.5%;
-      }
-      &:nth-child(12) {
-        top: 68.75%;
-      }
-      &:nth-child(13) {
-        top: 75%;
-      }
-      &:nth-child(14) {
-        top: 81.25%;
-      }
-      &:nth-child(15) {
-        top: 87.5%;
-      }
-      &:nth-child(16) {
-        top: 93.75%;
-      }
-      &:nth-child(17) {
-        top: 100%;
-      }
-    }
   }
 }
 
-/* Aktueller Zeitmarker mit verbessertem Pulsieren */
+.time-markers {
+  &__container {
+    position: absolute;
+    top: 0;
+    margin: calc(var(--h3-size) + var(--base-padding) / 2) 0 0;
+    height: 150vh;
+    display: flex;
+    width: 3.125rem;
+  }
+  
+  font-size: var(--base-font-size);
+  font-weight: 550;
+  position: relative;
+  height: 100%;
+  width: 25px;
+
+  .time-marker {
+    @apply absolute w-full text-right pr-2;
+    height: 20px;
+    margin: var(--small-padding) 0 0 0;
+
+    &:nth-child(1) { top: 0%; }
+    &:nth-child(2) { top: 6.25%; }
+    &:nth-child(3) { top: 12.5%; }
+    &:nth-child(4) { top: 18.75%; }
+    &:nth-child(5) { top: 25%; }
+    &:nth-child(6) { top: 31.25%; }
+    &:nth-child(7) { top: 37.5%; }
+    &:nth-child(8) { top: 43.75%; }
+    &:nth-child(9) { top: 50%; }
+    &:nth-child(10) { top: 56.25%; }
+    &:nth-child(11) { top: 62.5%; }
+    &:nth-child(12) { top: 68.75%; }
+    &:nth-child(13) { top: 75%; }
+    &:nth-child(14) { top: 81.25%; }
+    &:nth-child(15) { top: 87.5%; }
+    &:nth-child(16) { top: 93.75%; }
+    &:nth-child(17) { top: 100%; }
+  }
+}
+
 .current-time-marker {
   position: absolute;
   display: flex;
@@ -786,8 +736,6 @@ const currentTimePosition = computed(() => {
     z-index: 2;
     transform: translate(-50%, 50%);
 
-
-
     &::before {
       content: "";
       position: absolute;
@@ -804,31 +752,6 @@ const currentTimePosition = computed(() => {
       filter: blur(5px);
     }
   }
-
-  /* &__line {
-    position: absolute;
-    width: calc(100% + 100vw);
-    height: 2px;
-    right: -12px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--color-pink) 50%,
-      rgba(238, 82, 155, 0.7)
-    );
-  }
-
-  &__time {
-    position: absolute;
-    right: 16px;
-    background: var(--color-pink);
-    color: white;
-    font-size: var(--small-font-size);
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 4px;
-    transform: translateY(-50%);
-  } */
 }
 
 @keyframes pulseOpacity {
@@ -846,14 +769,13 @@ const currentTimePosition = computed(() => {
   }
 }
 
-/* Zeitraster */
 .events {
   @apply relative;
   height: 150vh;
   display: flex;
   width: clamp(400px, 33svw, 50svh);
 
-  .events-grid {
+  &-grid {
     @apply flex-grow relative;
     display: flex;
     flex-flow: column nowrap;
@@ -861,7 +783,6 @@ const currentTimePosition = computed(() => {
   }
 }
 
-/* Event Items */
 .event-item {
   @apply absolute overflow-hidden;
   min-height: 24px;
@@ -870,30 +791,24 @@ const currentTimePosition = computed(() => {
   z-index: 1;
   transition: transform 0.2s, box-shadow 0.2s;
 
-  .event-item__content {
+  &__content {
     background-color: #d9d9d9;
     padding: calc(var(--small-padding) / 2) var(--small-padding);
+    
     &.live {
       background-color: var(--color-pink);
     }
-  }
-
-  &:hover {
-    /* transform: scale(1.02); */
-    /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
-    /* z-index: 2; */
+    
+    @apply flex flex-col overflow-hidden;
+    height: 100%;
   }
 
   &--show {
+    /* Spezifische Stile für Shows */
   }
 
   &--track {
     @apply bg-white border border-gray-200 border-l-4 border-l-green-400;
-  }
-
-  &__content {
-    @apply flex flex-col overflow-hidden;
-    height: 100%;
   }
 
   &__time {

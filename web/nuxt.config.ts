@@ -56,7 +56,14 @@ export default defineNuxtConfig({
     plugins: {
       "postcss-nested": {},
       cssnano: {
-        preset: "default",
+        preset: [
+          "default",
+          {
+            discardComments: {
+              removeAll: true,
+            },
+          },
+        ],
       },
       "@unocss/postcss": {},
       "postcss-preset-env": {
@@ -82,6 +89,10 @@ export default defineNuxtConfig({
     ],
     defaultLocale: "en",
     detectBrowserLanguage: false,
+    // Bestehende i18n-Konfiguration...
+    bundle: {
+      optimizeTranslationDirective: false, // Explizit deaktivieren, um die Warnung zu beseitigen
+    },
   },
 
   nitro: {
@@ -96,7 +107,7 @@ export default defineNuxtConfig({
     },
   },
 
-  buildModules: [ 'vue-ssr-carousel/nuxt' ],
+  buildModules: ["vue-ssr-carousel/nuxt"],
 
   build: {
     transpile: ["rxjs"],

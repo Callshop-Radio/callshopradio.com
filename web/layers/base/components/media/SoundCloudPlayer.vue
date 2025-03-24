@@ -26,11 +26,10 @@ const isWidgetReady = ref(false);
 const localTrack = ref(props.track);
 const isComponentMounted = ref(false);
 const trackError = ref(null);
-const playerRendered = ref(false); // Neuer State für das Rendering des Players
+const playerRendered = ref(false); // Player rendering state
 
-// Hilfsfunktion zum Prüfen und Initialisieren des Players
+// Helper function to check and initialize player
 function checkAndInitializePlayer() {
-
   if (!localTrack.value) {
     return;
   }
@@ -43,11 +42,11 @@ function checkAndInitializePlayer() {
   initializeIframe();
 }
 
-// SoundCloud URL aus dem Track-Objekt extrahieren
+// Extract SoundCloud URL from track object
 const trackUrl = computed(() => {
   if (!localTrack.value) return null;
 
-  // Priorisiere permalink_url, da stream_url nicht mit dem Widget funktioniert
+  // Prioritize permalink_url as stream_url doesn't work with widget
   if (localTrack.value.permalink_url) {
     return localTrack.value.permalink_url;
   }
@@ -56,23 +55,23 @@ const trackUrl = computed(() => {
     return localTrack.value.uri;
   }
 
-  // Für verschachtelte Objekte
+  // For nested objects
   if (localTrack.value.soundcloud?.tracks?.[0]?.permalink_url) {
     return localTrack.value.soundcloud.tracks[0].permalink_url;
   }
 
-  // Wenn nur eine ID vorhanden ist, konstruiere die URL
+  // If only ID is available, construct URL
   if (localTrack.value.id || localTrack.value.track_id) {
     return `https://api.soundcloud.com/tracks/${
       localTrack.value.id || localTrack.value.track_id
     }`;
   }
 
-  // Fallback auf stream_url, obwohl es möglicherweise nicht funktioniert
+  // Fallback to stream_url, though it might not work
   if (localTrack.value.stream_url) {
-    // Versuche zu erkennen, ob es eine Direkt-Stream-URL oder eine API-URL ist
+    // Try to detect if it's a direct stream URL or API URL
     if (localTrack.value.stream_url.includes("api.soundcloud.com/tracks/")) {
-      // Extrahiere die Track-ID und wandle sie in eine permalink_url um
+      // Extract track ID and convert to permalink_url
       const trackIdMatch = localTrack.value.stream_url.match(/tracks\/(\d+)/);
       if (trackIdMatch && trackIdMatch[1]) {
         return `https://api.soundcloud.com/tracks/${trackIdMatch[1]}`;
@@ -81,14 +80,10 @@ const trackUrl = computed(() => {
     return localTrack.value.stream_url;
   }
 
-  console.warn(
-    "Keine gültige SoundCloud permalink_url gefunden",
-    localTrack.value
-  );
   return null;
 });
 
-// Track-ID für Tracking und Vergleiche
+// Track ID for tracking and comparison
 const trackId = computed(() => {
   return (
     localTrack.value?.id ||
@@ -99,7 +94,7 @@ const trackId = computed(() => {
   );
 });
 
-// SoundCloud Widget API laden
+// Load SoundCloud Widget API
 function loadSoundCloudWidget() {
   return new Promise((resolve) => {
     if (window.SC && window.SC.Widget) {
@@ -116,70 +111,64 @@ function loadSoundCloudWidget() {
   });
 }
 
-// iFrame initialisieren
+// Initialize iframe
 async function initializeIframe() {
-
   if (!trackUrl.value) {
-    // Wenn keine trackUrl, aber eine track_id oder ID vorhanden ist, versuche diese zu verwenden
+    // If no trackUrl but track_id or ID is available, try to use it
     const trackIdValue = localTrack.value?.id || localTrack.value?.track_id;
     if (trackIdValue) {
       const fallbackUrl = `https://api.soundcloud.com/tracks/${trackIdValue}`;
 
-      // iFrame-URL erstellen mit extra kompaktem Layout
+      // Create iframe URL with extra compact layout
       iframeSrc.value = `https://w.soundcloud.com/player/?url=${encodeURIComponent(
         trackUrl.value
       )}&color=%23f794b3&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false&show_artwork=false`;
 
       try {
-        // SoundCloud Widget API laden
+        // Load SoundCloud Widget API
         const Widget = await loadSoundCloudWidget();
 
-        // Widget wird später nach dem Rendern des iFrames initialisiert
+        // Widget will be initialized later after iframe rendering
         nextTick(() => {
           setTimeout(() => {
             setupWidget(Widget);
           }, 500);
         });
       } catch (error) {
-        trackError.value = "Fehler beim Initialisieren des Players.";
+        trackError.value = "Error initializing player.";
         isLoading.value = false;
       }
       return;
     }
 
-    trackError.value = "Keine gültige SoundCloud URL gefunden.";
-    console.warn("Keine Track-URL verfügbar");
+    trackError.value = "No valid SoundCloud URL found.";
     isLoading.value = false;
     return;
   }
 
   if (!iframeContainer.value) {
-    trackError.value = "Player-Container konnte nicht gefunden werden.";
-    console.warn("iframeContainer-Ref nicht verfügbar");
+    trackError.value = "Player container not found.";
     isLoading.value = false;
     return;
   }
 
   try {
-    // SoundCloud Widget API laden
+    // Load SoundCloud Widget API
     const Widget = await loadSoundCloudWidget();
 
-    // iFrame-URL erstellen mit extra kompaktem Layout
-    // In deiner initializeIframe-Funktion:
+    // Create iframe URL with extra compact layout
     iframeSrc.value = `https://w.soundcloud.com/player/?url=${encodeURIComponent(
       trackUrl.value
     )}&color=%23f794b3&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false&show_artwork=false`;
 
-
-    // Widget wird später nach dem Rendern des iFrames initialisiert
+    // Widget will be initialized later after iframe rendering
     nextTick(() => {
       setTimeout(() => {
         setupWidget(Widget);
       }, 500);
     });
   } catch (error) {
-    console.error("Fehler beim Initialisieren des iFrames:", error);
-    trackError.value = "Fehler beim Initialisieren des Players.";
+    trackError.value = "Error initializing player.";
     isLoading.value = false;
   }
 }
@@ -191,18 +180,16 @@ function setupWidget(Widget) {
       localWidget.value = Widget(iframe);
       setupWidgetEvents();
     } catch (error) {
-      console.error("Fehler bei Widget-Initialisierung:", error);
-      trackError.value = "Fehler bei Player-Initialisierung.";
+      trackError.value = "Error initializing player.";
     }
     isLoading.value = false;
   } else {
-    console.error("Kein iframe im Container gefunden");
-    trackError.value = "Player konnte nicht initialisiert werden.";
+    trackError.value = "Player could not be initialized.";
     isLoading.value = false;
   }
 }
 
-// Verbesserte setupWidgetEvents-Funktion
+// Improved setupWidgetEvents function
 function setupWidgetEvents() {
   if (!localWidget.value || !window.SC) {
     return;
@@ -216,20 +203,20 @@ function setupWidgetEvents() {
       isWidgetReady.value = true;
       isLoading.value = false;
 
-      // Nach dem Ready-Event den aktuellen Status abfragen
+      // Query current status after ready event
       setTimeout(() => {
         localWidget.value.isPaused((paused) => {
           isPlaying.value = !paused;
-          mainStore.setPlayerStatus(!paused); // Aktualisiere den Store
+          mainStore.setPlayerStatus(!paused); // Update store
         });
       }, 100);
     });
 
-    // PLAY Event mit Fehlerbehandlung
+    // PLAY Event with error handling
     localWidget.value.bind(SC.Widget.Events.PLAY, () => {
       isPlaying.value = true;
-      mainStore.setPlayerStatus(true); // Aktualisiere den Store
-      // Doppelprüfung, ob wirklich abgespielt wird
+      mainStore.setPlayerStatus(true); // Update store
+      // Double-check if really playing
       setTimeout(() => {
         localWidget.value.isPaused((paused) => {
           if (paused && isPlaying.value) {
@@ -239,19 +226,19 @@ function setupWidgetEvents() {
       }, 100);
     });
 
-    // PLAY_PROGRESS Event (wichtig für Statusverfolgung)
+    // PLAY_PROGRESS Event (important for status tracking)
     localWidget.value.bind(SC.Widget.Events.PLAY_PROGRESS, () => {
       if (!isPlaying.value) {
         isPlaying.value = true;
       }
     });
 
-    // PAUSE Event mit Fehlerbehandlung
+    // PAUSE Event with error handling
     localWidget.value.bind(SC.Widget.Events.PAUSE, () => {
       isPlaying.value = false;
-      mainStore.setPlayerStatus(false); // Aktualisiere den Store
+      mainStore.setPlayerStatus(false); // Update store
 
-      // Doppelprüfung, ob wirklich pausiert ist
+      // Double-check if really paused
       setTimeout(() => {
         localWidget.value.isPaused((paused) => {
           if (!paused && !isPlaying.value) {
@@ -264,29 +251,28 @@ function setupWidgetEvents() {
     // FINISH Event
     localWidget.value.bind(SC.Widget.Events.FINISH, () => {
       isPlaying.value = false;
-      mainStore.setPlayerStatus(false); // Aktualisiere den Store
+      mainStore.setPlayerStatus(false); // Update store
     });
 
     localWidget.value.bind(SC.Widget.Events.ERROR, (e) => {
-      console.error("ERROR Event ausgelöst", e);
-      trackError.value = "Es ist ein Fehler beim Abspielen aufgetreten.";
+      trackError.value = "An error occurred during playback.";
       isPlaying.value = false;
     });
   } catch (error) {
-    console.error("Fehler beim Einrichten der Widget-Events:", error);
+    // Silent error handling
   }
 }
 
 onMounted(() => {
   isComponentMounted.value = true;
 
-  // Wenn bereits ein Track vorhanden ist beim Mounten
+  // If track already exists on mount
   if (props.track || mainStore.currentTrack) {
     const trackToUse = props.track || mainStore.currentTrack;
     localTrack.value = trackToUse;
     playerRendered.value = true;
 
-    // Warten auf DOM-Update
+    // Wait for DOM update
     nextTick(() => {
       setTimeout(() => {
         checkAndInitializePlayer();
@@ -297,18 +283,17 @@ onMounted(() => {
   watch(
     () => mainStore.currentTrack,
     (newTrack, oldTrack) => {
-
-      // Frühzeitig beenden, wenn newTrack null ist
+      // Exit early if newTrack is null
       if (!newTrack) {
-        return; // Beende frühzeitig, wenn kein Track vorhanden
+        return;
       }
 
       try {
-        // Prüfen, ob es sich um einen neuen Track handelt oder um den gleichen
+        // Check if it's a new track or the same
         const newTrackId = newTrack?.id || newTrack?.track_id;
         const oldTrackId = oldTrack?.id || oldTrack?.track_id;
 
-        // Nur neu initialisieren, wenn es ein anderer Track ist
+        // Only reinitialize if it's a different track
         if (
           newTrackId !== oldTrackId &&
           newTrack &&
@@ -317,13 +302,13 @@ onMounted(() => {
           trackError.value = null;
           playerRendered.value = true;
 
-          // Prüfen, ob der Track eine URL hat oder andere relevante Eigenschaften
+          // Check if track has URL or other relevant properties
           const hasPermalinkUrl =
             newTrack.permalink_url ||
             newTrack.uri ||
             newTrack.soundcloud?.tracks?.[0]?.permalink_url;
 
-          // Wenn der Track eine ID hat, aber keine Permalink-URL
+          // If track has ID but no permalink URL
           if (!hasPermalinkUrl && (newTrack.id || newTrack.track_id)) {
             newTrack.permalink_url = `https://api.soundcloud.com/tracks/${
               newTrack.id || newTrack.track_id
@@ -332,26 +317,22 @@ onMounted(() => {
 
           localTrack.value = newTrack;
 
-          // Player mit dem neuen Track nur initialisieren, wenn die Komponente gemountet ist
+          // Only initialize player with new track if component is mounted
           if (isComponentMounted.value) {
             isLoading.value = true;
 
-            // Warten auf den nächsten DOM-Zyklus und dann mit Verzögerung initialisieren
+            // Wait for next DOM cycle then initialize with delay
             nextTick(() => {
               setTimeout(() => {
                 checkAndInitializePlayer();
               }, 200);
             });
-          } else {
           }
         } else if (newTrack === oldTrack && newTrack) {
           playerRendered.value = true;
-        } else {
         }
       } catch (error) {
-        console.error("Fehler im Track-Watcher:", error);
-        trackError.value =
-          "Es ist ein Fehler beim Laden des Tracks aufgetreten.";
+        trackError.value = "An error occurred while loading the track.";
       }
     },
     { immediate: true }
@@ -361,7 +342,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (localWidget.value && window.SC) {
     try {
-      // Events aufräumen
+      // Clean up events
       const events = [
         window.SC.Widget.Events.READY,
         window.SC.Widget.Events.PLAY,
@@ -374,7 +355,7 @@ onBeforeUnmount(() => {
         if (event) localWidget.value.unbind(event);
       });
     } catch (error) {
-      console.error("Fehler beim Aufräumen der Events:", error);
+      // Silent error handling
     }
   }
 });
@@ -450,56 +431,5 @@ onBeforeUnmount(() => {
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
   }
-
-  /* &__loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 166px;
-    background-color: #f5f5f5;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-
-    .dots {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 10px;
-
-      span {
-        display: block;
-        width: 8px;
-        height: 8px;
-        background-color: #666;
-        border-radius: 50%;
-        animation: pulse 1.4s infinite ease-in-out both;
-
-        &:nth-child(1) {
-          animation-delay: -0.32s;
-        }
-
-        &:nth-child(2) {
-          animation-delay: -0.16s;
-        }
-      }
-    }
-
-    p {
-      font-size: 14px;
-      color: #666;
-      margin: 0;
-    }
-  }
-
-  @keyframes pulse {
-    0%,
-    80%,
-    100% {
-      transform: scale(0.4);
-    }
-    40% {
-      transform: scale(1);
-    }
-  } */
 }
 </style>
