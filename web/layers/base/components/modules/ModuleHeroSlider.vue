@@ -223,8 +223,8 @@ const slides = computed(() => {
       position: absolute;
       top: -33%;
       left: -45%;
-      width: 100%;
-      height: 100%;
+      width: 110%;
+      height: 110%;
     }
   }
   .graphics-front {

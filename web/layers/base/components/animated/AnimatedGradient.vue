@@ -12,9 +12,9 @@
       <path
         id="blob"
         d="M200,120 C260,80 300,140 280,190 C250,250 170,240 130,190 C90,140 140,160 200,120"
-        fill="#78CE82"
         filter="url(#blurFilter)"
         opacity="0.85"
+        :fill="color"
       >
         <!-- Slower, larger, more random animation -->
         <animate
@@ -38,3 +38,13 @@
     </svg>
   </div>
 </template>
+
+<script setup>
+
+const props = defineProps({
+  color: {
+    type: String,
+    default: 'var(--color-pink)',
+  }
+});
+</script>
