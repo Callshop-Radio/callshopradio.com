@@ -257,11 +257,11 @@ usePageSeo(data?.value?.seo);
   justify-content: flex-start;
   align-items: flex-start;
   &__background {
-    position: absolute;
-    top: calc(var(--big-margin) * 2);
+    position: fixed;
+    top: calc(var(--big-margin));
     flex-grow: 1;
     left: 0;
-    height: 150svh;
+    height: calc(180svh - var(--big-margin) * 2);
     width: 100svw;
     max-width: 100svw;
     overflow: hidden;
@@ -271,9 +271,10 @@ usePageSeo(data?.value?.seo);
       left: -10vw;
       min-width: 120vw;
       height: auto;
-      filter: blur(30px);
       z-index: 0;
       object-fit: cover;
+      z-index: -1;
+      filter: saturate(0.75) blur(30px) brightness(0.95);
     }
   }
   &__content {

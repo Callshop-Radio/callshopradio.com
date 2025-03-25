@@ -686,6 +686,11 @@ const currentTimePosition = computed(() => {
   }
 
   &__heading {
+    font-size: var(--h4-size);
+    color: var(--color-text);
+    @media (prefers-color-scheme: dark) {
+      color: var(--color-bg);
+    }
     .today-badge {
       color: var(--color-pink);
       text-transform: uppercase;
@@ -714,6 +719,10 @@ const currentTimePosition = computed(() => {
     @apply absolute w-full text-right pr-2;
     height: 20px;
     margin: var(--small-padding) 0 0 0;
+    color: var(--color-text);
+    @media (prefers-color-scheme: dark) {
+      color: var(--color-bg);
+    }
 
     &:nth-child(1) {
       top: 0%;
@@ -843,7 +852,7 @@ const currentTimePosition = computed(() => {
   transition: transform 0.2s, box-shadow 0.2s;
 
   &__content {
-    background-color: #d9d9d9;
+    background-color:  var(--color-grey);
     padding: calc(var(--small-padding) / 2) var(--small-padding);
 
     &.live {
@@ -852,6 +861,13 @@ const currentTimePosition = computed(() => {
 
     @apply flex flex-col overflow-hidden;
     height: 100%;
+  }
+
+  & > * {
+    color: var(--color-text);
+    @media (prefers-color-scheme: dark) {
+      color: var(--color-bg);
+    }
   }
 
   &--show {
