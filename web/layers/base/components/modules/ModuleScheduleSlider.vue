@@ -480,7 +480,10 @@ const currentTimePosition = computed(() => {
           v-for="(group, index) in groups"
           :key="'group-' + index"
           class="show-day embla__slide"
-          :class="{ 'show-day--today': group.isToday }"
+          :class="{
+            'show-day--today': group.isToday,
+            'embla__slide--active': currentSlideIndex === index,
+          }"
         >
           <h3 class="show-day__heading">
             <span v-if="group.isToday" class="today-badge">Today</span
@@ -550,7 +553,9 @@ const currentTimePosition = computed(() => {
 
   &__slide {
     @apply flex flex-grow-0 flex-shrink-0 flex-basis-auto max-w-full min-w-0 relative;
-    padding: 0 0 0 2.75rem;
+    &--active {
+      padding: 0 0 0 2.75rem;
+    }
 
     :deep(img),
     :deep(.video-wrapper) {
