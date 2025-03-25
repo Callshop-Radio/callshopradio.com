@@ -303,13 +303,6 @@ onMounted(() => {
     shape-rendering: crispEdges;
     z-index: 10;
 
-    .set-tags {
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: flex-start;
-        gap: var(--base-padding);
-      }
-
     .play-button {
       display: flex;
       flex-flow: column wrap;
@@ -327,11 +320,19 @@ onMounted(() => {
       }
     }
 
+    .set-tags {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+        gap: var(--base-padding);
+      }
+
     &-container {
       display: flex;
       flex-flow: column wrap;
       justify-content: center;
       gap: var(--mid-padding);
+      width: calc(100% - 4rem - var(--mid-margin));
     }
 
     .set-header {
@@ -357,6 +358,8 @@ onMounted(() => {
       .set-title{
         width: 100%;
       }
+
+
 
       .set-meta {
         display: flex;

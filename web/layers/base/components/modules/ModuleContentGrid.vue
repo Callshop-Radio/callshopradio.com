@@ -1151,7 +1151,7 @@ function playTrack(item) {
                       class="grid-item__artist"
                     >
                       {{ artist.title
-                      }}{{ index < item.persons.length - 1 ? ", " : "" }}
+                      }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
                     </h3>
                   </div>
                 </div>
@@ -1179,7 +1179,7 @@ function playTrack(item) {
           </div>
         </div>
         <div v-else class="content-grid__no-results">
-          Keine Ergebnisse für die aktuelle Filterauswahl.
+          No matching content.
         </div>
 
         <div v-if="hasMoreItems" class="content-grid__load-more">
