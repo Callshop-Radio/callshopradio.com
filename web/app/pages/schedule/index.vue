@@ -201,6 +201,13 @@ usePageSeo(data?.value?.seo);
 
 <template>
   <div class="schedule">
+    <div class="schedule__background">
+      <MediaImage
+        v-if="data?.backgroundImage"
+        :image="data?.backgroundImage"
+        class="schedule__background__image"
+      />
+    </div>
     <div v-if="loading" class="schedule__loading">
       <div class="loading-spinner"></div>
       <div class="loading-text">Loading</div>
@@ -238,11 +245,6 @@ usePageSeo(data?.value?.seo);
         :isLiveShow="isLiveShow"
       />
     </div>
-    <MediaImage
-        v-if="data?.backgroundImage"
-        :image="data?.backgroundImage"
-        class="schedule__background-image"
-      />
   </div>
 </template>
 
@@ -254,14 +256,25 @@ usePageSeo(data?.value?.seo);
   flex-flow: column;
   justify-content: flex-start;
   align-items: flex-start;
-  &__background-image {
+  &__background {
     position: absolute;
     top: calc(var(--big-margin) * 2);
-    left: -10vw;
-    min-width: 120vw;
-    height: auto;
-    filter: blur(30px);
-    z-index: 0;
+    flex-grow: 1;
+    left: 0;
+    height: 150svh;
+    width: 100svw;
+    max-width: 100svw;
+    overflow: hidden;
+    &__image {
+      position: absolute;
+      top: 0;
+      left: -10vw;
+      min-width: 120vw;
+      height: auto;
+      filter: blur(30px);
+      z-index: 0;
+      object-fit: cover;
+    }
   }
   &__content {
     z-index: 10;
@@ -272,6 +285,4 @@ usePageSeo(data?.value?.seo);
     align-items: flex-start;
   }
 }
-
-
 </style>

@@ -1,6 +1,7 @@
 <script setup>
 import { useMainStore } from "~/stores/mainStore";
-import ElementsCallshopTextLogo from "../elements/ElementsCallshopTextLogo.vue";
+const { locale, locales } = useI18n();
+const localePath = useLocalePath();
 
 const mainStore = useMainStore();
 const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
@@ -30,10 +31,12 @@ const togglePlayerVisibility = () => {
 <template>
   <div class="header">
     <section class="header__menu-section">
+      <NuxtLink :to="localePath('/')" class="header__menu-section__logo">
       <div class="header__menu-section__logo">
         <ElementsCallshopLogo class="logo" />
         <ElementsCallshopTextLogo class="text-logo" />
       </div>
+      </NuxtLink>
       <SiteMenu />
     </section>
     <section class="header__audio-player-section">

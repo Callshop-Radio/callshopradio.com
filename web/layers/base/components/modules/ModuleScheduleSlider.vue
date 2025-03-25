@@ -819,7 +819,7 @@ const currentTimePosition = computed(() => {
   @apply relative;
   height: 150vh;
   display: flex;
-  width: clamp(400px, 33svw, 50svh);
+  width: clamp(200px, 24svw, 33svh);
 
   &-grid {
     @apply flex-grow relative;

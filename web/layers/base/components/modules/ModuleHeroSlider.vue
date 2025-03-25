@@ -295,11 +295,11 @@ const slides = computed(() => {
           background-color: var(--color-grey);
 
           &.is-selected {
-            background-color: var(--color-text);
+            background-color: var(--color-pink);
           }
 
           &:hover {
-            @apply bg-gray-400;
+            background-color: var(--color-pink);
           }
         }
       }
@@ -336,7 +336,7 @@ const slides = computed(() => {
 .slider-item {
   &--default {
     ::v-deep(.module-hero-entry) {
-      margin: 0; /* Entferne die Standardränder der Komponente im Slider */
+      margin: 0;
     }
   }
 

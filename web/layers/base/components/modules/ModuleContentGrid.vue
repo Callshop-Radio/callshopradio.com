@@ -1178,9 +1178,7 @@ function playTrack(item) {
             </NuxtLink>
           </div>
         </div>
-        <div v-else class="content-grid__no-results">
-          No matching content.
-        </div>
+        <div v-else class="content-grid__no-results">No matching content.</div>
 
         <div v-if="hasMoreItems" class="content-grid__load-more">
           <button @click="loadMoreItems" class="load-more-button">
@@ -1249,6 +1247,11 @@ function playTrack(item) {
       padding: 0 0 0 var(--mid-margin);
       border-right: 1px solid var(--color-grey);
       overflow-x: scroll;
+      &::-webkit-scrollbar {
+        display: none;
+      }
+      -ms-overflow-style: none;
+      scrollbar-width: none;
       &__title {
         display: flex;
         flex-flow: row wrap;
