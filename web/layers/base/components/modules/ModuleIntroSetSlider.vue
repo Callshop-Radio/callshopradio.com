@@ -262,10 +262,12 @@ const slides = computed(() => {
       justify-content: space-between;
       align-items: center;
       z-index: 10;
+      pointer-events: none;
 
       .embla__arrow {
         background-color: transparent;
         transform: translate(0, calc(var(--base-margin) * -1));
+        pointer-events: all;
 
         svg {
           @apply w-5 h-5;
@@ -298,6 +300,7 @@ const slides = computed(() => {
           width: 7px;
           height: 7px;
           background-color: var(--color-grey);
+          pointer-events: all;
 
           &.is-selected {
             background-color: var(--color-pink);
