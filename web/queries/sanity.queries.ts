@@ -44,6 +44,123 @@ export const SHOWSARCHIVE_QUERY = `
   ...,
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY},
+  slider{
+    ...,
+    count,
+    "sets": select(
+            autoLoad == true => *[_type == 'set'] | order(publishedAt desc) {
+                ...,
+                _id,
+                _type,
+                title,
+                slug,
+                "soundcloud": soundcloud{
+                    _type,
+                    "tracks": tracks[]{
+                        id,
+                        created_at,
+                        duration,
+                        tag_list,
+                        streamable,
+                        purchase_url,
+                        genre,
+                        title,
+                        description,
+                        release_year,
+                        release_month,
+                        release_day,
+                        license,
+                        uri,
+                        "user": user{
+                            id,
+                            username,
+                            permalink_url
+                        },
+                        artwork_url,
+                        waveform_url,
+                        stream_url,
+                        playback_count,
+                        favoritings_count
+                    }
+                },  
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    title
+                }| order(lower(title)),
+                persons[]->{
+                    ...,
+                    _id,
+                    title
+                },
+                "parentShow": *[_type == "show" && references(^._id)][0]{
+                    ...,
+                    _id,
+                    title,
+                    slug,
+                    image { asset-> },
+                    "city": *[_type == "tag.city" && references(^._id)][0]{
+                        _id,
+                        _type,
+                        title,
+                        short
+                    },
+                }
+            },
+            sets[]->{
+                _id,
+                _type,
+                title,
+                slug,
+                "soundcloud": soundcloud{
+                    _type,
+                    "tracks": tracks[]{
+                        id,
+                        created_at,
+                        duration,
+                        tag_list,
+                        streamable,
+                        purchase_url,
+                        genre,
+                        title,
+                        description,
+                        release_year,
+                        release_month,
+                        release_day,
+                        license,
+                        uri,
+                        "user": user{
+                            id,
+                            username,
+                            permalink_url
+                        },
+                        artwork_url,
+                        waveform_url,
+                        stream_url,
+                        playback_count,
+                        favoritings_count
+                    }
+                },
+                persons[]->{
+                    ...,
+                    _id,
+                    title
+                },
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    title
+                }| order(lower(title)),
+                "parentShow": *[_type == "show" && references(^._id)][0]{
+                    ...,
+                    _id,
+                    title,
+                    slug,
+                    image { asset-> },
+                }
+            }
+        )
+  }
 }`;
 
 export const WORDS_QUERY = `

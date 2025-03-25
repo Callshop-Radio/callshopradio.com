@@ -16,6 +16,24 @@ const activeFilters = ref(new Set());
 const activeSubFilters = ref(false);
 const mainCities = ["Düsseldorf", "Leipzig", "Vienna"]; // Hauptstädte definieren
 const isOtherCitiesActive = ref(false); // Zustand für "Others"-Filter
+const currentIndex = ref(0);
+
+const onSelect = (index: number) => {
+  currentIndex.value = index;
+};
+
+// Sortierungs-Zustand
+const sortMode = ref("new"); // Standardmäßig "new" (chronologisch)
+const shuffleSeed = ref(Date.now()); // Zufallsseed für Shuffle
+
+// Funktion zum Ändern des Sortiermodus
+function changeSortMode(mode) {
+  if (mode === "shuffle") {
+    // Bei jedem Klick auf Shuffle einen neuen Seed generieren
+    shuffleSeed.value = Date.now();
+  }
+  sortMode.value = mode;
+}
 
 // Filter nach Kategorien organisieren
 const filterCategories = {
@@ -88,7 +106,7 @@ function getTagCategory(tagId) {
 function getTagNameById(tagId) {
   // Spezialfall für "others"
   if (tagId === "others") {
-    return "Andere Städte";
+    return "Elsewhere";
   }
 
   // Suche in allen Kategorien nach dem Tag
@@ -375,7 +393,7 @@ watch(
     if (["persons", "venues", "all"].includes(newValue)) {
       categoryType.value = "Pool";
     } else if (newValue === "sets") {
-      categoryType.value = "Episodes";
+      categoryType.value = "sets";
     } else if (newValue === "shows") {
       categoryType.value = "Shows";
     } else if (newValue === "words") {
@@ -488,10 +506,10 @@ function itemMatchesFilters(item) {
   }
 
   // Spezialbehandlung wenn nur der Others-Filter aktiv ist
-  if (activeFilters.value.size === 1 && activeFilters.value.has('others')) {
+  if (activeFilters.value.size === 1 && activeFilters.value.has("others")) {
     const cityTags = getItemCityTags(item);
     // Item passt zu Others, wenn es keine Städte hat oder wenn keine der Städte eine Hauptstadt ist
-    return cityTags.length === 0 || cityTags.every(tag => !isMainCity(tag));
+    return cityTags.length === 0 || cityTags.every((tag) => !isMainCity(tag));
   }
 
   // Standard-Filterlogik für alle anderen Filter
@@ -499,7 +517,7 @@ function itemMatchesFilters(item) {
     let hasMatchingTag = false;
 
     // Überspringen des Others-Filters in der normalen Logik
-    if (filterId === 'others') {
+    if (filterId === "others") {
       continue;
     }
 
@@ -560,31 +578,99 @@ function filterItems(items, contentType = null) {
   return filteredItems;
 }
 
-// Berechne alle Items nach Typ
+// Berechne alle Items nach Typ und sortiere sie
 const allItems = computed(() => {
   if (!props.module) return [];
 
+  let items = [];
+
   switch (props.module.type) {
     case "pool":
-      return filterItems(
+      items = filterItems(
         props.module.poolItems || [],
         props.module.poolContentType
       );
+      break;
     case "sets":
-      return props.module.setItems || [];
+      items = props.module.setItems || [];
+      break;
     case "shows":
-      return props.module.showItems || [];
+      items = props.module.showItems || [];
+      break;
     case "words":
-      return props.module.articleItems || [];
+      items = props.module.articleItems || [];
+      break;
     default:
-      return [];
+      items = [];
   }
+
+  return items;
 });
 
-// Berechne die gefilterten Items
+// Berechne die gefilterten und sortierten Items
 const filteredItems = computed(() => {
-  return allItems.value.filter((item) => itemMatchesFilters(item));
+  let filteredArray = allItems.value.filter((item) => itemMatchesFilters(item));
+
+  // Sortierung anwenden
+  if (sortMode.value === "new") {
+    // Chronologisch sortieren (neuste zuerst)
+    return filteredArray.sort((a, b) => {
+      const dateA = new Date(a._updatedAt || a.datetime || a._createdAt || 0);
+      const dateB = new Date(b._updatedAt || b.datetime || b._createdAt || 0);
+      return dateB.getTime() - dateA.getTime();
+    });
+  } else if (sortMode.value === "shuffle") {
+    // Shuffle mit stabilem Seed für die aktuelle Sitzung
+    return shuffleArray([...filteredArray], shuffleSeed.value);
+  } else if (sortMode.value === "alpha") {
+    // Alphabetisch nach Titel sortieren
+    return filteredArray.sort((a, b) => {
+      // Bestimme den Titel je nach Content-Typ
+      const titleA = (
+        a.title ||
+        a.name ||
+        (a.parentShow ? a.parentShow.title : "")
+      ).toLowerCase();
+      const titleB = (
+        b.title ||
+        b.name ||
+        (b.parentShow ? b.parentShow.title : "")
+      ).toLowerCase();
+      return titleA.localeCompare(titleB);
+    });
+  }
+
+  return filteredArray;
 });
+
+// Fisher-Yates Shuffle-Algorithmus mit Seed
+function shuffleArray(array, seed) {
+  const rng = seededRandom(seed);
+  let currentIndex = array.length;
+
+  // Solange noch Elemente vorhanden sind
+  while (currentIndex > 0) {
+    // Ein verbleibendes Element auswählen
+    const randomIndex = Math.floor(rng() * currentIndex);
+    currentIndex--;
+
+    // Mit dem aktuellen Element tauschen
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex],
+      array[currentIndex],
+    ];
+  }
+
+  return array;
+}
+
+// Einfacher seeded Random-Generator
+function seededRandom(seed) {
+  return function () {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+}
 
 // Berechne die sichtbaren Items (basierend auf den gefilterten Items)
 const visibleItems = computed(() => {
@@ -612,82 +698,103 @@ function playTrack(item) {
 }
 </script>
 <template>
-  <div
-    v-if="module"
-    :class="`content-grid module-grid module-grid--${
-      module.style || 'default'
-    } ${categoryType.toLowerCase()}`"
-  >
-    <div class="module-grid__header">
-      <h3 v-if="module.title" class="module-grid__title">
-        {{ module.title }}
-      </h3>
-      <section
-        v-if="categoryType == 'Episodes'"
-        class="module-grid__header__type"
-      >
-        <h2 class="module-grid__header__type__pill">Shows</h2>
-      </section>
-      <section v-else class="module-grid__header__type">
-        <h2 class="module-grid__header__type__pill">{{ categoryType }}</h2>
-      </section>
-    </div>
-
-    <!-- Filter Panel -->
-    <div v-if="activeFilters.size > 0" class="active-filters">
-      <h4 class="active-filters__title">Aktive Filter:</h4>
-      <div class="active-filters__list">
-        <div
-          v-for="filterId in activeFilters"
-          :key="filterId"
-          class="active-filter"
-        >
-          <span class="active-filter__name">
-            {{ getTagNameById(filterId) }}
-          </span>
-          <button class="active-filter__remove" @click="toggleFilter(filterId)">
-            &times;
-          </button>
-        </div>
-      </div>
-    </div>
+  <ClientOnly>
     <div
-      v-if="allItems.length > 0 && module.availableTags"
-      class="content-grid__filters"
-    > 
-      <div
-        v-if="contentType === 'sets'"
-        class="debug-info"
-        style="margin-bottom: 10px; padding: 10px; border: 1px dashed #999"
-      >
-        <p>Stadt-Tags Sampling:</p>
-        <ul>
-          <li v-for="item in allItems.slice(0, 3)" :key="item._id">
-            <strong>{{ item.title }}</strong>
-            <div v-if="item.parentShow?.city">
-              <p>
-                Hat city: {{ JSON.stringify(item.parentShow.city, null, 2) }}
-              </p>
-            </div>
-            <div v-else>
-              <p>Keine city</p>
-            </div>
-          </li>
-        </ul>
-        <p>Verfügbare Städte: {{ categorizedTags.cities?.length || 0 }}</p>
-        <p>
-          Items mit Stadt-Tags:
-          {{ allItems.filter((item) => itemHasCityTags(item)).length }}
-        </p>
+      v-if="module"
+      :class="`content-grid module-grid module-grid--${
+        module.style || 'default'
+      } ${categoryType.toLowerCase()}`"
+    >
+      <div class="module-grid__header">
+        <!-- <div class="module-grid__header__left">
+          <h3 v-if="module.title" class="module-grid__title">
+            {{ module.title }}
+          </h3>
+          <section
+            v-if="categoryType == 'sets'"
+            class="module-grid__header__type"
+          >
+            <h2 class="module-grid__header__type__pill">Shows</h2>
+          </section>
+          <section v-else class="module-grid__header__type">
+            <h2 class="module-grid__header__type__pill">{{ categoryType }}</h2>
+          </section>
+        </div> -->
       </div>
 
-      <div class="filter-container tags">
-        <!-- City Tags - immer verfügbar -->
+      <!-- Filter Panel -->
+      <div class="content-grid__filter-bar">
+        <div class="active-filters">
+          <h4
+            class="active-filters__title"
+            :class="{ active: activeFilters.size > 0 }"
+          >
+            <span @click="resetFilters()" class="close-cross"
+              ><svg
+                width="10"
+                height="10"
+                viewBox="0 0 8 8"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="4" cy="4" r="4" fill="black" />
+                <rect
+                  x="1.77783"
+                  y="2.4082"
+                  width="0.888889"
+                  height="5.33333"
+                  transform="rotate(-45 1.77783 2.4082)"
+                  fill="#E8E8E8"
+                />
+                <path
+                  d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
+                  fill="#E8E8E8"
+                />
+              </svg> </span
+            >Tags
+          </h4>
+          <div class="active-filters__list tags">
+            <div
+              v-for="filterId in activeFilters"
+              :key="filterId"
+              class="active-filter tag"
+            >
+              <span class="active-filter__name" @click="toggleFilter(filterId)">
+                {{ getTagNameById(filterId)
+                }}<span @click="toggleFilter(filterId)" class="close-cross"
+                  ><svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 8 8"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    @click="toggleFilter(filterId)"
+                  >
+                    <circle cx="4" cy="4" r="4" fill="black" />
+                    <rect
+                      x="1.77783"
+                      y="2.4082"
+                      width="0.888889"
+                      height="5.33333"
+                      transform="rotate(-45 1.77783 2.4082)"
+                      fill="#E8E8E8"
+                    />
+                    <path
+                      d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
+                      fill="#E8E8E8"
+                    />
+                  </svg>
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <!-- Cities-->
         <div
           v-if="categorizedTags.cities && categorizedTags.cities.length > 0"
-          class="filter-category"
+          class="filter-cities tags"
         >
-          <h4 class="filter-category__title">Cities</h4>
+          <h4 class="filter-cities__title">City</h4>
           <div class="filter-tags">
             <!-- Hauptstädte anzeigen -->
             <button
@@ -695,6 +802,7 @@ function playTrack(item) {
                 isMainCity(tag)
               )"
               :key="tag._id"
+              class="tag"
               :class="[
                 'filter-tag',
                 'filter-tag--city',
@@ -708,6 +816,7 @@ function playTrack(item) {
             <!-- "Others"-Option anzeigen, wenn es Tags gibt, die keine Hauptstädte sind -->
             <button
               v-if="categorizedTags.cities.some((tag) => !isMainCity(tag))"
+              class="tag"
               :class="[
                 'filter-tag',
                 'filter-tag--city',
@@ -715,300 +824,525 @@ function playTrack(item) {
               ]"
               @click="toggleFilter('others')"
             >
-              Others
+              Elsewhere
             </button>
           </div>
         </div>
+        <!-- Sortierungsoptionen -->
+        <div class="sort-options">
+          <h4 class="sort-options__title">Sort</h4>
 
-        <!-- Filter für Sets mit verschachtelten Genres -->
-        <template v-if="contentType === 'sets'">
-          <!-- Genre mit Subgenres -->
-          <div
-            v-if="categorizedTags.genres && categorizedTags.genres.length > 0"
-            class="filter-category"
+          <button
+            :class="['sort-button', { active: sortMode === 'new' }]"
+            @click="changeSortMode('new')"
           >
-            <div class="filter-genres">
-              <div
-                v-for="genre in categorizedTags.genres"
-                :key="genre._id"
-                class="filter-genre"
-              >
+            <div class="dot"></div>
+            New
+          </button>
+          <button
+            :class="['sort-button', { active: sortMode === 'alpha' }]"
+            @click="changeSortMode('alpha')"
+          >
+            <div class="dot"></div>
+            A–Z
+          </button>
+          <button
+            :class="['sort-button', { active: sortMode === 'shuffle' }]"
+            @click="changeSortMode('shuffle')"
+          >
+            <div class="dot"></div>
+            Shuffle
+          </button>
+        </div>
+      </div>
+
+      <div
+        v-if="allItems.length > 0 && module.availableTags"
+        class="content-grid__filters"
+      >
+        <div class="filter-container tags">
+          <!-- Filter für Sets mit verschachtelten Genres -->
+          <template v-if="contentType === 'sets'">
+            <!-- Genre mit Subgenres -->
+            <div
+              v-if="categorizedTags.genres && categorizedTags.genres.length > 0"
+              class="filter-category tags"
+            >
+              <div class="filter-genres">
+                <div
+                  v-for="(genre, index) in categorizedTags.genres"
+                  :key="genre._id"
+                  class="filter-genre"
+                >
+                  <button
+                    class="tag"
+                    :class="[
+                      'filter-tag',
+                      'filter-tag--genre',
+                      { 'filter-tag--active': index === currentIndex },
+                    ]"
+                    @click="toggleSubFilter(genre._id), onSelect(index)"
+                  >
+                    {{ genre.title }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="filter-subgenres">
+                <div
+                  v-for="genre in categorizedTags.genres"
+                  :key="genre._id"
+                  class="filter-subgenre"
+                  :class="{ hidden: activeSubFilters !== genre._id }"
+                >
+                  <!-- Subgenres -->
+                  <div
+                    v-if="
+                      genre.subGenres &&
+                      genre.subGenres.length > 0 &&
+                      activeSubFilters == genre._id
+                    "
+                    class="filter-subgenre__tags"
+                  >
+                    <button
+                      v-for="subGenre in genre.subGenres"
+                      :key="subGenre._id"
+                      class="tag"
+                      :class="[
+                        'filter-tag',
+                        'filter-tag--subgenre',
+                        {
+                          'filter-tag--active': activeFilters.has(subGenre._id),
+                        },
+                      ]"
+                      @click="toggleFilter(subGenre._id)"
+                    >
+                      {{ subGenre.title }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mood Tags -->
+            <div
+              v-if="categorizedTags.mood && categorizedTags.mood.length > 0"
+              class="filter-category"
+            >
+              <h4 class="filter-category__title">Mood</h4>
+              <div class="filter-tags">
                 <button
-                  class="tag"
+                  v-for="tag in categorizedTags.mood"
+                  :key="tag._id"
                   :class="[
                     'filter-tag',
-                    'filter-tag--genre',
-                    { 'filter-tag--active': activeFilters.has(genre._id) },
+                    { 'filter-tag--active': activeFilters.has(tag._id) },
                   ]"
-                  @click="toggleSubFilter(genre._id)"
+                  @click="toggleFilter(tag._id)"
                 >
-                  {{ genre.title }}
+                  {{ tag.title }}
                 </button>
               </div>
             </div>
 
-            <div class="filter-subgenres">
-              <div
-                v-for="genre in categorizedTags.genres"
-                :key="genre._id"
-                class="filter-genre"
-              >
-                <!-- Subgenres -->
-                <div
-                  v-if="
-                    genre.subGenres &&
-                    genre.subGenres.length > 0 &&
-                    activeSubFilters == genre._id
-                  "
-                  class="filter-subgenres"
+            <!-- Globale Tags -->
+            <div
+              v-if="categorizedTags.global && categorizedTags.global.length > 0"
+              class="filter-category"
+            >
+              <h4 class="filter-category__title">Tags</h4>
+              <div class="filter-tags">
+                <button
+                  v-for="tag in categorizedTags.global"
+                  :key="tag._id"
+                  :class="[
+                    'filter-tag',
+                    { 'filter-tag--active': activeFilters.has(tag._id) },
+                  ]"
+                  @click="toggleFilter(tag._id)"
                 >
-                  <button
-                    v-for="subGenre in genre.subGenres"
-                    :key="subGenre._id"
-                    class="tag"
-                    :class="[
-                      'filter-tag',
-                      'filter-tag--subgenre',
-                      { 'filter-tag--active': activeFilters.has(subGenre._id) },
-                    ]"
-                    @click="toggleFilter(subGenre._id)"
-                  >
-                    {{ subGenre.title }}
-                  </button>
-                </div>
+                  {{ tag.title }}
+                </button>
               </div>
             </div>
-          </div>
+          </template>
 
-          <!-- Mood Tags -->
-          <div
-            v-if="categorizedTags.mood && categorizedTags.mood.length > 0"
-            class="filter-category"
-          >
-            <h4 class="filter-category__title">Mood</h4>
-            <div class="filter-tags">
-              <button
-                v-for="tag in categorizedTags.mood"
-                :key="tag._id"
-                :class="[
-                  'filter-tag',
-                  { 'filter-tag--active': activeFilters.has(tag._id) },
-                ]"
-                @click="toggleFilter(tag._id)"
-              >
-                {{ tag.title }}
-              </button>
+          <!-- Einfache Filter für andere Inhaltstypen (außer Cities, die bereits oben angezeigt werden) -->
+          <template v-else>
+            <div
+              v-if="getContentTypeSpecificTags.length > 0"
+              class="filter-category"
+            >
+              <h4 class="filter-category__title">Tags</h4>
+              <div class="filter-tags">
+                <button
+                  v-for="tag in getContentTypeSpecificTags"
+                  :key="tag._id"
+                  :class="[
+                    'filter-tag',
+                    { 'filter-tag--active': activeFilters.has(tag._id) },
+                  ]"
+                  @click="toggleFilter(tag._id)"
+                >
+                  {{ tag.title }}
+                </button>
+              </div>
             </div>
-          </div>
-
-          <!-- Globale Tags -->
-          <div
-            v-if="categorizedTags.global && categorizedTags.global.length > 0"
-            class="filter-category"
-          >
-            <h4 class="filter-category__title">Tags</h4>
-            <div class="filter-tags">
-              <button
-                v-for="tag in categorizedTags.global"
-                :key="tag._id"
-                :class="[
-                  'filter-tag',
-                  { 'filter-tag--active': activeFilters.has(tag._id) },
-                ]"
-                @click="toggleFilter(tag._id)"
-              >
-                {{ tag.title }}
-              </button>
-            </div>
-          </div>
-        </template>
-
-        <!-- Einfache Filter für andere Inhaltstypen (außer Cities, die bereits oben angezeigt werden) -->
-        <template v-else>
-          <div
-            v-if="getContentTypeSpecificTags.length > 0"
-            class="filter-category"
-          >
-            <h4 class="filter-category__title">Tags</h4>
-            <div class="filter-tags">
-              <button
-                v-for="tag in getContentTypeSpecificTags"
-                :key="tag._id"
-                :class="[
-                  'filter-tag',
-                  { 'filter-tag--active': activeFilters.has(tag._id) },
-                ]"
-                @click="toggleFilter(tag._id)"
-              >
-                {{ tag.title }}
-              </button>
-            </div>
-          </div>
-        </template>
-
-        <!-- Filter zurücksetzen -->
-        <button
-          v-if="activeFilters.size > 0"
-          class="filter-reset"
-          @click="resetFilters"
-        >
-          Reset Filters
-        </button>
+          </template>
+        </div>
       </div>
-    </div>
 
-    <div class="content-grid__container">
-      <div v-if="visibleItems.length > 0" class="content-grid__items">
-        <div
-          v-for="item in visibleItems"
-          :key="item._id"
-          :class="`grid-item grid-item--${module.style || 'default'}`"
-        >
-          <NuxtLink
-            v-if="item.slug"
-            :to="`/${item._type}/${item.slug.current}`"
-            class="grid-item__link"
+      <div class="content-grid__container">
+        <div v-if="visibleItems.length > 0" class="content-grid__items">
+          <div
+            v-for="item in visibleItems"
+            :key="item._id"
+            :class="`grid-item grid-item--${module.style || 'default'}`"
           >
-            <!-- Bild -->
-            <div class="grid-item__image">
-              <img
-                v-if="item.image && item.image.asset"
-                :src="item.image.asset.url"
-                :alt="item.title || ''"
-              />
-              <div
-                v-else-if="contentType === 'sets' && item.soundcloud"
-                class="track-artwork"
-                @vue:mounted="loadArtworkUrl(item)"
-              >
-                <img
-                  v-if="artworkUrls.get(item._id)"
-                  :src="artworkUrls.get(item._id)"
-                  alt="Track Artwork"
-                />
-              </div>
-            </div>
-
-            <!-- Inhalt -->
-            <div class="grid-item__content">
+            <NuxtLink
+              v-if="item.slug"
+              :to="`/${item._type}/${item.slug.current}`"
+              class="grid-item__link"
+            >
+              <!-- Bild -->
               <!-- Städte Tags wenn vorhanden -->
-              <div
-                v-if="itemHasCityTags(item)"
-                class="grid-item__tags city-tags"
-              >
+              <div class="grid-item__tags city-tags">
                 <span
                   v-for="tag in getItemCityTags(item)"
                   :key="tag._id"
                   class="tag city"
                 >
-                  {{ tag.title }}
+                  {{ parseI18nObj(tag?.short) }}
                 </span>
               </div>
-
-              <!-- Datum (falls vorhanden) -->
-              <div
-                v-if="item.datetime || item.publishedAt"
-                class="grid-item__date"
-              >
-                {{ formatDate(item.datetime || item.publishedAt) }}
-              </div>
-
-              <!-- Show-Titel (für Sets) -->
-              <h3 v-if="item.parentShow" class="grid-item__title show-title">
-                {{ item.parentShow.title }}
-              </h3>
-
-              <!-- Künstler (für Sets) -->
-              <div
-                v-if="
-                  contentType === 'sets' &&
-                  item.persons &&
-                  item.persons.length > 0
-                "
-                class="show-artists"
-              >
-                <h3
-                  v-for="(artist, index) in item.persons"
-                  :key="artist._id"
-                  class="grid-item__title"
+              <div class="grid-item__image">
+                <img
+                  v-if="item.image && item.image.asset"
+                  :src="item.image.asset.url"
+                  :alt="item.title || ''"
+                />
+                <div
+                  v-else-if="contentType === 'sets' && item.soundcloud"
+                  class="track-artwork"
+                  @vue:mounted="loadArtworkUrl(item)"
                 >
-                  {{ artist.title
-                  }}{{ index < item.persons.length - 1 ? ", " : "" }}
-                </h3>
-              </div>
-
-              <!-- Titel für alle anderen Content-Typen -->
-              <h3 v-else class="grid-item__title">
-                {{ item.title || item.name }}
-              </h3>
-
-              <!-- Play-Button für Sets -->
-              <button
-                v-if="contentType === 'sets' && item.soundcloud"
-                @click.prevent="playTrack(item)"
-                class="play-button"
-              >
-                <span class="sr-only">Play</span>
-                <svg
-                  width="9"
-                  height="12"
-                  viewBox="0 0 9 12"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M9 6L0 11.1962L0 0.803847L9 6Z"
-                    fill="currentColor"
+                  <img
+                    v-if="artworkUrls.get(item._id)"
+                    :src="artworkUrls.get(item._id)"
+                    alt="Track Artwork"
                   />
-                </svg>
-              </button>
-
-              <!-- Nicht-City Tags anzeigen -->
-              <div
-                v-if="module.showTags && getItemNonCityTags(item).length > 0"
-                class="grid-item__tags"
-              >
-                <span
-                  v-for="tag in getItemNonCityTags(item)"
-                  :key="tag._id"
-                  class="tag"
-                >
-                  {{ tag.title }}
-                </span>
+                </div>
               </div>
-            </div>
-          </NuxtLink>
+
+              <!-- Inhalt -->
+              <div class="grid-item__content">
+                <!-- Interaktiver Bereich mit Datum und Play-Button -->
+                <section class="grid-item__content__interactive">
+                  <!-- Datum (falls vorhanden) -->
+                  <div
+                    v-if="item.datetime || item.publishedAt"
+                    class="grid-item__date"
+                  >
+                    {{ formatDate(item.datetime || item.publishedAt) }}
+                  </div>
+
+                  <!-- Play-Button für Sets -->
+                  <button
+                    v-if="contentType === 'sets' && item.soundcloud"
+                    @click.prevent="playTrack(item)"
+                    class="play-button"
+                  >
+                    <span class="sr-only">Play</span>
+                    <svg
+                      width="9"
+                      height="12"
+                      viewBox="0 0 9 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M9 6L0 11.1962L0 0.803847L9 6Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </button>
+                </section>
+
+                <!-- Show-Titel (für Sets) -->
+                <h3 v-if="item.parentShow" class="grid-item__title show-title">
+                  {{ item.parentShow.title }}
+                </h3>
+
+                <!-- Künstler (für Sets) -->
+                <div
+                  v-if="
+                    contentType === 'sets' &&
+                    item.persons &&
+                    item.persons.length > 0
+                  "
+                  class="show-artists"
+                >
+                  <h3
+                    v-for="(artist, index) in item.persons"
+                    :key="artist._id"
+                    class="grid-item__title"
+                  >
+                    {{ artist.title
+                    }}{{ index < item.persons.length - 1 ? ", " : "" }}
+                  </h3>
+                </div>
+
+                <!-- Titel für alle anderen Content-Typen -->
+                <h3 v-else class="grid-item__title">
+                  {{ item.title || item.name }}
+                </h3>
+
+                <!-- Nicht-City Tags anzeigen -->
+                <div
+                  v-if="module.showTags && getItemNonCityTags(item).length > 0"
+                  class="grid-item__tags"
+                >
+                  <span
+                    v-for="tag in getItemNonCityTags(item)"
+                    :key="tag._id"
+                    class="tag"
+                  >
+                    {{ tag.title }}
+                  </span>
+                </div>
+              </div>
+            </NuxtLink>
+          </div>
+        </div>
+        <div v-else class="content-grid__no-results">
+          Keine Ergebnisse für die aktuelle Filterauswahl.
+        </div>
+
+        <div v-if="hasMoreItems" class="content-grid__load-more">
+          <button @click="loadMoreItems" class="load-more-button">
+            <span class="plus-icon">+</span> Load More
+          </button>
         </div>
       </div>
-      <div v-else class="content-grid__no-results">
-        Keine Ergebnisse für die aktuelle Filterauswahl.
-      </div>
-
-      <div v-if="hasMoreItems" class="content-grid__load-more">
-        <button @click="loadMoreItems" class="load-more-button">
-          <span class="plus-icon">+</span> Load More
-        </button>
-      </div>
     </div>
-  </div>
+  </ClientOnly>
 </template>
 <style lang="postcss" scoped>
 .content-grid {
   @apply overflow-hidden;
   max-width: clamp(100%, 100%, var(--page-max-width));
 
+  &.shows,
+  &.sets {
+    .filter-tag--city {
+      background-color: var(--color-pink);
+    }
+  }
+
+  &.words {
+    .filter-tag--city {
+      background-color: var(--color-green);
+    }
+  }
+
+  &.pool {
+    .filter-tag--city {
+      background-color: var(--color-green);
+    }
+  }
+
   &__no-results {
     padding: var(--mid-padding);
     text-align: center;
-    border: 1px dashed var(--color-text);
     margin-bottom: var(--mid-margin);
+  }
+
+  &__filter-bar {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    padding: var(--small-padding) 0;
+    background-color: var(--color-text);
+    border-radius: 100px;
+    .active-filters,
+    .sort-options {
+      width: calc(33% - var(--big-margin) / 2 + (var(--mid-margin) / 2));
+    }
+    .filter-cities {
+      width: calc(33% + var(--big-margin) / 2 + (var(--mid-margin) / 2));
+    }
+    .active-filters {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: flex-start;
+      align-items: center;
+      gap: var(--small-padding);
+      padding: 0 calc(var(--mid-margin) / 2) 0 var(--mid-margin);
+      border-right: 1px solid var(--color-grey);
+      &__title {
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--small-font-size);
+        font-family: var(--font-text-semibold);
+        text-transform: uppercase;
+        color: var(--color-bg);
+        pointer-events: none;
+        &.active {
+          pointer-events: all;
+          cursor: pointer;
+          color: var(--color-pink);
+          .close-cross {
+            display: block;
+          }
+        }
+        .close-cross {
+          display: none;
+          position: absolute;
+          transform: translate(calc(-100% - 12px), -0.5px);
+          margin: 0 0 0 0;
+          filter: invert(1);
+        }
+      }
+
+      &__list {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 0 var(--small-padding);
+      }
+
+      .active-filter {
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--color-grey);
+        color: var(--color-text);
+        font-size: var(--small-font-size);
+        .close-cross {
+          transform: translate(0, -1px);
+          margin: 0 0 0 4px;
+        }
+
+        &__name {
+          cursor: pointer;
+          display: flex;
+          flex-flow: row wrap;
+          align-items: center;
+          justify-content: center;
+          font-size: var(--small-font-size);
+        }
+      }
+    }
+    .filter-cities {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-start;
+      align-items: center;
+      gap: var(--small-padding);
+      padding: 0 calc(var(--mid-margin) / 2);
+
+      &__title {
+        font-size: var(--small-font-size);
+        font-family: var(--font-text-semibold);
+        text-transform: uppercase;
+        color: var(--color-bg);
+      }
+
+      .filter-tags {
+        display: flex;
+        flex-flow: row nowrap;
+        overflow-x: visible;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 0 var(--small-padding);
+        .filter-tag {
+          background-color: var(--color-dark-grey);
+          color: var(--color-text);
+
+          &.filter-tag--active,
+          &:hover {
+            background-color: var(--color-pink);
+            color: var(--color-bg);
+          }
+        }
+      }
+
+      &__toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        text-align: left;
+        background: none;
+        border: none;
+        cursor: pointer;
+
+        &:hover .filter-category__title {
+          text-decoration: underline;
+        }
+      }
+    }
+    .sort-options {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: flex-start;
+      align-items: center;
+      gap: var(--mid-margin);
+      padding: 0 var(--mid-margin) 0 calc(var(--mid-margin) / 2);
+      border-left: 1px solid var(--color-grey);
+      &__title {
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--small-font-size);
+        font-family: var(--font-text-semibold);
+        text-transform: uppercase;
+        color: var(--color-bg);
+        pointer-events: none;
+      }
+
+      button {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+        align-items: center;
+        gap: var(--small-padding);
+        background-color: transparent;
+        font-size: var(--small-font-size);
+        color: var(--color-dark-grey);
+        text-transform: uppercase;
+        font-family: var(--font-text-semibold);
+        .dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background-color: var(--color-dark-grey);
+          transform: translate(0%, 0%);
+        }
+        &:hover {
+          color: var(--color-pink);
+        }
+        &.active {
+          color: var(--color-pink);
+          .dot {
+            background-color: var(--color-pink);
+          }
+        }
+      }
+    }
   }
 
   &__filters {
     margin-bottom: var(--mid-margin);
 
     .filter-tag--city {
-      border-color: var(--color-secondary);
+      background-color: var(--color-pink);
+      color: var(--color-bg);
 
       &:hover {
         background-color: var(--color-secondary);
@@ -1032,7 +1366,6 @@ function playTrack(item) {
 
       &__title {
         font-size: var(--small-font-size);
-        font-family: var(--font-text-semibold);
         text-transform: uppercase;
         margin-bottom: var(--small-padding);
       }
@@ -1055,7 +1388,6 @@ function playTrack(item) {
 
       &__icon {
         font-size: 1.2rem;
-        font-weight: bold;
       }
     }
 
@@ -1067,48 +1399,65 @@ function playTrack(item) {
 
     .filter-genres {
       display: flex;
-      flex-direction: column;
+      flex-flow: row wrap;
+      align-items: center;
+      justify-content: center;
+      margin: var(--base-padding) auto;
+      max-width: 66%;
+      width: 66%;
       gap: var(--small-padding);
-    }
-
-    .filter-genre {
-      display: flex;
-      flex-direction: column;
-      gap: calc(var(--small-padding) / 2);
+      .filter-genre {
+        display: flex;
+        flex-flow: row wrap;
+        gap: calc(var(--small-padding) / 2);
+      }
     }
 
     .filter-subgenres {
       margin-left: var(--mid-padding);
       display: flex;
-      flex-wrap: wrap;
+      flex-flow: row wrap;
+      justify-content: center;
+      align-items: center;
       gap: var(--small-padding);
+      .filter-subgenre {
+        width: 100%;
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        align-items: center;
+        gap: calc(var(--small-padding) / 2);
+        &.hidden {
+          display: none;
+        }
+        .filter-subgenre__tags {
+          display: flex;
+          flex-flow: row wrap;
+          justify-content: center;
+          align-items: center;
+          gap: calc(var(--small-padding) / 2);
+        }
+      }
     }
 
     .filter-tag {
-      padding: 2px 8px;
       font-size: var(--small-font-size);
-      background-color: transparent;
-      border: 1px solid var(--color-text);
-      color: var(--color-text);
       cursor: pointer;
       transition: all 0.2s ease;
+      background-color: var(--color-bg);
+      color: var(--color-text);
 
-      &:hover {
-        background-color: var(--color-text);
-        color: var(--color-bg);
-      }
-
+      &:hover,
       &--active {
         background-color: var(--color-text);
         color: var(--color-bg);
       }
 
       &--genre {
-        font-weight: 600;
       }
 
       &--subgenre {
-        font-size: calc(var(--small-font-size) - 1px);
+        font-size: calc(var(--small-font-size));
       }
     }
 
@@ -1116,7 +1465,6 @@ function playTrack(item) {
       align-self: flex-start;
       padding: 2px 8px;
       background-color: transparent;
-      border: 1px solid var(--color-text);
       font-size: var(--small-font-size);
       cursor: pointer;
       transition: all 0.2s ease;
@@ -1130,16 +1478,20 @@ function playTrack(item) {
   }
 
   &__container {
-    width: 100%;
+    min-width: calc(var(--page-max-width) + var(--big-margin));
+    margin: 0 0 0 calc(var(--big-margin) * -0.5);
     display: flex;
     flex-direction: column;
-    gap: var(--big-margin);
   }
 
   &__items {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--big-margin);
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: stretch;
+    padding: 0 calc(var(--big-margin) / 2);
+    gap: var(--big-margin) calc(var(--big-margin) * 1.9875);
   }
 
   &__load-more {
@@ -1153,7 +1505,6 @@ function playTrack(item) {
       gap: var(--small-padding);
       padding: var(--small-padding) var(--mid-padding);
       background-color: transparent;
-      border: 1px solid var(--color-text);
       cursor: pointer;
       transition: all 0.2s ease;
 
@@ -1164,7 +1515,6 @@ function playTrack(item) {
 
       .plus-icon {
         font-size: 1.2rem;
-        font-weight: bold;
       }
     }
   }
@@ -1174,6 +1524,13 @@ function playTrack(item) {
 .grid-item {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  max-width: calc(100% / 3 - var(--big-margin) * 1.325);
+  width: 100%;
+  &:last-of-type {
+    justify-self: flex-start;
+    margin: 0 auto 0 0;
+  }
 
   &__link {
     display: contents;
@@ -1188,6 +1545,7 @@ function playTrack(item) {
     img {
       width: 100%;
       height: auto;
+      aspect-ratio: 1 / 1 !important;
       object-fit: cover;
       transition: transform 0.3s ease;
     }
@@ -1209,22 +1567,52 @@ function playTrack(item) {
     justify-content: flex-start;
     align-items: flex-start;
     margin: var(--mid-padding) 0 0 0;
-    gap: var(--mid-padding);
 
-    .grid-item__date {
-      font-size: var(--small-font-size);
-      text-transform: uppercase;
+    &__interactive {
+      width: 100%;
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--mid-padding);
+
+      .grid-item__date {
+        font-size: var(--small-font-size);
+        text-transform: uppercase;
+      }
+
+      .play-button {
+        display: flex;
+        flex-flow: row;
+        justify-content: center;
+        align-items: center;
+        margin: 0 0 0 auto;
+        color: transparent;
+        background-color: var(--color-text);
+        border-radius: 100px;
+        border: none;
+        padding: 4px;
+        width: calc(var(--base-font-size) + 4px);
+        height: calc(var(--base-font-size) + 4px);
+
+        svg {
+          height: var(--base-font-size);
+          transform: translate(1px, 0);
+          path {
+            fill: var(--color-bg);
+          }
+        }
+      }
     }
 
     .grid-item__title {
       font-size: var(--base-font-size);
       text-transform: uppercase;
-      margin: 0 0 calc(var(--small-padding) / 2) 0;
+      font-family: var(--font-text-semibold);
     }
 
-    &__interactive,
-    .show-artists {
-      margin: 0 0 var(--mid-padding) 0;
+    .show-title {
+      margin-bottom: var(--small-padding);
     }
 
     .show-artists {
@@ -1232,70 +1620,8 @@ function playTrack(item) {
       flex-flow: row wrap;
       justify-content: flex-start;
       align-items: center;
+      margin-bottom: var(--mid-padding);
     }
-  }
-
-  &__tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--small-padding);
-
-    &.city-tags {
-      margin-bottom: var(--small-padding);
-    }
-
-    .tag {
-      padding: 2px 8px;
-      background-color: var(--color-text);
-      color: var(--color-bg);
-      font-size: var(--small-font-size);
-      border: none;
-
-      &.city {
-        background-color: var(--color-secondary);
-      }
-    }
-  }
-
-  &__genres {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--small-padding);
-
-    .genre {
-      font-size: var(--small-font-size);
-      color: var(--color-grey);
-    }
-  }
-
-  .play-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background-color: var(--color-text);
-    color: var(--color-bg);
-    border: none;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-
-    &:hover {
-      transform: scale(1.1);
-    }
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
   }
 }
 
@@ -1319,7 +1645,6 @@ function playTrack(item) {
       h2,
       h3 {
         font-family: var(--font-text-semibold);
-        font-weight: 550;
       }
     }
   }
@@ -1341,7 +1666,6 @@ function playTrack(item) {
         h2,
         h3 {
           font-family: var(--font-text-semibold);
-          font-weight: 550;
         }
 
         &__interactive {
@@ -1458,57 +1782,6 @@ function playTrack(item) {
   .content-grid {
     &__items {
       grid-template-columns: 1fr;
-    }
-  }
-}
-
-.active-filters {
-  margin-bottom: var(--mid-margin);
-  padding: var(--small-padding) var(--mid-padding);
-  border: 1px dashed var(--color-text);
-
-  &__title {
-    font-size: var(--small-font-size);
-    font-family: var(--font-text-semibold);
-    text-transform: uppercase;
-    margin-bottom: var(--small-padding);
-  }
-
-  &__list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--small-padding);
-  }
-
-  .active-filter {
-    display: flex;
-    align-items: center;
-    background-color: var(--color-text);
-    color: var(--color-bg);
-    padding: 2px 8px;
-    font-size: var(--small-font-size);
-
-    &__name {
-      margin-right: 6px;
-    }
-
-    &__remove {
-      background: none;
-      border: none;
-      color: var(--color-bg);
-      font-size: 16px;
-      line-height: 1;
-      padding: 0;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 16px;
-      height: 16px;
-
-      &:hover {
-        transform: scale(1.2);
-      }
     }
   }
 }

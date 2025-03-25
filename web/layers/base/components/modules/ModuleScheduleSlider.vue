@@ -503,7 +503,10 @@ const currentTimePosition = computed(() => {
                   }"
                   :style="getItemPositionStyle(item)"
                 >
-                  <div class="event-item__content" :class="{live : isLiveShow(item)}">
+                  <div
+                    class="event-item__content"
+                    :class="{ live: isLiveShow(item) }"
+                  >
                     <div class="event-item__time">{{ item.formattedTime }}</div>
                     <div class="event-item__title">{{ item.title }}</div>
                   </div>
@@ -531,7 +534,10 @@ const currentTimePosition = computed(() => {
 .embla {
   @apply overflow-hidden;
   height: max-content;
-  width: calc(var(--page-max-width) + (100vw - var(--page-max-width)) / 2);
+  width: 100%;
+  max-width: calc(
+    var(--page-max-width) + (100vw - var(--page-max-width)) / 2 + 2.75rem
+  );
   position: relative;
   margin: 0 0 0 -2.75rem;
 
@@ -565,10 +571,12 @@ const currentTimePosition = computed(() => {
   display: flex;
   align-items: center;
   width: 70px;
-  height: calc(var(--base-font-size) + var(--small-padding) * 2);
+  height: calc(var(--base-font-size) + var(--small-padding));
   padding: 4px;
-  border: 4px solid #eaeaea;
+  background: rgba(225, 225, 225, 0.25);
   border-radius: 30px;
+  max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
+  height: 100%;
 
   &__btn {
     flex: 1;
@@ -583,13 +591,14 @@ const currentTimePosition = computed(() => {
     font-size: var(--small-font-size);
     cursor: pointer;
     transition: color 0.3s ease;
+    user-select: none;
 
     &--active {
       color: #fff;
+      background-color: var(--color-pink);
     }
 
     &:hover:not(&--active) {
-      background-color: rgba(0, 0, 0, 0.05);
     }
   }
 
@@ -599,7 +608,8 @@ const currentTimePosition = computed(() => {
     position: absolute;
     top: 2px;
     width: calc(50% - 4px);
-    height: calc(100% - 4px);
+    max-height: calc(var(--base-font-size) - var(--small-padding) * 2);
+    height: 100%;
     background-color: var(--color-pink);
     border-radius: 24px;
     transition: transform 0.3s ease;
@@ -607,7 +617,9 @@ const currentTimePosition = computed(() => {
   }
 
   /* Position des Gleiters wenn der zweite Button aktiv ist */
-  &:has(.location-switch__btn:nth-child(2).location-switch__btn--active)::after {
+  &:has(
+      .location-switch__btn:nth-child(2).location-switch__btn--active
+    )::after {
     transform: translateX(calc(100%));
   }
 }
@@ -617,7 +629,7 @@ const currentTimePosition = computed(() => {
   gap: 0 var(--small-padding);
   padding: var(--small-padding) var(--base-padding);
   border-radius: 25px;
-  background-color: rgba(225, 225, 225, 0.8);
+  background-color: rgba(225, 225, 225, 0.25);
   max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
 
   .dot {
@@ -642,13 +654,13 @@ const currentTimePosition = computed(() => {
   height: calc(var(--base-font-size) + var(--small-padding) * 2);
   padding: 0 var(--small-padding);
   border-radius: 25px;
-  background-color: rgba(225, 225, 225, 0.8);
+  background-color: rgba(225, 225, 225, 0.25);
 
   .nav-button {
-    @apply flex items-center justify-center w-5 h-5 rounded-full bg-transparent transition-all shadow-sm hover:shadow hover:border-gray-300;
+    @apply flex items-center justify-center w-5 h-5 rounded-full bg-transparent transition-all;
 
     &.disabled {
-      @apply opacity-40 cursor-not-allowed hover:shadow-none hover:border-gray-200;
+      @apply opacity-40 cursor-not-allowed;
     }
 
     svg {
@@ -662,12 +674,12 @@ const currentTimePosition = computed(() => {
   flex-flow: column wrap;
   justify-content: flex-start;
   align-items: flex-start;
-  
+
   & > * {
     font-weight: 550;
     text-transform: uppercase;
   }
-  
+
   &__heading {
     .today-badge {
       color: var(--color-pink);
@@ -686,7 +698,7 @@ const currentTimePosition = computed(() => {
     display: flex;
     width: 2.75;
   }
-  
+
   font-size: var(--base-font-size);
   font-weight: 550;
   position: relative;
@@ -698,23 +710,57 @@ const currentTimePosition = computed(() => {
     height: 20px;
     margin: var(--small-padding) 0 0 0;
 
-    &:nth-child(1) { top: 0%; }
-    &:nth-child(2) { top: 6.25%; }
-    &:nth-child(3) { top: 12.5%; }
-    &:nth-child(4) { top: 18.75%; }
-    &:nth-child(5) { top: 25%; }
-    &:nth-child(6) { top: 31.25%; }
-    &:nth-child(7) { top: 37.5%; }
-    &:nth-child(8) { top: 43.75%; }
-    &:nth-child(9) { top: 50%; }
-    &:nth-child(10) { top: 56.25%; }
-    &:nth-child(11) { top: 62.5%; }
-    &:nth-child(12) { top: 68.75%; }
-    &:nth-child(13) { top: 75%; }
-    &:nth-child(14) { top: 81.25%; }
-    &:nth-child(15) { top: 87.5%; }
-    &:nth-child(16) { top: 93.75%; }
-    &:nth-child(17) { top: 100%; }
+    &:nth-child(1) {
+      top: 0%;
+    }
+    &:nth-child(2) {
+      top: 6.25%;
+    }
+    &:nth-child(3) {
+      top: 12.5%;
+    }
+    &:nth-child(4) {
+      top: 18.75%;
+    }
+    &:nth-child(5) {
+      top: 25%;
+    }
+    &:nth-child(6) {
+      top: 31.25%;
+    }
+    &:nth-child(7) {
+      top: 37.5%;
+    }
+    &:nth-child(8) {
+      top: 43.75%;
+    }
+    &:nth-child(9) {
+      top: 50%;
+    }
+    &:nth-child(10) {
+      top: 56.25%;
+    }
+    &:nth-child(11) {
+      top: 62.5%;
+    }
+    &:nth-child(12) {
+      top: 68.75%;
+    }
+    &:nth-child(13) {
+      top: 75%;
+    }
+    &:nth-child(14) {
+      top: 81.25%;
+    }
+    &:nth-child(15) {
+      top: 87.5%;
+    }
+    &:nth-child(16) {
+      top: 93.75%;
+    }
+    &:nth-child(17) {
+      top: 100%;
+    }
   }
 }
 
@@ -794,21 +840,19 @@ const currentTimePosition = computed(() => {
   &__content {
     background-color: #d9d9d9;
     padding: calc(var(--small-padding) / 2) var(--small-padding);
-    
+
     &.live {
       background-color: var(--color-pink);
     }
-    
+
     @apply flex flex-col overflow-hidden;
     height: 100%;
   }
 
   &--show {
-    /* Spezifische Stile für Shows */
   }
 
   &--track {
-    @apply bg-white border border-gray-200 border-l-4 border-l-green-400;
   }
 
   &__time {

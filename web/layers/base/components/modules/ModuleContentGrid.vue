@@ -16,6 +16,11 @@ const activeFilters = ref(new Set());
 const activeSubFilters = ref(false);
 const mainCities = ["Düsseldorf", "Leipzig", "Vienna"]; // Hauptstädte definieren
 const isOtherCitiesActive = ref(false); // Zustand für "Others"-Filter
+const currentIndex = ref(0);
+
+const onSelect = (index: number) => {
+  currentIndex.value = index;
+};
 
 // Sortierungs-Zustand
 const sortMode = ref("new"); // Standardmäßig "new" (chronologisch)
@@ -101,7 +106,7 @@ function getTagCategory(tagId) {
 function getTagNameById(tagId) {
   // Spezialfall für "others"
   if (tagId === "others") {
-    return "Andere Städte";
+    return "Elsewhere";
   }
 
   // Suche in allen Kategorien nach dem Tag
@@ -228,18 +233,13 @@ function toggleFilter(tagId) {
       isOtherCitiesActive.value = false;
     }
   } else {
-    // Wenn eine neue Auswahl getroffen wird, vorherige in derselben Kategorie löschen
-    filterCategories[category].forEach((id) => {
-      activeFilters.value.delete(id);
-    });
-
+    // Bei additiver Filterung: Tag hinzufügen ohne vorherige in derselben Kategorie zu löschen
     // Zurücksetzen des "Others"-Status wenn ein Stadt-Filter aktiviert wird
-    if (category === "city") {
-      isOtherCitiesActive.value = tagId === "others";
+    if (category === "city" && tagId === "others") {
+      isOtherCitiesActive.value = true;
     }
 
-    // Kategorie-Set zurücksetzen und neuen Tag hinzufügen
-    filterCategories[category].clear();
+    // Tag zur Kategorie und aktiven Filtern hinzufügen
     filterCategories[category].add(tagId);
     activeFilters.value.add(tagId);
   }
@@ -388,7 +388,7 @@ watch(
     if (["persons", "venues", "all"].includes(newValue)) {
       categoryType.value = "Pool";
     } else if (newValue === "sets") {
-      categoryType.value = "Episodes";
+      categoryType.value = "sets";
     } else if (newValue === "shows") {
       categoryType.value = "Shows";
     } else if (newValue === "words") {
@@ -500,48 +500,115 @@ function itemMatchesFilters(item) {
     return true; // Keine Filter aktiv, alle Items anzeigen
   }
 
-  // Spezialbehandlung wenn nur der Others-Filter aktiv ist
-  if (activeFilters.value.size === 1 && activeFilters.value.has("others")) {
-    const cityTags = getItemCityTags(item);
-    // Item passt zu Others, wenn es keine Städte hat oder wenn keine der Städte eine Hauptstadt ist
-    return cityTags.length === 0 || cityTags.every((tag) => !isMainCity(tag));
-  }
+  // Gruppiere aktive Filter nach Kategorien
+  const activeFiltersByCategory = {};
 
-  // Standard-Filterlogik für alle anderen Filter
+  // Initialisiere alle Kategorien
+  Object.keys(filterCategories).forEach((category) => {
+    activeFiltersByCategory[category] = new Set();
+  });
+
+  // Fülle die Kategorien mit den aktiven Filtern
   for (const filterId of activeFilters.value) {
-    let hasMatchingTag = false;
+    const category = getTagCategory(filterId);
+    activeFiltersByCategory[category].add(filterId);
+  }
 
-    // Überspringen des Others-Filters in der normalen Logik
-    if (filterId === "others") {
-      continue;
+  // Spezialbehandlung für "Others" Filter in der city-Kategorie
+  if (activeFiltersByCategory.city.has("others")) {
+    const cityTags = getItemCityTags(item);
+    const isOthersMatch =
+      cityTags.length === 0 || cityTags.every((tag) => !isMainCity(tag));
+
+    // Wenn "others" der einzige city-Filter ist und es passt nicht, sofort false zurückgeben
+    if (activeFiltersByCategory.city.size === 1 && !isOthersMatch) {
+      return false;
     }
 
-    // Normale Filter-Überprüfung
-    // Prüfe direkte Tags
-    if (item.tags && Array.isArray(item.tags)) {
-      if (item.tags.some((tag) => tag._id === filterId)) {
-        hasMatchingTag = true;
+    // Wenn "others" mit anderen city-Filtern kombiniert wird und mindestens einer passt
+    if (activeFiltersByCategory.city.size > 1) {
+      let hasMatchingCityTag = isOthersMatch;
+
+      // Prüfe, ob das Item einen der anderen city-Filter erfüllt
+      for (const cityFilterId of activeFiltersByCategory.city) {
+        if (cityFilterId !== "others") {
+          // Prüfe direkte Tags
+          if (item.tags && Array.isArray(item.tags)) {
+            if (item.tags.some((tag) => tag._id === cityFilterId)) {
+              hasMatchingCityTag = true;
+              break;
+            }
+          }
+
+          // Prüfe Tags aus parentShow
+          if (
+            !hasMatchingCityTag &&
+            item.parentShow &&
+            item.parentShow.tags &&
+            Array.isArray(item.parentShow.tags)
+          ) {
+            if (item.parentShow.tags.some((tag) => tag._id === cityFilterId)) {
+              hasMatchingCityTag = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // Wenn keine der Stadt-Filter passt
+      if (!hasMatchingCityTag) {
+        return false;
       }
     }
 
-    // Prüfe Tags aus parentShow
-    if (
-      !hasMatchingTag &&
-      item.parentShow &&
-      item.parentShow.tags &&
-      Array.isArray(item.parentShow.tags)
-    ) {
-      if (item.parentShow.tags.some((tag) => tag._id === filterId)) {
-        hasMatchingTag = true;
+    // Entferne "others" aus der Menge, damit es in der normalen Logik nicht berücksichtigt wird
+    activeFiltersByCategory.city.delete("others");
+  }
+
+  // Prüfe für jede Kategorie mit aktiven Filtern
+  for (const [category, filters] of Object.entries(activeFiltersByCategory)) {
+    // Wenn keine Filter in dieser Kategorie, überspringen
+    if (filters.size === 0) continue;
+
+    // Für jede Kategorie muss mindestens ein Filter übereinstimmen (ODER-Beziehung innerhalb einer Kategorie)
+    let hasCategoryMatch = false;
+
+    for (const filterId of filters) {
+      let hasMatchingTag = false;
+
+      // Prüfe direkte Tags
+      if (item.tags && Array.isArray(item.tags)) {
+        if (item.tags.some((tag) => tag._id === filterId)) {
+          hasMatchingTag = true;
+        }
+      }
+
+      // Prüfe Tags aus parentShow
+      if (
+        !hasMatchingTag &&
+        item.parentShow &&
+        item.parentShow.tags &&
+        Array.isArray(item.parentShow.tags)
+      ) {
+        if (item.parentShow.tags.some((tag) => tag._id === filterId)) {
+          hasMatchingTag = true;
+        }
+      }
+
+      // Wenn ein Tag in dieser Kategorie übereinstimmt, ist die Kategorie erfüllt
+      if (hasMatchingTag) {
+        hasCategoryMatch = true;
+        break;
       }
     }
 
-    if (!hasMatchingTag) {
-      return false; // Dieser Filter wird nicht erfüllt
+    // Wenn keine Übereinstimmung in dieser Kategorie gefunden wurde
+    if (!hasCategoryMatch && filters.size > 0) {
+      return false;
     }
   }
 
-  return true; // Alle Filter werden erfüllt
+  return true; // Alle Kategorie-Bedingungen sind erfüllt
 }
 // Gibt alle nicht-City-Tags eines Items zurück
 function getItemNonCityTags(item) {
@@ -610,13 +677,29 @@ const filteredItems = computed(() => {
   if (sortMode.value === "new") {
     // Chronologisch sortieren (neuste zuerst)
     return filteredArray.sort((a, b) => {
-      const dateA = new Date(a._updatedAt || datetime || a._createdAt || 0);
-      const dateB = new Date(b._updatedAt || datetime || b._createdAt || 0);
+      const dateA = new Date(a._updatedAt || a.datetime || a._createdAt || 0);
+      const dateB = new Date(b._updatedAt || b.datetime || b._createdAt || 0);
       return dateB.getTime() - dateA.getTime();
     });
   } else if (sortMode.value === "shuffle") {
     // Shuffle mit stabilem Seed für die aktuelle Sitzung
     return shuffleArray([...filteredArray], shuffleSeed.value);
+  } else if (sortMode.value === "alpha") {
+    // Alphabetisch nach Titel sortieren
+    return filteredArray.sort((a, b) => {
+      // Bestimme den Titel je nach Content-Typ
+      const titleA = (
+        a.title ||
+        a.name ||
+        (a.parentShow ? a.parentShow.title : "")
+      ).toLowerCase();
+      const titleB = (
+        b.title ||
+        b.name ||
+        (b.parentShow ? b.parentShow.title : "")
+      ).toLowerCase();
+      return titleA.localeCompare(titleB);
+    });
   }
 
   return filteredArray;
@@ -685,12 +768,12 @@ function playTrack(item) {
       } ${categoryType.toLowerCase()}`"
     >
       <div class="module-grid__header">
-        <div class="module-grid__header__left">
+        <!-- <div class="module-grid__header__left">
           <h3 v-if="module.title" class="module-grid__title">
             {{ module.title }}
           </h3>
           <section
-            v-if="categoryType == 'Episodes'"
+            v-if="categoryType == 'sets'"
             class="module-grid__header__type"
           >
             <h2 class="module-grid__header__type__pill">Shows</h2>
@@ -698,101 +781,159 @@ function playTrack(item) {
           <section v-else class="module-grid__header__type">
             <h2 class="module-grid__header__type__pill">{{ categoryType }}</h2>
           </section>
-        </div>
+        </div> -->
+      </div>
 
+      <!-- Filter Panel -->
+      <div class="content-grid__filter-bar">
+        <div class="active-filters">
+          <h4
+            class="active-filters__title"
+            :class="{ active: activeFilters.size > 0 }"
+            @click="resetFilters()"
+          >
+            <span @click="resetFilters()" class="close-cross"
+              ><svg
+                width="10"
+                height="10"
+                viewBox="0 0 8 8"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="4" cy="4" r="4" fill="black" />
+                <rect
+                  x="1.77783"
+                  y="2.4082"
+                  width="0.888889"
+                  height="5.33333"
+                  transform="rotate(-45 1.77783 2.4082)"
+                  fill="#E8E8E8"
+                />
+                <path
+                  d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
+                  fill="#E8E8E8"
+                />
+              </svg> </span
+            >Tags
+          </h4>
+          <div class="active-filters__list tags">
+            <div
+              v-for="filterId in activeFilters"
+              :key="filterId"
+              class="active-filter tag"
+            >
+              <span class="active-filter__name" @click="toggleFilter(filterId)">
+                {{ getTagNameById(filterId)
+                }}<span @click="toggleFilter(filterId)" class="close-cross"
+                  ><svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 8 8"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    @click="toggleFilter(filterId)"
+                  >
+                    <circle cx="4" cy="4" r="4" fill="black" />
+                    <rect
+                      x="1.77783"
+                      y="2.4082"
+                      width="0.888889"
+                      height="5.33333"
+                      transform="rotate(-45 1.77783 2.4082)"
+                      fill="#E8E8E8"
+                    />
+                    <path
+                      d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
+                      fill="#E8E8E8"
+                    />
+                  </svg>
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <!-- Cities-->
+        <div
+          v-if="categorizedTags.cities && categorizedTags.cities.length > 0"
+          class="filter-cities tags"
+        >
+          <h4 class="filter-cities__title">City</h4>
+          <div class="filter-tags">
+            <!-- Hauptstädte anzeigen -->
+            <button
+              v-for="tag in categorizedTags.cities.filter((tag) =>
+                isMainCity(tag)
+              )"
+              :key="tag._id"
+              class="tag"
+              :class="[
+                'filter-tag',
+                'filter-tag--city',
+                { 'filter-tag--active': activeFilters.has(tag._id) },
+              ]"
+              @click="toggleFilter(tag._id)"
+            >
+              {{ parseI18nObj(tag.title) }}
+            </button>
+
+            <!-- "Others"-Option anzeigen, wenn es Tags gibt, die keine Hauptstädte sind -->
+            <button
+              v-if="categorizedTags.cities.some((tag) => !isMainCity(tag))"
+              class="tag"
+              :class="[
+                'filter-tag',
+                'filter-tag--city',
+                { 'filter-tag--active': isOtherCitiesActive },
+              ]"
+              @click="toggleFilter('others')"
+            >
+              Elsewhere
+            </button>
+          </div>
+        </div>
         <!-- Sortierungsoptionen -->
         <div class="sort-options">
+          <h4 class="sort-options__title">Sort</h4>
+
           <button
             :class="['sort-button', { active: sortMode === 'new' }]"
             @click="changeSortMode('new')"
           >
+            <div class="dot"></div>
             New
+          </button>
+          <button
+            :class="['sort-button', { active: sortMode === 'alpha' }]"
+            @click="changeSortMode('alpha')"
+          >
+            <div class="dot"></div>
+            A–Z
           </button>
           <button
             :class="['sort-button', { active: sortMode === 'shuffle' }]"
             @click="changeSortMode('shuffle')"
           >
+            <div class="dot"></div>
             Shuffle
           </button>
         </div>
       </div>
 
-      <!-- Filter Panel -->
-      <div v-if="activeFilters.size > 0" class="active-filters">
-        <h4 class="active-filters__title">Aktive Filter:</h4>
-        <div class="active-filters__list">
-          <div
-            v-for="filterId in activeFilters"
-            :key="filterId"
-            class="active-filter"
-          >
-            <span class="active-filter__name">
-              {{ getTagNameById(filterId) }}
-            </span>
-            <button
-              class="active-filter__remove"
-              @click="toggleFilter(filterId)"
-            >
-              &times;
-            </button>
-          </div>
-        </div>
-      </div>
       <div
         v-if="allItems.length > 0 && module.availableTags"
         class="content-grid__filters"
       >
         <div class="filter-container tags">
-          <!-- City Tags - immer verfügbar -->
-          <div
-            v-if="categorizedTags.cities && categorizedTags.cities.length > 0"
-            class="filter-category"
-          >
-            <h4 class="filter-category__title">Cities</h4>
-            <div class="filter-tags">
-              <!-- Hauptstädte anzeigen -->
-              <button
-                v-for="tag in categorizedTags.cities.filter((tag) =>
-                  isMainCity(tag)
-                )"
-                :key="tag._id"
-                class="tag"
-                :class="[
-                  'filter-tag',
-                  'filter-tag--city',
-                  { 'filter-tag--active': activeFilters.has(tag._id) },
-                ]"
-                @click="toggleFilter(tag._id)"
-              >
-                {{ parseI18nObj(tag.title) }}
-              </button>
-
-              <!-- "Others"-Option anzeigen, wenn es Tags gibt, die keine Hauptstädte sind -->
-              <button
-                v-if="categorizedTags.cities.some((tag) => !isMainCity(tag))"
-                class="tag"
-                :class="[
-                  'filter-tag',
-                  'filter-tag--city',
-                  { 'filter-tag--active': isOtherCitiesActive },
-                ]"
-                @click="toggleFilter('others')"
-              >
-                Others
-              </button>
-            </div>
-          </div>
-
           <!-- Filter für Sets mit verschachtelten Genres -->
           <template v-if="contentType === 'sets'">
             <!-- Genre mit Subgenres -->
             <div
               v-if="categorizedTags.genres && categorizedTags.genres.length > 0"
-              class="filter-category"
+              class="filter-category tags"
             >
               <div class="filter-genres">
                 <div
-                  v-for="genre in categorizedTags.genres"
+                  v-for="(genre, index) in categorizedTags.genres"
                   :key="genre._id"
                   class="filter-genre"
                 >
@@ -801,9 +942,9 @@ function playTrack(item) {
                     :class="[
                       'filter-tag',
                       'filter-tag--genre',
-                      { 'filter-tag--active': activeFilters.has(genre._id) },
+                      { 'filter-tag--active': index === currentIndex },
                     ]"
-                    @click="toggleSubFilter(genre._id)"
+                    @click="toggleSubFilter(genre._id), onSelect(index)"
                   >
                     {{ genre.title }}
                   </button>
@@ -814,7 +955,8 @@ function playTrack(item) {
                 <div
                   v-for="genre in categorizedTags.genres"
                   :key="genre._id"
-                  class="filter-genre"
+                  class="filter-subgenre"
+                  :class="{ hidden: activeSubFilters !== genre._id }"
                 >
                   <!-- Subgenres -->
                   <div
@@ -823,7 +965,7 @@ function playTrack(item) {
                       genre.subGenres.length > 0 &&
                       activeSubFilters == genre._id
                     "
-                    class="filter-subgenres"
+                    class="filter-subgenre__tags"
                   >
                     <button
                       v-for="subGenre in genre.subGenres"
@@ -910,15 +1052,6 @@ function playTrack(item) {
               </div>
             </div>
           </template>
-
-          <!-- Filter zurücksetzen -->
-          <button
-            v-if="activeFilters.size > 0"
-            class="filter-reset"
-            @click="resetFilters"
-          >
-            Reset Filters
-          </button>
         </div>
       </div>
 
@@ -935,6 +1068,16 @@ function playTrack(item) {
               class="grid-item__link"
             >
               <!-- Bild -->
+              <!-- Städte Tags wenn vorhanden -->
+              <div class="grid-item__tags city-tags">
+                <span
+                  v-for="tag in getItemCityTags(item)"
+                  :key="tag._id"
+                  class="tag city"
+                >
+                  {{ parseI18nObj(tag?.short) }}
+                </span>
+              </div>
               <div class="grid-item__image">
                 <img
                   v-if="item.image && item.image.asset"
@@ -956,82 +1099,72 @@ function playTrack(item) {
 
               <!-- Inhalt -->
               <div class="grid-item__content">
-                <!-- Städte Tags wenn vorhanden -->
-                <div
-                  v-if="itemHasCityTags(item)"
-                  class="grid-item__tags city-tags"
-                >
-                  <span
-                    v-for="tag in getItemCityTags(item)"
-                    :key="tag._id"
-                    class="tag city"
+                <!-- Interaktiver Bereich mit Datum und Play-Button -->
+                <section class="grid-item__content__interactive">
+                  <!-- Datum (falls vorhanden) -->
+                  <div
+                    v-if="item.datetime || item.publishedAt"
+                    class="grid-item__date"
                   >
-                    {{ tag.title }}
-                  </span>
-                </div>
+                    {{ formatDate(item.datetime || item.publishedAt) }}
+                  </div>
 
-                <!-- Datum (falls vorhanden) -->
-                <div
-                  v-if="item.datetime || item.publishedAt"
-                  class="grid-item__date"
-                >
-                  {{ formatDate(item.datetime || item.publishedAt) }}
-                </div>
-
-                <!-- Show-Titel (für Sets) -->
-                <h3 v-if="item.parentShow" class="grid-item__title show-title">
-                  {{ item.parentShow.title }}
-                </h3>
-
-                <!-- Künstler (für Sets) -->
-                <div
-                  v-if="
-                    contentType === 'sets' &&
-                    item.persons &&
-                    item.persons.length > 0
-                  "
-                  class="show-artists"
-                >
-                  <h3
-                    v-for="(artist, index) in item.persons"
-                    :key="artist._id"
-                    class="grid-item__title"
+                  <!-- Play-Button für Sets -->
+                  <button
+                    v-if="contentType === 'sets' && item.soundcloud"
+                    @click.prevent="playTrack(item)"
+                    class="play-button"
                   >
-                    {{ artist.title
-                    }}{{ index < item.persons.length - 1 ? ", " : "" }}
+                    <span class="sr-only">Play</span>
+                    <svg
+                      width="9"
+                      height="12"
+                      viewBox="0 0 9 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M9 6L0 11.1962L0 0.803847L9 6Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </button>
+                </section>
+                <div v-if="item.parentShow && contentType == 'sets'">
+                  <!-- Show-Titel (für Sets) -->
+                  <h3 class="grid-item__title show-title">
+                    {{ item.parentShow.title }}
                   </h3>
+
+                  <!-- Künstler (für Sets) -->
+                  <div
+                    v-if="
+                      contentType === 'sets' &&
+                      item.persons &&
+                      item.persons.length > 0
+                    "
+                    class="show-artists"
+                  >
+                    <h3
+                      v-for="(artist, index) in item.persons"
+                      :key="artist._id"
+                      class="grid-item__artist"
+                    >
+                      {{ artist.title
+                      }}{{ index < item.persons.length - 1 ? ", " : "" }}
+                    </h3>
+                  </div>
                 </div>
 
                 <!-- Titel für alle anderen Content-Typen -->
-                <h3 v-else class="grid-item__title">
+                <h3 v-if="contentType !== 'sets'" class="grid-item__title">
                   {{ item.title || item.name }}
                 </h3>
 
-                <!-- Play-Button für Sets -->
-                <button
-                  v-if="contentType === 'sets' && item.soundcloud"
-                  @click.prevent="playTrack(item)"
-                  class="play-button"
-                >
-                  <span class="sr-only">Play</span>
-                  <svg
-                    width="9"
-                    height="12"
-                    viewBox="0 0 9 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M9 6L0 11.1962L0 0.803847L9 6Z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                </button>
-
                 <!-- Nicht-City Tags anzeigen -->
                 <div
-                  v-if="module.showTags && getItemNonCityTags(item).length > 0"
-                  class="grid-item__tags"
+                  v-if="getItemNonCityTags(item).length > 0"
+                  class="grid-item__tags tags"
                 >
                   <span
                     v-for="tag in getItemNonCityTags(item)"
@@ -1063,11 +1196,234 @@ function playTrack(item) {
   @apply overflow-hidden;
   max-width: clamp(100%, 100%, var(--page-max-width));
 
+  &.shows,
+  &.sets {
+    .filter-tag--city {
+      background-color: var(--color-pink);
+    }
+  }
+
+  &.words {
+    .filter-tag--city {
+      background-color: var(--color-green);
+    }
+  }
+
+  &.pool {
+    .filter-tag--city {
+      background-color: var(--color-green);
+    }
+  }
+
   &__no-results {
     padding: var(--mid-padding);
     text-align: center;
-    border: 1px dashed var(--color-text);
     margin-bottom: var(--mid-margin);
+  }
+
+  &__filter-bar {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    padding: var(--small-padding) 0;
+    background-color: var(--color-text);
+    border-radius: 100px;
+    @media (prefers-color-scheme: dark) {
+      background-color: var(--color-dark-grey);
+    }
+    .active-filters {
+      width: calc(33% - var(--big-margin) / 2 + (var(--mid-margin) / 2));
+    }
+    .sort-options {
+      width: calc(33% - var(--big-margin) / 2 + (var(--mid-margin) / 2));
+    }
+    .filter-cities {
+      width: calc(33% + var(--big-margin) / 2 + (var(--mid-margin) / 2));
+    }
+    .active-filters {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-start;
+      align-items: center;
+      gap: var(--small-padding);
+      padding: 0 0 0 var(--mid-margin);
+      border-right: 1px solid var(--color-grey);
+      overflow-x: scroll;
+      &__title {
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--small-font-size);
+        font-family: var(--font-text-semibold);
+        text-transform: uppercase;
+        color: var(--color-bg);
+        &.active {
+          cursor: pointer;
+          color: var(--color-pink);
+          .close-cross {
+            display: block;
+          }
+        }
+        .close-cross {
+          display: none;
+          position: absolute;
+          transform: translate(calc(-100% - 12px), -0.5px);
+          margin: 0 0 0 0;
+          filter: invert(1);
+        }
+      }
+
+      &__list {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        overflow: scroll;
+        gap: 0 var(--small-padding);
+        position: relative;
+        &::-webkit-scrollbar {
+          display: none;
+        }
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      .active-filter {
+        background-color: var(--color-grey);
+        color: var(--color-dark-grey);
+        font-size: var(--small-font-size);
+        position: relative;
+        min-width: max-content;
+        &::-webkit-scrollbar {
+          display: none;
+        }
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        .close-cross {
+          transform: translate(0, -1px);
+          right: 6px;
+          position: absolute;
+        }
+
+        &__name {
+          min-width: max-content;
+          cursor: pointer;
+          font-size: var(--small-font-size);
+          padding: 0 8px 0 0;
+        }
+      }
+    }
+    .filter-cities {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-start;
+      align-items: center;
+      gap: var(--small-padding);
+      padding: 0 calc(var(--mid-margin) / 2);
+
+      &__title {
+        font-size: var(--small-font-size);
+        font-family: var(--font-text-semibold);
+        text-transform: uppercase;
+        color: var(--color-bg);
+      }
+
+      .filter-tags {
+        display: flex;
+        flex-flow: row nowrap;
+        overflow-x: visible;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 0 var(--small-padding);
+        .filter-tag {
+          background-color: var(--color-dark-grey);
+          color: var(--color-text);
+          @media (prefers-color-scheme: dark) {
+            background-color: var(--color-dark-grey);
+          }
+
+          &.filter-tag--active,
+          &:hover {
+            background-color: var(--color-pink);
+            color: var(--color-bg);
+            @media (prefers-color-scheme: dark) {
+              border-color: var(--color-pink);
+            }
+          }
+        }
+      }
+
+      &__toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        text-align: left;
+        background: none;
+        border: none;
+        cursor: pointer;
+
+        &:hover .filter-category__title {
+          text-decoration: underline;
+        }
+      }
+    }
+    .sort-options {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: flex-start;
+      align-items: center;
+      gap: var(--mid-margin);
+      padding: 0 var(--mid-margin) 0 calc(var(--mid-margin) / 2);
+      border-left: 1px solid var(--color-grey);
+      &__title {
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--small-font-size);
+        font-family: var(--font-text-semibold);
+        text-transform: uppercase;
+        color: var(--color-bg);
+        pointer-events: none;
+      }
+
+      button {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+        align-items: center;
+        gap: var(--small-padding);
+        background-color: transparent;
+        font-size: var(--small-font-size);
+        color: var(--color-dark-grey);
+        text-transform: uppercase;
+        font-family: var(--font-text-semibold);
+        @media (prefers-color-scheme: dark) {
+          color: var(--color-bg);
+        }
+        .dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background-color: var(--color-dark-grey);
+          transform: translate(0%, 0%);
+          @media (prefers-color-scheme: dark) {
+            background-color: var(--color-bg);
+          }
+        }
+        &:hover {
+          color: var(--color-pink);
+        }
+        &.active {
+          color: var(--color-pink);
+          .dot {
+            background-color: var(--color-pink);
+          }
+        }
+      }
+    }
   }
 
   &__filters {
@@ -1099,7 +1455,6 @@ function playTrack(item) {
 
       &__title {
         font-size: var(--small-font-size);
-        font-family: var(--font-text-semibold);
         text-transform: uppercase;
         margin-bottom: var(--small-padding);
       }
@@ -1122,7 +1477,6 @@ function playTrack(item) {
 
       &__icon {
         font-size: 1.2rem;
-        font-weight: bold;
       }
     }
 
@@ -1135,13 +1489,17 @@ function playTrack(item) {
     .filter-genres {
       display: flex;
       flex-flow: row wrap;
+      align-items: center;
+      justify-content: center;
+      margin: var(--base-padding) auto;
+      max-width: 66%;
+      width: 66%;
       gap: var(--small-padding);
-    }
-
-    .filter-genre {
-      display: flex;
-      flex-flow: row wrap;
-      gap: calc(var(--small-padding) / 2);
+      .filter-genre {
+        display: flex;
+        flex-flow: row wrap;
+        gap: calc(var(--small-padding) / 2);
+      }
     }
 
     .filter-subgenres {
@@ -1151,16 +1509,32 @@ function playTrack(item) {
       justify-content: center;
       align-items: center;
       gap: var(--small-padding);
+      .filter-subgenre {
+        width: 100%;
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        align-items: center;
+        gap: calc(var(--small-padding) / 2);
+        &.hidden {
+          display: none;
+        }
+        .filter-subgenre__tags {
+          display: flex;
+          flex-flow: row wrap;
+          justify-content: center;
+          align-items: center;
+          gap: calc(var(--small-padding) / 2);
+        }
+      }
     }
 
     .filter-tag {
-      padding: 2px 8px;
       font-size: var(--small-font-size);
       cursor: pointer;
       transition: all 0.2s ease;
       background-color: var(--color-bg);
       color: var(--color-text);
-      border: 1px solid var(--color-text);
 
       &:hover,
       &--active {
@@ -1169,7 +1543,6 @@ function playTrack(item) {
       }
 
       &--genre {
-        font-weight: 500;
       }
 
       &--subgenre {
@@ -1181,7 +1554,6 @@ function playTrack(item) {
       align-self: flex-start;
       padding: 2px 8px;
       background-color: transparent;
-      border: 1px solid var(--color-text);
       font-size: var(--small-font-size);
       cursor: pointer;
       transition: all 0.2s ease;
@@ -1195,16 +1567,20 @@ function playTrack(item) {
   }
 
   &__container {
-    width: 100%;
+    min-width: calc(var(--page-max-width) + var(--big-margin));
+    margin: 0 0 0 calc(var(--big-margin) * -0.5);
     display: flex;
     flex-direction: column;
-    gap: var(--big-margin);
   }
 
   &__items {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--big-margin);
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: stretch;
+    padding: 0 calc(var(--big-margin) / 2);
+    gap: calc(var(--big-margin) / 2) calc(var(--big-margin) * 1.9875);
   }
 
   &__load-more {
@@ -1218,7 +1594,6 @@ function playTrack(item) {
       gap: var(--small-padding);
       padding: var(--small-padding) var(--mid-padding);
       background-color: transparent;
-      border: 1px solid var(--color-text);
       cursor: pointer;
       transition: all 0.2s ease;
 
@@ -1229,7 +1604,6 @@ function playTrack(item) {
 
       .plus-icon {
         font-size: 1.2rem;
-        font-weight: bold;
       }
     }
   }
@@ -1239,6 +1613,17 @@ function playTrack(item) {
 .grid-item {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  max-width: calc(100% / 3 - var(--big-margin) * 1.325);
+  width: 100%;
+  border-bottom: 0.09325rem solid var(--color-text);
+  padding: 0 0 calc(var(--big-margin) / 2) 0;
+
+  &:last-of-type {
+    justify-self: flex-start;
+    margin: 0 auto 0 0;
+  }
 
   &__link {
     display: contents;
@@ -1253,6 +1638,7 @@ function playTrack(item) {
     img {
       width: 100%;
       height: auto;
+      aspect-ratio: 1 / 1 !important;
       object-fit: cover;
       transition: transform 0.3s ease;
     }
@@ -1272,24 +1658,71 @@ function playTrack(item) {
     display: flex;
     flex-flow: column wrap;
     justify-content: flex-start;
-    align-items: flex-start;
+    align-items: stretch;
+    flex-grow: 1;
     margin: var(--mid-padding) 0 0 0;
     gap: var(--mid-padding);
 
-    .grid-item__date {
-      font-size: var(--small-font-size);
-      text-transform: uppercase;
+    .grid-item__tags {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: flex-start;
+      align-items: flex-end;
+      gap: var(--small-margin);
+      flex-grow: 1;
+    }
+
+    &__interactive {
+      width: 100%;
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+      align-items: center;
+
+      .grid-item__date {
+        font-size: var(--small-font-size);
+        text-transform: uppercase;
+      }
+
+      .play-button {
+        display: flex;
+        flex-flow: row;
+        justify-content: center;
+        align-items: center;
+        margin: 0 0 0 auto;
+        color: transparent;
+        background-color: var(--color-text);
+        border-radius: 100px;
+        border: none;
+        padding: 4px;
+        width: calc(var(--base-font-size) + 4px);
+        height: calc(var(--base-font-size) + 4px);
+
+        svg {
+          height: var(--base-font-size);
+          transform: translate(1px, 0);
+          path {
+            fill: var(--color-bg);
+          }
+        }
+      }
     }
 
     .grid-item__title {
       font-size: var(--base-font-size);
       text-transform: uppercase;
-      margin: 0 0 calc(var(--small-padding) / 2) 0;
+      font-family: var(--font-text-semibold);
+      margin: 0;
     }
 
-    &__interactive,
-    .show-artists {
-      margin: 0 0 var(--mid-padding) 0;
+    .grid-item__artist {
+      font-size: var(--base-font-size);
+      text-transform: uppercase;
+      font-family: var(--font-text-semibold);
+      margin: 0;
+    }
+
+    .show-title {
     }
 
     .show-artists {
@@ -1297,70 +1730,8 @@ function playTrack(item) {
       flex-flow: row wrap;
       justify-content: flex-start;
       align-items: center;
+      margin-bottom: var(--mid-padding);
     }
-  }
-
-  &__tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--small-padding);
-
-    &.city-tags {
-      margin-bottom: var(--small-padding);
-    }
-
-    .tag {
-      padding: 2px 8px;
-      background-color: var(--color-text);
-      color: var(--color-bg);
-      font-size: var(--small-font-size);
-      border: none;
-
-      &.city {
-        background-color: var(--color-secondary);
-      }
-    }
-  }
-
-  &__genres {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--small-padding);
-
-    .genre {
-      font-size: var(--small-font-size);
-      color: var(--color-grey);
-    }
-  }
-
-  .play-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background-color: var(--color-text);
-    color: var(--color-bg);
-    border: none;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-
-    &:hover {
-      transform: scale(1.1);
-    }
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
   }
 }
 
@@ -1384,7 +1755,6 @@ function playTrack(item) {
       h2,
       h3 {
         font-family: var(--font-text-semibold);
-        font-weight: 550;
       }
     }
   }
@@ -1406,7 +1776,6 @@ function playTrack(item) {
         h2,
         h3 {
           font-family: var(--font-text-semibold);
-          font-weight: 550;
         }
 
         &__interactive {
@@ -1523,57 +1892,6 @@ function playTrack(item) {
   .content-grid {
     &__items {
       grid-template-columns: 1fr;
-    }
-  }
-}
-
-.active-filters {
-  margin-bottom: var(--mid-margin);
-  padding: var(--small-padding) var(--mid-padding);
-  border: 1px dashed var(--color-text);
-
-  &__title {
-    font-size: var(--small-font-size);
-    font-family: var(--font-text-semibold);
-    text-transform: uppercase;
-    margin-bottom: var(--small-padding);
-  }
-
-  &__list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--small-padding);
-  }
-
-  .active-filter {
-    display: flex;
-    align-items: center;
-    background-color: var(--color-text);
-    color: var(--color-bg);
-    padding: 2px 8px;
-    font-size: var(--small-font-size);
-
-    &__name {
-      margin-right: 6px;
-    }
-
-    &__remove {
-      background: none;
-      border: none;
-      color: var(--color-bg);
-      font-size: 16px;
-      line-height: 1;
-      padding: 0;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 16px;
-      height: 16px;
-
-      &:hover {
-        transform: scale(1.2);
-      }
     }
   }
 }

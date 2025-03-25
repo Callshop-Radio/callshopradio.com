@@ -212,7 +212,6 @@ usePageSeo(data?.value?.seo);
     </div>
 
     <div v-else class="schedule__content">
-
       <!-- Düsseldorf Shows -->
       <ModuleScheduleSlider
         v-if="isLocationVisible('channelOne')"
@@ -239,16 +238,39 @@ usePageSeo(data?.value?.seo);
         :isLiveShow="isLiveShow"
       />
     </div>
+    <MediaImage
+        v-if="data?.backgroundImage"
+        :image="data?.backgroundImage"
+        class="schedule__background-image"
+      />
   </div>
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
 .schedule {
   max-width: var(--page-max-width);
+  width: 100%;
   display: flex;
   flex-flow: column;
   justify-content: flex-start;
   align-items: flex-start;
+  &__background-image {
+    position: absolute;
+    top: calc(var(--big-margin) * 2);
+    left: -10vw;
+    min-width: 120vw;
+    height: auto;
+    filter: blur(30px);
+    z-index: 0;
+  }
+  &__content {
+    z-index: 10;
+    width: 100%;
+    display: flex;
+    flex-flow: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
 }
 
 
