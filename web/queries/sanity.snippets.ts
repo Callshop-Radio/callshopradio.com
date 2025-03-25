@@ -582,7 +582,7 @@ export const MODULE_QUERY = `{
             }| order(lower(title)),
             location
         },
-        "articleItems": *[_type == 'article'] | order(publishedAt desc) [0...99]{
+        "articleItems": *[_type == 'article'] | order(publishedAt desc){
             ...,
             _id,
             _type,
@@ -601,7 +601,7 @@ export const MODULE_QUERY = `{
                 short
             }| order(lower(title)),
         },
-        "showItems": *[_type == 'show'] | order(datetime desc) [0...99] {
+        "showItems": *[_type == 'show'] | order(datetime desc) {
             ...,
             _id,
             _type,
@@ -616,7 +616,7 @@ export const MODULE_QUERY = `{
                 short
             }| order(lower(title)),
         },
-        "setItems": *[_type == 'set'] | order(datetime desc) [0...99]{
+        "setItems": *[_type == 'set'] | order(datetime desc){
             ...,
             _id,
             _type,
