@@ -1668,6 +1668,7 @@ function playTrack(item) {
       flex-flow: row wrap;
       justify-content: flex-start;
       align-items: flex-end;
+      align-content: flex-end;
       gap: var(--small-margin);
       flex-grow: 1;
     }
