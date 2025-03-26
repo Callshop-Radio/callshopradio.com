@@ -3,6 +3,8 @@ import emblaCarouselVue from "embla-carousel-vue";
 import { useThrottleFn } from "@vueuse/core";
 import { ref, onMounted, computed } from "vue";
 import { useMainStore } from "~/stores/mainStore";
+const { locale, setLocale } = useI18n();
+const localePath = useLocalePath();
 
 const mainStore = useMainStore();
 
@@ -12,7 +14,6 @@ const props = defineProps({
     required: true,
   },
 });
-
 
 const currentIndex = ref(0);
 
@@ -50,7 +51,7 @@ const onSelect = () => {
 const scrollTo = (index: number) => {
   if (!emblaApi.value) return;
   emblaApi.value.scrollTo(index);
-  currentIndex.value = index; 
+  currentIndex.value = index;
 };
 
 const scrollPrev = () => {
@@ -112,6 +113,40 @@ function getItemImage(item) {
     default:
       // Allgemeines Fallback-Bild
       return mainStore?.siteFallbacks?.fallbackPerson?.image;
+  }
+}
+
+function getItemRoute(item) {
+  if (!item || !item.slug) return "/";
+
+  switch (item._type) {
+    case "person":
+    case "venue":
+      return localePath(`/pool/${item.slug.current}`);
+
+    case "set":
+      // Prüfe, ob parentShow vorhanden ist
+      if (
+        item.parentShow &&
+        item.parentShow.slug &&
+        item.parentShow.slug.current
+      ) {
+        return localePath(
+          `/shows/${item.parentShow.slug.current}/${item.slug.current})`
+        );
+      }
+      // Fallback falls parentShow nicht verfügbar ist
+      return localePath(`/shows/${item.slug.current}`);
+
+    case "article":
+      return localePath(`/words/${item.slug.current}`);
+
+    case "show":
+      return localePath(`/shows/${item.slug.current}`);
+
+    // Standard-Fallback
+    default:
+      return localePath(`/${item._type}/${item.slug.current}`);
   }
 }
 
@@ -187,11 +222,15 @@ function groupItems(items, contentType = null) {
   // Rest der Funktion bleibt unverändert
   // Anzahl begrenzen, falls count angegeben ist
   let limitedItems = filteredItems;
-  
+
   // Bei "image" Style begrenzen wir die Anzahl auf count
-  if (props.module.count && props.module.count > 0 && props.module.style === "image") {
+  if (
+    props.module.count &&
+    props.module.count > 0 &&
+    props.module.style === "image"
+  ) {
     limitedItems = filteredItems.slice(0, props.module.count);
-  } 
+  }
   // Bei anderen Styles begrenzen wir auf count * 3 (für die Dreiergruppen)
   else if (props.module.count && props.module.count > 0) {
     limitedItems = filteredItems.slice(0, props.module.count * 3);
@@ -297,8 +336,8 @@ function playTrack(item) {
     } ${categoryType.toLowerCase()}`"
   >
     <div class="module-carousel__header">
-      <h3 v-if="module.title" class="module-carousel__title">
-        {{ module.title }}
+      <h3 v-if="module?.title" class="module-carousel__title">
+        {{ module?.title }}
       </h3>
       <section
         v-if="categoryType == 'Episodes'"
@@ -402,24 +441,30 @@ function playTrack(item) {
                 v-else-if="module.style !== 'image'"
                 class="slide__tags city-tags"
               ></div>
-              <MediaImage
-                v-if="getItemImage(item) && categoryType !== 'Episodes'"
-                :image="getItemImage(item)"
-                :class="`media-${module.style}`"
-              />
-              <img
-                v-else-if="
-                  categoryType === 'Episodes' && artworkUrls.get(item._id)
-                "
-                :src="artworkUrls.get(item._id)"
-                alt="Episode Image"
-                class="track-artwork"
-              />
-              <div
-                v-else-if="categoryType === 'Episodes'"
-                class="track-artwork-placeholder"
-                @vue:mounted="loadArtworkUrl(item)"
-              ></div>
+              <NuxtLink
+                v-if="item.slug"
+                :to="getItemRoute(item)"
+                class="grid-item__link"
+              >
+                <MediaImage
+                  v-if="getItemImage(item) && categoryType !== 'Episodes'"
+                  :image="getItemImage(item)"
+                  :class="`media-${module.style}`"
+                />
+                <img
+                  v-else-if="
+                    categoryType === 'Episodes' && artworkUrls.get(item._id)
+                  "
+                  :src="artworkUrls.get(item._id)"
+                  alt="Episode Image"
+                  class="track-artwork"
+                />
+                <div
+                  v-else-if="categoryType === 'Episodes'"
+                  class="track-artwork-placeholder"
+                  @vue:mounted="loadArtworkUrl(item)"
+                ></div>
+              </NuxtLink>
               <div class="slide-content">
                 <section class="slide-content__interactive">
                   <h3 class="slide-date" v-if="item?.datetime">
@@ -786,7 +831,7 @@ function playTrack(item) {
       }
 
       opacity: 0;
-      transition: opacity .15s ease !important;
+      transition: opacity 0.15s ease !important;
 
       &.active {
         opacity: 1;

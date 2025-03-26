@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useMainStore } from "~/stores/mainStore";
+const { locale, setLocale } = useI18n();
+const localePath = useLocalePath();
 
 // Typdefinitionen
 interface Image {
@@ -56,6 +58,41 @@ const props = defineProps<{
 
 // Store
 const mainStore = useMainStore();
+
+// Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
+function getItemRoute(item) {
+  if (!item || !item.slug) return "/";
+
+  switch (item._type) {
+    case "person":
+    case "venue":
+      return localePath(`/pool/${item.slug.current}`);
+
+    case "set":
+      // Prüfe, ob parentShow vorhanden ist
+      if (
+        item.parentShow &&
+        item.parentShow.slug &&
+        item.parentShow.slug.current
+      ) {
+        return localePath(
+          `/shows/${item.parentShow.slug.current}/${item.slug.current}`
+        );
+      }
+      // Fallback falls parentShow nicht verfügbar ist
+      return localePath(`/shows/${item.slug.current}`);
+
+    case "article":
+      return localePath(`/words/${item.slug.current}`);
+
+    case "show":
+      return localePath(`/shows/${item.slug.current}`);
+
+    // Standard-Fallback
+    default:
+      return localePath(`/${item._type}/${item.slug.current}`);
+  }
+}
 
 // Composable für Bild-Management
 const useImageManagement = () => {
@@ -268,27 +305,55 @@ onMounted(() => {
               </h3>
             </div>
             <div
-              class="hero-entry-show-title"
+              class="hero-entry-title"
               v-if="module?.contentReference?._type == 'set'"
             >
-              <h2
-                v-if="module?.contentReference?.parentShow?.title"
-                class="hero-entry-title"
+              <NuxtLink
+                v-if="
+                  module?.contentReference?.parentShow?.title !== 'No Show' &&
+                  module?.contentReference?.parentShow
+                "
+                :to="
+                  localePath(
+                    `/shows/${module?.contentReference?.parentShow?.slug.current}`
+                  )
+                "
               >
-                {{ module?.contentReference?.parentShow?.title }}
-              </h2>
-              <h3
-                v-for="(artist, index) in module?.contentReference?.persons"
-                :key="artist._key"
-                class="hero-entry-show-artist-artist"
+                <h2
+                  class="hero-entry-title"
+                  v-if="
+                    module?.contentReference?.parentShow?.title !== 'No Show'
+                  "
+                >{{ module?.contentReference?.parentShow?.title }}
+                </h2>
+              </NuxtLink>
+              <!-- Künstler (für Sets) -->
+              <div
+                v-if="
+                  module?.contentReference?.persons &&
+                  module?.contentReference?.persons?.length > 0
+                "
+                class="hero-entry-show-artists"
               >
-                {{ artist?.title
-                }}{{
-                  index < module?.contentReference?.persons.length - 1
-                    ? ","
-                    : ""
-                }}&nbsp;
-              </h3>
+                <h3
+                  v-for="(artist, index) in module?.contentReference?.persons"
+                  :key="artist?._id"
+                  class="hero-entry-show-artists-artist"
+                >
+                  <NuxtLink
+                    v-if="artist?.poolVisibility"
+                    :to="localePath(`/pool/${artist?.slug.current}`)"
+                    class="hero-entry-show-artists-artist"
+                  >
+                    {{ artist?.title
+                    }}{{ index < module?.contentReference?.persons?.length - 1 ? "," : "" }}&nbsp;
+                  </NuxtLink>
+                  <span v-else class="hero-entry-show-artists-artist">
+                    {{ artist?.title
+                    }}{{ index < module?.contentReference?.persons?.length - 1 ? "," : "" }}&nbsp;
+                  </span>
+                </h3>
+              </div>
             </div>
             <h2 v-if="module.title" class="hero-entry-title">
               {{ module.title }}
@@ -573,7 +638,7 @@ onMounted(() => {
       gap: var(--mid-padding);
 
       .hero-entry-title,
-      .hero-entry-show-artist-artist {
+      .hero-entry-show-artists-artist {
         font-size: var(--base-font-size);
         font-family: var(--font-text-semibold);
         font-weight: 500;
