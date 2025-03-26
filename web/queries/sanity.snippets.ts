@@ -572,8 +572,6 @@ export const MODULE_QUERY = `{
             name,
             slug,
             image ${IMAGE_QUERY},
-            bio ${RICH_TEXT_QUERY},
-            description ${RICH_TEXT_QUERY},
             "tags": tags[]->{
                 ...,
                 _id,

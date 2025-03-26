@@ -56,6 +56,7 @@ usePageSeo(data?.value?.seo);
 
 <style lang="postcss" scoped>
 .shows-archive {
+  width: 100%;
   display: flex;
   flex-flow: column wrap;
   justify-content: flex-start;

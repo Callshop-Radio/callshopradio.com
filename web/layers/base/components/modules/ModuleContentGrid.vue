@@ -138,6 +138,10 @@ function getTagNameById(tagId) {
   );
   if (globalTag) return globalTag.title;
 
+  // Suche in allen verfügbaren Tags (für "Pool Tags")
+  const otherTag = availableTags.value.find((tag) => tag._id === tagId);
+  if (otherTag) return otherTag.title;
+
   // Fallback
   return "Unbekannter Filter";
 }
@@ -197,6 +201,68 @@ const categorizedTags = computed(() => {
     mood,
   };
 });
+
+// Content-Typ-spezifische Tags nach Kategorien (für Nicht-Set-Inhaltstypen)
+const poolTags = computed(() => {
+  if (!availableTags.value) return { musicians: [], venues: [], crafts: [] };
+
+  // Sammle die verwendeten Tag-IDs für alle Dokumente nach Typ
+  const musicianTagIds = new Set();
+  const venueTagIds = new Set();
+  const craftsTagIds = new Set();
+
+  // Filtere die Items nach Typ und sammle die Tags
+  allItems.value.forEach((item) => {
+    if (item._type === "person") {
+      // Person-Tags nach Musiker/Handwerker filtern
+      if (item.tags && Array.isArray(item.tags)) {
+        item.tags.forEach((tag) => {
+          if (tag._type === "tag.musician") {
+            musicianTagIds.add(tag._id);
+          } else if (tag._type === "tag.crafts") {
+            craftsTagIds.add(tag._id);
+          }
+        });
+      }
+    } else if (item._type === "venue") {
+      // Venue-Tags sammeln
+      if (item.tags && Array.isArray(item.tags)) {
+        item.tags.forEach((tag) => {
+          if (tag._type === "tag.venue") {
+            venueTagIds.add(tag._id);
+          }
+        });
+      }
+    }
+  });
+
+  // Filtere die verfügbaren Tags nach Typ und ob sie verwendet werden
+  const musicians = availableTags.value.filter(
+    (tag) => tag._type === "tag.musician" && musicianTagIds.has(tag._id)
+  );
+
+  const venues = availableTags.value.filter(
+    (tag) => tag._type === "tag.venue" && venueTagIds.has(tag._id)
+  );
+
+  const crafts = availableTags.value.filter(
+    (tag) => tag._type === "tag.crafts" && craftsTagIds.has(tag._id)
+  );
+
+  return {
+    musicians,
+    venues,
+    crafts,
+  };
+});
+
+// Aktivierter Typ für die Filterung
+const activeFilterType = ref(null);
+
+// Toggle für Filtertyp
+function toggleFilterType(type) {
+  activeFilterType.value = activeFilterType.value === type ? null : type;
+}
 
 // Alle verfügbaren Tags für andere Content-Typen
 const availableTags = computed(() => {
@@ -290,28 +356,37 @@ function formatDate(dateString) {
 function getItemImage(item) {
   // Fallbacks je nach Content-Typ
   const itemType = item._type || "";
+  let image = null;
 
   // Bild aus dem Item selbst
   if (item.image || item.mainImage) {
-    return item.image || item.mainImage;
+    image = item.image || item.mainImage;
+  } else {
+    // Fallback-Bilder je nach Typ
+    switch (itemType) {
+      case "person":
+        image = mainStore?.siteFallbacks?.fallbackPerson?.image;
+        break;
+      case "venue":
+        image = mainStore?.siteFallbacks?.fallbackVenue?.image;
+        break;
+      case "show":
+        image = mainStore?.siteFallbacks?.fallbackShow?.image;
+        break;
+      case "set":
+        image = mainStore?.siteFallbacks?.fallbackSet?.image;
+        break;
+      case "word":
+      case "article":
+        image = mainStore?.siteFallbacks?.fallbackArticle?.image;
+        break;
+      default:
+        // Allgemeines Fallback-Bild
+        image = mainStore?.siteFallbacks?.fallbackPerson?.image;
+    }
   }
 
-  switch (itemType) {
-    case "person":
-      return mainStore?.siteFallbacks?.fallbackPerson?.image;
-    case "venue":
-      return mainStore?.siteFallbacks?.fallbackVenue?.image;
-    case "show":
-      return mainStore?.siteFallbacks?.fallbackShow?.image;
-    case "set":
-      return mainStore?.siteFallbacks?.fallbackSet?.image;
-    case "word":
-    case "article":
-      return mainStore?.siteFallbacks?.fallbackArticle?.image;
-    default:
-      // Allgemeines Fallback-Bild
-      return mainStore?.siteFallbacks?.fallbackPerson?.image;
-  }
+  return image;
 }
 
 const artworkUrls = ref(new Map());
@@ -758,6 +833,14 @@ function playTrack(item) {
     mainStore.currentTrack = track;
   }
 }
+
+onMounted(() => {
+  if (contentType.value === "sets") {
+    allItems.value.forEach((item) => {
+      loadArtworkUrl(item);
+    });
+  }
+});
 </script>
 <template>
   <ClientOnly>
@@ -986,63 +1069,101 @@ function playTrack(item) {
                 </div>
               </div>
             </div>
-
-            <!-- Mood Tags -->
-            <div
-              v-if="categorizedTags.mood && categorizedTags.mood.length > 0"
-              class="filter-category"
-            >
-              <h4 class="filter-category__title">Mood</h4>
-              <div class="filter-tags">
-                <button
-                  v-for="tag in categorizedTags.mood"
-                  :key="tag._id"
-                  :class="[
-                    'filter-tag',
-                    { 'filter-tag--active': activeFilters.has(tag._id) },
-                  ]"
-                  @click="toggleFilter(tag._id)"
-                >
-                  {{ tag.title }}
-                </button>
-              </div>
-            </div>
-
-            <!-- Globale Tags -->
-            <div
-              v-if="categorizedTags.global && categorizedTags.global.length > 0"
-              class="filter-category"
-            >
-              <h4 class="filter-category__title">Tags</h4>
-              <div class="filter-tags">
-                <button
-                  v-for="tag in categorizedTags.global"
-                  :key="tag._id"
-                  :class="[
-                    'filter-tag',
-                    { 'filter-tag--active': activeFilters.has(tag._id) },
-                  ]"
-                  @click="toggleFilter(tag._id)"
-                >
-                  {{ tag.title }}
-                </button>
-              </div>
-            </div>
           </template>
 
-          <!-- Einfache Filter für andere Inhaltstypen (außer Cities, die bereits oben angezeigt werden) -->
+          <!-- Filter für Pool -->
           <template v-else>
             <div
               v-if="getContentTypeSpecificTags.length > 0"
-              class="filter-category"
+              class="filter-category tags"
             >
-              <h4 class="filter-category__title">Tags</h4>
-              <div class="filter-tags">
+              <!-- Filtertypen (Musician, Venue, Crafts) -->
+              <div class="filter-types tags">
                 <button
-                  v-for="tag in getContentTypeSpecificTags"
+                  v-if="poolTags.musicians.length > 0"
+                  :class="[
+                    'filter-type tag',
+                    { 'filter-type--active': activeFilterType === 'musicians' },
+                  ]"
+                  @click="toggleFilterType('musicians')"
+                >
+                  Musicians
+                </button>
+                <button
+                  v-if="poolTags.venues.length > 0"
+                  :class="[
+                    'filter-type tag',
+                    { 'filter-type--active': activeFilterType === 'venues' },
+                  ]"
+                  @click="toggleFilterType('venues')"
+                >
+                  Venues
+                </button>
+                <button
+                  v-if="poolTags.crafts.length > 0"
+                  :class="[
+                    'filter-type tag',
+                    { 'filter-type--active': activeFilterType === 'crafts' },
+                  ]"
+                  @click="toggleFilterType('crafts')"
+                >
+                  Crafts
+                </button>
+              </div>
+
+              <!-- Musician Tags -->
+              <div
+                v-if="
+                  activeFilterType === 'musicians' &&
+                  poolTags.musicians.length > 0
+                "
+                class="filter-tags tags"
+              >
+                <button
+                  v-for="tag in poolTags.musicians"
                   :key="tag._id"
                   :class="[
-                    'filter-tag',
+                    'filter-tag tag',
+                    { 'filter-tag--active': activeFilters.has(tag._id) },
+                  ]"
+                  @click="toggleFilter(tag._id)"
+                >
+                  {{ tag.title }}
+                </button>
+              </div>
+
+              <!-- Venue Tags -->
+              <div
+                v-if="
+                  activeFilterType === 'venues' && poolTags.venues.length > 0
+                "
+                class="filter-tags tags"
+              >
+                <button
+                  v-for="tag in poolTags.venues"
+                  :key="tag._id"
+                  :class="[
+                    'filter-tag tag',
+                    { 'filter-tag--active': activeFilters.has(tag._id) },
+                  ]"
+                  @click="toggleFilter(tag._id)"
+                >
+                  {{ tag.title }}
+                </button>
+              </div>
+
+              <!-- Crafts Tags -->
+              <div
+                v-if="
+                  activeFilterType === 'crafts' && poolTags.crafts.length > 0
+                "
+                class="filter-tags tags"
+              >
+                <button
+                  v-for="tag in poolTags.crafts"
+                  :key="tag._id"
+                  :class="[
+                    'filter-tag tag',
                     { 'filter-tag--active': activeFilters.has(tag._id) },
                   ]"
                   @click="toggleFilter(tag._id)"
@@ -1078,7 +1199,7 @@ function playTrack(item) {
                   {{ parseI18nObj(tag?.short) }}
                 </span>
               </div>
-              <div class="grid-item__image">
+              <div class="grid-item__image" v-if="contentType == 'sets'">
                 <img
                   v-if="item.image && item.image.asset"
                   :src="item.image.asset.url"
@@ -1095,6 +1216,33 @@ function playTrack(item) {
                     alt="Track Artwork"
                   />
                 </div>
+              </div>
+              <div class="grid-item__image" v-if="contentType !== 'sets'">
+                <img
+                  v-if="getItemImage(item)"
+                  :src="getItemImage(item).asset?.url"
+                  :alt="item.title || ''"
+                />
+                <img
+                  v-else-if="
+                    contentType === 'sets' && artworkUrls.get(item._id)
+                  "
+                  :src="artworkUrls.get(item._id)"
+                  alt="Track Artwork"
+                  class="track-artwork"
+                />
+                <div
+                  v-else-if="contentType === 'sets'"
+                  class="track-artwork-placeholder"
+                  @vue:mounted="loadArtworkUrl(item)"
+                ></div>
+                <img
+                  v-else
+                  :src="
+                    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
+                  "
+                  alt="Fallback Image"
+                />
               </div>
 
               <!-- Inhalt -->
@@ -1132,7 +1280,7 @@ function playTrack(item) {
                 </section>
                 <div v-if="item.parentShow && contentType == 'sets'">
                   <!-- Show-Titel (für Sets) -->
-                  <h3 class="grid-item__title show-title">
+                  <h3 class="grid-item__title show-title" v-if="item.parentShow?.title !== 'No Show'">
                     {{ item.parentShow.title }}
                   </h3>
 
@@ -1160,6 +1308,72 @@ function playTrack(item) {
                 <h3 v-if="contentType !== 'sets'" class="grid-item__title">
                   {{ item.title || item.name }}
                 </h3>
+
+                <!-- Hier die Teaser-Text Logik einfügen, analog zum ContentSlider -->
+                <RichText
+                  v-if="item?.useTeaserText && item?.textTeaser"
+                  :blocks="parseI18nObj(item?.textTeaser)"
+                />
+                <RichText
+                  v-else-if="
+                    !item?.useTeaserText && item?.text && item.text.length > 0
+                  "
+                  :blocks="parseI18nObj(item?.text)?.slice(0, 1)"
+                />
+                <RichText
+                  v-else-if="
+                    !item?.text &&
+                    item?.description &&
+                    item.description.length > 0 &&
+                    (item.description[0]?.value || item.description[1]?.value)
+                  "
+                  :blocks="
+                    limitTextBlocks(
+                      parseI18nObj(item?.description)?.slice(0, 1),
+                      100
+                    )
+                  "
+                />
+                <RichText
+                  v-else-if="
+                    !item?.text &&
+                    module.poolContentType == 'persons' &&
+                    mainStore?.siteFallbacks?.fallbackPerson?.description
+                      .length > 0 &&
+                    (mainStore?.siteFallbacks?.fallbackPerson?.description?.[0]
+                      ?.value ||
+                      mainStore?.siteFallbacks?.fallbackPerson?.description?.[1]
+                        ?.value)
+                  "
+                  :blocks="
+                    limitTextBlocks(
+                      parseI18nObj(
+                        mainStore?.siteFallbacks?.fallbackPerson?.description
+                      )?.slice(0, 1),
+                      100
+                    )
+                  "
+                />
+                <RichText
+                  v-else-if="
+                    !item?.text &&
+                    module.poolContentType == 'venues' &&
+                    mainStore?.siteFallbacks?.fallbackVenue?.description
+                      .length > 0 &&
+                    (mainStore?.siteFallbacks?.fallbackVenue?.description?.[0]
+                      ?.value ||
+                      mainStore?.siteFallbacks?.fallbackVenue?.description?.[1]
+                        ?.value)
+                  "
+                  :blocks="
+                    limitTextBlocks(
+                      parseI18nObj(
+                        mainStore?.siteFallbacks?.fallbackVenue?.description
+                      )?.slice(0, 1),
+                      100
+                    )
+                  "
+                />
 
                 <!-- Nicht-City Tags anzeigen -->
                 <div
@@ -1193,23 +1407,109 @@ function playTrack(item) {
 .content-grid {
   @apply overflow-hidden;
   max-width: clamp(100%, 100%, var(--page-max-width));
+  width: 100%;
 
+  /*settings for content type*/
   &.shows,
   &.sets {
-    .filter-tag--city {
-      background-color: var(--color-pink);
+    .active-filters {
+      &__title {
+        &.active {
+          color: var(--color-pink);
+        }
+      }
+    }
+    .filter-cities {
+      .filter-tags {
+        .filter-tag {
+          &.filter-tag--active,
+          &:hover {
+            background-color: var(--color-pink);
+            color: var(--color-bg);
+          }
+        }
+      }
+    }
+    .sort-options {
+      button {
+        &.active {
+          &:hover {
+            color: var(--color-pink);
+          }
+          color: var(--color-pink);
+          .dot {
+            background-color: var(--color-pink);
+          }
+        }
+      }
     }
   }
 
   &.words {
-    .filter-tag--city {
-      background-color: var(--color-green);
+    .active-filters {
+      &__title {
+        &.active {
+          color: var(--color-green);
+        }
+      }
+    }
+    .filter-cities {
+      .filter-tags {
+        .filter-tag {
+          &.filter-tag--active,
+          &:hover {
+            background-color: var(--color-green);
+            color: var(--color-bg);
+          }
+        }
+      }
+    }
+    .sort-options {
+      button {
+        &:hover {
+          color: var(--color-green);
+        }
+        &.active {
+          color: var(--color-green);
+          .dot {
+            background-color: var(--color-green);
+          }
+        }
+      }
     }
   }
 
   &.pool {
-    .filter-tag--city {
-      background-color: var(--color-green);
+    .active-filters {
+      &__title {
+        &.active {
+          color: var(--color-blue);
+        }
+      }
+    }
+    .filter-cities {
+      .filter-tags {
+        .filter-tag {
+          &.filter-tag--active,
+          &:hover {
+            background-color: var(--color-blue);
+            color: var(--color-bg);
+          }
+        }
+      }
+    }
+    .sort-options {
+      button {
+        &:hover {
+          color: var(--color-blue);
+        }
+        &.active {
+          color: var(--color-blue);
+          .dot {
+            background-color: var(--color-blue);
+          }
+        }
+      }
     }
   }
 
@@ -1219,6 +1519,7 @@ function playTrack(item) {
     margin-bottom: var(--mid-margin);
   }
 
+  /*  global settings */
   &__filter-bar {
     display: flex;
     flex-flow: row wrap;
@@ -1260,7 +1561,6 @@ function playTrack(item) {
         color: var(--color-bg);
         &.active {
           cursor: pointer;
-          color: var(--color-pink);
           .close-cross {
             display: block;
           }
@@ -1341,15 +1641,6 @@ function playTrack(item) {
           color: var(--color-text);
           @media (prefers-color-scheme: dark) {
             background-color: var(--color-dark-grey);
-          }
-
-          &.filter-tag--active,
-          &:hover {
-            background-color: var(--color-pink);
-            color: var(--color-bg);
-            @media (prefers-color-scheme: dark) {
-              border-color: var(--color-pink);
-            }
           }
         }
       }
@@ -1448,38 +1739,6 @@ function playTrack(item) {
       gap: var(--mid-padding);
     }
 
-    .filter-category {
-      display: flex;
-      flex-direction: column;
-      gap: var(--small-padding);
-
-      &__title {
-        font-size: var(--small-font-size);
-        text-transform: uppercase;
-        margin-bottom: var(--small-padding);
-      }
-
-      &__toggle {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        text-align: left;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-
-        &:hover .filter-category__title {
-          text-decoration: underline;
-        }
-      }
-
-      &__icon {
-        font-size: 1.2rem;
-      }
-    }
-
     .filter-tags {
       display: flex;
       flex-wrap: wrap;
@@ -1526,6 +1785,47 @@ function playTrack(item) {
           align-items: center;
           gap: calc(var(--small-padding) / 2);
         }
+      }
+    }
+
+    .filter-types {
+      display: flex;
+      flex-flow: row wrap;
+      align-items: center;
+      justify-content: center;
+      margin: var(--base-padding) auto;
+      max-width: 66%;
+      width: 66%;
+      gap: var(--small-padding);
+      .filter-type {
+        display: flex;
+        flex-flow: row wrap;
+        gap: calc(var(--small-padding) / 2);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        &--active {
+          background-color: var(--color-text);
+          color: var(--color-bg);
+        }
+      }
+    }
+
+    .filter-tags {
+      width: 100%;
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: center;
+      align-items: center;
+      gap: calc(var(--small-padding) / 2);
+      &.hidden {
+        display: none;
+      }
+      .filter-subgenre__tags {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        align-items: center;
+        gap: calc(var(--small-padding) / 2);
       }
     }
 
@@ -1608,240 +1908,337 @@ function playTrack(item) {
     }
   }
 }
-
-/* Grid-Item Styling */
-.grid-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  max-width: calc(100% / 3 - var(--big-margin) * 1.325);
-  width: 100%;
-  border-bottom: 0.09325rem solid var(--color-text);
-  padding: 0 0 calc(var(--big-margin) / 2) 0;
-
-  &:last-of-type {
-    justify-self: flex-start;
-    margin: 0 auto 0 0;
-  }
-
-  &__link {
-    display: contents;
-    text-decoration: none;
-    color: inherit;
-  }
-
-  &__image {
-    position: relative;
-    overflow: hidden;
-
-    img {
-      width: 100%;
-      height: auto;
-      aspect-ratio: 1 / 1 !important;
-      object-fit: cover;
-      transition: transform 0.3s ease;
-    }
-
-    &:hover img {
-      transform: scale(1.05);
-    }
-  }
-
-  :deep(img) {
-    @apply object-cover;
-    @apply max-w-full w-100;
-  }
-
-  &__content {
-    width: 100%;
-    display: flex;
-    flex-flow: column wrap;
-    justify-content: flex-start;
-    align-items: stretch;
-    flex-grow: 1;
-    margin: var(--mid-padding) 0 0 0;
-    gap: var(--mid-padding);
-
-    .grid-item__tags {
-      display: flex;
-      flex-flow: row wrap;
-      justify-content: flex-start;
-      align-items: flex-end;
-      align-content: flex-end;
-      gap: var(--small-margin);
-      flex-grow: 1;
-    }
-
-    &__interactive {
-      width: 100%;
-      display: flex;
-      flex-flow: row wrap;
-      justify-content: space-between;
-      align-items: center;
-
-      .grid-item__date {
-        font-size: var(--small-font-size);
-        text-transform: uppercase;
-      }
-
-      .play-button {
-        display: flex;
-        flex-flow: row;
-        justify-content: center;
-        align-items: center;
-        margin: 0 0 0 auto;
-        color: transparent;
-        background-color: var(--color-text);
-        border-radius: 100px;
-        border: none;
-        padding: 4px;
-        width: calc(var(--base-font-size) + 4px);
-        height: calc(var(--base-font-size) + 4px);
-
-        svg {
-          height: var(--base-font-size);
-          transform: translate(1px, 0);
-          path {
-            fill: var(--color-bg);
-          }
-        }
-      }
-    }
-
-    .grid-item__title {
-      font-size: var(--base-font-size);
-      text-transform: uppercase;
-      font-family: var(--font-text-semibold);
-      margin: 0;
-    }
-
-    .grid-item__artist {
-      font-size: var(--base-font-size);
-      text-transform: uppercase;
-      font-family: var(--font-text-semibold);
-      margin: 0;
-    }
-
-    .show-title {
-    }
-
-    .show-artists {
-      display: flex;
-      flex-flow: row wrap;
-      justify-content: flex-start;
-      align-items: center;
-      margin-bottom: var(--mid-padding);
-    }
-  }
-}
-
 /* Style-spezifische Anpassungen */
 .module-grid {
-  &--cards {
-    .grid-item {
-      display: flex;
-      flex-direction: column;
+  .grid-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    max-width: calc(100% / 3 - var(--big-margin) * 1.325);
+    width: 100%;
+    padding: 0 0 calc(var(--big-margin) / 2) 0;
 
-      :deep(img),
-      :deep(.video-wrapper) {
-        aspect-ratio: 3 / 4 !important;
-      }
-
-      &__content {
-        flex-grow: 1;
-        margin-top: var(--mid-padding);
-      }
-
-      h2,
-      h3 {
-        font-family: var(--font-text-semibold);
-      }
+    &:last-of-type {
+      justify-self: flex-start;
+      margin: 0 auto 0 0;
     }
-  }
 
-  &--thumbnails {
-    .grid-item {
-      :deep(img),
-      :deep(.video-wrapper) {
+    &__link {
+      display: contents;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    &__image {
+      position: relative;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: auto;
         aspect-ratio: 1 / 1 !important;
         object-fit: cover;
-        @apply max-w-full;
+        transition: transform 0.3s ease;
       }
 
-      &__content {
-        gap: 0;
-        flex-grow: 1;
-        margin-top: var(--mid-padding);
+      &:hover img {
+        transform: scale(1.05);
+      }
+    }
 
-        h2,
-        h3 {
-          font-family: var(--font-text-semibold);
+    :deep(img) {
+      @apply object-cover;
+      @apply max-w-full w-100;
+    }
+
+    &__content {
+      width: 100%;
+      display: flex;
+      flex-flow: column wrap;
+      justify-content: flex-start;
+      align-items: stretch;
+      flex-grow: 1;
+      margin: var(--mid-padding) 0 0 0;
+      gap: var(--mid-padding);
+
+      .grid-item__tags {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+        align-items: flex-end;
+        align-content: flex-end;
+        gap: var(--small-margin);
+        flex-grow: 1;
+      }
+
+      &__interactive {
+        width: 100%;
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-between;
+        align-items: center;
+
+        .grid-item__date {
+          font-size: var(--small-font-size);
+          text-transform: uppercase;
         }
 
-        &__interactive {
-          width: 100%;
+        .play-button {
           display: flex;
-          flex-flow: row wrap;
-          justify-content: space-between;
+          flex-flow: row;
+          justify-content: center;
           align-items: center;
+          margin: 0 0 0 auto;
+          color: transparent;
+          background-color: var(--color-text);
+          border-radius: 100px;
+          border: none;
+          padding: 4px;
+          width: calc(var(--base-font-size) + 4px);
+          height: calc(var(--base-font-size) + 4px);
 
-          .play {
-            display: flex;
-            flex-flow: row;
-            justify-content: center;
-            align-items: center;
-            margin: 0 0 0 auto;
-            color: transparent;
-            background-color: transparent;
-            border-radius: 100px;
-            border: none;
-            padding: 4px;
-            width: calc(var(--base-font-size) + 4px);
-            height: calc(var(--base-font-size) + 4px);
-            background-color: var(--color-text);
-
-            svg {
-              height: var(--base-font-size);
-              transform: translate(1px, 0);
-              rect,
-              path {
-                fill: var(--color-bg);
-              }
+          svg {
+            height: var(--base-font-size);
+            transform: translate(1px, 0);
+            path {
+              fill: var(--color-bg);
             }
           }
         }
       }
-    }
-  }
 
-  &--image {
-    .grid-item {
-      display: flex;
-      flex-direction: row;
-
-      :deep(img),
-      :deep(.video-wrapper) {
-        aspect-ratio: 3 / 1.5 !important;
-        object-fit: cover;
-        object-position: center;
-        @apply max-w-full;
-        width: 62.75%;
+      .grid-item__title {
+        font-size: var(--base-font-size);
+        text-transform: uppercase;
+        font-family: var(--font-text-semibold);
+        margin: 0;
       }
 
-      &__content {
-        width: calc(100% - 62.75%);
-        padding: var(--big-margin) 0 var(--big-margin) var(--big-margin);
+      .grid-item__artist {
+        font-size: var(--base-font-size);
+        text-transform: uppercase;
+        font-family: var(--font-text-semibold);
+        margin: 0;
+      }
 
-        .grid-item__title {
-          font-size: var(--large-font-size);
-          text-transform: uppercase;
+      .show-title {
+      }
+
+      .show-artists {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+        align-items: center;
+        margin-bottom: var(--mid-padding);
+      }
+    }
+  }
+  &.sets {
+    .content-grid__items {
+      .grid-item {
+        border-bottom: 0.09325rem solid var(--color-text);
+        &__image {
+          position: relative;
+          overflow: hidden;
+
+          img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1 !important;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+          }
+
+          &:hover img {
+            transform: scale(1.05);
+          }
+        }
+
+        :deep(img) {
+          @apply object-cover;
+          @apply max-w-full w-100;
         }
       }
     }
-
+  }
+  &.pool {
     .content-grid__items {
-      grid-template-columns: 1fr;
+      .grid-item {
+        border-bottom: 0.09325rem solid var(--color-text);
+        /* position: relative;
+        overflow: visible;
+        &:nth-child(3n + 1) {
+          &::after {
+            position: absolute;
+            transform: translate(0, 0);
+            right: calc(var(--big-margin) * -1);
+            background-color:var(--color-text);
+            content: '';
+            display: block;
+            width: 0.06125rem;
+            height: 80%;
+          }
+        }
+        &:nth-child(3n + 2) {
+          &::after {
+            position: absolute;
+            transform: translate(0, 0);
+            right: calc(var(--big-margin) * -1);
+            background-color:var(--color-text);
+            content: '';
+            display: block;
+            width: 0.06125rem;
+            height: 80%;
+          }
+        } */
+        &__image {
+          position: relative;
+          overflow: hidden;
+
+          img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 3 / 4 !important;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+          }
+        }
+
+        :deep(img) {
+          @apply object-cover;
+          @apply max-w-full w-100;
+        }
+      }
+    }
+  }
+  &.words {
+    .content-grid__items {
+      .grid-item {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        max-width: calc(100% / 3 - var(--big-margin) * 1.325);
+        width: 100%;
+        border-bottom: 0.09325rem solid var(--color-text);
+        padding: 0 0 calc(var(--big-margin) / 2) 0;
+
+        &:last-of-type {
+          justify-self: flex-start;
+          margin: 0 auto 0 0;
+        }
+
+        &__link {
+          display: contents;
+          text-decoration: none;
+          color: inherit;
+        }
+
+        &__image {
+          position: relative;
+          overflow: hidden;
+
+          img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1 !important;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+          }
+
+          &:hover img {
+            transform: scale(1.05);
+          }
+        }
+
+        :deep(img) {
+          @apply object-cover;
+          @apply max-w-full w-100;
+        }
+
+        &__content {
+          width: 100%;
+          display: flex;
+          flex-flow: column wrap;
+          justify-content: flex-start;
+          align-items: stretch;
+          flex-grow: 1;
+          margin: var(--mid-padding) 0 0 0;
+          gap: var(--mid-padding);
+
+          .grid-item__tags {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: flex-start;
+            align-items: flex-end;
+            align-content: flex-end;
+            gap: var(--small-margin);
+            flex-grow: 1;
+          }
+
+          &__interactive {
+            width: 100%;
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: space-between;
+            align-items: center;
+
+            .grid-item__date {
+              font-size: var(--small-font-size);
+              text-transform: uppercase;
+            }
+
+            .play-button {
+              display: flex;
+              flex-flow: row;
+              justify-content: center;
+              align-items: center;
+              margin: 0 0 0 auto;
+              color: transparent;
+              background-color: var(--color-text);
+              border-radius: 100px;
+              border: none;
+              padding: 4px;
+              width: calc(var(--base-font-size) + 4px);
+              height: calc(var(--base-font-size) + 4px);
+
+              svg {
+                height: var(--base-font-size);
+                transform: translate(1px, 0);
+                path {
+                  fill: var(--color-bg);
+                }
+              }
+            }
+          }
+
+          .grid-item__title {
+            font-size: var(--base-font-size);
+            text-transform: uppercase;
+            font-family: var(--font-text-semibold);
+            margin: 0;
+          }
+
+          .grid-item__artist {
+            font-size: var(--base-font-size);
+            text-transform: uppercase;
+            font-family: var(--font-text-semibold);
+            margin: 0;
+          }
+
+          .show-title {
+          }
+
+          .show-artists {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: flex-start;
+            align-items: center;
+            margin-bottom: var(--mid-padding);
+          }
+        }
+      }
     }
   }
 

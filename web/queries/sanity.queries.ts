@@ -39,6 +39,49 @@ export const SCHEDULE_QUERY = `
   ${SEO_QUERY},
 }`;
 
+export const POOLARCHIVE_QUERY = `
+*[_type == "pool"] | order(_updatedAt desc)[0] {
+  ...,
+  backgroundImage ${IMAGE_QUERY},
+  content[] ${RICH_TEXT_QUERY},
+  modules [] ${MODULE_QUERY},
+  ${SEO_QUERY},
+  slider{
+    ...,
+    count,
+    "pool": select(
+      autoLoad == true => *[_type in ['person', 'venue'] && poolVisibility == true] | order(_updatedAt desc) {
+          ...,
+          _id,
+          _type,
+          title,
+          name,
+          slug,
+          "tags": tags[]->{
+              ...,
+              _id,
+              title
+          }| order(lower(title)),
+          location
+      },
+      pool[]->{
+          ...,
+          _id,
+          _type,
+          title,
+          name,
+          slug,
+          "tags": tags[]->{
+              ...,
+              _id,
+              title
+          }| order(lower(title)),
+          location,
+      }
+    ),
+  }
+}`;
+
 export const SHOWSARCHIVE_QUERY = `
 *[_type == "showsArchive"] | order(_updatedAt desc)[0] {
   ...,
