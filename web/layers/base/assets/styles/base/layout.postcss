@@ -1,7 +1,19 @@
 html,
 body {
   @apply w-full h-full;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
 
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 main {
@@ -12,8 +24,8 @@ main {
 }
 
 .intro-section {
-    width: 100%;
-    max-width: var(--page-max-width);
-    height: max-content;
-    margin: var(--big-margin) 0 calc(var(--content-gap) - var(--big-margin)) 0;
+  width: 100%;
+  max-width: var(--page-max-width);
+  height: max-content;
+  margin: var(--big-margin) 0 calc(var(--content-gap) - var(--big-margin)) 0;
 }
