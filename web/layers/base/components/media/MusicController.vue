@@ -340,8 +340,7 @@ const setupAudioElement = (audioElement, num) => {
   // Add HLS streaming for better compatibility
   try {
     // Audio streams often have MIME type issues. Fallback to common Icecast server options
-    audioElement.addEventListener("canplaythrough", () => {
-    });
+    audioElement.addEventListener("canplaythrough", () => {});
 
     // Prevent automatic start
     audioElement.autoplay = false;
@@ -569,16 +568,21 @@ updateLiveStatus();
       cursor: not-allowed !important;
       pointer-events: none;
       .live-indicator {
-        color: var(--color-grey);
+        color: var(--color-dark-grey);
       }
-      color: var(--color-grey);
+      color: var(--color-dark-grey);
       button {
         cursor: not-allowed !important;
         pointer-events: none;
         svg {
           rect,
           path {
-            fill: var(--color-grey);
+            fill: var(--color-dark-grey);
+            opacity: 0.66;
+            @media (prefers-color-scheme: dark) {
+              fill: var(--color-dark-grey);
+              opacity: 1;
+            }
           }
         }
       }

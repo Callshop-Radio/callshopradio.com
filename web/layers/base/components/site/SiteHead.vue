@@ -6,6 +6,9 @@ const localePath = useLocalePath();
 const mainStore = useMainStore();
 const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 
+// console.log(mainStore?.siteNav);
+
+
 // Computed-Properties für den Track
 const currentTrack = computed(() => mainStore.currentTrack);
 const trackTitle = computed(() => currentTrack.value?.title || "");
@@ -22,7 +25,7 @@ const trackDuration = computed(() => {
 const isPlaying = computed(() => mainStore.isPlayerPlaying);
 const isVisible = computed(() => mainStore.isPlayerVisible);
 
-// Methode zum Umschalten der Player-Sichtbarkeit
+// Methode zum Umschalten der Player-Sichtbarkeit 
 const togglePlayerVisibility = () => {
   mainStore.togglePlayerVisibility();
 };
@@ -30,15 +33,21 @@ const togglePlayerVisibility = () => {
 
 <template>
   <div class="header">
-    <section class="header__menu-section">
-      <NuxtLink :to="localePath('/')" class="header__menu-section__logo">
-      <div class="header__menu-section__logo">
-        <ElementsCallshopLogo class="logo" />
-        <ElementsCallshopTextLogo class="text-logo" />
-      </div>
+    <section class="header__title-section">
+      <NuxtLink :to="localePath('/')" class="header__title-section__logo">
+        <div class="header__title-section__logo">
+          <ElementsCallshopLogo class="logo" />
+          <ElementsCallshopTextLogo class="text-logo" />
+        </div>
       </NuxtLink>
-      <SiteMenu />
+      <div class="header__toggle-section">
+        <SiteDarkMode />
+        <SiteDiscordButton v-if="mainStore?.siteNav?.discordLink"/>
+        <SiteScheduleButton v-if="mainStore?.siteNav?.schedulePage"/>
+        <SiteMenuButton />
+      </div>
     </section>
+    <SiteMenu />
     <section class="header__audio-player-section">
       <MusicController />
     </section>
@@ -47,10 +56,7 @@ const togglePlayerVisibility = () => {
       class="header__soundcloud-player-section"
       :class="{ 'is-hidden': !isVisible, 'is-visible': currentTrack }"
     >
-      <div
-        class="player-controls"
-        :class="{ 'is-loaded': currentTrack }"
-      >
+      <div class="player-controls" :class="{ 'is-loaded': currentTrack }">
         <div class="track-info">
           <!-- <div class="track-status" :class="{ 'is-playing': isPlaying }"></div> -->
           <div class="track-details">
@@ -90,13 +96,14 @@ const togglePlayerVisibility = () => {
   height: auto;
   min-height: max-content;
   z-index: 99999;
-  &__menu-section {
+  &__title-section {
     width: 100%;
     max-width: var(--page-max-width);
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
     align-items: center;
+    padding: var(--base-padding) 0;
     &__logo {
       display: flex;
       flex-flow: row wrap;
@@ -114,6 +121,13 @@ const togglePlayerVisibility = () => {
         }
       }
     }
+  }
+  &__toggle-section {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--small-padding);
   }
   &__audio-player-section {
     width: 100%;

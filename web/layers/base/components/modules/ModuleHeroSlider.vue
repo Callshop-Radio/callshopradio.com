@@ -210,6 +210,7 @@ const slides = computed(() => {
     width: 100%;
     height: 100%;
     z-index: 0;
+    pointer-events: none;
     .animated-logo-background {
       width: 575px;
       height: 415px;
@@ -228,6 +229,7 @@ const slides = computed(() => {
     }
   }
   .graphics-front {
+    pointer-events: none;
     position: absolute;
     top: 0;
     left: 0;

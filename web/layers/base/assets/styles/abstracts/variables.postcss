@@ -1,16 +1,17 @@
 :root {
   /* Limits */
   --page-max-width: clamp(0rem, 69.5rem, 100%);
-  
+
   /* Colors */
   --color-bg: #fff;
   --color-text: #000;
+  --color-black: #000;
   --color-link: currentcolor;
 
   --color-pink: #f794b3;
   --color-blue: #557fb9;
   --color-white: #f6f6f8;
-  --color-grey: #E8E8E8;
+  --color-grey: #e8e8e8;
   --color-dark-grey: #525252;
   --color-yellow: #f9ab0f;
   --color-green: #78ce82;
@@ -18,6 +19,7 @@
   @media (--dark) {
     --color-bg: #000;
     --color-text: #fff;
+    --color-dark-grey: #878787;
   }
 
   /* Video Player */
@@ -25,16 +27,23 @@
   --video-player-btn-color-background: 0 0 0;
 
   /* Modules */
-  --city-tag-height: calc(var(--small-padding) / 2 + var(--small-padding) / 2 + var(--mini-font-size));
-  --soundcloud-player-height: calc(116px + var(--base-font-size) + (var(--small-padding) * 4) + 1px + var(--mid-padding));
-  --soundcloud-player-collapsed-height: calc(var(--base-font-size) + (var(--small-padding) * 4) + 1px);
+  --city-tag-height: calc(
+    var(--small-padding) / 2 + var(--small-padding) / 2 + var(--mini-font-size)
+  );
+  --soundcloud-player-height: calc(
+    116px + var(--base-font-size) + (var(--small-padding) * 4) + 1px +
+      var(--mid-padding)
+  );
+  --soundcloud-player-collapsed-height: calc(
+    var(--base-font-size) + (var(--small-padding) * 4) + 1px
+  );
 
   /* Carousel */
   --carousel-spacing: 1rem;
   --carousel-height: 25rem;
 
   /* Sizes */
-  --content-gap: 13rem;
+  --content-gap: 17.5rem;
   --base-padding: 0.75rem;
   --big-padding: 1.25rem;
   --mid-padding: 1rem;
@@ -93,16 +102,17 @@
     --base-line-height: calc(var(--base-font-size) * 1.25);
   }
   @media (--xl-up) {
-  --content-gap: var(--big-margin);
-  --base-padding: 0.75rem;
-  --big-padding: 1.25rem;
-  --mid-padding: 1rem;
-  --small-padding: 0.5rem;
+    --content-gap: 17.5rem;
+    --base-padding: 0.75rem;
+    --big-padding: 1.25rem;
+    --mid-padding: 1rem;
+    --small-padding: 0.5rem;
 
-  --big-margin: 4.25rem;
-  --base-margin: 2.75rem;
-  --mid-margin: 2rem;
-  --small-margin: 0.875rem;
-  --page-max-width: clamp(0rem, 80rem, 100%);
+    --huge-margin: 11rem;
+    --big-margin: 4.25rem;
+    --base-margin: 2.75rem;
+    --mid-margin: 2rem;
+    --small-margin: 0.875rem;
+    --page-max-width: clamp(0rem, 80rem, 100%);
   }
 }

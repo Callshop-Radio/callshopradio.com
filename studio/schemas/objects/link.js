@@ -123,6 +123,9 @@ export const link = {
         if (referenceType !== 'home' && referenceType !== 'page') {
           baseUrl += `${referenceType}`
         }
+        if (referenceType == 'showsArchive') {
+          baseUrl = `/shows`
+        }
         if (slug) {
           baseUrl += `${slug}`
         }

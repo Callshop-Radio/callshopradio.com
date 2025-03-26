@@ -688,9 +688,6 @@ const currentTimePosition = computed(() => {
   &__heading {
     font-size: var(--h4-size);
     color: var(--color-text);
-    @media (prefers-color-scheme: dark) {
-      color: var(--color-bg);
-    }
     .today-badge {
       color: var(--color-pink);
       text-transform: uppercase;

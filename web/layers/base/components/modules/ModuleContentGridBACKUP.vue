@@ -1599,7 +1599,7 @@ function playTrack(item) {
           height: var(--base-font-size);
           transform: translate(1px, 0);
           path {
-            fill: var(--color-bg);
+            fill: var(--color-black);
           }
         }
       }

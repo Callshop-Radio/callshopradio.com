@@ -82,11 +82,26 @@ export const set = {
       group: 'editorial',
     },
     {
-      title: 'Artwork',
-      description: 'Cover Artwork, minimum resolution 1000x1000px',
+      title: 'Artwork Link',
+      description: 'Link to Cover Artwork, minimum resolution 1300x1300px',
+      name: 'imageLink',
+      type: 'string',
+      group: 'editorial',
+      options: {
+        collapsible: true,
+        collapsed: true,
+      },
+    },
+    {
+      title: 'Artwork Image Upload',
+      description: 'Cover Artwork, minimum resolution 1300x1300px',
       name: 'image',
       type: 'image',
       group: 'editorial',
+      options: {
+        collapsible: true,
+        collapsed: true,
+      },
     },
     {
       name: 'soundcloud',

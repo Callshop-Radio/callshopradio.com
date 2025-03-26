@@ -317,15 +317,18 @@ onMounted(() => {
         width: calc(4rem - var(--base-padding) * 2);
         height: calc(4rem - var(--base-padding) * 2);
         transform: translate(8%, 0);
+        path {
+          fill: var(--color-black);
+        }
       }
     }
 
     .set-tags {
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: flex-start;
-        gap: var(--base-padding);
-      }
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: flex-start;
+      gap: var(--base-padding);
+    }
 
     &-container {
       display: flex;
@@ -355,11 +358,9 @@ onMounted(() => {
         text-transform: uppercase;
       }
 
-      .set-title{
+      .set-title {
         width: 100%;
       }
-
-
 
       .set-meta {
         display: flex;

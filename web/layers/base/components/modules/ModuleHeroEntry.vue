@@ -555,6 +555,9 @@ onMounted(() => {
         width: calc(4rem - var(--base-padding) * 2);
         height: calc(4rem - var(--base-padding) * 2);
         transform: translate(8%, 0);
+        path {
+          fill: var(--color-black);
+        }
       }
     }
     &-container {
@@ -607,6 +610,9 @@ onMounted(() => {
           svg {
             width: 9px;
             height: 12px;
+            path {
+              fill: var(--color-black);
+            }
           }
         }
       }

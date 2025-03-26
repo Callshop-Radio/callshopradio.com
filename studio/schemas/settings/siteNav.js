@@ -1,5 +1,6 @@
 import {MenuIcon} from '@sanity/icons'
 
+
 const TITLE = 'Navigation'
 
 export const siteNav = {
@@ -17,6 +18,21 @@ export const siteNav = {
           type: 'link',
         },
       ],
+    },
+    {
+      title: 'Schedule Page',
+      name: 'schedulePage',
+      type: 'reference',
+      weak: true,
+      validation: Rule => Rule.required(),
+      to: { type: 'timetable'}
+    },
+    {
+      name: 'discordLink',
+      title: 'Discord Link',
+      type: 'url',
+      validation: (Rule) =>
+        Rule.uri({scheme: ['http', 'https']}),
     },
     {
       title: 'Foooter Menu',

@@ -180,6 +180,22 @@ export const SITE_OPTIONS_QUERY = `{
       ...,
       ${LINK_QUERY}
     },
+    "schedulePageRoute": select(
+			schedulePage->_type == "home" => "index",
+			schedulePage->_type == "page" => "slug",
+            schedulePage->_type == "showsArchive" => "shows",
+            schedulePage->_type == "show" => "shows-slug",
+            schedulePage->_type == "set" => "set-slug",
+            schedulePage->_type == "words" => "words",
+            schedulePage->_type == "article" => "words-slug",
+            schedulePage->_type == "pool" => "pool",
+            schedulePage->_type == "person" => "pool-slug",
+            schedulePage->_type == "venue" => "pool-slug",
+            schedulePage->_type == "timetable" => "schedule",
+			"index"
+		),
+		"schedulePageSlug": schedulePage->slug.current,
+    discordLink,
     footerMenu[] {
       ...,
       ${LINK_QUERY}

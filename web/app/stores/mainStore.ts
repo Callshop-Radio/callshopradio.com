@@ -16,6 +16,7 @@ export const useMainStore = defineStore("mainStore", () => {
   const isPlayerVisible = ref(true); // Neue Variable für die Sichtbarkeit
   const activeScheduleLocation = ref("channelOne"); // Neue Variable für den aktiven Schedule-Standort
   const isDarkMode = ref(false);
+  const menuOpen = ref(false);
 
   // actions als Funktionen
   async function nuxtServerInit() {
@@ -51,6 +52,29 @@ export const useMainStore = defineStore("mainStore", () => {
     activeScheduleLocation.value = location;
   }
 
+  function toggleMenu() {
+    menuOpen.value = !menuOpen.value;
+  }
+
+  function updateColors() {
+    if (isDarkMode.value) {
+      document.documentElement.style.setProperty("--color-bg", "#000");
+      document.documentElement.style.setProperty("--color-text", "#fff");
+      document?.querySelector('.header .logo')?.style.setProperty("filter", "invert(1)");
+      document?.querySelector('.header .text-logo')?.style.setProperty("filter", "invert(1)");
+    } else {
+      document.documentElement.style.setProperty("--color-bg", "#fff");
+      document.documentElement.style.setProperty("--color-text", "#000");
+      document?.querySelector('.header .logo')?.style.setProperty("filter", "invert(0)");
+      document?.querySelector('.header .text-logo')?.style.setProperty("filter", "invert(0)");
+    }
+  }
+  function toggleDarkMode() {
+    isDarkMode.value = !isDarkMode.value;
+    updateColors();
+  }
+
+
   return {
     siteCookieBanner,
     siteNav,
@@ -63,11 +87,15 @@ export const useMainStore = defineStore("mainStore", () => {
     isPlayerPlaying,
     isPlayerVisible,
     activeScheduleLocation,
+    menuOpen,
     nuxtServerInit,
     addToRepro,
     setPlayerStatus,
     togglePlayerVisibility,
     resetSoundCloudPlayer,
     setActiveScheduleLocation,
+    updateColors,
+    toggleDarkMode,
+    toggleMenu,
   };
 });

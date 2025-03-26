@@ -1226,9 +1226,6 @@ function playTrack(item) {
     padding: var(--small-padding) 0;
     background-color: var(--color-text);
     border-radius: 100px;
-    @media (prefers-color-scheme: dark) {
-      background-color: var(--color-dark-grey);
-    }
     .active-filters {
       width: calc(33% - var(--big-margin) / 2 + (var(--mid-margin) / 2));
     }

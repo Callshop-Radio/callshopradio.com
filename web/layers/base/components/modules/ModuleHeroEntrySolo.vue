@@ -227,9 +227,9 @@ onMounted(() => {
         ></div>
       </div>
       <div class="graphics-behind">
-          <AnimatedGradient class="animated-gradient" />
-          <AnimatedLogoBackground class="animated-logo-background" />
-        </div>
+        <AnimatedGradient class="animated-gradient" />
+        <AnimatedLogoBackground class="animated-logo-background" />
+      </div>
       <!-- Content-Bereich -->
       <div class="hero-entry-content">
         <!-- Play-Button für Audio-Inhalte -->
@@ -385,8 +385,8 @@ onMounted(() => {
         </div> -->
       </div>
       <div class="graphics-front">
-          <AnimatedLogo class="animated-logo" />
-        </div>
+        <AnimatedLogo class="animated-logo" />
+      </div>
     </div>
   </div>
 </template>
@@ -398,7 +398,7 @@ onMounted(() => {
   min-height: 35.3125rem;
   height: max-content;
   position: relative;
-  isolation: isolate; 
+  isolation: isolate;
 
   .graphics-behind {
     position: absolute;
@@ -407,13 +407,16 @@ onMounted(() => {
     width: 100%;
     height: 100%;
     z-index: 2;
+    pointer-events: none;
     .animated-logo-background {
       width: 575px;
       height: 415px;
       position: absolute;
       right: calc(var(--big-margin) * 2);
-      top: calc(35.3125rem - var(--big-margin)* 2 + var(--mid-margin) + 0.625rem);
-      transform: translate(33%,-100%);
+      top: calc(
+        35.3125rem - var(--big-margin) * 2 + var(--mid-margin) + 0.625rem
+      );
+      transform: translate(33%, -100%);
       z-index: 0;
     }
     .animated-gradient {
@@ -431,17 +434,21 @@ onMounted(() => {
     width: 100%;
     height: 100%;
     z-index: 999;
+    pointer-events: none;
     .animated-logo {
       width: 575px;
       height: 415px;
       position: absolute;
       right: calc(var(--big-margin) * 2);
-      top: calc(35.3125rem - var(--big-margin)* 2 + var(--mid-margin) + var(--menu-text-size) / 2);
-      transform: translate(33%,-100%);
+      top: calc(
+        35.3125rem - var(--big-margin) * 2 + var(--mid-margin) +
+          var(--menu-text-size) / 2
+      );
+      transform: translate(33%, -100%);
       z-index: 0;
     }
   }
-  
+
   &.layout-set {
     .hero-entry-container {
       width: 100%;
@@ -601,6 +608,9 @@ onMounted(() => {
         width: calc(4rem - var(--base-padding) * 2);
         height: calc(4rem - var(--base-padding) * 2);
         transform: translate(8%, 0);
+        path {
+          fill: var(--color-bg);
+        }
       }
     }
     &-container {
