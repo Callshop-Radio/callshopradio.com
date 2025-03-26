@@ -2,6 +2,9 @@
 import { ref, computed, onMounted } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
+const { locale, setLocale } = useI18n();
+const localePath = useLocalePath();
+
 // Typdefinitionen
 interface Image {
   asset?: {
@@ -35,6 +38,41 @@ interface PoolItem {
 const props = defineProps<{
   poolItem: PoolItem;
 }>();
+
+// Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
+function getItemRoute(item) {
+  if (!item || !item.slug) return "/";
+
+  switch (item._type) {
+    case "person":
+    case "venue":
+      return localePath(`/pool/${item.slug.current}`);
+
+    case "set":
+      // Prüfe, ob parentShow vorhanden ist
+      if (
+        item.parentShow &&
+        item.parentShow.slug &&
+        item.parentShow.slug.current
+      ) {
+        return localePath(
+          `/shows/${item.parentShow.slug.current}/${item.slug.current}`
+        );
+      }
+      // Fallback falls parentShow nicht verfügbar ist
+      return localePath(`/shows/${item.slug.current}`);
+
+    case "article":
+      return localePath(`/words/${item.slug.current}`);
+
+    case "show":
+      return localePath(`/shows/${item.slug.current}`);
+
+    // Standard-Fallback
+    default:
+      return localePath(`/${item._type}/${item.slug.current}`);
+  }
+}
 
 // Store
 const mainStore = useMainStore();
@@ -109,7 +147,7 @@ const itemLocation = computed(() => {
       <!-- Bild/Media-Bereich -->
       <div class="set-media pool-media">
         <NuxtLink
-          :to="`/pool/${poolItem?.slug?.current}`"
+          :to="getItemRoute(poolItem)"
           class="pool-link"
           :aria-label="poolItem?.title || poolItem?.name"
         >
@@ -128,9 +166,15 @@ const itemLocation = computed(() => {
           <div class="set-header pool-header">
             <!-- Typ und Standort -->
             <div class="set-show-title pool-item-title">
-              <h2 class="set-title pool-title">
-                {{ itemTitle }}
-              </h2>
+              <NuxtLink
+                :to="getItemRoute(poolItem)"
+                class="pool-link"
+                :aria-label="poolItem?.title || poolItem?.name"
+              >
+                <h2 class="set-title pool-title">
+                  {{ itemTitle }}
+                </h2>
+              </NuxtLink>
             </div>
           </div>
           <!-- Hier die Teaser-Text Logik einfügen, analog zum ContentSlider -->
@@ -274,7 +318,8 @@ const itemLocation = computed(() => {
     align-items: center;
     gap: var(--mid-margin);
     order: 1;
-    padding: var(--mid-margin) var(--mid-margin) var(--big-margin) var(--mid-margin);
+    padding: var(--mid-margin) var(--mid-margin) var(--big-margin)
+      var(--mid-margin);
     border-bottom: 0.0625rem solid var(--color-text);
     shape-rendering: crispEdges;
     z-index: 10;
@@ -341,11 +386,11 @@ const itemLocation = computed(() => {
       }
     }
     .pool-teaser {
-        & > * {
-          color: var(--color-bg);
-          margin: 0;
-        }
+      & > * {
+        color: var(--color-bg);
+        margin: 0;
       }
+    }
   }
 }
 </style>

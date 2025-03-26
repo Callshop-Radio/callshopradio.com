@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from "vue";
 import { useMainStore } from "~/stores/mainStore";
+const { locale, setLocale } = useI18n();
+const localePath = useLocalePath();
 
 const mainStore = useMainStore();
 
@@ -567,6 +569,41 @@ function getItemCityTags(item) {
   }
 
   return cityTags;
+}
+
+// Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
+function getItemRoute(item) {
+  if (!item || !item.slug) return "/";
+
+  switch (item._type) {
+    case "person":
+    case "venue":
+      return localePath(`/pool/${item.slug.current}`);
+
+    case "set":
+      // Prüfe, ob parentShow vorhanden ist
+      if (
+        item.parentShow &&
+        item.parentShow.slug &&
+        item.parentShow.slug.current
+      ) {
+        return localePath(
+          `/shows/${item.parentShow.slug.current}/${item.slug.current})`
+        );
+      }
+      // Fallback falls parentShow nicht verfügbar ist
+      return localePath(`/shows/${item.slug.current}`);
+
+    case "article":
+      return localePath(`/words/${item.slug.current}`);
+
+    case "show":
+      return localePath(`/shows/${item.slug.current}`);
+
+    // Standard-Fallback
+    default:
+      return localePath(`/${item._type}/${item.slug.current}`);
+  }
 }
 
 // Prüft, ob ein Item den aktiven Filtern entspricht
@@ -1183,22 +1220,22 @@ onMounted(() => {
             :key="item._id"
             :class="`grid-item grid-item--${module.style || 'default'}`"
           >
+            <!-- Städte Tags wenn vorhanden -->
+            <div class="grid-item__tags city-tags">
+              <span
+                v-for="tag in getItemCityTags(item)"
+                :key="tag._id"
+                class="tag city"
+              >
+                {{ parseI18nObj(tag?.short) }}
+              </span>
+            </div>
+            <!-- Bild -->
             <NuxtLink
               v-if="item.slug"
-              :to="`/${item._type}/${item.slug.current}`"
+              :to="getItemRoute(item)"
               class="grid-item__link"
             >
-              <!-- Bild -->
-              <!-- Städte Tags wenn vorhanden -->
-              <div class="grid-item__tags city-tags">
-                <span
-                  v-for="tag in getItemCityTags(item)"
-                  :key="tag._id"
-                  class="tag city"
-                >
-                  {{ parseI18nObj(tag?.short) }}
-                </span>
-              </div>
               <div class="grid-item__image" v-if="contentType == 'sets'">
                 <img
                   v-if="item.image && item.image.asset"
@@ -1244,152 +1281,175 @@ onMounted(() => {
                   alt="Fallback Image"
                 />
               </div>
+            </NuxtLink>
 
-              <!-- Inhalt -->
-              <div class="grid-item__content">
-                <!-- Interaktiver Bereich mit Datum und Play-Button -->
-                <section class="grid-item__content__interactive">
-                  <!-- Datum (falls vorhanden) -->
-                  <div
-                    v-if="item.datetime || item.publishedAt"
-                    class="grid-item__date"
-                  >
-                    {{ formatDate(item.datetime || item.publishedAt) }}
-                  </div>
+            <!-- Inhalt -->
+            <div class="grid-item__content">
+              <!-- Interaktiver Bereich mit Datum und Play-Button -->
+              <section class="grid-item__content__interactive">
+                <!-- Datum (falls vorhanden) -->
+                <div
+                  v-if="item.datetime || item.publishedAt"
+                  class="grid-item__date"
+                >
+                  {{ formatDate(item.datetime || item.publishedAt) }}
+                </div>
 
-                  <!-- Play-Button für Sets -->
-                  <button
-                    v-if="contentType === 'sets' && item.soundcloud"
-                    @click.prevent="playTrack(item)"
-                    class="play-button"
+                <!-- Play-Button für Sets -->
+                <button
+                  v-if="contentType === 'sets' && item.soundcloud"
+                  @click.prevent="playTrack(item)"
+                  class="play-button"
+                >
+                  <span class="sr-only">Play</span>
+                  <svg
+                    width="9"
+                    height="12"
+                    viewBox="0 0 9 12"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    <span class="sr-only">Play</span>
-                    <svg
-                      width="9"
-                      height="12"
-                      viewBox="0 0 9 12"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M9 6L0 11.1962L0 0.803847L9 6Z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </button>
-                </section>
-                <div v-if="item.parentShow && contentType == 'sets'">
-                  <!-- Show-Titel (für Sets) -->
-                  <h3 class="grid-item__title show-title" v-if="item.parentShow?.title !== 'No Show'">
+                    <path
+                      d="M9 6L0 11.1962L0 0.803847L9 6Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </button>
+              </section>
+              <div v-if="item.parentShow && contentType == 'sets'">
+                <!-- Show-Titel (für Sets) -->
+                <NuxtLink
+                  v-if="item.parentShow.title !== 'No Show' && item.parentShow"
+                  :to="localePath(`/shows/${item.parentShow.slug.current}`)"
+                  class="grid-item__link"
+                >
+                  <h3
+                    class="grid-item__title show-title"
+                    v-if="item.parentShow?.title !== 'No Show'"
+                  >
                     {{ item.parentShow.title }}
                   </h3>
-
-                  <!-- Künstler (für Sets) -->
-                  <div
-                    v-if="
-                      contentType === 'sets' &&
-                      item.persons &&
-                      item.persons.length > 0
-                    "
-                    class="show-artists"
+                </NuxtLink>
+                <!-- Künstler (für Sets) -->
+                <div
+                  v-if="
+                    contentType === 'sets' &&
+                    item.persons &&
+                    item.persons.length > 0
+                  "
+                  class="show-artists"
+                >
+                  <h3
+                    v-for="(artist, index) in item.persons"
+                    :key="artist._id"
+                    class="grid-item__artist"
                   >
-                    <h3
-                      v-for="(artist, index) in item.persons"
-                      :key="artist._id"
-                      class="grid-item__artist"
+                    <NuxtLink
+                      v-if="artist.poolVisibility"
+                      :to="localePath(`/pool/${artist.slug.current}`)"
+                      class="grid-item__link"
                     >
                       {{ artist.title
                       }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
-                    </h3>
-                  </div>
+                    </NuxtLink>
+                    <span v-else>
+                      {{ artist.title
+                      }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+                    </span>
+                  </h3>
                 </div>
+              </div>
 
-                <!-- Titel für alle anderen Content-Typen -->
+              <!-- Titel für alle anderen Content-Typen -->
+              <NuxtLink
+                :to="getItemRoute(item)"
+                class="grid-item__link"
+              >
                 <h3 v-if="contentType !== 'sets'" class="grid-item__title">
                   {{ item.title || item.name }}
                 </h3>
+              </NuxtLink>
 
-                <!-- Hier die Teaser-Text Logik einfügen, analog zum ContentSlider -->
-                <RichText
-                  v-if="item?.useTeaserText && item?.textTeaser"
-                  :blocks="parseI18nObj(item?.textTeaser)"
-                />
-                <RichText
-                  v-else-if="
-                    !item?.useTeaserText && item?.text && item.text.length > 0
-                  "
-                  :blocks="parseI18nObj(item?.text)?.slice(0, 1)"
-                />
-                <RichText
-                  v-else-if="
-                    !item?.text &&
-                    item?.description &&
-                    item.description.length > 0 &&
-                    (item.description[0]?.value || item.description[1]?.value)
-                  "
-                  :blocks="
-                    limitTextBlocks(
-                      parseI18nObj(item?.description)?.slice(0, 1),
-                      100
-                    )
-                  "
-                />
-                <RichText
-                  v-else-if="
-                    !item?.text &&
-                    module.poolContentType == 'persons' &&
-                    mainStore?.siteFallbacks?.fallbackPerson?.description
-                      .length > 0 &&
-                    (mainStore?.siteFallbacks?.fallbackPerson?.description?.[0]
-                      ?.value ||
-                      mainStore?.siteFallbacks?.fallbackPerson?.description?.[1]
-                        ?.value)
-                  "
-                  :blocks="
-                    limitTextBlocks(
-                      parseI18nObj(
-                        mainStore?.siteFallbacks?.fallbackPerson?.description
-                      )?.slice(0, 1),
-                      100
-                    )
-                  "
-                />
-                <RichText
-                  v-else-if="
-                    !item?.text &&
-                    module.poolContentType == 'venues' &&
-                    mainStore?.siteFallbacks?.fallbackVenue?.description
-                      .length > 0 &&
-                    (mainStore?.siteFallbacks?.fallbackVenue?.description?.[0]
-                      ?.value ||
-                      mainStore?.siteFallbacks?.fallbackVenue?.description?.[1]
-                        ?.value)
-                  "
-                  :blocks="
-                    limitTextBlocks(
-                      parseI18nObj(
-                        mainStore?.siteFallbacks?.fallbackVenue?.description
-                      )?.slice(0, 1),
-                      100
-                    )
-                  "
-                />
+              <!-- Hier die Teaser-Text Logik einfügen, analog zum ContentSlider -->
+              <RichText
+                v-if="item?.useTeaserText && item?.textTeaser"
+                :blocks="parseI18nObj(item?.textTeaser)"
+              />
+              <RichText
+                v-else-if="
+                  !item?.useTeaserText && item?.text && item.text.length > 0
+                "
+                :blocks="parseI18nObj(item?.text)?.slice(0, 1)"
+              />
+              <RichText
+                v-else-if="
+                  !item?.text &&
+                  item?.description &&
+                  item.description.length > 0 &&
+                  (item.description[0]?.value || item.description[1]?.value)
+                "
+                :blocks="
+                  limitTextBlocks(
+                    parseI18nObj(item?.description)?.slice(0, 1),
+                    100
+                  )
+                "
+              />
+              <RichText
+                v-else-if="
+                  !item?.text &&
+                  module.poolContentType == 'persons' &&
+                  mainStore?.siteFallbacks?.fallbackPerson?.description.length >
+                    0 &&
+                  (mainStore?.siteFallbacks?.fallbackPerson?.description?.[0]
+                    ?.value ||
+                    mainStore?.siteFallbacks?.fallbackPerson?.description?.[1]
+                      ?.value)
+                "
+                :blocks="
+                  limitTextBlocks(
+                    parseI18nObj(
+                      mainStore?.siteFallbacks?.fallbackPerson?.description
+                    )?.slice(0, 1),
+                    100
+                  )
+                "
+              />
+              <RichText
+                v-else-if="
+                  !item?.text &&
+                  module.poolContentType == 'venues' &&
+                  mainStore?.siteFallbacks?.fallbackVenue?.description.length >
+                    0 &&
+                  (mainStore?.siteFallbacks?.fallbackVenue?.description?.[0]
+                    ?.value ||
+                    mainStore?.siteFallbacks?.fallbackVenue?.description?.[1]
+                      ?.value)
+                "
+                :blocks="
+                  limitTextBlocks(
+                    parseI18nObj(
+                      mainStore?.siteFallbacks?.fallbackVenue?.description
+                    )?.slice(0, 1),
+                    100
+                  )
+                "
+              />
 
-                <!-- Nicht-City Tags anzeigen -->
-                <div
-                  v-if="getItemNonCityTags(item).length > 0"
-                  class="grid-item__tags tags"
+              <!-- Nicht-City Tags anzeigen -->
+              <div
+                v-if="getItemNonCityTags(item).length > 0"
+                class="grid-item__tags tags"
+              >
+                <span
+                  v-for="tag in getItemNonCityTags(item)"
+                  :key="tag._id"
+                  class="tag"
                 >
-                  <span
-                    v-for="tag in getItemNonCityTags(item)"
-                    :key="tag._id"
-                    class="tag"
-                  >
-                    {{ tag.title }}
-                  </span>
-                </div>
+                  {{ tag.title }}
+                </span>
               </div>
-            </NuxtLink>
+            </div>
           </div>
         </div>
         <div v-else class="content-grid__no-results">No matching content.</div>

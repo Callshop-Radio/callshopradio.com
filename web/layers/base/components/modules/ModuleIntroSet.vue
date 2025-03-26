@@ -2,6 +2,9 @@
 import { ref, computed, onMounted } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
+const { locale, setLocale } = useI18n();
+const localePath = useLocalePath();
+
 // Typdefinitionen
 interface Image {
   asset?: {
@@ -74,6 +77,41 @@ const useImageManagement = () => {
     checkImage,
   };
 };
+
+// Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
+function getItemRoute(item) {
+  if (!item || !item.slug) return "/";
+
+  switch (item._type) {
+    case "person":
+    case "venue":
+      return localePath(`/pool/${item.slug.current}`);
+
+    case "set":
+      // Prüfe, ob parentShow vorhanden ist
+      if (
+        item.parentShow &&
+        item.parentShow.slug &&
+        item.parentShow.slug.current
+      ) {
+        return localePath(
+          `/shows/${item.parentShow.slug.current}/${item.slug.current}`
+        );
+      }
+      // Fallback falls parentShow nicht verfügbar ist
+      return localePath(`/shows/${item.slug.current}`);
+
+    case "article":
+      return localePath(`/words/${item.slug.current}`);
+
+    case "show":
+      return localePath(`/shows/${item.slug.current}`);
+
+    // Standard-Fallback
+    default:
+      return localePath(`/${item._type}/${item.slug.current}`);
+  }
+}
 
 // Composable für SoundCloud-Funktionalität
 const useSoundCloud = () => {
@@ -161,18 +199,20 @@ onMounted(() => {
     <div class="set-container">
       <!-- Bild/Media-Bereich -->
       <div class="set-media">
-        <img
-          v-if="artworkUrl"
-          :src="artworkUrl"
-          alt="Audio Artwork"
-          class="set-image track-artwork"
-          loading="lazy"
-        />
-        <div
-          v-else
-          class="track-artwork-placeholder"
-          @vue:mounted="loadArtworkUrl"
-        ></div>
+        <NuxtLink v-if="set" :to="getItemRoute(set)" class="grid-item__link">
+          <img
+            v-if="artworkUrl"
+            :src="artworkUrl"
+            alt="Audio Artwork"
+            class="set-image track-artwork"
+            loading="lazy"
+          />
+          <div
+            v-else
+            class="track-artwork-placeholder"
+            @vue:mounted="loadArtworkUrl"
+          ></div>
+        </NuxtLink>
       </div>
 
       <!-- Content-Bereich -->
@@ -212,16 +252,32 @@ onMounted(() => {
               </h3>
             </div>
             <div class="set-show-title">
-              <h2 v-if="set?.parentShow?.title" class="set-title">
-                {{ set?.parentShow?.title }}
-              </h2>
-              <h3
-                v-for="(artist, index) in set?.persons"
-                :key="artist._key"
-                class="set-artist"
+              <NuxtLink
+                v-if="set?.parentShow?.title !== 'No Show' && set?.parentShow"
+                :to="localePath(`/shows/${set?.parentShow?.slug?.current}`)"
+                class="set__link set-title"
               >
-                {{ artist?.title
-                }}{{ index < set?.persons.length - 1 ? "," : "" }}&nbsp;
+                <h2 v-if="set?.parentShow?.title" class="set-title">
+                  {{ set?.parentShow?.title }}
+                </h2>
+              </NuxtLink>
+              <h3
+                v-for="(artist, index) in set.persons"
+                :key="artist._key"
+                class="set__artist"
+              >
+                <NuxtLink
+                  v-if="artist?.poolVisibility"
+                  :to="localePath(`/pool/${artist?.slug.current}`)"
+                  class="set__artist"
+                >
+                  {{ artist.title
+                  }}{{ index < set.persons.length - 1 ? "," : "" }}&nbsp;
+                </NuxtLink>
+                <span class="set__artist" v-else>
+                  {{ artist.title
+                  }}{{ index < set.persons.length - 1 ? "," : "" }}&nbsp;
+                </span>
               </h3>
             </div>
           </div>
@@ -351,11 +407,16 @@ onMounted(() => {
       }
 
       .set-title,
-      .set-artist {
+      .set-artist,
+      .set__artist {
         font-size: var(--base-font-size);
         font-family: var(--font-text-semibold);
         font-weight: 500;
         text-transform: uppercase;
+        a,
+        &a {
+          cursor: pointer;
+        }
       }
 
       .set-title {
