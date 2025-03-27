@@ -22,6 +22,7 @@ interface Set {
   _type?: string;
   title?: string;
   image?: Image;
+  content: Object;
   mainImage?: Image;
   parentShow?: {
     title?: string;
@@ -250,6 +251,9 @@ onMounted(() => {
               <h3 class="set-date" v-else-if="set?._updatedAt">
                 {{ formatDate(set._updatedAt) }}
               </h3>
+              <h3 class="set-date" v-else-if="set?._updatedAt">
+                {{ set.title }}
+              </h3>
             </div>
             <div class="set-show-title">
               <NuxtLink
@@ -298,6 +302,7 @@ onMounted(() => {
             </button>
           </div>
         </div>
+        <div class="set-text"></div>
       </div>
     </div>
   </div>
@@ -305,9 +310,9 @@ onMounted(() => {
 
 <style lang="postcss" scoped>
 .set-content {
-  width: 100%;
-  max-width: var(--page-max-width);
+  width: max-content;
   height: max-content;
+  margin: 0 auto;
 
   .set-container {
     width: max-content;

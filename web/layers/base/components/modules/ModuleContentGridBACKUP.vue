@@ -588,7 +588,7 @@ function getItemRoute(item) {
         item.parentShow.slug.current
       ) {
         return localePath(
-          `/shows/${item.parentShow.slug.current}/${item.slug.current})`
+          `/shows/${item.parentShow.slug.current}/${item.slug.current}`
         );
       }
       // Fallback falls parentShow nicht verfügbar ist

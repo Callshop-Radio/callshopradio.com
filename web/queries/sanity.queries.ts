@@ -27,6 +27,7 @@ export const SLUG_PAGE_QUERY = `
 *[_type == "page" && slug.current == $slug] | order(_updatedAt desc)[0] {
   ...,
   content[] ${RICH_TEXT_QUERY},
+  modules [] ${MODULE_QUERY},
   ${SEO_QUERY}
 }`;
 
@@ -204,6 +205,173 @@ export const SHOWSARCHIVE_QUERY = `
             }
         )
   }
+}`;
+
+export const SET_QUERY = `
+*[_type == 'set' && slug.current == $slug] | order(publishedAt desc)[0] {
+  ...,
+  _id,
+  _type,
+  title,
+  additionalTitle,
+  slug,
+  datetime,
+  image ${IMAGE_QUERY},
+  content[] ${RICH_TEXT_QUERY},
+  modules[] ${MODULE_QUERY},
+  "soundcloud": soundcloud{
+    _type,
+    "tracks": tracks[]{
+      id,
+      created_at,
+      duration,
+      tag_list,
+      streamable,
+      purchase_url,
+      genre,
+      title,
+      description,
+      release_year,
+      release_month,
+      release_day,
+      license,
+      uri,
+      "user": user{
+        id,
+        username,
+        permalink_url
+      },
+      artwork_url,
+      waveform_url,
+      stream_url,
+      playback_count,
+      favoritings_count
+    }
+  },
+  "tags": tags[]->{
+    ...,
+    _id,
+    title,
+    short
+  }| order(lower(title)),
+  persons[]->{
+    ...,
+    _id,
+    title,
+    slug
+  },
+  "parentShow": *[_type == "show" && references(^._id)][0]{
+    ...,
+    _id,
+    title,
+    slug,
+    image { asset-> },
+    sets[]->{
+      ...,
+      _id,
+      _type,
+      title,
+      slug,
+      "soundcloud": soundcloud{
+          _type,
+          "tracks": tracks[]{
+              id,
+              created_at,
+              duration,
+              tag_list,
+              streamable,
+              purchase_url,
+              genre,
+              title,
+              description,
+              release_year,
+              release_month,
+              release_day,
+              license,
+              uri,
+              "user": user{
+                  id,
+                  username,
+                  permalink_url
+              },
+              artwork_url,
+              waveform_url,
+              stream_url,
+              playback_count,
+              favoritings_count
+          }
+      },
+      persons[]->{
+          ...,
+          _id,
+          title
+      },
+      "tags": tags[]->{
+          ...,
+          _id,
+          title
+      }| order(lower(title)),
+      "parentShow": *[_type == "show" && references(^._id)][0]{
+          ...,
+          _id,
+          title,
+          slug,
+          image { asset-> },
+      }
+  }
+  },
+  "relatedContent": *[
+    _type == 'set' && 
+    slug.current != $slug && 
+    (
+      count((tags[]->._id)[@ in ^.^.tags[]->._id]) > 0 || 
+      count((persons[]->._id)[@ in ^.^.persons[]->._id]) > 0
+    )
+  ] | order(
+    count((tags[]->._id)[@ in ^.^.tags[]->._id]) desc,
+    count((persons[]->._id)[@ in ^.^.persons[]->._id]) desc,
+    datetime desc
+  )[0...12] {
+    ...,
+    _id,
+    _type,
+    title,
+    slug,
+    datetime,
+    image ${IMAGE_QUERY},
+    "soundcloud": soundcloud{
+      _type,
+      "tracks": tracks[]{
+        id,
+        artwork_url,
+        waveform_url,
+        stream_url,
+        playback_count,
+        title
+      }
+    },
+    persons[]->{
+      _id,
+      title,
+      slug,
+      poolVisibility
+    },
+    "tags": tags[]->{
+      _id,
+      _type,
+      title,
+      short
+    }| order(lower(title)),
+    "parentShow": *[_type == "show" && references(^._id)][0]{
+      _id,
+      title,
+      slug,
+      image { asset-> },
+    },
+    "matchingTagsCount": count((tags[]->._id)[@ in ^.^.tags[]->._id]),
+    "matchingArtistsCount": count((persons[]->._id)[@ in ^.^.persons[]->._id])
+  },
+  ${SEO_QUERY}
 }`;
 
 export const WORDS_QUERY = `

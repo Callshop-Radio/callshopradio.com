@@ -132,7 +132,7 @@ function getItemRoute(item) {
         item.parentShow.slug.current
       ) {
         return localePath(
-          `/shows/${item.parentShow.slug.current}/${item.slug.current})`
+          `/shows/${item.parentShow.slug.current}/${item.slug.current}`
         );
       }
       // Fallback falls parentShow nicht verfügbar ist
@@ -444,7 +444,7 @@ function playTrack(item) {
               <NuxtLink
                 v-if="item.slug"
                 :to="getItemRoute(item)"
-                class="grid-item__link"
+                class="slide__link"
               >
                 <MediaImage
                   v-if="getItemImage(item) && categoryType !== 'Episodes'"
@@ -492,20 +492,60 @@ function playTrack(item) {
                     </svg>
                   </button>
                 </section>
-                <h3 class="slide-title show-title">
+                <NuxtLink
+                  v-if="item.parentShow?.slug && item?.clickableTitle"
+                  :to="item?.parentShow?.title"
+                  class="slide__link"
+                >
+                  <h3 class="slide-title show-title">
+                    {{ item?.parentShow?.title }}
+                  </h3>
+                </NuxtLink>
+                <h3
+                  v-else-if="
+                    item?.parentShow && item?.parentShow?.title != 'No Show'
+                  "
+                  class="slide-title show-title"
+                >
                   {{ item?.parentShow?.title }}
                 </h3>
-                <h3 class="slide-title" v-if="contentType !== 'sets'">
+                <NuxtLink
+                  v-if="item.slug"
+                  :to="getItemRoute(item)"
+                  class="slide__link"
+                >
+                  <h3 class="slide-title" v-if="contentType !== 'sets'">
+                    {{ item?.title }}
+                  </h3>
+                </NuxtLink>
+                <h3 class="slide-title" v-else-if="contentType !== 'sets'">
                   {{ item?.title }}
                 </h3>
-                <div class="show-artists" v-if="contentType == 'sets'">
+                <div
+                  v-if="
+                    contentType === 'sets' &&
+                    item.persons &&
+                    item.persons.length > 0
+                  "
+                  class="show-artists"
+                >
                   <h3
                     v-for="(artist, index) in item.persons"
-                    :key="artist._key"
+                    :key="artist._id"
                     class="slide-title"
                   >
-                    {{ artist?.title
-                    }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+                    <NuxtLink
+                      v-if="artist.poolVisibility"
+                      :to="localePath(`/pool/${artist.slug.current}`)"
+                      class="slide__link"
+                    >
+                      {{ artist.title
+                      }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+                    </NuxtLink>
+                    <span v-else class="slide-title">
+                      {{ artist.title
+                      }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+                    </span>
                   </h3>
                 </div>
                 <RichText

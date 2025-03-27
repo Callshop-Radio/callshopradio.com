@@ -588,7 +588,7 @@ function getItemRoute(item) {
         item.parentShow.slug.current
       ) {
         return localePath(
-          `/shows/${item.parentShow.slug.current}/${item.slug.current})`
+          `/shows/${item.parentShow.slug.current}/${item.slug.current}`
         );
       }
       // Fallback falls parentShow nicht verfügbar ist
@@ -1330,6 +1330,18 @@ onMounted(() => {
                     {{ item.parentShow.title }}
                   </h3>
                 </NuxtLink>
+                <h3
+                  class="grid-item__title show-title"
+                  v-else-if="item.parentShow?.title !== 'No Show'"
+                >
+                  {{ item.parentShow.title }}
+                </h3>
+                <h3
+                  class="grid-item__title show-title"
+                  v-else-if="item.parentShow?.title == 'No Show' && item?.title"
+                >
+                  {{ item?.title }}
+                </h3>
                 <!-- Künstler (für Sets) -->
                 <div
                   v-if="
@@ -1361,10 +1373,7 @@ onMounted(() => {
               </div>
 
               <!-- Titel für alle anderen Content-Typen -->
-              <NuxtLink
-                :to="getItemRoute(item)"
-                class="grid-item__link"
-              >
+              <NuxtLink :to="getItemRoute(item)" class="grid-item__link">
                 <h3 v-if="contentType !== 'sets'" class="grid-item__title">
                   {{ item.title || item.name }}
                 </h3>

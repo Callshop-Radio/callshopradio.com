@@ -46,10 +46,6 @@ usePageSeo(data?.value?.seo);
         />
       </div>
     </section>
-    <section v-else class="module-section">
-      <!-- Fallback-Inhalt für den Fall, dass keine Module vorhanden sind -->
-      <p>No Content Found.</p>
-    </section>
   </div>
 </template>
 
