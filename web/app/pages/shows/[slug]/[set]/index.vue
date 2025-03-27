@@ -67,8 +67,11 @@ console.log(data?.value?.parentShow);
         />
       </div>
     </section>
-    <section class="set-detail__related-content">
-      <h3 v-if="data?.relatedContent.length > 0">Related</h3>
+    <section
+      v-if="data?.relatedContent.length > 0"
+      class="set-detail__related-content"
+    >
+      <h3>Related</h3>
       <ModuleRelatedContent
         v-if="data?.relatedContent.length > 0"
         :items="data?.relatedContent"
@@ -76,8 +79,13 @@ console.log(data?.value?.parentShow);
         title=""
       />
     </section>
-    <section class="set-detail__more-content">
-      <h3 v-if="relatedSets.length > 0">More Episodes of <span>{{data?.parentShow?.title}}</span></h3>
+    <section
+      v-if="relatedSets.length > 0"
+      class="set-detail__more-content"
+    >
+      <h3>
+        More Episodes of <span>{{ data?.parentShow?.title }}</span>
+      </h3>
       <ModuleRelatedContent
         v-if="relatedSets.length > 0"
         :items="relatedSets"
@@ -89,6 +97,14 @@ console.log(data?.value?.parentShow);
 </template>
 
 <style lang="postcss" scoped>
+section {
+  &:last-of-type {
+    padding-bottom: var(--content-gap);
+    &.set-detail__intro-section {
+      padding-bottom: 0;
+    }
+  }
+}
 .set-detail {
   width: 100%;
   display: flex;
@@ -101,12 +117,19 @@ console.log(data?.value?.parentShow);
   }
   &__related-content,
   &__more-content {
+    h3 {
+        font-size: var(--h3-size);
+        text-transform: uppercase;
+    }
     display: flex;
     flex-flow: column wrap;
     justify-content: flex-start;
     align-items: flex-start;
     max-width: var(--page-max-width);
     width: 100%;
+    &.last {
+      padding: 0 0 var(--huge-margin) 0;
+    }
   }
 }
 </style>

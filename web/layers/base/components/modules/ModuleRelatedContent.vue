@@ -337,7 +337,7 @@ onMounted(() => {
             :key="tag._id"
             class="tag city"
           >
-            {{ tag?.short }}
+            {{ parseI18nObj(tag?.short) }}
           </span>
         </div>
 
@@ -693,8 +693,6 @@ onMounted(() => {
 
     &__tags {
       &.city-tags {
-        position: absolute;
-        top: var(--small-margin);
         left: var(--small-margin);
         z-index: 2;
       }

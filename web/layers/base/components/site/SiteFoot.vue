@@ -25,5 +25,7 @@ const footerMenu = computed(() => mainStore?.siteNav?.footerMenu)
 <style lang="postcss" scoped>
 footer {
   @apply flex gap-4 p4;
+  background-color: var(--color-text);
+  z-index: 100;
 }
 </style>

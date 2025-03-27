@@ -96,6 +96,17 @@ const togglePlayerVisibility = () => {
   height: auto;
   min-height: max-content;
   z-index: 99999;
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate(0, -100%);
+    width: 100%;
+    height: var(--big-margin);
+    background-color: var(--color-bg);
+    z-index: -1;
+  }
   &__title-section {
     width: 100%;
     max-width: var(--page-max-width);

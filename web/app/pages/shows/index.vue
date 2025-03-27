@@ -17,7 +17,7 @@ usePageSeo(data?.value?.seo);
     <section class="intro-section">
       <ModuleIntroSetSlider
         :sets="data?.slider?.sets.slice(0, data?.slider?.count * 2)"
-        :title="'Neueste Shows'"
+        :title="'Featured Shows'"
       />
     </section>
     <section

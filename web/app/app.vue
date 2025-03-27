@@ -22,7 +22,7 @@ const { creditLog, favicon } = useUtils();
 
   main {
     @apply flex-grow-1;
-    padding: 0 var(--base-padding) var(--big-margin);
+    padding: 0 0;
     display: flex;
     flex-direction: column wrap;
     justify-content: center;

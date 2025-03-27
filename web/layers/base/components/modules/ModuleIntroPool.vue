@@ -323,6 +323,7 @@ const itemLocation = computed(() => {
     border-bottom: 0.0625rem solid var(--color-text);
     shape-rendering: crispEdges;
     z-index: 10;
+    height: calc(var(--h3-size) + var(--base-font-size) * 2 + var(--mid-margin) + var(--big-margin));
 
     .pool-type-icon {
       display: flex;

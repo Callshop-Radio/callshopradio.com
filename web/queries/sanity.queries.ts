@@ -83,6 +83,113 @@ export const POOLARCHIVE_QUERY = `
   }
 }`;
 
+export const POOL_PROFILE_QUERY = `
+  *[_type in ['person', 'venue'] && slug.current == $slug][0] {
+    ...,
+    _id,
+    _type,
+    title,
+    name,
+    slug,
+    image ${IMAGE_QUERY},
+    bio[] ${RICH_TEXT_QUERY},
+    description[] ${RICH_TEXT_QUERY},
+    "tags": tags[]->{
+      ...,
+      _id,
+      _type,
+      title,
+      short
+    }| order(lower(title)),
+    location,
+    // Kontaktdaten hinzufügen
+    contact,
+    // Social Media Profile hinzufügen
+    socials {
+      instagram,
+      soundcloud,
+      nina,
+      bandcamp,
+      web
+    },
+    // Shows für Personen und Veranstaltungsorte
+    "shows": shows[]->{
+      _id,
+      _type,
+      title,
+      slug,
+      image ${IMAGE_QUERY},
+      "tags": tags[]->{
+        _id,
+        _type,
+        title,
+        short
+      }| order(lower(title)),
+      "sets": sets[]->{
+        _id,
+        title,
+        slug,
+        datetime
+      } | order(datetime desc)[0...3]
+    },
+    // Personen für Veranstaltungsorte hinzufügen
+    _type == 'venue' => {
+      "persons": persons[]->{
+        _id,
+        _type,
+        title,
+        slug,
+        image ${IMAGE_QUERY},
+        "tags": tags[]->{
+          _id,
+          _type,
+          title,
+          short
+        }| order(lower(title))
+      }
+    },
+    // Veranstaltungsorte für Personen hinzufügen
+    _type == 'person' => {
+      "venues": venues[]->{
+        _id,
+        _type,
+        title,
+        slug,
+        image ${IMAGE_QUERY},
+        location,
+        "tags": tags[]->{
+          _id,
+          _type,
+          title,
+          short
+        }| order(lower(title))
+      }
+    },
+    modules[] ${MODULE_QUERY},
+    "relatedContent": *[_type in ['set', 'show'] && references(^._id)] | order(datetime desc) [0...4] {
+      ...,
+      _id,
+      _type,
+      title,
+      slug,
+      image ${IMAGE_QUERY},
+      datetime,
+      "tags": tags[]->{
+        _id,
+        _type,
+        title,
+        short
+      }| order(lower(title)),
+      "parentShow": *[_type == "show" && references(^._id)][0]{
+        _id,
+        title,
+        slug
+      }
+    },
+    ${SEO_QUERY}
+  }
+`;
+
 export const SHOWSARCHIVE_QUERY = `
 *[_type == "showsArchive"] | order(_updatedAt desc)[0] {
   ...,

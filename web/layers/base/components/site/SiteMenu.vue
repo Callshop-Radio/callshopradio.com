@@ -75,6 +75,7 @@ nav {
       text-decoration: none;
     }
     &.router-link-active,
+    &.parent-active,
     &:hover {
       background-color: var(--color-bg);
       color: var(--color-text);
