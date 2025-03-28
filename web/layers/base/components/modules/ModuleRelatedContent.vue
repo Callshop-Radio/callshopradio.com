@@ -42,6 +42,8 @@ const props = defineProps({
   },
 });
 
+console.log(props.items);
+
 // State für sichtbare Items
 const itemsPerPage = props.itemsPerRow || 3;
 const visibleItemCount = ref(props.limit || itemsPerPage);
@@ -451,11 +453,11 @@ onMounted(() => {
 
             <!-- Künstler (für Sets) -->
             <div
-              v-if="item.persons && item.persons.length > 0"
+              v-if="item?.persons && item?.persons.length > 0"
               class="show-artists"
             >
               <h3
-                v-for="(artist, index) in item.persons"
+                v-for="(artist, index) in item?.persons"
                 :key="artist._id"
                 class="related-item__artist"
               >
@@ -464,12 +466,12 @@ onMounted(() => {
                   :to="localePath(`/pool/${artist?.slug?.current}`)"
                   class="related-item__link"
                 >
-                  {{ artist.title
-                  }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+                  {{ artist?.title
+                  }}{{ index < item?.persons?.length - 1 ? "," : "" }}&nbsp;
                 </NuxtLink>
                 <span v-else>
                   {{ artist.title
-                  }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+                  }}{{ index < item?.persons?.length - 1 ? "," : "" }}&nbsp;
                 </span>
               </h3>
             </div>
@@ -566,7 +568,7 @@ onMounted(() => {
     justify-content: flex-start;
     max-width: calc(100% / 3 - var(--big-margin) * 1.325);
     width: 100%;
-    border-bottom: 0.09325rem solid var(--color-text);
+    /* border-bottom: 0.09325rem solid var(--color-text); */
     padding: 0 0 calc(var(--big-margin) / 2) 0;
 
     &:last-of-type {

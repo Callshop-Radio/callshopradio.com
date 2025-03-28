@@ -124,12 +124,58 @@ export const POOL_PROFILE_QUERY = `
         title,
         short
       }| order(lower(title)),
-      "sets": sets[]->{
-        _id,
-        title,
-        slug,
-        datetime
-      } | order(datetime desc)[0...3]
+       sets[]->{
+                _id,
+                _type,
+                title,
+                slug,
+                "soundcloud": soundcloud{
+                    _type,
+                    "tracks": tracks[]{
+                        id,
+                        created_at,
+                        duration,
+                        tag_list,
+                        streamable,
+                        purchase_url,
+                        genre,
+                        title,
+                        description,
+                        release_year,
+                        release_month,
+                        release_day,
+                        license,
+                        uri,
+                        "user": user{
+                            id,
+                            username,
+                            permalink_url
+                        },
+                        artwork_url,
+                        waveform_url,
+                        stream_url,
+                        playback_count,
+                        favoritings_count
+                    }
+                },
+                persons[]->{
+                    ...,
+                    _id,
+                    title
+                },
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    title
+                }| order(lower(title)),
+                "parentShow": *[_type == "show" && references(^._id)][0]{
+                    ...,
+                    _id,
+                    title,
+                    slug,
+                    image { asset-> },
+                }
+            } | order(datetime desc)[0...3]
     },
     // Personen für Veranstaltungsorte hinzufügen
     _type == 'venue' => {
@@ -165,7 +211,7 @@ export const POOL_PROFILE_QUERY = `
       }
     },
     modules[] ${MODULE_QUERY},
-    "relatedContent": *[_type in ['set', 'show'] && references(^._id)] | order(datetime desc) [0...4] {
+    "relatedContent": *[_type in ['set'] && references(^._id)] | order(datetime desc) [0...4] {
       ...,
       _id,
       _type,
@@ -180,10 +226,17 @@ export const POOL_PROFILE_QUERY = `
         short
       }| order(lower(title)),
       "parentShow": *[_type == "show" && references(^._id)][0]{
+        ...,
         _id,
         title,
         slug
-      }
+      },
+      persons[]->{
+        ...,
+        _id,
+        title
+  },
+                    
     },
     ${SEO_QUERY}
   }
