@@ -19,9 +19,5 @@ usePageSeo(data?.value?.seo)
 
 <template>
 	<div>
-		<RichText
-			v-if="data?.content?.length"
-			:blocks="data?.content"
-		/>
 	</div>
 </template>
