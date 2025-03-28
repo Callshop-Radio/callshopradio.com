@@ -32,7 +32,6 @@ const relatedSets = computed(() => {
 });
 
 usePageSeo(data?.value?.seo);
-console.log(data?.value?.parentShow);
 </script>
 
 <template>

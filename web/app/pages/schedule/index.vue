@@ -66,10 +66,10 @@ const extractDusseldorfInstances = () => {
   }
 
   dusseldorfInstances.value = [...instancesSet];
-  console.log(
-    "Extrahierte Düsseldorf Instance IDs:",
-    dusseldorfInstances.value
-  );
+  // console.log(
+  //   "Extrahierte Düsseldorf Instance IDs:",
+  //   dusseldorfInstances.value
+  // );
 };
 
 // Alle Tracks für alle Instances parallel laden
@@ -104,10 +104,10 @@ const loadAllInstanceTracks = async () => {
   }
 
   instanceTracks.value = tracksData;
-  console.log(
-    "Geladene Tracks für alle Instances:",
-    Object.keys(tracksData).length
-  );
+  // console.log(
+  //   "Geladene Tracks für alle Instances:",
+  //   Object.keys(tracksData).length
+  // );
 };
 // Daten beim Mounting laden
 onMounted(() => {
