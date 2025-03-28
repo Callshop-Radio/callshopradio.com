@@ -21,8 +21,8 @@ usePageSeo(data?.value?.seo);
 </script>
 
 <template>
-  <div class="words-detail">
-    <section class="words-detail__intro-section" v-if="data">
+  <div class="pool-detail">
+    <section class="pool-detail__intro-section" v-if="data">
       <ModuleIntroPoolDetailPage :poolItem="data" :title="'Pool Profile'" />
     </section>
     <section
@@ -54,23 +54,29 @@ usePageSeo(data?.value?.seo);
     </section>
     <section
       v-if="data?.relatedContent?.length > 0"
-      class="words-detail__related-content"
+      class="pool-detail__related-content"
     >
       <div class="inner">
         <h3>Related</h3>
-        <ModuleRelatedContent :items="data?.relatedContent" type="pool" />
+        <ModuleRelatedContent
+          :items="data?.relatedContent"
+          type="pool"
+        />
       </div>
     </section>
     <section
       v-if="data?.relatedContent?.length <= 0"
-      class="words-detail__related-content"
+      class="pool-detail__related-content"
     >
       <div class="inner">
         <h3>More</h3>
-        <ModuleRelatedContent :items="data?.moreContent" type="pool" />
+        <ModuleRelatedContent
+          :items="data?.moreContent"
+          type="pool"
+        />
       </div>
     </section>
-    <!-- <section v-if="data?.relatedContent?.length > 0" class="words-detail__more-content">
+    <!-- <section v-if="data?.relatedContent?.length > 0" class="pool-detail__more-content">
       <h3>Related</h3>
       <ModuleRelatedContent
         :items="data?.relatedContent"
@@ -89,20 +95,17 @@ section {
   }
   &:last-of-type {
     padding-bottom: var(--content-gap);
-    &.words-detail__intro-section {
+    &.pool-detail__intro-section {
       padding-bottom: 0;
     }
   }
 }
-.words-detail {
+.pool-detail {
   width: 100%;
   display: flex;
   flex-flow: column wrap;
   justify-content: flex-start;
   align-items: center;
-  @media screen and (max-width: 1100px) {
-    display: none;
-  }
   /* gap: var(--content-gap); */
   &__intro-section {
     margin: 0 0 0;
@@ -115,9 +118,9 @@ section {
       padding: 0 var(--big-margin);
     }
     h3 {
-      font-size: var(--h3-size);
-      text-transform: uppercase;
-      @media screen and (max-width: 900px) {
+        font-size: var(--h3-size);
+        text-transform: uppercase;
+        @media screen and (max-width: 900px) {
         padding: 0 0 var(--mid-margin) 0;
       }
     }
