@@ -482,6 +482,13 @@ onMounted(() => {
   }
 
   &.layout-set {
+    .hero-entry-content {
+      @media screen and (max-width: 900px) {
+        min-width: calc(100svw - var(--big-margin) * 2);
+        width: 100%;
+        transform: translate(calc(var(--big-margin) / 4), 0);
+      }
+    }
     .hero-entry-container {
       width: 100%;
       display: flex;
@@ -490,6 +497,7 @@ onMounted(() => {
       align-items: center;
       position: relative;
       height: max-content;
+
       .hero-entry-content-container {
         @media screen and (max-width: 900px) {
           max-width: calc(100% - 2rem - var(--base-padding) * 2);
@@ -540,16 +548,23 @@ onMounted(() => {
       align-items: center;
       position: relative;
       .hero-entry-content {
-        max-width: 24.8125rem;
-        @media screen and (max-width: 900px) {
-          max-width: calc(100svw - var(--big-margin) * 2);
+        max-width: 400px;
+        @media screen and (max-width: 500px) {
+          max-width: calc(100svw - var(--big-margin) * 2.5);
+          transform: translate(calc(var(--big-margin) / 6), 0);
+        }
+        @media screen and (min-width: 501px) and (max-width: 900px) {
+          max-width: calc(400px - var(--big-margin) * 2.5);
           transform: translate(calc(var(--big-margin) / 6), 0);
         }
       }
       .hero-entry-content-container {
-        max-width: 24.8125rem;
-        @media screen and (max-width: 900px) {
-          max-width: unset;
+        max-width: 400px;
+        @media screen and (max-width: 500px) {
+          max-width: calc(100svw - var(--big-margin) * 2);
+        }
+        @media screen and (min-width: 501px) and (max-width: 900px) {
+          max-width: calc(400px - var(--big-margin) * 2);
         }
       }
 
@@ -667,11 +682,6 @@ onMounted(() => {
     min-width: 390px;
     transform: translate(0, 50%);
     z-index: 10;
-    @media screen and (max-width: 900px) {
-      min-width: calc(100svw - var(--big-margin) * 2);
-      width: 100%;
-      transform: translate(calc(var(--big-margin) / 4), 0);
-    }
     .play-button {
       display: flex;
       flex-flow: column wrap;
