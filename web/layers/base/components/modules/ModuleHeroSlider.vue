@@ -191,6 +191,10 @@ const slides = computed(() => {
   max-width: clamp(100%, 100%, var(--page-max-width));
   position: relative;
 
+  @media screen and (max-width: 900px) {
+    /* margin-top: var(--base-margin); */
+  }
+
   &__title {
     @apply text-2xl font-bold mb-4;
   }
@@ -277,10 +281,10 @@ const slides = computed(() => {
     .embla__nav {
       @apply flex row items-center justify-space-between;
       position: absolute;
-      top: calc(80svw + var(--big-margin) * 1.125);
-      right: var(--big-margin);
+      top: calc(80svw + var(--big-margin) * 1.5);
+      right: calc(var(--big-margin));
       padding: var(--mid-padding);
-      width: max-content;
+      width: calc(100% - var(--big-margin) * 2);
       background-color: var(--color-bg);
       border-radius: 100px;
       border: 0.0625rem solid var(--color-text);
@@ -288,16 +292,31 @@ const slides = computed(() => {
       z-index: 10;
       @media screen and (min-width: 600px) {
         top: calc(35.3125rem - var(--big-margin) * 2);
+        right: var(--big-margin);
+        padding: var(--mid-padding);
+        width: max-content;
+        background-color: var(--color-bg);
+        border-radius: 100px;
+        border: 0.0625rem solid var(--color-text);
+        shape-rendering: crispEdges;
+        z-index: 10;
       }
 
       .embla__nav__arrows {
         @apply flex;
         gap: 0 var(--mid-margin);
         margin: 0;
+        @media screen and (max-width: 600px) {
+          @apply flex row items-center justify-space-between;
+          width: 100%;
+        }
 
         .embla__arrow {
           @apply flex items-center justify-center rounded-full transition-colors;
           background-color: transparent;
+          @media screen and (max-width: 600px) {
+            width: 100%;
+          }
 
           svg {
             @apply w-5 h-5;
@@ -351,6 +370,11 @@ const slides = computed(() => {
       padding: 0 calc(var(--big-margin) / 2);
       opacity: 0;
       transition: opacity 0.15s ease !important;
+      @media screen and (max-width: 900px) {
+        flex-flow: column wrap;
+        align-items: center;
+        justify-content: flex-start;
+      }
 
       &.active {
         opacity: 1;

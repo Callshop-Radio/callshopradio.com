@@ -10,6 +10,9 @@
     max-width: var(--page-max-width);
     &:first-of-type {
       margin-top: var(--big-margin);
+      @media screen and (max-width: 900px) {
+        margin-top: var(--base-margin);
+      }
     }
     &:last-of-type {
       margin-bottom: var(--content-gap);

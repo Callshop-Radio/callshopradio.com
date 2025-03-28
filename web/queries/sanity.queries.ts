@@ -416,6 +416,114 @@ export const SHOWSARCHIVE_QUERY = `
   }
 }`;
 
+export const SHOW_QUERY = `
+*[_type == "show" && slug.current == $slug] | order(_updatedAt desc)[0] {
+  ...,
+  _id,
+  _type,
+  title,
+  slug,
+  image ${IMAGE_QUERY},
+  content[] ${RICH_TEXT_QUERY},
+  modules [] ${MODULE_QUERY},
+  sets[]->{
+    ...,
+    _id,
+    _type,
+    title,
+    slug,
+    datetime,
+    image ${IMAGE_QUERY},
+    "soundcloud": soundcloud{
+      _type,
+      "tracks": tracks[]{
+        id,
+        created_at,
+        duration,
+        tag_list,
+        streamable,
+        purchase_url,
+        genre,
+        title,
+        description,
+        release_year,
+        release_month,
+        release_day,
+        license,
+        uri,
+        "user": user{
+          id,
+          username,
+          permalink_url
+        },
+        artwork_url,
+        waveform_url,
+        stream_url,
+        playback_count,
+        favoritings_count
+      },
+    },
+    "parentShow": *[_type == "show" && references(^._id)][0]{
+          ...,
+          _id,
+          title,
+          slug,
+          image { asset-> },
+    },
+    persons[]->{
+      ...,
+      _id,
+      title,
+      slug
+    },
+    "tags": tags[]->{
+      _id,
+      title,
+      short
+    }| order(lower(title))
+  } | order(datetime desc),
+  persons[]->{
+    _id,
+    _type,
+    title,
+    slug,
+    image ${IMAGE_QUERY},
+    "tags": tags[]->{
+      _id,
+      title,
+      short
+    }| order(lower(title))
+  },
+  venues[]->{
+    ...,
+    _id,
+    _type,
+    title,
+    slug,
+    image ${IMAGE_QUERY},
+    location,
+    "tags": tags[]->{
+      _id,
+      title,
+      short
+    }| order(lower(title))
+  },
+  "tags": tags[]->{
+    _id,
+    _type,
+    title,
+    short
+  }| order(lower(title)),
+  socials {
+    instagram,
+    soundcloud,
+    nina,
+    bandcamp,
+    web
+  },
+  ${SEO_QUERY}
+}`;
+
 export const SET_QUERY = `
 *[_type == 'set' && slug.current == $slug] | order(publishedAt desc)[0] {
   ...,

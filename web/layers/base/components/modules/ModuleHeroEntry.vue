@@ -320,7 +320,8 @@ onMounted(() => {
                   v-if="
                     module?.contentReference?.parentShow?.title !== 'No Show'
                   "
-                >{{ module?.contentReference?.parentShow?.title }}
+                >
+                  {{ module?.contentReference?.parentShow?.title }}
                 </h2>
               </NuxtLink>
               <!-- Künstler (für Sets) -->
@@ -342,11 +343,19 @@ onMounted(() => {
                     class="hero-entry-show-artists-artist"
                   >
                     {{ artist?.title
-                    }}{{ index < module?.contentReference?.persons?.length - 1 ? "," : "" }}&nbsp;
+                    }}{{
+                      index < module?.contentReference?.persons?.length - 1
+                        ? ","
+                        : ""
+                    }}&nbsp;
                   </NuxtLink>
                   <span v-else class="hero-entry-show-artists-artist">
                     {{ artist?.title
-                    }}{{ index < module?.contentReference?.persons?.length - 1 ? "," : "" }}&nbsp;
+                    }}{{
+                      index < module?.contentReference?.persons?.length - 1
+                        ? ","
+                        : ""
+                    }}&nbsp;
                   </span>
                 </h3>
               </div>
@@ -450,10 +459,13 @@ onMounted(() => {
 
 <style lang="postcss" scoped>
 .module-hero-entry {
-  width: 100%;
-  max-width: var(--page-max-width);
-  min-height: 35.3125rem;
-  height: max-content;
+  min-height: 5.3125rem;
+
+  @media screen and (min-width: 900px) {
+    width: 100%;
+    max-width: var(--page-max-width);
+    min-height: 35.3125rem;
+  }
 
   &.layout-set {
     .hero-entry-container {
@@ -463,13 +475,21 @@ onMounted(() => {
       justify-content: center;
       align-items: center;
       position: relative;
-      @media (max-width: 768px) {
-        grid-template-columns: 1fr;
+      height: max-content;
+      @media screen and (max-width: 900px) {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        align-items: flex-start;
+        position: relative;
       }
 
       .hero-entry-media {
         order: 2;
         border-radius: 1.5625rem;
+        @media screen and (max-width: 900px) {
+          transform: translate(0, 12.5%);
+        }
         .track-artwork,
         .track-artwork-placeholder {
           width: 100%;
@@ -478,6 +498,10 @@ onMounted(() => {
           background-color: var(--color-grey);
           max-width: 35.3125rem;
           max-height: 35.3125rem;
+          @media screen and (max-width: 900px) {
+            max-width: 100%;
+            max-height: 100%;
+          }
         }
       }
     }
@@ -492,9 +516,6 @@ onMounted(() => {
       justify-content: center;
       align-items: center;
       position: relative;
-      @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-      }
       .hero-entry-content-container {
         max-width: 24.8125rem;
       }
@@ -537,9 +558,6 @@ onMounted(() => {
       justify-content: center;
       align-items: center;
       position: relative;
-      @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-      }
       .hero-entry-content-container {
         max-width: 24.8125rem;
       }
@@ -602,6 +620,11 @@ onMounted(() => {
     min-width: 390px;
     transform: translate(0, 50%);
     z-index: 10;
+    @media screen and (max-width: 900px) {
+      min-width: 190px;
+      width: 100%;
+      transform: translate(0, 0);
+    }
     .play-button {
       display: flex;
       flex-flow: column wrap;
@@ -612,10 +635,18 @@ onMounted(() => {
       width: max-content;
       width: 4rem;
       height: 4rem;
+      @media screen and (max-width: 900px) {
+        width: 2rem;
+        height: 2rem;
+      }
       svg {
         width: calc(4rem - var(--base-padding) * 2);
         height: calc(4rem - var(--base-padding) * 2);
         transform: translate(8%, 0);
+        @media screen and (max-width: 900px) {
+          width: calc(2.5rem - var(--base-padding) * 2);
+          height: calc(2.5rem - var(--base-padding) * 2);
+      }
         path {
           fill: var(--color-black);
         }

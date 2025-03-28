@@ -16,20 +16,6 @@ const { data } = await useSanityQuery(query, {
 if (!data.value) {
   console.error("Set nicht gefunden:", route.params.slug);
 }
-// // Filtere das aktuelle Set aus den verwandten Sets
-// const relatedSets = computed(() => {
-//   if (
-//     !data.value?.parentShow?.sets ||
-//     !Array.isArray(data.value.parentShow.sets)
-//   ) {
-//     return [];
-//   }
-
-//   // Filtere das aktuelle Set anhand der slug.current-Eigenschaft
-//   return data.value.parentShow.sets.filter((set) => {
-//     return set.slug.current !== route.params.set;
-//   });
-// });
 
 usePageSeo(data?.value?.seo);
 </script>
