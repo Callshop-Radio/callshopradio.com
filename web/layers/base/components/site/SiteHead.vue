@@ -42,12 +42,18 @@ const togglePlayerVisibility = () => {
       </NuxtLink>
       <div class="header__toggle-section">
         <SiteDarkMode />
-        <SiteDiscordButton class="mobile-hidden" v-if="mainStore?.siteNav?.discordLink" />
-        <SiteScheduleButton class="mobile-hidden" v-if="mainStore?.siteNav?.schedulePage" />
-        <SiteMenuButton class="mobile-hidden"/>
+        <SiteDiscordButton
+          class="mobile-hidden"
+          v-if="mainStore?.siteNav?.discordLink"
+        />
+        <SiteScheduleButton
+          class="mobile-hidden"
+          v-if="mainStore?.siteNav?.schedulePage"
+        />
+        <SiteMenuButton class="mobile-hidden" />
       </div>
     </section>
-    <SiteMenu class="mobile-hidden"/>
+    <SiteMenu class="mobile-hidden" />
     <section class="header__audio-player-section">
       <MusicController />
     </section>
@@ -97,10 +103,10 @@ const togglePlayerVisibility = () => {
   }
 
   .mobile-hidden {
-      @media screen and (max-width: 900px) {
-        display: none !important;
-      }
+    @media screen and (max-width: 900px) {
+      display: none !important;
     }
+  }
 
   /* Stellen Sie sicher, dass der Header eine Höhe hat */
   height: auto;
@@ -180,6 +186,10 @@ const togglePlayerVisibility = () => {
     transition: transform 0.15s ease-in-out, opacity 0.15s ease-in-out;
     padding: 0 0 var(--mid-padding);
     opacity: 0;
+    @media screen and (max-width: 1100px) {
+      margin-top: var(--base-margin);
+      padding: 0 var(--base-padding) var(--base-padding) ;
+    }
 
     &.is-visible {
       opacity: 1;
@@ -228,12 +238,27 @@ const togglePlayerVisibility = () => {
             font-size: var(--base-font-size);
             line-height: 1;
             color: var(--color-text-light, #888);
+            @media screen and (max-width: 360px) {
+              display: block;
+            }
+            @media screen and (min-width: 361px) and (max-width: 1100px) {
+              display: none;
+            }
           }
 
           .track-title {
             font-weight: 550;
             font-size: var(--base-font-size);
             line-height: 1;
+            @media screen and (max-width: 360px) {
+              display: none;
+            }
+            @media screen and (min-width: 361px) and (max-width: 1100px) {
+              display: block;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              overflow: hidden;
+            }
           }
 
           .track-duration {
