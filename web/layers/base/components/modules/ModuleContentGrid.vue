@@ -1602,7 +1602,7 @@ onMounted(() => {
     background-color: var(--color-text);
     border-radius: 100px;
     .active-filters {
-      width: calc(33% - var(--big-margin) / 2 + (var(--mid-margin) / 2));
+      width: calc(33% - var(--big-margin) / 2 + (var(--mid-margin) / 2) - 1px);
     }
     .sort-options {
       width: calc(33% - var(--big-margin) / 2 + (var(--mid-margin) / 2));
