@@ -448,7 +448,7 @@ const contactLink = computed(() => {
     flex-flow: row wrap;
     justify-content: flex-start;
     .tag {
-      background-color: pink;
+      background-color: var(--color-pink);
     }
   }
 

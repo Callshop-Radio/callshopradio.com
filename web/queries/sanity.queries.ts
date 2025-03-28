@@ -93,6 +93,18 @@ export const POOL_PROFILE_QUERY = `
     slug,
     image ${IMAGE_QUERY},
     description[] ${RICH_TEXT_QUERY},
+    "cityTags": *[_id in ^.tags[]._ref && _type == "tag.city"] {
+      _id,
+      _type,
+      title,
+      short
+    }| order(lower(title)),
+    "otherTags": *[_id in ^.tags[]._ref && _type != "tag.city"] {
+      _id,
+      _type,
+      title,
+      short
+    }| order(lower(title)),
     "tags": tags[]->{
       ...,
       _id,

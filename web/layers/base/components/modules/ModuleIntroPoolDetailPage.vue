@@ -32,6 +32,8 @@ interface PoolItem {
   mainImage?: Image;
   location?: string;
   tags?: Tag[];
+  otherTags?: Tag[];
+  cityTags?: Tag[];
   bio?: any[];
 }
 
@@ -145,21 +147,6 @@ const contactLink = computed(() => {
 <template>
   <div v-if="poolItem" class="pool-content">
     <div class="pool-container">
-      <!-- Tags-Icon -->
-      <!-- <div v-if="poolItem?.tags?.length" class="pool-tags tags">
-        <button
-          v-for="(tag, index) in poolItem.tags"
-          :key="tag._id || index"
-          class="tag"
-          type="button"
-        >
-          {{
-            tag?.title?.[1]?.value
-              ? parseI18nObj(tag?.title)
-              : tag?.title[0]?.value ?? tag.title
-          }}
-        </button>
-      </div> -->
       <!-- Bild/Media-Bereich -->
       <div class="pool-media">
         <NuxtLink
@@ -174,10 +161,37 @@ const contactLink = computed(() => {
           />
         </NuxtLink>
       </div>
-
+      <div v-if="poolItem?.tags?.length" class="artist-tags">
+        <button
+          v-for="(tag, index) in poolItem.otherTags"
+          :key="tag._id || index"
+          class="tag artist"
+          type="button"
+        >
+          {{
+            tag?.title?.[1]?.value
+              ? parseI18nObj(tag?.title)
+              : tag?.title[0]?.value ?? tag.title
+          }}
+        </button>
+      </div>
       <!-- Content-Bereich -->
       <div class="pool-info">
         <div class="pool-info-container">
+          <div v-if="poolItem?.cityTags?.length" class="city-tags">
+            <button
+              v-for="(tag, index) in poolItem?.cityTags"
+              :key="tag._id || index"
+              class="tag city"
+              type="button"
+            >
+              {{
+                tag?.title?.[1]?.value
+                  ? parseI18nObj(tag?.title)
+                  : tag?.title[0]?.value ?? tag.title
+              }}
+            </button>
+          </div>
           <!-- Titel-Bereich -->
           <div class="pool-header">
             <!-- Typ und Standort -->
@@ -438,16 +452,7 @@ const contactLink = computed(() => {
   width: 100%;
   min-height: calc(100svh - var(--nav-height) - var(--big-margin));
   overflow: hidden;
-  .pool-tags {
-    top: 0;
-    right: 0;
-    padding: var(--mid-padding);
-    position: absolute;
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: flex-start;
-    gap: var(--base-padding);
-  }
+  position: relative;
 
   .pool-container {
     width: max-content;
@@ -456,7 +461,6 @@ const contactLink = computed(() => {
     justify-content: flex-end;
     align-items: flex-end;
     width: 100%;
-    /* border: 0.0625rem solid var(--color-text); */
     border-radius: 1.5625rem;
     overflow: visible;
     max-height: calc(100svh - var(--nav-height));
@@ -478,6 +482,39 @@ const contactLink = computed(() => {
         object-position: right center;
         z-index: 0;
         height: 100%;
+      }
+    }
+  }
+
+  .artist-tags {
+    display: flex;
+    flex-flow: row;
+    justify-content: flex-start;
+    align-items: flex-end;
+    position: absolute;
+    width: 50svw;
+    left: 50svw;
+    padding: 0 var(--base-padding);
+    gap: var(--base-padding);
+    @media screen and (max-width: 900px) {
+      justify-content: flex-start;
+      margin: 0 auto 0 var(--big-margin);
+    }
+    height: var(--city-tag-height);
+    gap: var(--small-padding);
+    .tag {
+      color: var(--color-white);
+      background-color: var(--color-blue);
+      &.artist {
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        padding: calc(var(--small-padding) / 2) var(--mid-padding)
+          calc(var(--small-padding) / 2) var(--mid-padding);
+        font-size: var(--base-font-size);
+        line-height: 1;
+        text-transform: uppercase;
       }
     }
   }
@@ -520,10 +557,22 @@ const contactLink = computed(() => {
       flex-flow: column wrap;
       justify-content: center;
       gap: var(--mid-margin);
+      position: relative;
       width: calc(100%);
       background-color: var(--color-text);
       padding: var(--big-margin) var(--mid-margin) var(--mid-margin)
         var(--mid-margin);
+      .city-tags {
+        top: 0;
+        transform: translate(calc(var(--mid-margin) * -1), -100%);
+        position: absolute;
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+        .tag {
+          background-color: var(--color-blue);
+        }
+      }
     }
 
     .pool-header {
@@ -574,7 +623,6 @@ const contactLink = computed(() => {
       flex-flow: row wrap;
       justify-content: flex-start;
       align-items: center;
-      border-top: 1px solid rgba(var(--color-bg-rgb), 0.2);
 
       h3 {
         font-size: var(--h3-size);
