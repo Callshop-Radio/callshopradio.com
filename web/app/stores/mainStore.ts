@@ -12,10 +12,10 @@ export const useMainStore = defineStore("mainStore", () => {
   const titel = ref("");
   const currentTrack = ref(null);
   const active = ref(false);
-  const isPlayerPlaying = ref(false); // Neue Variable für den Abspielstatus
-  const isPlayerVisible = ref(true); // Neue Variable für die Sichtbarkeit
-  const activeScheduleLocation = ref("channelOne"); // Neue Variable für den aktiven Schedule-Standort
-  const activeStreamingChannel = ref(true); // Neue Variable für den aktiven Schedule-Standort
+  const isPlayerPlaying = ref(false);
+  const isPlayerVisible = ref(true);
+  const activeScheduleLocation = ref("channelOne");
+  const activeStreamingChannel = ref("channelOne");
   const isDarkMode = ref(false);
   const menuOpen = ref(false);
 
