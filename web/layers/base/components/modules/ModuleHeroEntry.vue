@@ -496,11 +496,15 @@ onMounted(() => {
           aspect-ratio: 1 / 1;
           object-fit: cover;
           background-color: var(--color-grey);
+          min-width: 35.3125rem;
           max-width: 35.3125rem;
+          max-height: 35.3125rem;
           max-height: 35.3125rem;
           @media screen and (max-width: 900px) {
             max-width: 100%;
             max-height: 100%;
+            min-width: 100%;
+            max-width: 100%;
           }
         }
       }
@@ -646,7 +650,7 @@ onMounted(() => {
         @media screen and (max-width: 900px) {
           width: calc(2.5rem - var(--base-padding) * 2);
           height: calc(2.5rem - var(--base-padding) * 2);
-      }
+        }
         path {
           fill: var(--color-black);
         }
@@ -664,12 +668,19 @@ onMounted(() => {
       justify-content: center;
       gap: var(--mid-padding);
 
+      .hero-entry-show-artists {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+      }
+
       .hero-entry-title,
       .hero-entry-show-artists-artist {
         font-size: var(--base-font-size);
         font-family: var(--font-text-semibold);
         font-weight: 500;
         text-transform: uppercase;
+        width: max-content;
       }
 
       .hero-entry-meta {
