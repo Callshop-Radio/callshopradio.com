@@ -442,7 +442,7 @@ onMounted(() => {
             class="hero-entry-tags tags"
           >
             <button
-              v-for="tag in module.contentReference.tags"
+              v-for="tag in module.contentReference.tags.slice(0,3)"
               :key="tag._id || index"
               class="tag"
               type="button"
