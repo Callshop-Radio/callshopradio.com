@@ -37,6 +37,7 @@ const togglePlayerVisibility = () => {
         <div class="header__title-section__logo">
           <ElementsCallshopLogo class="logo" />
           <ElementsCallshopTextLogo class="text-logo" />
+          <SiteMobileChannelSwitch class="channel-switch" />
         </div>
       </NuxtLink>
       <div class="header__toggle-section">
@@ -124,6 +125,11 @@ const togglePlayerVisibility = () => {
     @media screen and (max-width: 1100px) {
       padding: var(--base-padding);
     }
+    .channel-switch {
+      @media screen and (min-width: 900px) {
+        display: none;
+      }
+    }
     &__logo {
       display: flex;
       flex-flow: row wrap;
@@ -138,6 +144,11 @@ const togglePlayerVisibility = () => {
       .text-logo {
         @media (prefers-color-scheme: dark) {
           filter: invert(1);
+        }
+      }
+      .text-logo {
+        @media screen and (max-width: 900px) {
+          display: none;
         }
       }
     }

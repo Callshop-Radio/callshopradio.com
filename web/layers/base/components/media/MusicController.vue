@@ -410,8 +410,14 @@ updateLiveStatus();
         class="audio-player__music-controller track-one"
         @click="togglePlay1"
         :class="{
-          active: isPlaying1 || isLoading1,
-          inactive: isPlaying2 || isLoading2,
+          active:
+            isPlaying1 ||
+            isLoading1 ||
+            mainStore.activeStreamingChannel === 'channelOne',
+          inactive:
+            isPlaying2 ||
+            isLoading2 ||
+            mainStore.activeStreamingChannel === 'channelTwo',
           offline: !liveStatus.stream1.onAirLight.on_air_light,
         }"
       >
@@ -472,8 +478,14 @@ updateLiveStatus();
         class="audio-player__music-controller track-two"
         @click="togglePlay2"
         :class="{
-          active: isPlaying2 || isLoading2,
-          inactive: isPlaying1 || isLoading1,
+          active:
+            isPlaying2 ||
+            isLoading2 ||
+            mainStore.activeStreamingChannel === 'channelTwo',
+          inactive:
+            isPlaying1 ||
+            isLoading1 ||
+            mainStore.activeStreamingChannel === 'channelOne',
           offline: !liveStatus.stream2.onAirLight.on_air_light,
         }"
       >
@@ -564,6 +576,10 @@ updateLiveStatus();
     width: 50%;
     transition: width 0.15s ease, max-width 0.15s ease;
     cursor: pointer;
+    @media screen and (max-width: 900px) {
+      width: 100%;
+      max-width: 100%;
+    }
     &.offline {
       cursor: not-allowed !important;
       pointer-events: none;
@@ -665,23 +681,32 @@ updateLiveStatus();
     &.track-one {
       padding: 0 var(--big-padding) 0 0;
       border-right: 1px solid var(--color-text);
-      @media screen and (max-width: 1100px) {
+      @media screen and (max-width: 900px) {
         padding: 0 var(--base-padding);
+        border-right: none;
       }
     }
     &.track-two {
       padding: 0 0 0 var(--big-padding);
-      @media screen and (max-width: 1100px) {
+      @media screen and (max-width: 900px) {
         padding: 0 var(--base-padding);
       }
     }
     &.active {
       max-width: calc(var(--page-max-width) / 1.5);
       width: 75%;
+      @media screen and (max-width: 900px) {
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+      }
     }
     &.inactive {
       max-width: calc(var(--page-max-width) / 3);
       width: 25%;
+      @media screen and (max-width: 900px) {
+        display: none;
+      }
     }
   }
 

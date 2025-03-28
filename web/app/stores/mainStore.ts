@@ -15,6 +15,7 @@ export const useMainStore = defineStore("mainStore", () => {
   const isPlayerPlaying = ref(false); // Neue Variable für den Abspielstatus
   const isPlayerVisible = ref(true); // Neue Variable für die Sichtbarkeit
   const activeScheduleLocation = ref("channelOne"); // Neue Variable für den aktiven Schedule-Standort
+  const activeStreamingChannel = ref(true); // Neue Variable für den aktiven Schedule-Standort
   const isDarkMode = ref(false);
   const menuOpen = ref(false);
 
@@ -56,6 +57,9 @@ export const useMainStore = defineStore("mainStore", () => {
     menuOpen.value = !menuOpen.value;
   }
 
+  function setActiveStreamingChannel(channel) {
+    activeStreamingChannel.value = channel;
+  }
   function updateColors() {
     if (isDarkMode.value) {
       document.documentElement.style.setProperty("--color-bg", "#000");
@@ -87,6 +91,7 @@ export const useMainStore = defineStore("mainStore", () => {
     isPlayerPlaying,
     isPlayerVisible,
     activeScheduleLocation,
+    activeStreamingChannel,
     menuOpen,
     nuxtServerInit,
     addToRepro,
@@ -97,5 +102,6 @@ export const useMainStore = defineStore("mainStore", () => {
     updateColors,
     toggleDarkMode,
     toggleMenu,
+    setActiveStreamingChannel,
   };
 });

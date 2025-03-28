@@ -41,3 +41,14 @@ img {
   height: max-content;
   margin: var(--big-margin) 0 calc(var(--content-gap) - var(--big-margin)) 0;
 }
+
+
+button {
+  &:hover {
+      text-decoration: none !important;
+      & > * {
+        text-decoration: none !important;
+      }
+  }
+}
+
