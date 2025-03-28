@@ -24,9 +24,12 @@
 
 <style scoped lang="pcss">
 .svg-container {
-  width: 415px;
+  width: 100svw;
   height: auto;
   position: relative;
+  @media screen and (min-width: 900px) {
+    width: 415px;
+  }
 }
 
 svg {

@@ -8,7 +8,6 @@ const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 
 // console.log(mainStore?.siteNav);
 
-
 // Computed-Properties für den Track
 const currentTrack = computed(() => mainStore.currentTrack);
 const trackTitle = computed(() => currentTrack.value?.title || "");
@@ -25,7 +24,7 @@ const trackDuration = computed(() => {
 const isPlaying = computed(() => mainStore.isPlayerPlaying);
 const isVisible = computed(() => mainStore.isPlayerVisible);
 
-// Methode zum Umschalten der Player-Sichtbarkeit 
+// Methode zum Umschalten der Player-Sichtbarkeit
 const togglePlayerVisibility = () => {
   mainStore.togglePlayerVisibility();
 };
@@ -42,8 +41,8 @@ const togglePlayerVisibility = () => {
       </NuxtLink>
       <div class="header__toggle-section">
         <SiteDarkMode />
-        <SiteDiscordButton v-if="mainStore?.siteNav?.discordLink"/>
-        <SiteScheduleButton v-if="mainStore?.siteNav?.schedulePage"/>
+        <SiteDiscordButton v-if="mainStore?.siteNav?.discordLink" />
+        <SiteScheduleButton v-if="mainStore?.siteNav?.schedulePage" />
         <SiteMenuButton />
       </div>
     </section>
@@ -92,6 +91,10 @@ const togglePlayerVisibility = () => {
   margin: var(--big-margin) auto 0;
   padding: 0 0;
   background-color: var(--color-bg);
+  @media screen and (max-width: 1100px) {
+    margin: 0 0;
+  }
+
   /* Stellen Sie sicher, dass der Header eine Höhe hat */
   height: auto;
   min-height: max-content;
@@ -106,6 +109,9 @@ const togglePlayerVisibility = () => {
     height: var(--big-margin);
     background-color: var(--color-bg);
     z-index: -1;
+    @media screen and (max-width: 1100px) {
+      display: none;
+    }
   }
   &__title-section {
     width: 100%;
@@ -115,6 +121,9 @@ const togglePlayerVisibility = () => {
     justify-content: space-between;
     align-items: center;
     padding: var(--base-padding) 0;
+    @media screen and (max-width: 1100px) {
+      padding: var(--base-padding);
+    }
     &__logo {
       display: flex;
       flex-flow: row wrap;

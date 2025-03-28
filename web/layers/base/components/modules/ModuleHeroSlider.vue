@@ -212,20 +212,35 @@ const slides = computed(() => {
     z-index: 0;
     pointer-events: none;
     .animated-logo-background {
-      width: 575px;
-      height: 415px;
+      width: 150svw;
+      height: 80svh;
       position: absolute;
-      right: calc(var(--big-margin) * 2);
-      top: calc(35.3125rem - var(--big-margin)* 2 + var(--mid-margin) + 0.625rem);
-      transform: translate(33%,-100%);
+      right: 0;
       z-index: 0;
+      transform: translate(25svw, -5svh);
+      @media screen and (min-width: 900px) {
+        width: 575px;
+        height: 415px;
+        right: calc(var(--big-margin) * 2);
+        top: calc(
+          35.3125rem - var(--big-margin) * 2 + var(--mid-margin) + 0.625rem
+        );
+        transform: translate(33%, -100%);
+      }
     }
     .animated-gradient {
       position: absolute;
-      top: -33%;
-      left: -45%;
-      width: 110%;
-      height: 110%;
+      top: -12.5%;
+      left: -75%;
+      width: 200%;
+      height: 200%;
+      @media screen and (min-width: 900px) {
+        position: absolute;
+        top: -33%;
+        left: -45%;
+        width: 110%;
+        height: 110%;
+      }
     }
   }
   .graphics-front {
@@ -237,13 +252,21 @@ const slides = computed(() => {
     height: 100%;
     z-index: 0;
     .animated-logo {
-      width: 575px;
-      height: 415px;
+      width: 150svw;
+      height: 80svh;
       position: absolute;
-      right: calc(var(--big-margin) * 2);
-      top: calc(35.3125rem - var(--big-margin)* 2 + var(--mid-margin) + var(--menu-text-size) / 2);
-      transform: translate(33%,-100%);
+      right: 0;
       z-index: 0;
+      transform: translate(25svw, -5svh);
+      @media screen and (min-width: 900px) {
+        width: 575px;
+        height: 415px;
+        right: calc(var(--big-margin) * 2);
+        top: calc(
+          35.3125rem - var(--big-margin) * 2 + var(--mid-margin) + 0.625rem
+        );
+        transform: translate(33%, -100%);
+      }
     }
   }
 
@@ -254,7 +277,7 @@ const slides = computed(() => {
     .embla__nav {
       @apply flex row items-center justify-space-between;
       position: absolute;
-      top: calc(35.3125rem - var(--big-margin) * 2);
+      top: calc(80svw + var(--big-margin) * 1.125);
       right: var(--big-margin);
       padding: var(--mid-padding);
       width: max-content;
@@ -263,6 +286,9 @@ const slides = computed(() => {
       border: 0.0625rem solid var(--color-text);
       shape-rendering: crispEdges;
       z-index: 10;
+      @media screen and (min-width: 600px) {
+        top: calc(35.3125rem - var(--big-margin) * 2);
+      }
 
       .embla__nav__arrows {
         @apply flex;
@@ -324,7 +350,7 @@ const slides = computed(() => {
       width: 100%; /* Jeder Slide nimmt volle Breite ein */
       padding: 0 calc(var(--big-margin) / 2);
       opacity: 0;
-      transition: opacity .15s ease !important;
+      transition: opacity 0.15s ease !important;
 
       &.active {
         opacity: 1;

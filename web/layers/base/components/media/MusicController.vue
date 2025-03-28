@@ -665,9 +665,15 @@ updateLiveStatus();
     &.track-one {
       padding: 0 var(--big-padding) 0 0;
       border-right: 1px solid var(--color-text);
+      @media screen and (max-width: 1100px) {
+        padding: 0 var(--base-padding);
+      }
     }
     &.track-two {
       padding: 0 0 0 var(--big-padding);
+      @media screen and (max-width: 1100px) {
+        padding: 0 var(--base-padding);
+      }
     }
     &.active {
       max-width: calc(var(--page-max-width) / 1.5);

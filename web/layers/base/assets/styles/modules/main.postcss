@@ -98,9 +98,23 @@
       }
 
       &__header {
+        @media screen and (max-width: 900px) {
+          padding: 0 var(--big-margin);
+          margin: 0 !important;
+        }
         &__type {
           @apply flex;
           justify-content: flex-end;
+          @media screen and (max-width: 900px) {
+            justify-content: flex-start;
+            position: absolute;
+            pointer-events: none;
+          }
+          a {
+            &:hover {
+              text-decoration: none;
+            }
+          }
           &__pill {
             @apply uppercase rounded-full;
             font-size: var(--base-font-size);
@@ -167,11 +181,6 @@
     background-color: var(--color-text);
     border-radius: 100px;
     border: 0.09325rem solid var(--color-text);
-    @media (prefers-color-scheme: dark) {
-      background-color: var(--color-darkgrey);
-      color: var(--color-grey);
-      border-color: var(--color-grey);
-    }
   }
 }
 
@@ -180,6 +189,10 @@
   flex-flow: row;
   justify-content: center;
   align-items: flex-end;
+  @media screen and (max-width: 900px) {
+    justify-content: flex-start;
+    margin: 0 auto 0 var(--big-margin);
+  }
   height: var(--city-tag-height);
   gap: var(--small-padding);
   .tag {
