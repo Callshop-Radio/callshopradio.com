@@ -44,7 +44,7 @@ const onSelect = () => {
   if (!emblaApi.value) return;
   selectedIndex.value = emblaApi.value.selectedScrollSnap();
   currentIndex.value = selectedIndex.value; // Aktualisiere currentIndex, wenn sich der Slide ändert
-  
+
   // Aktualisiere den Content-Typ im Store
   updateCurrentContentType();
 };
@@ -81,11 +81,16 @@ const setupDots = () => {
 
 // Funktion zum Aktualisieren des aktuellen Content-Typs im Store
 const updateCurrentContentType = () => {
-  if (!slides.value || slides.value.length === 0 || currentIndex.value >= slides.value.length) return;
-  
+  if (
+    !slides.value ||
+    slides.value.length === 0 ||
+    currentIndex.value >= slides.value.length
+  )
+    return;
+
   const currentSlide = slides.value[currentIndex.value];
-  const contentType = currentSlide?.contentReference?._type || '';
-  
+  const contentType = currentSlide?.contentReference?._type || "";
+
   // Aktualisiere den Content-Typ im Store
   mainStore.setCurrentHeroContentType(contentType);
 };
@@ -97,7 +102,7 @@ onMounted(() => {
     emblaApi.value.on("destroy", restoreTranslatePositions);
 
     setupDots();
-    
+
     // Initialer Content-Typ
     updateCurrentContentType();
   }
@@ -117,7 +122,9 @@ watch(currentIndex, () => {
 <template>
   <div
     v-if="module && slides.length > 0"
-    :class="`embla module-hero module-hero--${module.style || 'default'}`"
+    :class="`embla module-hero module-hero--${module.style || 'default'} ${
+      mainStore.currentHeroContentType
+    }`"
   >
     <div class="module-hero__header" v-if="module.title">
       <h3 class="module-hero__title">
@@ -179,8 +186,11 @@ watch(currentIndex, () => {
         </div>
       </nav>
     </div>
-    <div class="graphics-behind">
-      <AnimatedGradient class="animated-gradient" />
+    <div class="graphics-behind" :class="mainStore?.currentHeroContentType">
+      <AnimatedGradient
+        class="animated-gradient"
+        :type="mainStore?.currentHeroContentType"
+      />
       <AnimatedLogoBackground class="animated-logo-background" />
     </div>
     <div ref="emblaNode" class="embla">
@@ -203,11 +213,6 @@ watch(currentIndex, () => {
     </div>
     <div class="graphics-front">
       <AnimatedLogo class="animated-logo" />
-    </div>
-    
-    <!-- Debug-Anzeige des aktuellen Content-Typs (optional) -->
-    <div class="current-type-debug">
-      Current Hero Content Type: {{ mainStore.currentHeroContentType }}
     </div>
   </div>
 </template>
@@ -242,6 +247,23 @@ watch(currentIndex, () => {
     height: 100%;
     z-index: 0;
     pointer-events: none;
+    &.venue,
+    &.person {
+      .animated-gradient {
+        position: absolute;
+        top: -12.5%;
+        left: -75%;
+        width: 200%;
+        height: 200%;
+        @media screen and (min-width: 900px) {
+          position: absolute;
+          top: -60%;
+          left: -15%;
+          width: 140%;
+          height: 140%;
+        }
+      }
+    }
     .animated-logo-background {
       width: 180svw;
       height: 80svh;
@@ -265,6 +287,8 @@ watch(currentIndex, () => {
       left: -75%;
       width: 200%;
       height: 200%;
+      transition: width 0.5s ease, height 0.5s ease, top 0.5s ease,
+        left 0.5s ease;
       @media screen and (min-width: 900px) {
         position: absolute;
         top: -33%;

@@ -78,13 +78,8 @@ usePageSeo(data?.value?.seo);
         title=""
       />
     </section>
-    <section
-      v-if="relatedSets.length > 0"
-      class="set-detail__more-content"
-    >
-      <h3 v-if="data?.parentShow?.title === 'No Show'">
-        Similar Sets
-      </h3>
+    <section v-if="relatedSets.length > 0" class="set-detail__more-content">
+      <h3 v-if="data?.parentShow?.title === 'No Show'">Similar Sets</h3>
       <h3 v-else>
         More Episodes of <span>{{ data?.parentShow?.title }}</span>
       </h3>
@@ -119,9 +114,18 @@ section {
   }
   &__related-content,
   &__more-content {
+    @media screen and (max-width: 900px) {
+      padding: 0 var(--big-margin);
+    }
     h3 {
-        font-size: var(--h3-size);
-        text-transform: uppercase;
+      font-size: var(--h3-size);
+      text-transform: uppercase;
+      span {
+        color: var(--color-pink);
+      }
+      @media screen and (max-width: 900px) {
+        padding: 0 0 var(--mid-margin) 0;
+      }
     }
     display: flex;
     flex-flow: column wrap;

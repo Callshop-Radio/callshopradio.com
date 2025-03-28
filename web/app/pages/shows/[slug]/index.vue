@@ -52,17 +52,13 @@ usePageSeo(data?.value?.seo);
         />
       </div>
     </section>
-    <section
-      v-if="data?.sets?.length > 0"
-      class="show-detail__related-content"
-    >
+    <section v-if="data?.sets?.length > 0" class="show-detail__related-content">
       <div class="inner">
-        <h3>Related</h3>
-        <ModuleRelatedContent
-          :items="data?.sets"
-          type="sets"
-          title=""
-        />
+        <h3 v-if="data?.title === 'No Show'">Similar Sets</h3>
+        <h3 v-else>
+          More Episodes of <span>{{ data?.title }}</span>
+        </h3>
+        <ModuleRelatedContent :items="data?.sets" type="sets" title="" />
       </div>
     </section>
   </div>
@@ -95,9 +91,18 @@ section {
   }
   &__related-content,
   &__more-content {
+    @media screen and (max-width: 900px) {
+      padding: 0 var(--big-margin);
+    }
     h3 {
-        font-size: var(--h3-size);
-        text-transform: uppercase;
+      font-size: var(--h3-size);
+      text-transform: uppercase;
+      @media screen and (max-width: 900px) {
+        padding: 0 0 var(--mid-margin) 0;
+      }
+      span {
+        color: var(--color-pink);
+      }
     }
     background-color: var(--color-bg);
     position: relative;

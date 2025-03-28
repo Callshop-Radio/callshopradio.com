@@ -236,6 +236,19 @@ const contactLink = computed(() => {
             class="pool-references-section"
           >
             <div class="pool-refs-list tags">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 22 22"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="11" cy="11" r="11" fill="#F794B3" />
+                <path
+                  d="M16.7617 11.0002L8.11886 15.9901L8.11886 6.01023L16.7617 11.0002Z"
+                  fill="white"
+                />
+              </svg>
               <div
                 v-for="show in poolItem.shows"
                 :key="show._id"
@@ -243,20 +256,6 @@ const contactLink = computed(() => {
               >
                 <NuxtLink :to="getItemRoute(show)" class="pool-ref-link">
                   <div class="pool-ref-info">
-                    <svg
-                      width="22"
-                      height="22"
-                      viewBox="0 0 22 22"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle cx="11" cy="11" r="11" fill="#F794B3" />
-                      <path
-                        d="M16.7617 11.0002L8.11886 15.9901L8.11886 6.01023L16.7617 11.0002Z"
-                        fill="white"
-                      />
-                    </svg>
-
                     <h4 class="tag">{{ show.title }}</h4>
                   </div>
                 </NuxtLink>
@@ -275,6 +274,19 @@ const contactLink = computed(() => {
             class="pool-references-section"
           >
             <div class="pool-refs-list tags">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 22 22"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="11" cy="11" r="11" fill="#557FB9" />
+                <path
+                  d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
+                  fill="white"
+                />
+              </svg>
               <div
                 v-for="person in poolItem.persons"
                 :key="person._id"
@@ -285,19 +297,6 @@ const contactLink = computed(() => {
                     <MediaImage :image="person.image" :alt="person.title" />
                   </div>
                   <div class="pool-ref-info">
-                    <svg
-                      width="22"
-                      height="22"
-                      viewBox="0 0 22 22"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle cx="11" cy="11" r="11" fill="#557FB9" />
-                      <path
-                        d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
-                        fill="white"
-                      />
-                    </svg>
                     <h4 class="tag">{{ person.title }}</h4>
                   </div>
                 </NuxtLink>
@@ -314,7 +313,20 @@ const contactLink = computed(() => {
             "
             class="pool-references-section"
           >
-            <div class="pool-refs-list">
+            <div class="pool-refs-list tags">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 22 22"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="11" cy="11" r="11" fill="#557FB9" />
+                <path
+                  d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
+                  fill="white"
+                />
+              </svg>
               <div
                 v-for="venue in poolItem.venues"
                 :key="venue._id"
@@ -322,19 +334,6 @@ const contactLink = computed(() => {
               >
                 <NuxtLink :to="getItemRoute(venue)" class="pool-ref-link">
                   <div class="pool-ref-info">
-                    <svg
-                      width="22"
-                      height="22"
-                      viewBox="0 0 22 22"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle cx="11" cy="11" r="11" fill="#557FB9" />
-                      <path
-                        d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
-                        fill="white"
-                      />
-                    </svg>
                     <h4 class="tag">{{ venue.title }}</h4>
                   </div>
                 </NuxtLink>
@@ -455,6 +454,7 @@ const contactLink = computed(() => {
 
 <style lang="postcss" scoped>
 .pool-content {
+  position: relative;
   width: 100%;
   min-height: calc(
     100svh - var(--nav-height) - var(--big-margin) - var(--small-padding) / 2
@@ -462,7 +462,10 @@ const contactLink = computed(() => {
   max-height: calc(
     100svh - var(--nav-height) - var(--big-margin) - var(--small-padding) / 2
   );
-  position: relative;
+  @media screen and (max-width: 900px) {
+    max-height: unset;
+    min-height: unset;
+  }
 
   .pool-container {
     width: max-content;
@@ -471,6 +474,10 @@ const contactLink = computed(() => {
       100svh - var(--nav-height) - var(--big-margin) - var(--small-padding) / 2
     );
     overflow: scroll;
+    @media screen and (max-width: 900px) {
+      max-height: unset;
+      margin: 0 0 var(--content-gap) 0;
+    }
 
     .pool-media {
       position: sticky;
@@ -483,6 +490,13 @@ const contactLink = computed(() => {
           2
       );
       overflow: hidden;
+      @media screen and (max-width: 900px) {
+        position: relative;
+        width: 100%;
+        margin: 0;
+        min-height: 60vh;
+        height: 60vh;
+      }
       /* top: calc(var(--nav-height)); */
       /* max-width: 35.3125rem; */
       /* max-width: calc((100vw - var(--page-max-width)) / 2 + (var(--page-max-width) / 2));
@@ -499,6 +513,13 @@ const contactLink = computed(() => {
         z-index: 0;
         min-height: 100%;
         width: 50svw;
+        @media screen and (max-width: 900px) {
+          position: relative;
+          width: 100%;
+          margin: 0;
+          min-height: 60vh;
+          height: 60vh;
+        }
       }
     }
   }
@@ -555,6 +576,12 @@ const contactLink = computed(() => {
     margin-bottom: calc(
       (var(--big-margin) + var(--h1-size) + var(--mid-margin)) * -1
     );
+    @media screen and (max-width: 900px) {
+      position: relative;
+      width: 100%;
+      margin: 0;
+      transform: translate(0, 0);
+    }
 
     .pool-type-icon {
       display: flex;
@@ -585,6 +612,10 @@ const contactLink = computed(() => {
       width: calc(100%);
       background-color: var(--color-text);
       padding: var(--big-margin) var(--mid-margin);
+      @media screen and (max-width: 900px) {
+        padding: var(--big-margin);
+      }
+
       .city-tags {
         top: 0;
         transform: translate(calc(var(--mid-margin) * -1), -100%);
@@ -639,6 +670,10 @@ const contactLink = computed(() => {
         color: var(--color-bg);
         font-size: var(--h4-font-size);
         line-height: var(--h4-line-height);
+        @media screen and (max-width: 900px) {
+          font-size: var(--base-font-size);
+          line-height: var(--base-line-height);
+        }
       }
     }
     .pool-contact-section,
@@ -744,7 +779,6 @@ const contactLink = computed(() => {
         .pool-ref-info {
           h4 {
             font-size: var(--base-font-size);
-            margin-bottom: 0.25rem;
           }
 
           .pool-set-count,

@@ -309,6 +309,10 @@ onMounted(() => {
   width: max-content;
   height: max-content;
   margin: 0 auto;
+  width: 100%;
+  @media screen and (max-width: 900px) {
+    padding: 0 var(--big-margin);
+  }
 
   .set-container {
     width: max-content;
@@ -333,6 +337,10 @@ onMounted(() => {
       height: 100%;
       max-width: 35.3125rem;
       max-height: 35.3125rem;
+      @media screen and (max-width: 900px) {
+        max-width: 100%;
+        max-height: 100%;
+      }
       .track-artwork,
       .track-artwork-placeholder {
         width: 100%;
@@ -341,6 +349,10 @@ onMounted(() => {
         background-color: var(--color-grey);
         max-width: 35.3125rem;
         max-height: 35.3125rem;
+        @media screen and (max-width: 900px) {
+          max-width: 100%;
+          max-height: 100%;
+        }
       }
     }
   }

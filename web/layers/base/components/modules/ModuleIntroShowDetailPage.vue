@@ -224,12 +224,37 @@ const contactLink = computed(() => {
             </div>
           </div>
 
-          <!-- Nur für Venue: Referenzierte Personen -->
+          <!-- Referenzierte Personen -->
           <div
             v-if="showItem.persons && showItem.persons.length > 0"
             class="show-intro-references-section"
           >
             <div class="show-intro-refs-list">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 22 22"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="11" cy="11" r="11" fill="#557FB9" />
+                <g clip-path="url(#clip0_6005_7912)">
+                  <path
+                    d="M11.2529 9.95997C12.0452 9.95997 12.8051 9.66 13.3654 9.12605C13.9257 8.59211 14.2404 7.86792 14.2404 7.1128C14.2404 6.35768 13.9257 5.63349 13.3654 5.09954C12.8051 4.56559 12.0452 4.26562 11.2529 4.26562C10.4605 4.26563 9.70065 4.56559 9.14037 5.09954C8.5801 5.63349 8.26534 6.35768 8.26534 7.1128C8.26534 7.86792 8.5801 8.59211 9.14037 9.12605C9.70065 9.66 10.4605 9.95997 11.2529 9.95997ZM11.2529 11.2109C7.28075 11.2109 4.73438 13.2999 4.73438 14.317V16.2162H17.7714V14.317C17.7714 13.087 15.3607 11.2109 11.2529 11.2109Z"
+                    fill="white"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_6005_7912">
+                    <rect
+                      width="14.6667"
+                      height="14.6667"
+                      fill="white"
+                      transform="translate(4.19141 2.09375)"
+                    />
+                  </clipPath>
+                </defs>
+              </svg>
               <div
                 v-for="person in showItem.persons"
                 :key="person._id"
@@ -241,63 +266,11 @@ const contactLink = computed(() => {
                   class="show-intro-ref-link"
                 >
                   <div class="show-intro-ref-info">
-                    <svg
-                      width="22"
-                      height="22"
-                      viewBox="0 0 22 22"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle cx="11" cy="11" r="11" fill="#557FB9" />
-                      <g clip-path="url(#clip0_6005_7912)">
-                        <path
-                          d="M11.2529 9.95997C12.0452 9.95997 12.8051 9.66 13.3654 9.12605C13.9257 8.59211 14.2404 7.86792 14.2404 7.1128C14.2404 6.35768 13.9257 5.63349 13.3654 5.09954C12.8051 4.56559 12.0452 4.26562 11.2529 4.26562C10.4605 4.26563 9.70065 4.56559 9.14037 5.09954C8.5801 5.63349 8.26534 6.35768 8.26534 7.1128C8.26534 7.86792 8.5801 8.59211 9.14037 9.12605C9.70065 9.66 10.4605 9.95997 11.2529 9.95997ZM11.2529 11.2109C7.28075 11.2109 4.73438 13.2999 4.73438 14.317V16.2162H17.7714V14.317C17.7714 13.087 15.3607 11.2109 11.2529 11.2109Z"
-                          fill="white"
-                        />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_6005_7912">
-                          <rect
-                            width="14.6667"
-                            height="14.6667"
-                            fill="white"
-                            transform="translate(4.19141 2.09375)"
-                          />
-                        </clipPath>
-                      </defs>
-                    </svg>
-
                     <h4 class="tag">{{ person.title }}</h4>
                   </div>
                 </NuxtLink>
                 <div v-else class="show-intro-ref-link no-link">
                   <div class="show-intro-ref-info">
-                    <svg
-                      width="22"
-                      height="22"
-                      viewBox="0 0 22 22"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle cx="11" cy="11" r="11" fill="#557FB9" />
-                      <g clip-path="url(#clip0_6005_7912)">
-                        <path
-                          d="M11.2529 9.95997C12.0452 9.95997 12.8051 9.66 13.3654 9.12605C13.9257 8.59211 14.2404 7.86792 14.2404 7.1128C14.2404 6.35768 13.9257 5.63349 13.3654 5.09954C12.8051 4.56559 12.0452 4.26562 11.2529 4.26562C10.4605 4.26563 9.70065 4.56559 9.14037 5.09954C8.5801 5.63349 8.26534 6.35768 8.26534 7.1128C8.26534 7.86792 8.5801 8.59211 9.14037 9.12605C9.70065 9.66 10.4605 9.95997 11.2529 9.95997ZM11.2529 11.2109C7.28075 11.2109 4.73438 13.2999 4.73438 14.317V16.2162H17.7714V14.317C17.7714 13.087 15.3607 11.2109 11.2529 11.2109Z"
-                          fill="white"
-                        />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_6005_7912">
-                          <rect
-                            width="14.6667"
-                            height="14.6667"
-                            fill="white"
-                            transform="translate(4.19141 2.09375)"
-                          />
-                        </clipPath>
-                      </defs>
-                    </svg>
-
                     <h4 class="tag">{{ person.title }}</h4>
                   </div>
                 </div>
@@ -311,6 +284,19 @@ const contactLink = computed(() => {
             class="show-intro-references-section"
           >
             <div class="show-intro-refs-list">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 22 22"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="11" cy="11" r="11" fill="#557FB9" />
+                <path
+                  d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
+                  fill="white"
+                />
+              </svg>
               <div
                 v-for="venue in showItem.venues"
                 :key="venue._id"
@@ -318,20 +304,6 @@ const contactLink = computed(() => {
               >
                 <NuxtLink :to="getItemRoute(venue)" class="show-intro-ref-link">
                   <div class="show-intro-ref-info">
-                    <svg
-                      width="22"
-                      height="22"
-                      viewBox="0 0 22 22"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle cx="11" cy="11" r="11" fill="#557FB9" />
-                      <path
-                        d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
-                        fill="white"
-                      />
-                    </svg>
-
                     <h4 class="tag">{{ venue.title }}</h4>
                   </div>
                 </NuxtLink>
@@ -472,6 +444,9 @@ const contactLink = computed(() => {
   justify-content: center;
   position: relative;
   margin: var(--big-margin) 0 0 0;
+  @media screen and (max-width: 900px) {
+    margin: 0 0 var(--content-gap) 0;
+  }
   .city-tags {
     top: 0;
     transform: translate(0, -100%);
@@ -489,6 +464,10 @@ const contactLink = computed(() => {
     flex-flow: row wrap;
     justify-content: space-between;
     align-items: stretch;
+    @media screen and (max-width: 900px) {
+      flex-flow: column-reverse wrap;
+      justify-content: center;
+    }
     gap: 0;
     max-width: var(--page-max-width);
     background-color: var(--color-text);
@@ -497,6 +476,10 @@ const contactLink = computed(() => {
     .show-intro-media {
       aspect-ratio: 1 / 1;
       width: 50%;
+      @media screen and (max-width: 900px) {
+        width: 100%;
+        order: 2;
+      }
 
       .show-intro-image,
       .show-intro-image-placeholder {
@@ -512,6 +495,9 @@ const contactLink = computed(() => {
     width: 50%;
     shape-rendering: crispEdges;
     z-index: 10;
+    @media screen and (max-width: 900px) {
+      width: 100%;
+    }
 
     .show-intro-type-icon {
       display: flex;

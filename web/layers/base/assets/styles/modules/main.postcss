@@ -187,14 +187,29 @@
   }
 }
 
+.mobile-slider {
+  .city-tags {
+    display: flex;
+    flex-flow: row;
+    justify-content: center;
+    align-items: flex-end;
+    text-transform: uppercase;
+    @media screen and (max-width: 900px) {
+      justify-content: flex-start;
+      margin: 0 auto 0 var(--big-margin);
+    }
+  }
+}
+
 .city-tags {
   display: flex;
   flex-flow: row;
   justify-content: center;
   align-items: flex-end;
+  text-transform: uppercase;
   @media screen and (max-width: 900px) {
     justify-content: flex-start;
-    margin: 0 auto 0 var(--big-margin);
+    margin: 0 auto 0 0;
   }
   height: var(--city-tag-height);
   gap: var(--small-padding);
@@ -210,7 +225,6 @@
         calc(var(--small-padding) / 2) var(--mid-padding);
       font-size: var(--mini-font-size);
       line-height: 1;
-      text-transform: uppercase;
     }
   }
 }

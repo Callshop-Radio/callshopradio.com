@@ -241,23 +241,29 @@ onMounted(() => {
     <div class="hero-entry-container">
       <!-- Bild/Media-Bereich -->
       <div class="hero-entry-media">
-        <MediaImage
-          v-if="getItemImage(module.contentReference) && !isAudioContent"
-          :image="getItemImage(module.contentReference)"
-          class="hero-entry-image"
-        />
-        <img
-          v-else-if="isAudioContent && artworkUrl"
-          :src="artworkUrl"
-          alt="Audio Artwork"
-          class="hero-entry-image track-artwork"
-          loading="lazy"
-        />
-        <div
-          v-else-if="isAudioContent"
-          class="track-artwork-placeholder"
-          @vue:mounted="loadArtworkUrl"
-        ></div>
+        <NuxtLink
+          v-if="module?.contentReference?.slug"
+          :to="getItemRoute(module?.contentReference)"
+          class="slide__link"
+        >
+          <MediaImage
+            v-if="getItemImage(module.contentReference) && !isAudioContent"
+            :image="getItemImage(module.contentReference)"
+            class="hero-entry-image"
+          />
+          <img
+            v-else-if="isAudioContent && artworkUrl"
+            :src="artworkUrl"
+            alt="Audio Artwork"
+            class="hero-entry-image track-artwork"
+            loading="lazy"
+          />
+          <div
+            v-else-if="isAudioContent"
+            class="track-artwork-placeholder"
+            @vue:mounted="loadArtworkUrl"
+          ></div>
+        </NuxtLink>
       </div>
 
       <!-- Content-Bereich -->
@@ -377,49 +383,57 @@ onMounted(() => {
           <!-- Text-Bereich -->
           <div
             class="hero-entry-text"
-            v-if="module?.contentReference?._type != 'set'"
+            v-if="module?.contentReference?._type !== 'set'"
           >
-            <!-- Module-Text wenn vorhanden -->
+            <!-- ...existing code... -->
+
+            <!-- Für Person und Venue -->
             <RichText
-              v-if="module.text && module.text.length > 0"
-              :blocks="module.text"
-              class="module-text"
+              v-if="
+                module?.contentReference?.description &&
+                module?.contentReference?.description.length > 0
+              "
+              :blocks="
+                limitTextBlocks(
+                  parseI18nObj(module.contentReference.description)?.slice(0, 1)
+                )
+              "
             />
 
-            <!-- Content-Beschreibung als Fallback -->
-            <template v-else>
-              <RichText
-                v-if="
-                  module.contentReference?.useTeaserText &&
-                  module.contentReference?.textTeaser
-                "
-                :blocks="parseI18nObj(module.contentReference.textTeaser)"
-              />
-              <RichText
-                v-else-if="
-                  !module.contentReference?.useTeaserText &&
-                  module.contentReference?.text &&
-                  module.contentReference.text.length > 0
-                "
-                :blocks="parseI18nObj(module.contentReference.text)"
-              />
-              <RichText
-                v-else-if="
-                  module.contentReference?.description &&
-                  module.contentReference.description.length > 0 &&
-                  (module.contentReference.description[0]?.value ||
-                    module.contentReference.description[1]?.value)
-                "
-                :blocks="parseI18nObj(module.contentReference.description)"
-              />
-              <RichText
-                v-else-if="
-                  module.contentReference?.bio &&
-                  module.contentReference.bio.length > 0
-                "
-                :blocks="parseI18nObj(module.contentReference.bio)"
-              />
-            </template>
+            <!-- Für andere Inhaltstypen, die möglicherweise ein bio-Feld haben -->
+            <RichText
+              v-else-if="
+                module?.contentReference?.bio &&
+                module?.contentReference?.bio.length > 0
+              "
+              :blocks="
+                limitTextBlocks(
+                  parseI18nObj(module.contentReference.bio)?.slice(0, 1)
+                )
+              "
+            />
+            <RichText
+              v-else-if="
+                module?.contentReference?.text &&
+                module?.contentReference?.text.length > 0
+              "
+              :blocks="
+                limitTextBlocks(
+                  parseI18nObj(module.contentReference.text)?.slice(0, 1)
+                )
+              "
+            />
+            <RichText
+              v-else-if="
+                module?.contentReference?.textTeaser &&
+                module?.contentReference?.textTeaser.length > 0
+              "
+              :blocks="
+                limitTextBlocks(
+                  parseI18nObj(module.contentReference.textTeaser)?.slice(0, 1)
+                )
+              "
+            />
           </div>
 
           <!-- Tags-Bereich -->
@@ -476,6 +490,11 @@ onMounted(() => {
       align-items: center;
       position: relative;
       height: max-content;
+      .hero-entry-content-container {
+        @media screen and (max-width: 900px) {
+          max-width: calc(100% - 2rem - var(--base-padding) * 2);
+        }
+      }
       @media screen and (max-width: 900px) {
         display: flex;
         flex-flow: row wrap;
@@ -502,9 +521,9 @@ onMounted(() => {
           max-height: 35.3125rem;
           @media screen and (max-width: 900px) {
             max-width: 100%;
-            max-height: 100%;
             min-width: 100%;
-            max-width: 100%;
+            min-height: 100%;
+            max-height: 100%;
           }
         }
       }
@@ -530,9 +549,13 @@ onMounted(() => {
       .hero-entry-media {
         order: 2;
         border-radius: 1.25rem;
+        @media screen and (max-width: 900px) {
+          transform: translate(0, -15.5%);
+          height: 60%;
+        }
         .hero-entry-image {
           width: 100%;
-          aspect-ratio: 3 / 2;
+          aspect-ratio: 4 / 3;
           object-fit: cover;
           background-color: var(--color-grey);
           max-width: 35.3125rem;
@@ -540,6 +563,14 @@ onMounted(() => {
           max-height: 35.3125rem;
           min-height: 35.3125rem;
           height: 100%;
+          @media screen and (max-width: 900px) {
+            max-width: 100%;
+            min-width: 100%;
+            min-height: 100%;
+            max-height: 100%;
+            aspect-ratio: 4 / 3;
+            height: 100%;
+          }
         }
       }
       .hero-entry-header {
@@ -734,7 +765,7 @@ onMounted(() => {
     .hero-entry-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 0 var(--small-padding);
+      gap: var(--small-padding);
     }
 
     .hero-entry-actions {

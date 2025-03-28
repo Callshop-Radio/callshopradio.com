@@ -14,7 +14,7 @@
         d="M200,120 C260,80 300,140 280,190 C250,250 170,240 130,190 C90,140 140,160 200,120"
         filter="url(#blurFilter)"
         opacity="0.85"
-        :fill="color"
+        :fill="gradientColor"
       >
         <!-- Slower, larger, more random animation -->
         <animate
@@ -45,6 +45,34 @@ const props = defineProps({
   color: {
     type: String,
     default: 'var(--color-pink)',
+  },
+  type: {
+    type: String,
+    default: 'set',
+  },
+});
+
+const gradientColor = computed(() => {
+  switch (props.type) {
+    case 'sets':
+      return 'var(--color-pink)';
+    case 'venue':
+      return 'var(--color-blue';
+    case 'person':
+      return 'var(--color-blue';
+    case 'article':
+      return 'var(--color-green)';
+    default:
+      return props.color;
   }
 });
+
 </script>
+
+<style lang="postcss" scoped>
+.animated-gradient {
+  path {
+    transition: fill 0.5s ease;
+  }
+}
+</style>

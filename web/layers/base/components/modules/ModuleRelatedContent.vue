@@ -17,7 +17,21 @@ const props = defineProps({
     type: String,
     required: true,
     validator: (value) => {
-      return ["sets", "shows", "words", "persons", "venues"].includes(value);
+      return [
+        "sets",
+        "shows",
+        "words",
+        "persons",
+        "venues",
+        "pool",
+        "article",
+        "primary",
+        "secondary",
+        "accent",
+        "blue",
+        "green",
+        "yellow",
+      ].includes(value);
     },
   },
   // Optionaler Titel
@@ -53,6 +67,14 @@ const typeClassMap = {
   words: "words",
   persons: "pool",
   venues: "pool",
+  pool: "pool",
+  article: "words",
+  primary: "sets",
+  secondary: "shows",
+  accent: "pool",
+  blue: "pool",
+  green: "words",
+  yellow: "sets"
 };
 
 // CSS-Klasse entsprechend dem Typ
@@ -768,46 +790,42 @@ onMounted(() => {
       }
     }
     .related-content__grid {
-    .related-item {
-      &__image {
-        position: relative;
-        overflow: hidden;
-        width: 100%;
-
-        img {
+      .related-item {
+        &__image {
+          position: relative;
+          overflow: hidden;
           width: 100%;
-          height: auto;
-          aspect-ratio: 3/4 !important;
-          object-fit: cover;
-          transition: transform 0.3s ease;
-        }
 
-        &:hover img {
-          transform: scale(1.05);
-        }
+          img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 3/4 !important;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+          }
 
-        .track-artwork-placeholder,
-        .image-placeholder {
-          width: 100%;
-          aspect-ratio: 1/1;
-          background-color: var(--color-grey);
+          &:hover img {
+            transform: scale(1.05);
+          }
+
+          .track-artwork-placeholder,
+          .image-placeholder {
+            width: 100%;
+            aspect-ratio: 1/1;
+            background-color: var(--color-grey);
+          }
         }
       }
     }
   }
-  }
 }
 
 /* Responsive Anpassungen */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .related-content {
-    &__grid {
-      gap: var(--small-margin);
-    }
-
     .related-item {
-      max-width: calc(50% - var(--small-margin) / 2);
-      width: calc(50% - var(--small-margin) / 2);
+      max-width: 100%;
+      width: 100%;
 
       /* Anpassungen für 2er-Grid */
       &:nth-child(3n) {
@@ -822,16 +840,6 @@ onMounted(() => {
       &:nth-child(2n + 1):nth-last-child(-n + 2) ~ .related-item {
         margin-bottom: 0;
       }
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .related-content {
-    .related-item {
-      max-width: 100%;
-      width: 100%;
-      margin-right: 0 !important;
     }
   }
 }
