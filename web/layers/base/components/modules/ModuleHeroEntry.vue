@@ -539,8 +539,18 @@ onMounted(() => {
       justify-content: center;
       align-items: center;
       position: relative;
+      .hero-entry-content {
+        max-width: 24.8125rem;
+        @media screen and (max-width: 900px) {
+          min-width: calc(100% - var(--big-padding));
+          max-width: calc(100% - var(--big-padding));
+        }
+      }
       .hero-entry-content-container {
         max-width: 24.8125rem;
+        @media screen and (max-width: 900px) {
+          max-width: 100%;
+        }
       }
 
       .hero-entry-content {
