@@ -459,14 +459,15 @@ const contactLink = computed(() => {
     /* border: 0.0625rem solid var(--color-text); */
     border-radius: 1.5625rem;
     overflow: visible;
-    max-height: calc(100svh - var(--nav-height) - var(--big-margin));
+    max-height: calc(100svh - var(--nav-height));
 
     .pool-media {
+      position: fixed;
       order: 2;
       border-radius: 1.5625rem;
       width: 50svw;
-      height: calc(100svh - var(--nav-height) - var(--big-margin));
-      top: var(--nav-height);
+      height: calc(100svh - var(--nav-height));
+      top: calc(var(--nav-height));
       /* max-width: 35.3125rem; */
       /* max-width: calc((100vw - var(--page-max-width)) / 2 + (var(--page-max-width) / 2));
       transform: translate(calc((100vw - var(--page-max-width)) / 2), 0); */
@@ -474,31 +475,25 @@ const contactLink = computed(() => {
       .pool-image,
       .pool-image-placeholder {
         object-fit: cover;
-        max-height: calc(100% - var(--nav-height));
-        min-width: 50svw;
-        position: fixed;
-        object-position: center;
-        top: var(--nav-height);
-        left: 50vw;
+        object-position: right center;
         z-index: 0;
+        height: 100%;
       }
     }
   }
 
   .pool-info {
-    background-color: var(--color-text);
     display: flex;
     flex-flow: row wrap;
     justify-content: flex-end;
-    align-items: stretch;
+    align-items: flex-end;
     gap: var(--mid-margin);
     order: 1;
     width: calc(50vw - calc(100vw - var(--page-max-width)) / 2);
-    padding: var(--big-margin) var(--mid-margin) var(--mid-margin)
-      var(--mid-margin);
-    border-bottom: 0.0625rem solid var(--color-text);
     shape-rendering: crispEdges;
     z-index: 10;
+    margin: auto 50svw 0 0;
+    min-height: calc(100svh - var(--nav-height) - var(--big-margin));
 
     .pool-type-icon {
       display: flex;
@@ -526,6 +521,9 @@ const contactLink = computed(() => {
       justify-content: center;
       gap: var(--mid-margin);
       width: calc(100%);
+      background-color: var(--color-text);
+      padding: var(--big-margin) var(--mid-margin) var(--mid-margin)
+        var(--mid-margin);
     }
 
     .pool-header {
