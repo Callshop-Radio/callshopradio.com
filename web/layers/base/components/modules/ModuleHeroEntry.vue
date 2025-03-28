@@ -540,6 +540,13 @@ onMounted(() => {
 
   &.layout-person,
   &.layout-venue {
+    .hero-entry-content {
+      @media screen and (max-width: 900px) {
+        min-width: calc(100svw - var(--big-margin) * 2);
+        width: 100%;
+        transform: translate(calc(var(--big-margin) / 4), 0);
+      }
+    }
     .hero-entry-container {
       width: 100%;
       display: flex;
@@ -547,66 +554,42 @@ onMounted(() => {
       justify-content: center;
       align-items: center;
       position: relative;
-      .hero-entry-content {
-        max-width: 400px;
-        @media screen and (max-width: 500px) {
-          max-width: calc(100svw - var(--big-margin) * 2.5);
-          transform: translate(calc(var(--big-margin) / 6), 0);
-        }
-        @media screen and (min-width: 501px) and (max-width: 900px) {
-          max-width: calc(400px - var(--big-margin) * 2.5);
-          transform: translate(calc(var(--big-margin) / 6), 0);
+      height: max-content;
+
+      .hero-entry-content-container {
+        @media screen and (max-width: 900px) {
+          max-width: calc(100% - 2rem - var(--base-padding) * 2);
         }
       }
-      .hero-entry-content-container {
-        max-width: 400px;
-        @media screen and (max-width: 500px) {
-          max-width: calc(100svw - var(--big-margin) * 2);
-        }
-        @media screen and (min-width: 501px) and (max-width: 900px) {
-          max-width: calc(400px - var(--big-margin) * 2);
-        }
+      @media screen and (max-width: 900px) {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        align-items: flex-start;
+        position: relative;
       }
 
-      .hero-entry-content {
-        top: 0;
-      }
       .hero-entry-media {
         order: 2;
-        border-radius: 1.25rem;
+        border-radius: 1.5625rem;
         @media screen and (max-width: 900px) {
-          transform: translate(0, -15.5%);
-          height: 60%;
+          transform: translate(0, 12.5%);
         }
         .hero-entry-image {
           width: 100%;
-          aspect-ratio: 4 / 3;
+          aspect-ratio: 3 / 4;
           object-fit: cover;
           background-color: var(--color-grey);
+          min-width: 35.3125rem;
           max-width: 35.3125rem;
-          min-width: 25rem;
           max-height: 35.3125rem;
-          min-height: 35.3125rem;
-          height: 100%;
+          max-height: 35.3125rem;
           @media screen and (max-width: 900px) {
             max-width: 100%;
             min-width: 100%;
             min-height: 100%;
             max-height: 100%;
-            aspect-ratio: 4 / 3;
-            height: 100%;
           }
-        }
-      }
-      .hero-entry-header {
-        .hero-entry-title {
-          font-size: var(--large-font-size);
-          font-family: var(--font-text-semibold);
-          font-weight: 500;
-        }
-      }
-      .hero-entry-text {
-        .module-text {
         }
       }
     }
