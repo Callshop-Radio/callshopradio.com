@@ -146,11 +146,11 @@ const contactLink = computed(() => {
   <div v-if="showItem" class="show-intro-content">
     <div class="show-intro-container">
       <!-- Tags-Icon -->
-      <!-- <div v-if="showItem?.tags?.length" class="show-intro-tags tags">
+      <div v-if="showItem?.tags?.length" class="city-tags">
         <button
           v-for="(tag, index) in showItem.tags"
           :key="tag._id || index"
-          class="tag"
+          class="tag city"
           type="button"
         >
           {{
@@ -159,7 +159,7 @@ const contactLink = computed(() => {
               : tag?.title[0]?.value ?? tag.title
           }}
         </button>
-      </div> -->
+      </div>
 
       <!-- Content-Bereich -->
       <div class="show-intro-info">
@@ -440,14 +440,16 @@ const contactLink = computed(() => {
   justify-content: center;
   position: relative;
   margin: var(--big-margin) 0 0 0;
-  .show-intro-tags {
+  .city-tags {
     top: 0;
-    right: 0;
-    padding: var(--mid-padding);
+    transform: translate(0, -100%);
     position: absolute;
     display: flex;
     flex-flow: row wrap;
     justify-content: flex-start;
+    .tag {
+      background-color: pink;
+    }
   }
 
   .show-intro-container {
