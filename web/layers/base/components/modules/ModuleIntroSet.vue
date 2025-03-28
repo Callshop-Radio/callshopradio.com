@@ -257,7 +257,7 @@ onMounted(() => {
                   {{ set?.parentShow?.title }}
                 </h2>
               </NuxtLink>
-              <div>
+              <div class="set__artist-container">
                 <h3
                   v-for="(artist, index) in set.persons"
                   :key="artist._key"
@@ -281,7 +281,7 @@ onMounted(() => {
           </div>
           <div v-if="set?.tags?.length" class="set-tags tags">
             <button
-              v-for="tag in set?.tags"
+              v-for="tag in set?.tags.slice(0,3)"
               :key="tag._id || index"
               class="tag"
               type="button"
@@ -411,6 +411,9 @@ onMounted(() => {
           flex-flow: row wrap;
           justify-content: flex-start;
         }
+      }
+      .set__artist-container { 
+        min-height: calc(var(--base-font-size) * 2);
       }
 
       .set-title,
