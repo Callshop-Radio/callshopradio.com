@@ -636,7 +636,9 @@ function playTrack(item) {
                   </section>
                   <NuxtLink
                     v-if="item?.parentShow?.slug && item?.clickableTitle"
-                    :to="localePath(`/shows/${item?.parentShow?.slug?.current}`)"
+                    :to="
+                      localePath(`/shows/${item?.parentShow?.slug?.current}`)
+                    "
                     class="slide__link"
                   >
                     <h3 class="slide-title show-title">
@@ -1303,7 +1305,9 @@ function playTrack(item) {
           }
 
           &:hover {
-            @apply bg-gray-400;
+            @media (--desktop-up) {
+              @apply bg-gray-400;
+            }
           }
         }
       }

@@ -17,7 +17,7 @@ export const useMainStore = defineStore("mainStore", () => {
   const activeScheduleLocation = ref("channelOne");
   const activeStreamingChannel = ref("channelOne");
   const currentHeroContentType = ref(""); // Neue Variable für den aktuellen Content-Typ im Hero
-  const isDarkMode = ref(false);
+  const isDarkMode = ref();
   const menuOpen = ref(false);
 
   // actions als Funktionen
@@ -67,6 +67,26 @@ export const useMainStore = defineStore("mainStore", () => {
     currentHeroContentType.value = type;
   }
 
+  function detectSystemDarkMode() {
+    // Prüfen ob im Browser-Kontext
+    if (process.client) {
+      // MediaQueryList-Objekt erstellen, um Systemeinstellung zu prüfen
+      const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      
+      // isDarkMode anhand des System-Darkmode setzen
+      isDarkMode.value = darkModeMediaQuery.matches;
+      
+      // Farben aktualisieren
+      updateColors();
+      
+      // Auf Änderungen reagieren
+      darkModeMediaQuery.addEventListener('change', (e) => {
+        isDarkMode.value = e.matches;
+        updateColors();
+      });
+    }
+  }
+
   function updateColors() {
     if (isDarkMode.value) {
       document.documentElement.style.setProperty("--color-bg", "#000");
@@ -102,6 +122,7 @@ export const useMainStore = defineStore("mainStore", () => {
     currentHeroContentType, // Neue Variable exportieren
     menuOpen,
     isDarkMode,
+    detectSystemDarkMode,
     nuxtServerInit,
     addToRepro,
     setPlayerStatus,

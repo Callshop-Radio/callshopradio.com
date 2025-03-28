@@ -37,12 +37,18 @@ svg {
     overflow: visible;
   }
   &:hover {
-    fill: var(--color-pink);
+    @media (--desktop-up) {
+      fill: var(--color-pink);
+    }
     circle {
-      stroke: var(--color-pink);
+      @media (--desktop-up) {
+        stroke: var(--color-pink);
+      }
     }
     path {
+      @media (--desktop-up) {
         fill: var(--color-bg);
+      }
     }
   }
 }
@@ -54,7 +60,7 @@ svg {
       stroke: var(--color-pink);
     }
     path {
-        fill: var(--color-bg);
+      fill: var(--color-bg);
     }
   }
 }

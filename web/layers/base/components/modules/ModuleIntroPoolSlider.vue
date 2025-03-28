@@ -157,7 +157,7 @@ const slides = computed(() => {
         </button>
       </nav>
     </div>
-    
+
     <div ref="emblaNode" class="embla">
       <div ref="emblaContainer" class="embla__container">
         <div
@@ -220,7 +220,9 @@ const slides = computed(() => {
           @apply w-5 h-5;
           &:hover {
             path {
-              fill: var(--color-pink);
+              @media (--desktop-up) {
+                fill: var(--color-pink);
+              }
             }
           }
           path {
@@ -254,7 +256,9 @@ const slides = computed(() => {
           }
 
           &:hover {
-            background-color: var(--color-pink);
+            @media (--desktop-up) {
+              background-color: var(--color-pink);
+            }
           }
         }
       }

@@ -592,8 +592,10 @@ const contactLink = computed(() => {
         background-color: var(--color-darker-grey);
         text-decoration: none;
         &:hover {
-          background-color: var(--color-blue);
-          color: var(--color-white);
+          @media (--desktop-up) {
+            background-color: var(--color-blue);
+            color: var(--color-white);
+          }
         }
       }
     }
@@ -617,8 +619,10 @@ const contactLink = computed(() => {
           background-color: var(--color-darker-grey);
           text-decoration: none;
           &:hover {
-            background-color: var(--color-blue);
-            color: var(--color-white);
+            @media (--desktop-up) {
+              background-color: var(--color-blue);
+              color: var(--color-white);
+            }
           }
         }
       }
@@ -657,8 +661,10 @@ const contactLink = computed(() => {
               background-color: var(--color-grey);
               color: var(--color-black);
               &:hover {
-                background-color: var(--color-blue);
-                color: var(--color-white);
+                @media (--desktop-up) {
+                  background-color: var(--color-blue);
+                  color: var(--color-white);
+                }
               }
             }
           }

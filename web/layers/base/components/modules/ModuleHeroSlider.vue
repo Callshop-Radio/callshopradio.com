@@ -394,7 +394,9 @@ watch(currentIndex, () => {
           }
 
           &:hover {
-            background-color: var(--color-pink);
+            @media (--desktop-up) {
+              background-color: var(--color-pink);
+            }
           }
         }
       }

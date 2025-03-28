@@ -273,7 +273,9 @@ const slides = computed(() => {
           @apply w-5 h-5;
           &:hover {
             path {
-              fill: var(--color-pink);
+              @media (--desktop-up) {
+                fill: var(--color-pink);
+              }
             }
           }
           path {
@@ -307,7 +309,9 @@ const slides = computed(() => {
           }
 
           &:hover {
-            background-color: var(--color-pink);
+            @media (--desktop-up) {
+              background-color: var(--color-pink);
+            }
           }
         }
       }

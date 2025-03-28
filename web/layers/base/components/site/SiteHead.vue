@@ -188,7 +188,7 @@ const togglePlayerVisibility = () => {
     opacity: 0;
     @media screen and (max-width: 1100px) {
       margin-top: var(--base-margin);
-      padding: 0 var(--base-padding) var(--base-padding) ;
+      padding: 0 var(--base-padding) var(--base-padding);
     }
 
     &.is-visible {
@@ -278,9 +278,11 @@ const togglePlayerVisibility = () => {
           letter-spacing: var(--button-letter-spacing);
 
           &:hover {
-            background-color: transparent;
-            border: 1px solid var(--color-text);
-            color: var(--color-text);
+            @media (--desktop-up) {
+              background-color: transparent;
+              border: 1px solid var(--color-text);
+              color: var(--color-text);
+            }
           }
         }
       }

@@ -74,7 +74,7 @@ const typeClassMap = {
   accent: "pool",
   blue: "pool",
   green: "words",
-  yellow: "sets"
+  yellow: "sets",
 };
 
 // CSS-Klasse entsprechend dem Typ
@@ -608,7 +608,9 @@ onMounted(() => {
       border-radius: 100px;
 
       &:hover {
-        color: var(--color-bg);
+        @media (--desktop-up) {
+          color: var(--color-bg);
+        }
       }
 
       .plus-icon {
@@ -662,7 +664,9 @@ onMounted(() => {
       }
 
       &:hover img {
-        transform: scale(1.05);
+        @media (--desktop-up) {
+          transform: scale(1.05);
+        }
       }
 
       .track-artwork-placeholder,
@@ -768,7 +772,9 @@ onMounted(() => {
     }
     .play-button {
       &:hover {
-        background-color: var(--color-pink);
+        @media (--desktop-up) {
+          background-color: var(--color-pink);
+        }
       }
     }
   }
@@ -805,7 +811,9 @@ onMounted(() => {
           }
 
           &:hover img {
-            transform: scale(1.05);
+            @media (--desktop-up) {
+              transform: scale(1.05);
+            }
           }
 
           .track-artwork-placeholder,

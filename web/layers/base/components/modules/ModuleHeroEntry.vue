@@ -442,7 +442,7 @@ onMounted(() => {
             class="hero-entry-tags tags"
           >
             <button
-              v-for="tag in module.contentReference.tags.slice(0,3)"
+              v-for="tag in module.contentReference.tags.slice(0, 3)"
               :key="tag._id || index"
               class="tag"
               type="button"
@@ -743,7 +743,9 @@ onMounted(() => {
           cursor: pointer;
 
           &:hover {
-            background-color: var(--color-grey);
+            @media (--desktop-up) {
+              background-color: var(--color-grey);
+            }
           }
 
           svg {
@@ -784,7 +786,9 @@ onMounted(() => {
         transition: background-color 0.2s ease;
 
         &:hover {
-          background-color: var(--color-grey);
+          @media (--desktop-up) {
+            background-color: var(--color-grey);
+          }
         }
       }
     }

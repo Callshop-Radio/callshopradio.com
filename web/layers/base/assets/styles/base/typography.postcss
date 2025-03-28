@@ -122,7 +122,9 @@ a {
   text-decoration-color: var(--color-lines);
   letter-spacing: 1.5%;
   &:hover {
-    text-decoration-color: var(--color-text);
+    @media (--desktop-up) {
+      text-decoration-color: var(--color-text);
+    }
   }
 }
 
@@ -131,7 +133,6 @@ body {
   font-family: var(--font-text), system-ui, sans-serif;
   background-color: var(--color-bg);
   color: var(--color-text);
-  
 }
 
 h1,
@@ -202,9 +203,10 @@ a {
   }
 
   &:hover {
-    text-decoration-color: var(--color-text);
-    text-decoration: underline;
-  }
+    @media (--desktop-up) {
+      text-decoration-color: var(--color-text);
+      text-decoration: underline;
+    }
 }
 
 code,
@@ -265,13 +267,12 @@ strong {
       font-size: var(--base-font-size);
     }
   }
- 
 }
 
 .pool-text {
-    &.rich-text {
-      p {
-        margin: 0 0 var(--base-padding);
-      }
+  &.rich-text {
+    p {
+      margin: 0 0 var(--base-padding);
     }
+  }
 }

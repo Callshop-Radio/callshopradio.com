@@ -657,7 +657,9 @@ onMounted(() => {
           cursor: pointer;
 
           &:hover {
-            background-color: var(--color-grey);
+            @media (--desktop-up) {
+              background-color: var(--color-grey);
+            }
           }
 
           svg {
@@ -695,7 +697,9 @@ onMounted(() => {
         transition: background-color 0.2s ease;
 
         &:hover {
-          background-color: var(--color-grey);
+          @media (--desktop-up) {
+            background-color: var(--color-grey);
+          }
         }
       }
     }

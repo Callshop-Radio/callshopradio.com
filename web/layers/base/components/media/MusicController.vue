@@ -411,13 +411,12 @@ updateLiveStatus();
         @click="togglePlay1"
         :class="{
           active:
-            isPlaying1 ||
-            isLoading1 ||
-            mainStore.activeStreamingChannel === 'channelOne',
+            (isPlaying1 && mainStore.activeStreamingChannel === 'channelOne') ||
+            isLoading1,
           inactive:
-            isPlaying2 ||
-            isLoading2 ||
-            mainStore.activeStreamingChannel === 'channelTwo',
+            (isPlaying2 && mainStore.activeStreamingChannel === 'channelTwo') ||
+            (isPlaying1 && mainStore.activeStreamingChannel === 'channelTwo') ||
+            isLoading2,
           offline: !liveStatus.stream1.onAirLight.on_air_light,
         }"
       >
@@ -479,13 +478,12 @@ updateLiveStatus();
         @click="togglePlay2"
         :class="{
           active:
-            isPlaying2 ||
-            isLoading2 ||
-            mainStore.activeStreamingChannel === 'channelTwo',
+            (isPlaying2 && mainStore.activeStreamingChannel === 'channelTwo') ||
+            isLoading1,
           inactive:
-            isPlaying1 ||
-            isLoading1 ||
-            mainStore.activeStreamingChannel === 'channelOne',
+            (isPlaying1 && mainStore.activeStreamingChannel === 'channelOne') ||
+            (isPlaying2 && mainStore.activeStreamingChannel === 'channelOne') ||
+            isLoading1,
           offline: !liveStatus.stream2.onAirLight.on_air_light,
         }"
       >
@@ -576,7 +574,7 @@ updateLiveStatus();
     width: 50%;
     transition: width 0.15s ease, max-width 0.15s ease;
     cursor: pointer;
-    @media screen and (max-width: 900px) {
+    @media screen and (max-width: 1100px) {
       width: 100%;
       max-width: 100%;
     }

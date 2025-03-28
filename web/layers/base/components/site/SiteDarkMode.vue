@@ -21,16 +21,24 @@
   </div>
 </template>
           
-          <script setup>
+<script setup>
 import { computed } from "vue";
 import { useMainStore } from "@/stores/mainStore";
 
 const mainStore = useMainStore();
 const isDarkMode = computed(() => mainStore?.isDarkMode);
 
+const detectSystemDarkMode = () => {
+  mainStore.detectSystemDarkMode();
+};
+
 const toggleDarkMode = () => {
   mainStore.toggleDarkMode();
 };
+
+onMounted(() => {
+  detectSystemDarkMode();
+});
 </script>
           
 <style scoped lang="postcss">
@@ -51,17 +59,25 @@ const toggleDarkMode = () => {
     }
   }
   &:hover {
-    fill: var(--color-pink);
+    @media (--desktop-up) {
+      fill: var(--color-pink);
+    }
     circle {
       &.left {
-        fill: var(--color-pink);
+        @media (--desktop-up) {
+          fill: var(--color-pink);
+        }
       }
       &.right {
-        stroke: var(--color-pink);
+        @media (--desktop-up) {
+          stroke: var(--color-pink);
+        }
       }
     }
     path {
-      fill: var(--color-bg);
+      @media (--desktop-up) {
+        fill: var(--color-bg);
+      }
     }
   }
 }

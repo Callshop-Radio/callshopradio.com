@@ -648,7 +648,9 @@ const currentTimePosition = computed(() => {
     }
 
     &:hover:not(.active) {
-      @apply bg-gray-400;
+      @media (--desktop-up) {
+        @apply bg-gray-400;
+      }
     }
   }
 }
@@ -849,7 +851,7 @@ const currentTimePosition = computed(() => {
   transition: transform 0.2s, box-shadow 0.2s;
 
   &__content {
-    background-color:  var(--color-grey);
+    background-color: var(--color-grey);
     padding: calc(var(--small-padding) / 2) var(--small-padding);
 
     &.live {

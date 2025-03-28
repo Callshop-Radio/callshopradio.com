@@ -1498,8 +1498,10 @@ onMounted(() => {
         .filter-tag {
           &.filter-tag--active,
           &:hover {
-            background-color: var(--color-pink);
-            color: var(--color-bg);
+            @media (--desktop-up) {
+              background-color: var(--color-pink);
+              color: var(--color-bg);
+            }
           }
         }
       }
@@ -1508,7 +1510,9 @@ onMounted(() => {
       button {
         &.active {
           &:hover {
-            color: var(--color-pink);
+            @media (--desktop-up) {
+              color: var(--color-pink);
+            }
           }
           color: var(--color-pink);
           .dot {
@@ -1532,8 +1536,10 @@ onMounted(() => {
         .filter-tag {
           &.filter-tag--active,
           &:hover {
-            background-color: var(--color-green);
-            color: var(--color-bg);
+            @media (--desktop-up) {
+              background-color: var(--color-green);
+              color: var(--color-bg);
+            }
           }
         }
       }
@@ -1541,7 +1547,9 @@ onMounted(() => {
     .sort-options {
       button {
         &:hover {
-          color: var(--color-green);
+          @media (--desktop-up) {
+            color: var(--color-green);
+          }
         }
         &.active {
           color: var(--color-green);
@@ -1566,8 +1574,10 @@ onMounted(() => {
         .filter-tag {
           &.filter-tag--active,
           &:hover {
-            background-color: var(--color-blue);
-            color: var(--color-bg);
+            @media (--desktop-up) {
+              background-color: var(--color-blue);
+              color: var(--color-bg);
+            }
           }
         }
       }
@@ -1575,7 +1585,9 @@ onMounted(() => {
     .sort-options {
       button {
         &:hover {
-          color: var(--color-blue);
+          @media (--desktop-up) {
+            color: var(--color-blue);
+          }
         }
         &.active {
           color: var(--color-blue);
@@ -1730,7 +1742,9 @@ onMounted(() => {
         cursor: pointer;
 
         &:hover .filter-category__title {
-          text-decoration: underline;
+          @media (--desktop-up) {
+            text-decoration: underline;
+          }
         }
       }
     }
@@ -1779,7 +1793,9 @@ onMounted(() => {
           }
         }
         &:hover {
-          color: var(--color-pink);
+          @media (--desktop-up) {
+            color: var(--color-pink);
+          }
         }
         &.active {
           color: var(--color-pink);
@@ -1799,7 +1815,9 @@ onMounted(() => {
       color: var(--color-bg);
 
       &:hover {
-        background-color: var(--color-secondary);
+        @media (--desktop-up) {
+          background-color: var(--color-secondary);
+        }
       }
 
       &.filter-tag--active {
@@ -1824,7 +1842,7 @@ onMounted(() => {
       flex-flow: row wrap;
       align-items: center;
       justify-content: center;
-      margin: var(--base-padding) auto var(--big-padding) ;
+      margin: var(--base-padding) auto var(--big-padding);
       max-width: 66%;
       width: 66%;
       gap: var(--small-padding);
@@ -1910,7 +1928,12 @@ onMounted(() => {
       background-color: var(--color-bg);
       color: var(--color-text);
 
-      &:hover,
+      &:hover {
+        @media (--desktop-up) {
+          background-color: var(--color-text);
+          color: var(--color-bg);
+        }
+      }
       &--active {
         background-color: var(--color-text);
         color: var(--color-bg);
@@ -1934,8 +1957,10 @@ onMounted(() => {
       margin-top: var(--small-padding);
 
       &:hover {
-        background-color: var(--color-text);
-        color: var(--color-bg);
+        @media (--desktop-up) {
+          background-color: var(--color-text);
+          color: var(--color-bg);
+        }
       }
     }
   }
@@ -1976,7 +2001,9 @@ onMounted(() => {
       border-radius: 100px;
 
       &:hover {
-        color: var(--color-bg);
+        @media (--desktop-up) {
+          color: var(--color-bg);
+        }
       }
 
       .plus-icon {
@@ -2020,7 +2047,9 @@ onMounted(() => {
       }
 
       &:hover img {
-        transform: scale(1.05);
+        @media (--desktop-up) {
+          transform: scale(1.05);
+        }
       }
     }
 
@@ -2128,7 +2157,9 @@ onMounted(() => {
           }
 
           &:hover img {
-            transform: scale(1.05);
+            @media (--desktop-up) {
+              transform: scale(1.05);
+            }
           }
         }
 
@@ -2225,7 +2256,9 @@ onMounted(() => {
           }
 
           &:hover img {
-            transform: scale(1.05);
+            @media (--desktop-up) {
+              transform: scale(1.05);
+            }
           }
         }
 
