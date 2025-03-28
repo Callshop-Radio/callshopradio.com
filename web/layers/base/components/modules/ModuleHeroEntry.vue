@@ -621,9 +621,9 @@ onMounted(() => {
     transform: translate(0, 50%);
     z-index: 10;
     @media screen and (max-width: 900px) {
-      min-width: 190px;
+      min-width: calc(100svw - var(--big-margin) * 2);
       width: 100%;
-      transform: translate(0, 0);
+      transform: translate(calc(var(--big-margin) / 4), 0);
     }
     .play-button {
       display: flex;

@@ -314,9 +314,6 @@ const slides = computed(() => {
         .embla__arrow {
           @apply flex items-center justify-center rounded-full transition-colors;
           background-color: transparent;
-          @media screen and (max-width: 600px) {
-            width: 100%;
-          }
 
           svg {
             @apply w-5 h-5;
@@ -332,7 +329,7 @@ const slides = computed(() => {
       }
 
       .embla__nav__dots {
-        @apply flex row items-center justify-start flex-grow-1;
+        @apply flex row items-center justify-center flex-grow-1;
         gap: 0 var(--small-padding);
 
         .embla__dot {
