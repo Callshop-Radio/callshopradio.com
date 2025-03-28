@@ -238,10 +238,7 @@ const togglePlayerVisibility = () => {
             font-size: var(--base-font-size);
             line-height: 1;
             color: var(--color-text-light, #888);
-            @media screen and (max-width: 360px) {
-              display: block;
-            }
-            @media screen and (min-width: 361px) and (max-width: 1100px) {
+            @media screen and (max-width: 1100px) {
               display: none;
             }
           }
@@ -250,10 +247,7 @@ const togglePlayerVisibility = () => {
             font-weight: 550;
             font-size: var(--base-font-size);
             line-height: 1;
-            @media screen and (max-width: 360px) {
-              display: none;
-            }
-            @media screen and (min-width: 361px) and (max-width: 1100px) {
+            @media screen and (max-width: 1100px) {
               display: block;
               text-overflow: ellipsis;
               white-space: nowrap;
