@@ -18,7 +18,7 @@ const activeFilters = ref(new Set());
 const activeSubFilters = ref(false);
 const mainCities = ["Düsseldorf", "Leipzig", "Vienna"]; // Hauptstädte definieren
 const isOtherCitiesActive = ref(false); // Zustand für "Others"-Filter
-const currentIndex = ref(0);
+const currentIndex = ref(false);
 
 const onSelect = (index: number) => {
   currentIndex.value = index;
@@ -1824,7 +1824,7 @@ onMounted(() => {
       flex-flow: row wrap;
       align-items: center;
       justify-content: center;
-      margin: var(--base-padding) auto;
+      margin: var(--base-padding) auto var(--big-padding) ;
       max-width: 66%;
       width: 66%;
       gap: var(--small-padding);
@@ -1848,7 +1848,7 @@ onMounted(() => {
         flex-flow: row wrap;
         justify-content: center;
         align-items: center;
-        gap: calc(var(--small-padding) / 2);
+        gap: var(--small-padding);
         &.hidden {
           display: none;
         }
@@ -1857,7 +1857,7 @@ onMounted(() => {
           flex-flow: row wrap;
           justify-content: center;
           align-items: center;
-          gap: calc(var(--small-padding) / 2);
+          gap: var(--small-padding);
         }
       }
     }
@@ -1890,7 +1890,7 @@ onMounted(() => {
       flex-flow: row wrap;
       justify-content: center;
       align-items: center;
-      gap: calc(var(--small-padding) / 2);
+      gap: var(--small-padding);
       &.hidden {
         display: none;
       }
@@ -1899,7 +1899,7 @@ onMounted(() => {
         flex-flow: row wrap;
         justify-content: center;
         align-items: center;
-        gap: calc(var(--small-padding) / 2);
+        gap: var(--small-padding);
       }
     }
 
