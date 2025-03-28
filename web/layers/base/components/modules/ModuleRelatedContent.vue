@@ -491,69 +491,26 @@ onMounted(() => {
             </h3>
           </NuxtLink>
           <RichText
-                    v-if="item?.useTeaserText && item?.textTeaser"
-                    :blocks="parseI18nObj(item?.textTeaser)"
-                  />
-                  <RichText
-                    v-else-if="
-                      !item?.useTeaserText && item?.text && item.text.length > 0
-                    "
-                    :blocks="parseI18nObj(item?.text)?.slice(0, 1)"
-                  />
-                  <RichText
-                    v-else-if="
-                      !item?.text &&
-                      item?.description &&
-                      item.description.length > 0 &&
-                      (item.description[0]?.value || item.description[1]?.value)
-                    "
-                    :blocks="
-                      limitTextBlocks(
-                        parseI18nObj(item?.description)?.slice(0, 1),
-                        100
-                      )
-                    "
-                  />
-                  <RichText
-                    v-else-if="
-                      !item?.text &&
-                      module.poolContentType == 'persons' &&
-                      mainStore?.siteFallbacks?.fallbackPerson?.description
-                        .length > 0 &&
-                      (mainStore?.siteFallbacks?.fallbackPerson
-                        ?.description?.[0]?.value ||
-                        mainStore?.siteFallbacks?.fallbackPerson
-                          ?.description?.[1]?.value)
-                    "
-                    :blocks="
-                      limitTextBlocks(
-                        parseI18nObj(
-                          mainStore?.siteFallbacks?.fallbackPerson?.description
-                        )?.slice(0, 1),
-                        100
-                      )
-                    "
-                  />
-                  <RichText
-                    v-else-if="
-                      !item?.text &&
-                      module.poolContentType == 'venues' &&
-                      mainStore?.siteFallbacks?.fallbackVenue?.description
-                        .length > 0 &&
-                      (mainStore?.siteFallbacks?.fallbackVenue?.description?.[0]
-                        ?.value ||
-                        mainStore?.siteFallbacks?.fallbackPerson
-                          ?.description?.[1]?.value)
-                    "
-                    :blocks="
-                      limitTextBlocks(
-                        parseI18nObj(
-                          mainStore?.siteFallbacks?.fallbackPerson?.description
-                        )?.slice(0, 1),
-                        100
-                      )
-                    "
-                  />
+            v-if="item?.useTeaserText && item?.textTeaser"
+            :blocks="parseI18nObj(item?.textTeaser)"
+          />
+          <RichText
+            v-else-if="
+              !item?.useTeaserText && item?.text && item.text.length > 0
+            "
+            :blocks="parseI18nObj(item?.text)?.slice(0, 1)"
+          />
+          <RichText
+            v-else-if="
+              !item?.text &&
+              item?.description &&
+              item.description.length > 0 &&
+              (item.description[0]?.value || item.description[1]?.value)
+            "
+            :blocks="
+              limitTextBlocks(parseI18nObj(item?.description)?.slice(0, 1), 100)
+            "
+          />
 
           <!-- Nicht-City Tags anzeigen -->
           <div
@@ -810,8 +767,7 @@ onMounted(() => {
         color: var(--color-white);
       }
     }
-  }
-  .related-content__grid {
+    .related-content__grid {
     .related-item {
       &__image {
         position: relative;
@@ -838,6 +794,7 @@ onMounted(() => {
         }
       }
     }
+  }
   }
 }
 

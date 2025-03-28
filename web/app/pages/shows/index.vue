@@ -16,13 +16,13 @@ usePageSeo(data?.value?.seo);
   <div class="shows-archive">
     <section class="intro-section">
       <ModuleIntroSetSlider
-        :sets="data?.slider?.sets.slice(0, data?.slider?.count * 2)"
+        :sets="data?.slider?.sets?.slice(0, data?.slider?.count * 2)"
         :title="'Featured Shows'"
       />
     </section>
     <section
       class="module-section"
-      v-if="data?.modules && data.modules.length > 0"
+      v-if="data?.modules && data?.modules?.length > 0"
     >
       <div
         class="module"
