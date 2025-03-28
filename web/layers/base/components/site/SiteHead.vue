@@ -42,12 +42,12 @@ const togglePlayerVisibility = () => {
       </NuxtLink>
       <div class="header__toggle-section">
         <SiteDarkMode />
-        <SiteDiscordButton v-if="mainStore?.siteNav?.discordLink" />
-        <SiteScheduleButton v-if="mainStore?.siteNav?.schedulePage" />
-        <SiteMenuButton />
+        <SiteDiscordButton class="mobile-hidden" v-if="mainStore?.siteNav?.discordLink" />
+        <SiteScheduleButton class="mobile-hidden" v-if="mainStore?.siteNav?.schedulePage" />
+        <SiteMenuButton class="mobile-hidden"/>
       </div>
     </section>
-    <SiteMenu />
+    <SiteMenu class="mobile-hidden"/>
     <section class="header__audio-player-section">
       <MusicController />
     </section>
@@ -95,6 +95,12 @@ const togglePlayerVisibility = () => {
   @media screen and (max-width: 1100px) {
     margin: 0 0;
   }
+
+  .mobile-hidden {
+      @media screen and (max-width: 900px) {
+        display: none !important;
+      }
+    }
 
   /* Stellen Sie sicher, dass der Header eine Höhe hat */
   height: auto;

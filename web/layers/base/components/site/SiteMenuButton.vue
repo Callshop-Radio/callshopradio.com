@@ -80,25 +80,29 @@ svg {
   width: 24px;
   height: 24px;
   cursor: pointer;
+  @media screen and (max-width: 900px) {
+    display: none !important;
+  }
 
   &.open {
     &:hover {
-        fill: var(--color-text);
-        circle, path {
-            stroke: var(--color-bg);
-        }
+      fill: var(--color-text);
+      circle,
+      path {
+        stroke: var(--color-bg);
+      }
     }
   }
 
   &.close {
     &:hover {
-        
-        circle {
-            fill: var(--color-bg);
-        }
-        path,line {
-            stroke: var(--color-text);
-        }
+      circle {
+        fill: var(--color-bg);
+      }
+      path,
+      line {
+        stroke: var(--color-text);
+      }
     }
   }
 
