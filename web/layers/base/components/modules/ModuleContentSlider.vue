@@ -636,7 +636,7 @@ function playTrack(item) {
                   </section>
                   <NuxtLink
                     v-if="item?.parentShow?.slug && item?.clickableTitle"
-                    :to="localePath(`/shows/${item?.parentShow?.title}`)"
+                    :to="localePath(`/shows/${item?.parentShow?.slug?.current}`)"
                     class="slide__link"
                   >
                     <h3 class="slide-title show-title">

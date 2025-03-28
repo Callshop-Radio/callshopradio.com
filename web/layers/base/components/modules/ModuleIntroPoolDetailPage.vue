@@ -149,17 +149,11 @@ const contactLink = computed(() => {
     <div class="pool-container">
       <!-- Bild/Media-Bereich -->
       <div class="pool-media">
-        <NuxtLink
-          :to="getItemRoute(poolItem)"
-          class="pool-link"
-          :aria-label="poolItem?.title || poolItem?.name"
-        >
-          <MediaImage
-            :image="itemImage"
-            :alt="poolItem?.title || poolItem?.name"
-            class="pool-image"
-          />
-        </NuxtLink>
+        <MediaImage
+          :image="itemImage"
+          :alt="poolItem?.title || poolItem?.name"
+          class="pool-image"
+        />
       </div>
       <div v-if="poolItem?.tags?.length" class="artist-tags">
         <button
@@ -280,17 +274,30 @@ const contactLink = computed(() => {
             "
             class="pool-references-section"
           >
-            <div class="pool-refs-list">
+            <div class="pool-refs-list tags">
               <div
                 v-for="person in poolItem.persons"
                 :key="person._id"
-                class="pool-ref-item"
+                class="pool-ref-item tags"
               >
                 <NuxtLink :to="getItemRoute(person)" class="pool-ref-link">
                   <div v-if="person.image" class="pool-ref-image">
                     <MediaImage :image="person.image" :alt="person.title" />
                   </div>
                   <div class="pool-ref-info">
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 22 22"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle cx="11" cy="11" r="11" fill="#557FB9" />
+                      <path
+                        d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
+                        fill="white"
+                      />
+                    </svg>
                     <h4 class="tag">{{ person.title }}</h4>
                   </div>
                 </NuxtLink>
@@ -328,7 +335,6 @@ const contactLink = computed(() => {
                         fill="white"
                       />
                     </svg>
-
                     <h4 class="tag">{{ venue.title }}</h4>
                   </div>
                 </NuxtLink>
@@ -450,38 +456,49 @@ const contactLink = computed(() => {
 <style lang="postcss" scoped>
 .pool-content {
   width: 100%;
-  min-height: calc(100svh - var(--nav-height) - var(--big-margin));
-  overflow: hidden;
+  min-height: calc(
+    100svh - var(--nav-height) - var(--big-margin) - var(--small-padding) / 2
+  );
+  max-height: calc(
+    100svh - var(--nav-height) - var(--big-margin) - var(--small-padding) / 2
+  );
   position: relative;
 
   .pool-container {
     width: max-content;
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: flex-end;
-    align-items: flex-end;
     width: 100%;
-    border-radius: 1.5625rem;
-    overflow: visible;
-    max-height: calc(100svh - var(--nav-height));
+    max-height: calc(
+      100svh - var(--nav-height) - var(--big-margin) - var(--small-padding) / 2
+    );
+    overflow: scroll;
 
     .pool-media {
-      position: fixed;
+      position: sticky;
+      top: 0;
       order: 2;
-      border-radius: 1.5625rem;
       width: 50svw;
-      height: calc(100svh - var(--nav-height));
-      top: calc(var(--nav-height));
+      margin: 0 0 0 50svw;
+      height: calc(
+        100svh - var(--nav-height) - var(--big-margin) - var(--small-padding) /
+          2
+      );
+      overflow: hidden;
+      /* top: calc(var(--nav-height)); */
       /* max-width: 35.3125rem; */
       /* max-width: calc((100vw - var(--page-max-width)) / 2 + (var(--page-max-width) / 2));
       transform: translate(calc((100vw - var(--page-max-width)) / 2), 0); */
       aspect-ratio: 3 / 4;
       .pool-image,
       .pool-image-placeholder {
+        display: flex;
+        flex-flow: row;
+        justify-content: center;
+        align-items: center;
         object-fit: cover;
         object-position: right center;
         z-index: 0;
-        height: 100%;
+        min-height: 100%;
+        width: 50svw;
       }
     }
   }
@@ -494,6 +511,7 @@ const contactLink = computed(() => {
     position: absolute;
     width: 50svw;
     left: 50svw;
+    bottom: 0;
     padding: 0 var(--base-padding);
     gap: var(--base-padding);
     @media screen and (max-width: 900px) {
@@ -529,8 +547,14 @@ const contactLink = computed(() => {
     width: calc(50vw - calc(100vw - var(--page-max-width)) / 2);
     shape-rendering: crispEdges;
     z-index: 10;
-    margin: auto 50svw 0 0;
-    min-height: calc(100svh - var(--nav-height) - var(--big-margin));
+    margin: 0 0 0 calc(50vw - (var(--page-max-width)) / 2);
+    transform: translate(
+      0,
+      calc((var(--big-margin) + var(--h1-size) + var(--mid-margin)) * -1)
+    );
+    margin-bottom: calc(
+      (var(--big-margin) + var(--h1-size) + var(--mid-margin)) * -1
+    );
 
     .pool-type-icon {
       display: flex;
@@ -560,8 +584,7 @@ const contactLink = computed(() => {
       position: relative;
       width: calc(100%);
       background-color: var(--color-text);
-      padding: var(--big-margin) var(--mid-margin) var(--mid-margin)
-        var(--mid-margin);
+      padding: var(--big-margin) var(--mid-margin);
       .city-tags {
         top: 0;
         transform: translate(calc(var(--mid-margin) * -1), -100%);
@@ -610,11 +633,12 @@ const contactLink = computed(() => {
     }
     .pool-text {
       margin: 0 0 calc(var(--big-margin) - var(--mid-margin)) 0;
+      width: 95%;
 
       & > * {
         color: var(--color-bg);
-        font-size: var(--base-font-size);
-        line-height: var(--base-line-height);
+        font-size: var(--h4-font-size);
+        line-height: var(--h4-line-height);
       }
     }
     .pool-contact-section,

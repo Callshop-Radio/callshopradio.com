@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import emblaCarouselVue from "embla-carousel-vue";
 import { useThrottleFn } from "@vueuse/core";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const mainStore = useMainStore();
@@ -44,6 +44,9 @@ const onSelect = () => {
   if (!emblaApi.value) return;
   selectedIndex.value = emblaApi.value.selectedScrollSnap();
   currentIndex.value = selectedIndex.value; // Aktualisiere currentIndex, wenn sich der Slide ändert
+  
+  // Aktualisiere den Content-Typ im Store
+  updateCurrentContentType();
 };
 
 const scrollTo = (index: number) => {
@@ -76,6 +79,17 @@ const setupDots = () => {
   emblaApi.value.on("select", onSelect);
 };
 
+// Funktion zum Aktualisieren des aktuellen Content-Typs im Store
+const updateCurrentContentType = () => {
+  if (!slides.value || slides.value.length === 0 || currentIndex.value >= slides.value.length) return;
+  
+  const currentSlide = slides.value[currentIndex.value];
+  const contentType = currentSlide?.contentReference?._type || '';
+  
+  // Aktualisiere den Content-Typ im Store
+  mainStore.setCurrentHeroContentType(contentType);
+};
+
 // Event-Listener nach dem Mounting
 onMounted(() => {
   if (emblaApi.value) {
@@ -83,12 +97,20 @@ onMounted(() => {
     emblaApi.value.on("destroy", restoreTranslatePositions);
 
     setupDots();
+    
+    // Initialer Content-Typ
+    updateCurrentContentType();
   }
 });
 
 // Verwende direkt die Slides aus dem Modul
 const slides = computed(() => {
   return props.module?.slides || [];
+});
+
+// Überwache Änderungen des currentIndex und aktualisiere den Content-Typ
+watch(currentIndex, () => {
+  updateCurrentContentType();
 });
 </script>
 
@@ -181,6 +203,11 @@ const slides = computed(() => {
     </div>
     <div class="graphics-front">
       <AnimatedLogo class="animated-logo" />
+    </div>
+    
+    <!-- Debug-Anzeige des aktuellen Content-Typs (optional) -->
+    <div class="current-type-debug">
+      Current Hero Content Type: {{ mainStore.currentHeroContentType }}
     </div>
   </div>
 </template>

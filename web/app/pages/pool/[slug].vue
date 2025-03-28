@@ -53,15 +53,26 @@ usePageSeo(data?.value?.seo);
       </div>
     </section>
     <section
-      v-if="data?.relatedSets?.length > 0"
+      v-if="data?.relatedContent?.length > 0"
       class="pool-detail__related-content"
     >
       <div class="inner">
         <h3>Related</h3>
         <ModuleRelatedContent
-          :items="data?.relatedSets"
-          type="sets"
-          title=""
+          :items="data?.relatedContent"
+          type="pool"
+        />
+      </div>
+    </section>
+    <section
+      v-if="data?.relatedContent?.length <= 0"
+      class="pool-detail__related-content"
+    >
+      <div class="inner">
+        <h3>More</h3>
+        <ModuleRelatedContent
+          :items="data?.moreContent"
+          type="pool"
         />
       </div>
     </section>
@@ -107,7 +118,6 @@ section {
         font-size: var(--h3-size);
         text-transform: uppercase;
     }
-    background-color: var(--color-bg);
     position: relative;
     display: flex;
     flex-flow: column wrap;

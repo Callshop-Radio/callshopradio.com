@@ -82,7 +82,10 @@ usePageSeo(data?.value?.seo);
       v-if="relatedSets.length > 0"
       class="set-detail__more-content"
     >
-      <h3>
+      <h3 v-if="data?.parentShow?.title === 'No Show'">
+        Similar Sets
+      </h3>
+      <h3 v-else>
         More Episodes of <span>{{ data?.parentShow?.title }}</span>
       </h3>
       <ModuleRelatedContent

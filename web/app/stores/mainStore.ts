@@ -16,6 +16,7 @@ export const useMainStore = defineStore("mainStore", () => {
   const isPlayerVisible = ref(true);
   const activeScheduleLocation = ref("channelOne");
   const activeStreamingChannel = ref("channelOne");
+  const currentHeroContentType = ref(""); // Neue Variable für den aktuellen Content-Typ im Hero
   const isDarkMode = ref(false);
   const menuOpen = ref(false);
 
@@ -60,6 +61,12 @@ export const useMainStore = defineStore("mainStore", () => {
   function setActiveStreamingChannel(channel) {
     activeStreamingChannel.value = channel;
   }
+
+  // Neue Funktion zum Setzen des aktuellen Hero Content Types
+  function setCurrentHeroContentType(type) {
+    currentHeroContentType.value = type;
+  }
+
   function updateColors() {
     if (isDarkMode.value) {
       document.documentElement.style.setProperty("--color-bg", "#000");
@@ -73,11 +80,11 @@ export const useMainStore = defineStore("mainStore", () => {
       document?.querySelector('.header .text-logo')?.style.setProperty("filter", "invert(0)");
     }
   }
+  
   function toggleDarkMode() {
     isDarkMode.value = !isDarkMode.value;
     updateColors();
   }
-
 
   return {
     siteCookieBanner,
@@ -92,13 +99,16 @@ export const useMainStore = defineStore("mainStore", () => {
     isPlayerVisible,
     activeScheduleLocation,
     activeStreamingChannel,
+    currentHeroContentType, // Neue Variable exportieren
     menuOpen,
+    isDarkMode,
     nuxtServerInit,
     addToRepro,
     setPlayerStatus,
     togglePlayerVisibility,
     resetSoundCloudPlayer,
     setActiveScheduleLocation,
+    setCurrentHeroContentType, // Neue Funktion exportieren
     updateColors,
     toggleDarkMode,
     toggleMenu,

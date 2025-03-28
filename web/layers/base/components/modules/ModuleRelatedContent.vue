@@ -320,7 +320,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="items && items.length > 0" class="related-content">
+  <div v-if="items && items.length > 0" class="related-content" :class="type">
     <h2 v-if="title" class="related-content__title">{{ title }}</h2>
 
     <div class="related-content__grid">
@@ -393,7 +393,10 @@ onMounted(() => {
         <!-- Inhalt -->
         <div class="related-item__content">
           <!-- Interaktiver Bereich mit Datum und Play-Button -->
-          <section class="related-item__content__interactive">
+          <section
+            class="related-item__content__interactive"
+            v-if="type !== 'pool'"
+          >
             <!-- Datum (falls vorhanden) -->
             <div
               v-if="
@@ -487,6 +490,70 @@ onMounted(() => {
               {{ item.title || item.name }}
             </h3>
           </NuxtLink>
+          <RichText
+                    v-if="item?.useTeaserText && item?.textTeaser"
+                    :blocks="parseI18nObj(item?.textTeaser)"
+                  />
+                  <RichText
+                    v-else-if="
+                      !item?.useTeaserText && item?.text && item.text.length > 0
+                    "
+                    :blocks="parseI18nObj(item?.text)?.slice(0, 1)"
+                  />
+                  <RichText
+                    v-else-if="
+                      !item?.text &&
+                      item?.description &&
+                      item.description.length > 0 &&
+                      (item.description[0]?.value || item.description[1]?.value)
+                    "
+                    :blocks="
+                      limitTextBlocks(
+                        parseI18nObj(item?.description)?.slice(0, 1),
+                        100
+                      )
+                    "
+                  />
+                  <RichText
+                    v-else-if="
+                      !item?.text &&
+                      module.poolContentType == 'persons' &&
+                      mainStore?.siteFallbacks?.fallbackPerson?.description
+                        .length > 0 &&
+                      (mainStore?.siteFallbacks?.fallbackPerson
+                        ?.description?.[0]?.value ||
+                        mainStore?.siteFallbacks?.fallbackPerson
+                          ?.description?.[1]?.value)
+                    "
+                    :blocks="
+                      limitTextBlocks(
+                        parseI18nObj(
+                          mainStore?.siteFallbacks?.fallbackPerson?.description
+                        )?.slice(0, 1),
+                        100
+                      )
+                    "
+                  />
+                  <RichText
+                    v-else-if="
+                      !item?.text &&
+                      module.poolContentType == 'venues' &&
+                      mainStore?.siteFallbacks?.fallbackVenue?.description
+                        .length > 0 &&
+                      (mainStore?.siteFallbacks?.fallbackVenue?.description?.[0]
+                        ?.value ||
+                        mainStore?.siteFallbacks?.fallbackPerson
+                          ?.description?.[1]?.value)
+                    "
+                    :blocks="
+                      limitTextBlocks(
+                        parseI18nObj(
+                          mainStore?.siteFallbacks?.fallbackPerson?.description
+                        )?.slice(0, 1),
+                        100
+                      )
+                    "
+                  />
 
           <!-- Nicht-City Tags anzeigen -->
           <div
@@ -515,14 +582,8 @@ onMounted(() => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path
-            d="M7.67578 0.541016V14.8113"
-            stroke-width="5"
-          />
-          <path
-            d="M14.8105 7.67578L0.540276 7.67578"
-            stroke-width="5"
-          />
+          <path d="M7.67578 0.541016V14.8113" stroke-width="5" />
+          <path d="M14.8105 7.67578L0.540276 7.67578" stroke-width="5" />
         </svg>
       </button>
     </div>
@@ -718,12 +779,12 @@ onMounted(() => {
   }
 
   /* Content-Type Styling */
-  .sets,
-  .shows {
+  &.sets,
+  &.shows {
     .tag {
       &.city {
         background-color: var(--color-pink);
-        color: var(--color-bg);
+        color: var(--color-white);
       }
     }
     .play-button {
@@ -733,20 +794,48 @@ onMounted(() => {
     }
   }
 
-  .words {
+  &.words {
     .tag {
       &.city {
         background-color: var(--color-green);
-        color: var(--color-bg);
+        color: var(--color-white);
       }
     }
   }
 
-  .pool {
+  &.pool {
     .tag {
       &.city {
         background-color: var(--color-blue);
-        color: var(--color-bg);
+        color: var(--color-white);
+      }
+    }
+  }
+  .related-content__grid {
+    .related-item {
+      &__image {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+
+        img {
+          width: 100%;
+          height: auto;
+          aspect-ratio: 3/4 !important;
+          object-fit: cover;
+          transition: transform 0.3s ease;
+        }
+
+        &:hover img {
+          transform: scale(1.05);
+        }
+
+        .track-artwork-placeholder,
+        .image-placeholder {
+          width: 100%;
+          aspect-ratio: 1/1;
+          background-color: var(--color-grey);
+        }
       }
     }
   }

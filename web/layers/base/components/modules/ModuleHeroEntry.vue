@@ -536,7 +536,9 @@ onMounted(() => {
           object-fit: cover;
           background-color: var(--color-grey);
           max-width: 35.3125rem;
+          min-width: 25rem;
           max-height: 35.3125rem;
+          min-height: 35.3125rem;
           height: 100%;
         }
       }

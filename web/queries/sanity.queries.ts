@@ -249,8 +249,34 @@ export const POOL_PROFILE_QUERY = `
         title
       },
   },
+  "moreContent": *[_type in ['set',] && references(^._id)] | order(datetime desc) [0...99] {
+      ...,
+      _id,
+      _type,
+      title,
+      slug,
+      image ${IMAGE_QUERY},
+      datetime,
+      "tags": tags[]->{
+        _id,
+        _type,
+        title,
+        short
+      }| order(lower(title)),
+      "parentShow": *[_type == "show" && references(^._id)][0]{
+        ...,
+        _id,
+        title,
+        slug
+      },
+      persons[]->{
+        ...,
+        _id,
+        title
+      },
+  },
 "relatedContent": *[
-    _type == 'person' && poolVisibility == true && 
+    _type in ['person','venue'] && poolVisibility == true && 
     slug.current != $slug && 
     (
       count((tags[]->._id)[@ in ^.^.tags[]->._id]) > 0 || 
