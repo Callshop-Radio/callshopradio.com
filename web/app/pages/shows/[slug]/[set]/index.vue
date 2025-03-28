@@ -20,13 +20,13 @@ if (!data.value) {
 const relatedSets = computed(() => {
   if (
     !data.value?.parentShow?.sets ||
-    !Array.isArray(data.value.parentShow.sets)
+    !Array.isArray(data.value.parentShow?.sets)
   ) {
     return [];
   }
 
   // Filtere das aktuelle Set anhand der slug.current-Eigenschaft
-  return data.value.parentShow.sets.filter((set) => {
+  return data.value.parentShow?.sets.filter((set) => {
     return set.slug.current !== route.params.set;
   });
 });

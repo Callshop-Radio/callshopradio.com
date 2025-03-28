@@ -116,37 +116,34 @@ function getItemImage(item) {
   }
 }
 
-function getItemRoute(item) {
-  if (!item || !item.slug) return "/";
 
-  switch (item._type) {
+function getItemRoute(item) {
+  if (!item || !item?.slug) return "/";
+
+  switch (item?._type) {
     case "person":
     case "venue":
-      return localePath(`/pool/${item.slug.current}`);
+      return localePath(`/pool/${item?.slug?.current}`);
 
     case "set":
       // Prüfe, ob parentShow vorhanden ist
-      if (
-        item.parentShow &&
-        item.parentShow.slug &&
-        item.parentShow.slug.current
-      ) {
+      if (item?.parentShow?.slug?.current) {
         return localePath(
-          `/shows/${item.parentShow.slug.current}/${item.slug.current}`
+          `/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
         );
       }
       // Fallback falls parentShow nicht verfügbar ist
-      return localePath(`/shows/${item.slug.current}`);
+      return localePath(`/shows/${item?.slug?.current}`);
 
     case "article":
-      return localePath(`/words/${item.slug.current}`);
+      return localePath(`/words/${item?.slug?.current}`);
 
     case "show":
-      return localePath(`/shows/${item.slug.current}`);
+      return localePath(`/shows/${item?.slug?.current}`);
 
     // Standard-Fallback
     default:
-      return localePath(`/${item._type}/${item.slug.current}`);
+      return localePath(`/${item?._type}/${item?.slug?.current}`);
   }
 }
 
@@ -442,7 +439,7 @@ function playTrack(item) {
                 class="slide__tags city-tags"
               ></div>
               <NuxtLink
-                v-if="item.slug"
+                v-if="item?.slug"
                 :to="getItemRoute(item)"
                 class="slide__link"
               >
@@ -493,8 +490,8 @@ function playTrack(item) {
                   </button>
                 </section>
                 <NuxtLink
-                  v-if="item.parentShow?.slug && item?.clickableTitle"
-                  :to="item?.parentShow?.title"
+                  v-if="item?.parentShow?.slug && item?.clickableTitle"
+                  :to="localePath(`/shows/${item?.parentShow?.title}`)"
                   class="slide__link"
                 >
                   <h3 class="slide-title show-title">
@@ -510,8 +507,8 @@ function playTrack(item) {
                   {{ item?.parentShow?.title }}
                 </h3>
                 <NuxtLink
-                  v-if="item.slug"
-                  :to="getItemRoute(item)"
+                  v-if="item?.slug"
+                  :to="getItemRoute(item)"a
                   class="slide__link"
                 >
                   <h3 class="slide-title" v-if="contentType !== 'sets'">
@@ -535,8 +532,8 @@ function playTrack(item) {
                     class="slide-title"
                   >
                     <NuxtLink
-                      v-if="artist.poolVisibility"
-                      :to="localePath(`/pool/${artist.slug.current}`)"
+                      v-if="artist?.poolVisibility"
+                      :to="localePath(`/pool/${artist?.slug?.current}`)"
                       class="slide__link"
                     >
                       {{ artist.title

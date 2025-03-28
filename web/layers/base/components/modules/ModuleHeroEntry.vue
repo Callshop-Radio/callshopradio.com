@@ -61,36 +61,32 @@ const mainStore = useMainStore();
 
 // Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
 function getItemRoute(item) {
-  if (!item || !item.slug) return "/";
+  if (!item || !item?.slug) return "/";
 
-  switch (item._type) {
+  switch (item?._type) {
     case "person":
     case "venue":
-      return localePath(`/pool/${item.slug.current}`);
+      return localePath(`/pool/${item?.slug?.current}`);
 
     case "set":
       // Prüfe, ob parentShow vorhanden ist
-      if (
-        item.parentShow &&
-        item.parentShow.slug &&
-        item.parentShow.slug.current
-      ) {
+      if (item?.parentShow?.slug?.current) {
         return localePath(
-          `/shows/${item.parentShow.slug.current}/${item.slug.current}`
+          `/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
         );
       }
       // Fallback falls parentShow nicht verfügbar ist
-      return localePath(`/shows/${item.slug.current}`);
+      return localePath(`/shows/${item?.slug?.current}`);
 
     case "article":
-      return localePath(`/words/${item.slug.current}`);
+      return localePath(`/words/${item?.slug?.current}`);
 
     case "show":
-      return localePath(`/shows/${item.slug.current}`);
+      return localePath(`/shows/${item?.slug?.current}`);
 
     // Standard-Fallback
     default:
-      return localePath(`/${item._type}/${item.slug.current}`);
+      return localePath(`/${item?._type}/${item?.slug?.current}`);
   }
 }
 

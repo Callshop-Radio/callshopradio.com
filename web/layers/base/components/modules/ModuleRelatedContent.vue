@@ -136,7 +136,7 @@ function getItemImage(item) {
       case "set":
         // Versuche zuerst das parentShow Bild
         if (item.parentShow?.image?.asset?.url) {
-          image = item.parentShow.image;
+          image = item.parentShow?.image;
         } else {
           image = mainStore?.siteFallbacks?.fallbackSet?.image;
         }
@@ -168,7 +168,7 @@ async function loadArtworkUrl(item) {
     console.error("Fehler beim Laden des Artworks:", error);
     // Bei Fehler ein Fallback setzen
     if (item.parentShow?.image?.asset?.url) {
-      artworkUrls.value.set(item._id, item.parentShow.image.asset.url);
+      artworkUrls.value.set(item._id, item.parentShow?.image.asset.url);
     } else if (mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url) {
       artworkUrls.value.set(
         item._id,
@@ -213,32 +213,32 @@ async function getSoundcloudArtwork(item) {
 
 // Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
 function getItemRoute(item) {
-  if (!item || !item.slug) return "/";
+  if (!item || !item?.slug) return "/";
 
-  switch (item._type) {
+  switch (item?._type) {
     case "person":
     case "venue":
-      return localePath(`/pool/${item.slug.current}`);
+      return localePath(`/pool/${item?.slug?.current}`);
 
     case "set":
       // Prüfe, ob parentShow vorhanden ist
-      if (item.parentShow?.slug?.current) {
+      if (item?.parentShow?.slug?.current) {
         return localePath(
-          `/shows/${item.parentShow.slug.current}/${item.slug.current}`
+          `/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
         );
       }
       // Fallback falls parentShow nicht verfügbar ist
-      return localePath(`/shows/${item.slug.current}`);
+      return localePath(`/shows/${item?.slug?.current}`);
 
     case "article":
-      return localePath(`/words/${item.slug.current}`);
+      return localePath(`/words/${item?.slug?.current}`);
 
     case "show":
-      return localePath(`/shows/${item.slug.current}`);
+      return localePath(`/shows/${item?.slug?.current}`);
 
     // Standard-Fallback
     default:
-      return localePath(`/${item._type}/${item.slug.current}`);
+      return localePath(`/${item?._type}/${item?.slug?.current}`);
   }
 }
 
@@ -267,8 +267,8 @@ function getItemCityTags(item) {
   }
 
   // City-Tags aus parentShow
-  if (item.parentShow?.tags && Array.isArray(item.parentShow.tags)) {
-    item.parentShow.tags.forEach((tag) => {
+  if (item.parentShow?.tags && Array.isArray(item.parentShow?.tags)) {
+    item.parentShow?.tags.forEach((tag) => {
       if (tag._type === "tag.city") {
         if (!cityTags.some((existingTag) => existingTag._id === tag._id)) {
           cityTags.push(tag);
@@ -343,7 +343,7 @@ onMounted(() => {
 
         <!-- Bild -->
         <NuxtLink
-          v-if="item.slug"
+          v-if="item?.slug"
           :to="getItemRoute(item)"
           class="related-item__link"
         >
@@ -437,16 +437,16 @@ onMounted(() => {
           <div v-if="item.parentShow && type === 'sets'">
             <!-- Show-Titel -->
             <NuxtLink
-              v-if="item.parentShow.title !== 'No Show' && item.parentShow.slug"
-              :to="localePath(`/shows/${item.parentShow.slug.current}`)"
+              v-if="item.parentShow?.title !== 'No Show' && item.parentShow?.slug"
+              :to="localePath(`/shows/${item.parentShow?.slug.current}`)"
               class="related-item__link"
             >
               <h3 class="related-item__title show-title">
-                {{ item.parentShow.title }}
+                {{ item.parentShow?.title }}
               </h3>
             </NuxtLink>
             <h3 v-else class="related-item__title show-title">
-              {{ item.title || item.parentShow.title }}
+              {{ item.title || item.parentShow?.title }}
             </h3>
 
             <!-- Künstler (für Sets) -->
@@ -460,8 +460,8 @@ onMounted(() => {
                 class="related-item__artist"
               >
                 <NuxtLink
-                  v-if="artist.poolVisibility"
-                  :to="localePath(`/pool/${artist.slug.current}`)"
+                  v-if="artist?.poolVisibility"
+                  :to="localePath(`/pool/${artist?.slug?.current}`)"
                   class="related-item__link"
                 >
                   {{ artist.title
