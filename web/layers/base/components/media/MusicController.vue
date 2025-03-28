@@ -411,9 +411,11 @@ updateLiveStatus();
         @click="togglePlay1"
         :class="{
           active:
+            mainStore.activeStreamingChannel === 'channelOne' ||
             (isPlaying1 && mainStore.activeStreamingChannel === 'channelOne') ||
             isLoading1,
           inactive:
+            mainStore.activeStreamingChannel === 'channelTwo' ||
             (isPlaying2 && mainStore.activeStreamingChannel === 'channelTwo') ||
             (isPlaying1 && mainStore.activeStreamingChannel === 'channelTwo') ||
             isLoading2,
@@ -478,9 +480,11 @@ updateLiveStatus();
         @click="togglePlay2"
         :class="{
           active:
+            mainStore.activeStreamingChannel === 'channelTwo' ||
             (isPlaying2 && mainStore.activeStreamingChannel === 'channelTwo') ||
-            isLoading1,
+            isLoading,
           inactive:
+            mainStore.activeStreamingChannel === 'channelOne' ||
             (isPlaying1 && mainStore.activeStreamingChannel === 'channelOne') ||
             (isPlaying2 && mainStore.activeStreamingChannel === 'channelOne') ||
             isLoading1,
