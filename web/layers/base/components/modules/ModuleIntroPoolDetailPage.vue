@@ -26,6 +26,7 @@ interface PoolItem {
   _type?: string;
   title?: string;
   name?: string;
+  description?: Object;
   slug?: { current?: string };
   image?: Image;
   mainImage?: Image;
@@ -38,6 +39,8 @@ interface PoolItem {
 const props = defineProps<{
   poolItem: PoolItem;
 }>();
+
+console.log(props.poolItem);
 
 // Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
 function getItemRoute(item) {
@@ -195,14 +198,34 @@ const contactLink = computed(() => {
             </div>
           </div>
           <!-- Hier die Teaser-Text Logik einfügen, analog zum ContentSlider -->
-          <RichText
-            v-if="
-              poolItem?.description &&
-              (poolItem.description[0]?.value || poolItem.description[1]?.value)
-            "
-            :blocks="parseI18nObj(poolItem?.description)"
-            class="pool-text"
-          />
+          <div v-if="poolItem?.description" class="pool-text">
+            <!-- Fall 1: Internationalisiertes Array mit mehreren Einträgen -->
+            <!-- Debug-Ausgabe -->
+
+            <RichText
+              v-if="
+                poolItem.description &&
+                (poolItem.description[0]?.value ||
+                  poolItem.description[1]?.value)
+              "
+              :blocks="parseI18nObj(poolItem?.description)"
+              class="pool-text"
+            />
+
+            <!-- Fall 2: Nur description[0] existiert -->
+            <RichText
+              v-else-if="poolItem.description && poolItem.description[0]?.value"
+              :blocks="parseI18nObj(poolItem.description[0].value)"
+              class="pool-text"
+            />
+
+            <!-- Fall 3: Nur description[1] existiert -->
+            <RichText
+              v-else-if="poolItem.description && poolItem.description[1]?.value"
+              :blocks="parseI18nObj(poolItem.description[1].value)"
+              class="pool-text"
+            />
+          </div>
           <!-- Referenzierte Shows -->
           <div
             v-if="poolItem.shows && poolItem.shows.length > 0"
@@ -216,6 +239,20 @@ const contactLink = computed(() => {
               >
                 <NuxtLink :to="getItemRoute(show)" class="pool-ref-link">
                   <div class="pool-ref-info">
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 22 22"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle cx="11" cy="11" r="11" fill="#F794B3" />
+                      <path
+                        d="M16.7617 11.0002L8.11886 15.9901L8.11886 6.01023L16.7617 11.0002Z"
+                        fill="white"
+                      />
+                    </svg>
+
                     <h4 class="tag">{{ show.title }}</h4>
                   </div>
                 </NuxtLink>
@@ -226,13 +263,13 @@ const contactLink = computed(() => {
           <!-- Nur für Venue: Referenzierte Personen -->
           <div
             v-if="
-              poolItem._type === 'venue' &&
-              poolItem.persons &&
-              poolItem.persons.length > 0
+              poolItem._type === 'venue' ||
+              (poolItem._type === 'person' &&
+                poolItem.persons &&
+                poolItem.persons.length > 0)
             "
             class="pool-references-section"
           >
-            <h3>Personen</h3>
             <div class="pool-refs-list">
               <div
                 v-for="person in poolItem.persons"
@@ -260,7 +297,6 @@ const contactLink = computed(() => {
             "
             class="pool-references-section"
           >
-            <h3>Veranstaltungsorte</h3>
             <div class="pool-refs-list">
               <div
                 v-for="venue in poolItem.venues"
@@ -269,6 +305,20 @@ const contactLink = computed(() => {
               >
                 <NuxtLink :to="getItemRoute(venue)" class="pool-ref-link">
                   <div class="pool-ref-info">
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 22 22"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle cx="11" cy="11" r="11" fill="#557FB9" />
+                      <path
+                        d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
+                        fill="white"
+                      />
+                    </svg>
+
                     <h4 class="tag">{{ venue.title }}</h4>
                   </div>
                 </NuxtLink>
@@ -478,7 +528,7 @@ const contactLink = computed(() => {
       display: flex;
       flex-flow: column wrap;
       justify-content: center;
-      gap: var(--mid-padding);
+      gap: var(--mid-margin);
       width: calc(100%);
     }
 
@@ -516,6 +566,8 @@ const contactLink = computed(() => {
       }
     }
     .pool-text {
+      margin: 0 0 calc(var(--big-margin) - var(--mid-margin)) 0;
+
       & > * {
         color: var(--color-bg);
         font-size: var(--base-font-size);
@@ -595,6 +647,11 @@ const contactLink = computed(() => {
           height: 100%;
 
           .pool-ref-info {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: flex-start;
+            align-items: center;
+            gap: var(--base-padding);
             h4 {
               font-size: var(--small-font-size);
               background-color: var(--color-grey);

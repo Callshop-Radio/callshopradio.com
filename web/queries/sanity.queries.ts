@@ -92,7 +92,6 @@ export const POOL_PROFILE_QUERY = `
     name,
     slug,
     image ${IMAGE_QUERY},
-    bio[] ${RICH_TEXT_QUERY},
     description[] ${RICH_TEXT_QUERY},
     "tags": tags[]->{
       ...,
