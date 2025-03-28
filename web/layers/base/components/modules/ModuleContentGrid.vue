@@ -602,7 +602,6 @@ function getItemRoute(item) {
   }
 }
 
-
 // Prüft, ob ein Item den aktiven Filtern entspricht
 function itemMatchesFilters(item) {
   if (activeFilters.value.size === 0) {
@@ -1462,7 +1461,16 @@ onMounted(() => {
 
         <div v-if="hasMoreItems" class="content-grid__load-more">
           <button @click="loadMoreItems" class="load-more-button">
-            <span class="plus-icon">+</span> Load More
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 15 15"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M7.67578 0.541016V14.8113" stroke-width="5" />
+              <path d="M14.8105 7.67578L0.540276 7.67578" stroke-width="5" />
+            </svg>
           </button>
         </div>
       </div>
@@ -1951,20 +1959,23 @@ onMounted(() => {
 
   &__load-more {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     margin-top: var(--mid-margin);
 
     .load-more-button {
       display: flex;
       align-items: center;
       gap: var(--small-padding);
-      padding: var(--small-padding) var(--mid-padding);
+      padding: var(--small-padding) var(--big-padding);
+      margin: 0 calc(var(--big-margin) / 2 + 0.6rem) 0.6rem 0;
       background-color: transparent;
       cursor: pointer;
       transition: all 0.2s ease;
+      font-family: var(--font-text-semibold);
+      background-color: var(--color-bg);
+      border-radius: 100px;
 
       &:hover {
-        background-color: var(--color-text);
         color: var(--color-bg);
       }
 

@@ -599,7 +599,7 @@ onMounted(() => {
     border: 0.0625rem solid var(--color-text);
     shape-rendering: crispEdges;
     width: clamp(300px, max-content, 397px);
-    min-width: 300px;
+    min-width: 390px;
     transform: translate(0, 50%);
     z-index: 10;
     .play-button {

@@ -181,6 +181,7 @@
   justify-content: center;
   align-items: flex-end;
   height: var(--city-tag-height);
+  gap: var(--small-padding);
   .tag {
     color: var(--color-white);
     background-color: var(--color-text);
@@ -193,6 +194,60 @@
         calc(var(--small-padding) / 2) var(--mid-padding);
       font-size: var(--mini-font-size);
       line-height: 1;
+    }
+  }
+}
+
+/* Korrekte Struktur für pool-detail */
+.pool-detail,
+.pool-archive {
+  .related-content,
+  .content-grid {
+    &__load-more {
+      .load-more-button {
+        border: 0.09325rem solid var(--color-blue);
+        box-shadow: 0 0 0.5rem 0.09325rem var(--color-blue);
+        &:hover {
+          background-color: var(--color-blue);
+          svg {
+            path {
+              stroke: var(--color-bg);
+            }
+          }
+        }
+        svg {
+          path {
+            stroke: var(--color-blue);
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Korrekte Struktur für set-detail */
+.set-detail,
+.shows-archive {
+  .related-content,
+  .content-grid {
+    &__load-more {
+      .load-more-button {
+        border: 0.09325rem solid var(--color-pink);
+        box-shadow: 0 0 0.5rem 0.2rem var(--color-pink);
+        &:hover {
+          background-color: var(--color-pink);
+          svg {
+            path {
+              stroke: var(--color-bg);
+            }
+          }
+        }
+        svg {
+          path {
+            stroke: var(--color-pink);
+          }
+        }
+      }
     }
   }
 }

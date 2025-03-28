@@ -67,22 +67,22 @@ usePageSeo(data?.value?.seo);
       </div>
     </section>
     <section
-      v-if="data?.relatedContent?.length > 0"
+      v-if="data?.relatedSets?.length > 0"
       class="pool-detail__related-content"
     >
       <div class="inner">
         <h3>Related</h3>
         <ModuleRelatedContent
-          :items="data?.relatedContent"
+          :items="data?.relatedSets"
           type="sets"
           title=""
         />
       </div>
     </section>
-    <!-- <section v-if="relatedSets.length > 0" class="pool-detail__more-content">
-      <h3 >More Episodes of <span>{{data?.parentShow?.title}}</span></h3>
+    <!-- <section v-if="data?.relatedContent?.length > 0" class="pool-detail__more-content">
+      <h3>Related</h3>
       <ModuleRelatedContent
-        :items="relatedSets"
+        :items="data?.relatedContent"
         type="sets"
         title=""
       />
