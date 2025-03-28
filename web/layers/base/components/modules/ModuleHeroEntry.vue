@@ -542,14 +542,14 @@ onMounted(() => {
       .hero-entry-content {
         max-width: 24.8125rem;
         @media screen and (max-width: 900px) {
-          max-width: max-content;
+          max-width: calc(100svw - var(--big-margin) * 2);
+          transform: translate(calc(var(--big-margin) / 6), 0);
         }
       }
       .hero-entry-content-container {
         max-width: 24.8125rem;
         @media screen and (max-width: 900px) {
-          min-width: calc(100svw - var(--big-margin) * 2.25);
-          max-width: calc(100svw - var(--big-margin) * 2.25);
+          max-width: unset;
         }
       }
 
