@@ -192,7 +192,7 @@ const slides = computed(() => {
   position: relative;
 
   @media screen and (max-width: 900px) {
-    /* margin-top: var(--base-margin); */
+    margin-top: var(--base-margin);
   }
 
   &__title {
@@ -216,12 +216,12 @@ const slides = computed(() => {
     z-index: 0;
     pointer-events: none;
     .animated-logo-background {
-      width: 150svw;
+      width: 180svw;
       height: 80svh;
       position: absolute;
       right: 0;
       z-index: 0;
-      transform: translate(25svw, -5svh);
+      transform: translate(66svw, -5svh);
       @media screen and (min-width: 900px) {
         width: 575px;
         height: 415px;
@@ -256,12 +256,12 @@ const slides = computed(() => {
     height: 100%;
     z-index: 0;
     .animated-logo {
-      width: 150svw;
+      width: 180svw;
       height: 80svh;
       position: absolute;
       right: 0;
       z-index: 0;
-      transform: translate(25svw, -5svh);
+      transform: translate(66svw, -5svh);
       @media screen and (min-width: 900px) {
         width: 575px;
         height: 415px;
@@ -281,7 +281,7 @@ const slides = computed(() => {
     .embla__nav {
       @apply flex row items-center justify-space-between;
       position: absolute;
-      top: calc(80svw + var(--big-margin) * 1.5);
+      top: calc(80svw + var(--big-margin) * 2);
       right: calc(var(--big-margin));
       padding: var(--mid-padding);
       width: calc(100% - var(--big-margin) * 2);
