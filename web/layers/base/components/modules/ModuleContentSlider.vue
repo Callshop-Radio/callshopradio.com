@@ -480,7 +480,7 @@ function playTrack(item) {
         </NuxtLink>
       </section>
       <section v-else class="module-carousel__header__type">
-        <NuxtLink :to="localePath('/shows')">
+        <NuxtLink :to="localePath(categoryType.toLowerCase())">
           <h2 class="module-carousel__header__type__pill">
             {{ categoryType }}
           </h2>
