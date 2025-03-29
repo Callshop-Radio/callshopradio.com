@@ -104,6 +104,8 @@ const updateLiveStatus = async () => {
   }
 };
 // Function to play and stop stream for Track 1
+
+// Function to play and stop stream for Track 1
 const togglePlay1 = () => {
   if (!audioEl1) return;
 
@@ -127,6 +129,9 @@ const togglePlay1 = () => {
 
     // Reset SoundCloud player - use the new store method
     mainStore.resetSoundCloudPlayer();
+
+    // Markieren dass kein SoundCloud abgespielt wird
+    mainStore.setPlayingSoundCloud(false);
 
     // Create new audio context with each play
     const playPromise = audioEl1.play();
@@ -411,6 +416,7 @@ onMounted(() => {
 
 // Update MediaSession metadata based on current stream
 const updateMediaSessionMetadata = () => {
+  // Wenn SoundCloud abgespielt wird, nicht überschreiben
   if (!("mediaSession" in navigator)) return;
 
   let title = "";
@@ -574,7 +580,7 @@ updateLiveStatus();
           active:
             mainStore.activeStreamingChannel === 'channelTwo' ||
             (isPlaying2 && mainStore.activeStreamingChannel === 'channelTwo') ||
-            isLoading,
+            isLoading2, // Hier war der Fehler: isLoading anstelle von isLoading2
           inactive:
             mainStore.activeStreamingChannel === 'channelOne' ||
             (isPlaying1 && mainStore.activeStreamingChannel === 'channelOne') ||

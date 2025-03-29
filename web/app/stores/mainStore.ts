@@ -71,16 +71,18 @@ export const useMainStore = defineStore("mainStore", () => {
     // Prüfen ob im Browser-Kontext
     if (process.client) {
       // MediaQueryList-Objekt erstellen, um Systemeinstellung zu prüfen
-      const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      
+      const darkModeMediaQuery = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      );
+
       // isDarkMode anhand des System-Darkmode setzen
       isDarkMode.value = darkModeMediaQuery.matches;
-      
+
       // Farben aktualisieren
       updateColors();
-      
+
       // Auf Änderungen reagieren
-      darkModeMediaQuery.addEventListener('change', (e) => {
+      darkModeMediaQuery.addEventListener("change", (e) => {
         isDarkMode.value = e.matches;
         updateColors();
       });
@@ -91,16 +93,24 @@ export const useMainStore = defineStore("mainStore", () => {
     if (isDarkMode.value) {
       document.documentElement.style.setProperty("--color-bg", "#000");
       document.documentElement.style.setProperty("--color-text", "#fff");
-      document?.querySelector('.header .logo')?.style.setProperty("filter", "invert(1)");
-      document?.querySelector('.header .text-logo')?.style.setProperty("filter", "invert(1)");
+      document
+        ?.querySelector(".header .logo")
+        ?.style.setProperty("filter", "invert(1)");
+      document
+        ?.querySelector(".header .text-logo")
+        ?.style.setProperty("filter", "invert(1)");
     } else {
       document.documentElement.style.setProperty("--color-bg", "#fff");
       document.documentElement.style.setProperty("--color-text", "#000");
-      document?.querySelector('.header .logo')?.style.setProperty("filter", "invert(0)");
-      document?.querySelector('.header .text-logo')?.style.setProperty("filter", "invert(0)");
+      document
+        ?.querySelector(".header .logo")
+        ?.style.setProperty("filter", "invert(0)");
+      document
+        ?.querySelector(".header .text-logo")
+        ?.style.setProperty("filter", "invert(0)");
     }
   }
-  
+
   function toggleDarkMode() {
     isDarkMode.value = !isDarkMode.value;
     updateColors();
