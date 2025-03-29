@@ -1496,7 +1496,10 @@ onMounted(() => {
     .filter-cities {
       .filter-tags {
         .filter-tag {
-          &.filter-tag--active,
+          &.filter-tag--active {
+            background-color: var(--color-pink);
+            color: var(--color-bg);
+          }
           &:hover {
             @media (--desktop-up) {
               background-color: var(--color-pink);
@@ -1534,7 +1537,10 @@ onMounted(() => {
     .filter-cities {
       .filter-tags {
         .filter-tag {
-          &.filter-tag--active,
+          &.filter-tag--active {
+            background-color: var(--color-green);
+            color: var(--color-bg);
+          }
           &:hover {
             @media (--desktop-up) {
               background-color: var(--color-green);
@@ -1572,7 +1578,10 @@ onMounted(() => {
     .filter-cities {
       .filter-tags {
         .filter-tag {
-          &.filter-tag--active,
+          &.filter-tag--active {
+            background-color: var(--color-blue);
+            color: var(--color-bg);
+          }
           &:hover {
             @media (--desktop-up) {
               background-color: var(--color-blue);
