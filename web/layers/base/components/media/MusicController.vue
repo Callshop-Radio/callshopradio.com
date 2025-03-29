@@ -130,8 +130,6 @@ const togglePlay1 = () => {
     // Reset SoundCloud player - use the new store method
     mainStore.resetSoundCloudPlayer();
 
-    // Markieren dass kein SoundCloud abgespielt wird
-    mainStore.setPlayingSoundCloud(false);
 
     // Create new audio context with each play
     const playPromise = audioEl1.play();
