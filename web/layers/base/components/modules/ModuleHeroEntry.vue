@@ -743,7 +743,7 @@ onMounted(() => {
           cursor: pointer;
 
           &:hover {
-            @media (--desktop-up) {
+            @media (min-width: 1024px) {
               background-color: var(--color-grey);
             }
           }
@@ -786,7 +786,7 @@ onMounted(() => {
         transition: background-color 0.2s ease;
 
         &:hover {
-          @media (--desktop-up) {
+          @media (min-width: 1024px) {
             background-color: var(--color-grey);
           }
         }

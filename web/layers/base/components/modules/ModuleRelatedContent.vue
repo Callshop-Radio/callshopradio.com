@@ -608,7 +608,7 @@ onMounted(() => {
       border-radius: 100px;
 
       &:hover {
-        @media (--desktop-up) {
+        @media (min-width: 1024px) {
           color: var(--color-bg);
         }
       }
@@ -664,7 +664,7 @@ onMounted(() => {
       }
 
       &:hover img {
-        @media (--desktop-up) {
+        @media (min-width: 1024px) {
           transform: scale(1.05);
         }
       }
@@ -772,7 +772,7 @@ onMounted(() => {
     }
     .play-button {
       &:hover {
-        @media (--desktop-up) {
+        @media (min-width: 1024px) {
           background-color: var(--color-pink);
         }
       }
@@ -811,7 +811,7 @@ onMounted(() => {
           }
 
           &:hover img {
-            @media (--desktop-up) {
+            @media (min-width: 1024px) {
               transform: scale(1.05);
             }
           }

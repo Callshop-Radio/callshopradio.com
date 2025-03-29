@@ -278,7 +278,7 @@ const togglePlayerVisibility = () => {
           letter-spacing: var(--button-letter-spacing);
 
           &:hover {
-            @media (--desktop-up) {
+            @media (min-width: 1024px) {
               background-color: transparent;
               border: 1px solid var(--color-text);
               color: var(--color-text);

@@ -77,7 +77,7 @@ nav {
     &.router-link-active,
     &.parent-active,
     &:hover {
-      @media (--desktop-up) {
+      @media (min-width: 1024px) {
         background-color: var(--color-bg);
         color: var(--color-text);
       }

@@ -697,7 +697,7 @@ const contactLink = computed(() => {
         background-color: var(--color-darker-grey);
         text-decoration: none;
         &:hover {
-          @media (--desktop-up) {
+          @media (min-width: 1024px) {
             background-color: var(--color-blue);
             color: var(--color-white);
           }
@@ -724,7 +724,7 @@ const contactLink = computed(() => {
           background-color: var(--color-darker-grey);
           text-decoration: none;
           &:hover {
-            @media (--desktop-up) {
+            @media (min-width: 1024px) {
               background-color: var(--color-blue);
               color: var(--color-white);
             }
@@ -762,7 +762,7 @@ const contactLink = computed(() => {
               background-color: var(--color-grey);
               color: var(--color-black);
               &:hover {
-                @media (--desktop-up) {
+                @media (min-width: 1024px) {
                   background-color: var(--color-blue);
                   color: var(--color-white);
                 }

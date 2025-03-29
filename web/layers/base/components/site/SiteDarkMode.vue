@@ -59,23 +59,23 @@ onMounted(() => {
     }
   }
   &:hover {
-    @media (--desktop-up) {
+    @media (min-width: 1024px) {
       fill: var(--color-pink);
     }
     circle {
       &.left {
-        @media (--desktop-up) {
+        @media (min-width: 1024px) {
           fill: var(--color-pink);
         }
       }
       &.right {
-        @media (--desktop-up) {
+        @media (min-width: 1024px) {
           stroke: var(--color-pink);
         }
       }
     }
     path {
-      @media (--desktop-up) {
+      @media (min-width: 1024px) {
         fill: var(--color-bg);
       }
     }

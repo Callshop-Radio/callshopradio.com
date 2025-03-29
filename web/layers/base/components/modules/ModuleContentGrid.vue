@@ -1501,7 +1501,7 @@ onMounted(() => {
             color: var(--color-bg);
           }
           &:hover {
-            @media (--desktop-up) {
+            @media (min-width: 1024px) {
               background-color: var(--color-pink);
               color: var(--color-bg);
             }
@@ -1513,7 +1513,7 @@ onMounted(() => {
       button {
         &.active {
           &:hover {
-            @media (--desktop-up) {
+            @media (min-width: 1024px) {
               color: var(--color-pink);
             }
           }
@@ -1542,7 +1542,7 @@ onMounted(() => {
             color: var(--color-bg);
           }
           &:hover {
-            @media (--desktop-up) {
+            @media (min-width: 1024px) {
               background-color: var(--color-green);
               color: var(--color-bg);
             }
@@ -1553,7 +1553,7 @@ onMounted(() => {
     .sort-options {
       button {
         &:hover {
-          @media (--desktop-up) {
+          @media (min-width: 1024px) {
             color: var(--color-green);
           }
         }
@@ -1583,7 +1583,7 @@ onMounted(() => {
             color: var(--color-bg);
           }
           &:hover {
-            @media (--desktop-up) {
+            @media (min-width: 1024px) {
               background-color: var(--color-blue);
               color: var(--color-bg);
             }
@@ -1594,7 +1594,7 @@ onMounted(() => {
     .sort-options {
       button {
         &:hover {
-          @media (--desktop-up) {
+          @media (min-width: 1024px) {
             color: var(--color-blue);
           }
         }
@@ -1751,7 +1751,7 @@ onMounted(() => {
         cursor: pointer;
 
         &:hover .filter-category__title {
-          @media (--desktop-up) {
+          @media (min-width: 1024px) {
             text-decoration: underline;
           }
         }
@@ -1802,7 +1802,7 @@ onMounted(() => {
           }
         }
         &:hover {
-          @media (--desktop-up) {
+          @media (min-width: 1024px) {
             color: var(--color-pink);
           }
         }
@@ -1824,7 +1824,7 @@ onMounted(() => {
       color: var(--color-bg);
 
       &:hover {
-        @media (--desktop-up) {
+        @media (min-width: 1024px) {
           background-color: var(--color-secondary);
         }
       }
@@ -1938,7 +1938,7 @@ onMounted(() => {
       color: var(--color-text);
 
       &:hover {
-        @media (--desktop-up) {
+        @media (min-width: 1024px) {
           background-color: var(--color-text);
           color: var(--color-bg);
         }
@@ -1966,7 +1966,7 @@ onMounted(() => {
       margin-top: var(--small-padding);
 
       &:hover {
-        @media (--desktop-up) {
+        @media (min-width: 1024px) {
           background-color: var(--color-text);
           color: var(--color-bg);
         }
@@ -2010,7 +2010,7 @@ onMounted(() => {
       border-radius: 100px;
 
       &:hover {
-        @media (--desktop-up) {
+        @media (min-width: 1024px) {
           color: var(--color-bg);
         }
       }
@@ -2056,7 +2056,7 @@ onMounted(() => {
       }
 
       &:hover img {
-        @media (--desktop-up) {
+        @media (min-width: 1024px) {
           transform: scale(1.05);
         }
       }
@@ -2166,7 +2166,7 @@ onMounted(() => {
           }
 
           &:hover img {
-            @media (--desktop-up) {
+            @media (min-width: 1024px) {
               transform: scale(1.05);
             }
           }
@@ -2265,7 +2265,7 @@ onMounted(() => {
           }
 
           &:hover img {
-            @media (--desktop-up) {
+            @media (min-width: 1024px) {
               transform: scale(1.05);
             }
           }

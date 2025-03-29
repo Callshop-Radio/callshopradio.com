@@ -1305,7 +1305,7 @@ function playTrack(item) {
           }
 
           &:hover {
-            @media (--desktop-up) {
+            @media (min-width: 1024px) {
               @apply bg-gray-400;
             }
           }

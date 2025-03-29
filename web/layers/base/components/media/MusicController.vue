@@ -103,7 +103,6 @@ const updateLiveStatus = async () => {
     // Silent error handling
   }
 };
-
 // Function to play and stop stream for Track 1
 const togglePlay1 = () => {
   if (!audioEl1) return;
@@ -137,6 +136,11 @@ const togglePlay1 = () => {
         .then(() => {
           isLoading1.value = false;
           isPlaying1.value = true;
+
+          // Update MediaSession metadata
+          if ("mediaSession" in navigator) {
+            updateMediaSessionMetadata();
+          }
         })
         .catch((err) => {
           isLoading1.value = false;
@@ -144,6 +148,7 @@ const togglePlay1 = () => {
     }
   }
 };
+
 // Function to play and stop stream for Track 2
 const togglePlay2 = () => {
   if (!audioEl2) return;
@@ -177,6 +182,11 @@ const togglePlay2 = () => {
         .then(() => {
           isLoading2.value = false;
           isPlaying2.value = true;
+
+          // Update MediaSession metadata
+          if ("mediaSession" in navigator) {
+            updateMediaSessionMetadata();
+          }
         })
         .catch((err) => {
           isLoading2.value = false;
@@ -184,7 +194,6 @@ const togglePlay2 = () => {
     }
   }
 };
-
 // Parse strings with entities
 const parseString = (string) => {
   if (!string) return "";
@@ -379,6 +388,9 @@ onMounted(() => {
         audioEl2.pause();
       }
     });
+
+    // Update metadata when stream changes
+    updateMediaSessionMetadata();
   }
 
   // Initially load status data
@@ -389,8 +401,88 @@ onMounted(() => {
     // Only update if no audio playback is running
     // or if metadata should be updated
     updateLiveStatus();
+
+    // Update MediaSession metadata
+    if ("mediaSession" in navigator) {
+      updateMediaSessionMetadata();
+    }
   }, 10000); // Update every 10 seconds
 });
+
+// Update MediaSession metadata based on current stream
+const updateMediaSessionMetadata = () => {
+  if (!("mediaSession" in navigator)) return;
+
+  let title = "";
+  let artist = "";
+  let isLive = false;
+
+  // Determine which stream is active
+  if (isPlaying1.value) {
+    title = getCurrentName1.value;
+    isLive = liveStatus.value.stream1.onAirLight.on_air_light;
+
+    // Try to extract artist if possible
+    if (liveStatus.value.stream1.liveData?.tracks?.current?.metadata) {
+      title =
+        liveStatus.value.stream1.liveData.tracks.current.metadata.track_title ||
+        title;
+      artist =
+        liveStatus.value.stream1.liveData.tracks.current.metadata.artist_name ||
+        "";
+    }
+  } else if (isPlaying2.value) {
+    title = getCurrentName2.value;
+    isLive = liveStatus.value.stream2.onAirLight.on_air_light;
+
+    // Try to extract artist if possible
+    if (liveStatus.value.stream2.liveData?.tracks?.current?.metadata) {
+      title =
+        liveStatus.value.stream2.liveData.tracks.current.metadata.track_title ||
+        title;
+      artist =
+        liveStatus.value.stream2.liveData.tracks.current.metadata.artist_name ||
+        "";
+    }
+  } else {
+    // Nothing is playing
+    return;
+  }
+
+  // Use "Live" icon when streaming is active
+  const artworkBasePath = isLive
+    ? "https://cdn.sanity.io/images"
+    : "https://cdn.sanity.io/images";
+
+  // Update the media session
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: title,
+    artist: artist || "Live",
+    album: "callshopradio.com",
+    artwork: [
+      {
+        src: `${artworkBasePath}/0smxd0yv/production/8dec3ac90ca85d49ea0ec988878c7ade73076027-128x128.png`,
+        sizes: "128x128",
+        type: "image/png",
+      },
+      {
+        src: `${artworkBasePath}/0smxd0yv/production/39cdeb4fe1f225ef9c95f206e4762a7e5b49c02b-256x256.png`,
+        sizes: "256x256",
+        type: "image/png",
+      },
+      {
+        src: `${artworkBasePath}/0smxd0yv/production/b093514befc9ed8545037ebfcba4208c81777878-512x512.png`,
+        sizes: "512x512",
+        type: "image/png",
+      },
+      {
+        src: `${artworkBasePath}/0smxd0yv/production/27e8b5ea883c05d7b0d1e6fbb0b79bcced14150e-1024x1024.png`,
+        sizes: "1024x1024",
+        type: "image/png",
+      },
+    ],
+  });
+};
 
 // Clean up timer when removing component
 const onBeforeUnmount = () => {
