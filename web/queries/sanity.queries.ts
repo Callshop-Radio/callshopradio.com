@@ -339,7 +339,7 @@ export const SHOWSARCHIVE_QUERY = `
     ...,
     count,
     "sets": select(
-            autoLoad == true => *[_type == 'set'] | order(publishedAt asc) {
+            autoLoad == true => *[_type == 'set'] | order(_updatedAt desc) {
                 ...,
                 _id,
                 _type,
@@ -563,7 +563,7 @@ export const SHOW_QUERY = `
 }`;
 
 export const SET_QUERY = `
-*[_type == 'set' && slug.current == $slug] | order(publishedAt desc)[0] {
+*[_type == 'set' && slug.current == $slug] | order(_updatedAt desc)[0] {
   ...,
   _id,
   _type,
