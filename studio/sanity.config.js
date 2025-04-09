@@ -39,10 +39,10 @@ export default defineConfig({
         origin: isDev
           ? 'http://localhost:3000'
           : process.env.SANITY_STUDIO_PREVIEW_URL || 'http://localhost:3000',
-        previewMode: {
-          enable: '/preview/enable',
-          disable: '/preview/disable',
-        },
+        // previewMode: {
+        //   enable: '/preview/enable',
+        //   disable: '/preview/disable',
+        // },
       },
     }),
     media(),
