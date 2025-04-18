@@ -635,7 +635,7 @@ function playTrack(item) {
                     </button>
                   </section>
                   <NuxtLink
-                    v-if="item?.parentShow?.slug && item?.clickableTitle"
+                    v-if="item?.parentShow?.slug && item?.clickableTitle && item?.parentShow?.title != 'No Show'"
                     :to="
                       localePath(`/shows/${item?.parentShow?.slug?.current}`)
                     "
