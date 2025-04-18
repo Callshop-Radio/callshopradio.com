@@ -380,7 +380,7 @@ export const MODULE_QUERY = `{
             }
         ),
         "articleItems": select(
-            type == 'words' && autoLoad == true => *[_type == 'article'] | order(publishedAt desc) {
+            type == 'words' && autoLoad == true => *[_type == 'article'] | order(_updatedAt desc) {
                 ...,
                 _id,
                 _type,
@@ -390,7 +390,7 @@ export const MODULE_QUERY = `{
                 useTeaserText,
                 textTeaser[] ${RICH_TEXT_QUERY},
                 text[] ${RICH_TEXT_QUERY},
-                publishedAt,
+                _updatedAt,
                 "tags": tags[]->{
                     ...,
                     _id,
@@ -406,7 +406,7 @@ export const MODULE_QUERY = `{
                 useTeaserText,
                 textTeaser[] ${RICH_TEXT_QUERY},
                 text[] ${RICH_TEXT_QUERY},
-                publishedAt,
+                _updatedAt,
                 "tags": tags[]->{
                     ...,
                     _id,
@@ -415,7 +415,7 @@ export const MODULE_QUERY = `{
             }
         ),
         "showItems": select(
-            type == 'shows' && autoLoad == true => *[_type == 'show'] | order(publishedAt desc) {
+            type == 'shows' && autoLoad == true => *[_type == 'show'] | order(_updatedAt desc) {
                 _id,
                 _type,
                 title,
@@ -441,7 +441,7 @@ export const MODULE_QUERY = `{
             }
         ),
         "setItems": select(
-            type == 'sets' && autoLoad == true => *[_type == 'set'] | order(publishedAt desc) {
+            type == 'sets' && autoLoad == true => *[_type == 'set'] | order(_updatedAt desc) {
                 ...,
                 _id,
                 _type,
@@ -580,7 +580,7 @@ export const MODULE_QUERY = `{
             }| order(lower(title)),
             location
         },
-        "articleItems": *[_type == 'article'] | order(publishedAt desc){
+        "articleItems": *[_type == 'article'] | order(_updatedAt desc){
             ...,
             _id,
             _type,
@@ -591,7 +591,7 @@ export const MODULE_QUERY = `{
             useTeaserText,
             textTeaser[] ${RICH_TEXT_QUERY},
             text[] ${RICH_TEXT_QUERY},
-            publishedAt,
+            _updatedAt,
             "tags": tags[]->{
                 ...,
                 _id,
