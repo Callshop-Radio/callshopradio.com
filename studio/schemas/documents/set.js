@@ -192,6 +192,7 @@ export const set = {
       type: 'datetime',
       title: 'Date',
       group: 'editorial',
+      validation: (Rule) => Rule.required(),
     },
     {
       title: 'SEO',

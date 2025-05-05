@@ -441,7 +441,7 @@ export const MODULE_QUERY = `{
             }
         ),
         "setItems": select(
-            type == 'sets' && autoLoad == true => *[_type == 'set'] | order(_updatedAt desc) {
+            type == 'sets' && autoLoad == true => *[_type == 'set' && datetime != null] | order(datetime desc) {
                 ...,
                 _id,
                 _type,

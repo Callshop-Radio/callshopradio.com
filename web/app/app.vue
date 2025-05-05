@@ -1,6 +1,6 @@
 <script setup>
 const { creditLog, favicon } = useUtils();
-// favicon()
+favicon()
 // creditLog()
 </script>
 
