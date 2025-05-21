@@ -459,7 +459,10 @@ onMounted(() => {
           </section>
 
           <!-- Show-Informationen für Sets -->
-          <div v-if="item.parentShow && type === 'sets'">
+          <div
+            v-if="item.parentShow && type === 'sets'"
+            class="related-item__content__show"
+          >
             <!-- Show-Titel -->
             <NuxtLink
               v-if="
@@ -619,6 +622,10 @@ onMounted(() => {
     }
   }
 
+  .related-item__content__show {
+    min-height: calc(var(--base-font-size) * 1.15 + var(--base-font-size) + var(--mid-padding));
+  }
+
   .related-item {
     display: flex;
     flex-direction: column;
@@ -746,8 +753,8 @@ onMounted(() => {
         display: flex;
         flex-flow: row wrap;
         justify-content: flex-start;
-        align-items: flex-end;
-        align-content: flex-end;
+        align-items: flex-start;
+        align-content: flex-start;
         gap: var(--small-margin);
         flex-grow: 1;
       }

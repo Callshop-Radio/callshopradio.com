@@ -134,7 +134,7 @@ export const structure = (S) =>
         .child(
           S.list()
             .title('Settings')
-            .items([siteSettings(S), siteNav(S), siteFallbacks(S)]),
+            .items([siteSettings(S), siteCookieBanner(S), siteNav(S), siteFallbacks(S)]),
         ),
       S.divider(),
       ...S.documentTypeListItems().filter(hiddenDocTypes),

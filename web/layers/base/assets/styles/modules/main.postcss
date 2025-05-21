@@ -1,3 +1,16 @@
+.default {
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  max-width: var(--page-max-width);
+  &__content {
+    padding: var(--big-margin) var(--base-padding) var(--content-gap) var(--base-padding);
+    gap: var(--content-gap) 0;
+  }
+}
+
 .module-section {
   width: 100%;
   display: flex;

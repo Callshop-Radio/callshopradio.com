@@ -39,16 +39,16 @@ const props = defineProps({
 </template>
 <style lang="postcss" scoped>
 h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  @apply m-0 mb-2;
+h2 {
+	margin-bottom: var(--base-margin);
+}
+
+h3,h4,h5 {
+	margin: var(--base-margin) 0 var(--small-margin) 0;
 }
 
 p {
-	@apply max-w-80ch my-4 whitespace-pre-wrap;
+	@apply max-w-80ch whitespace-pre-wrap;
 	font-size: var(--base-font-size);
 }
 </style>

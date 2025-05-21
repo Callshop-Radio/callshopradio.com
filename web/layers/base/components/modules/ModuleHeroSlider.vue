@@ -16,7 +16,7 @@ const props = defineProps({
 // Init Embla Carousel
 const [emblaNode, emblaApi] = emblaCarouselVue({
   align: "start",
-  loop: true,
+  loop: true
 });
 
 // Dots nav
