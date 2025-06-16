@@ -341,6 +341,9 @@ onMounted(() => {
         max-width: 100%;
         max-height: 100%;
       }
+      @media screen and (min-width: 900px) {
+        min-width: 35.3125rem;
+      }
       .track-artwork,
       .track-artwork-placeholder {
         width: 100%;

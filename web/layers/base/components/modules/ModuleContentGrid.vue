@@ -1368,6 +1368,13 @@ onMounted(() => {
                 </div>
               </div>
 
+              <!-- Read more für Words -->
+
+              <div v-if="contentType == 'words'" class="tags read-more">
+                <NuxtLink :to="getItemRoute(item)" class="grid-item__link">
+                  <h3 class="tag">Read More</h3>
+                </NuxtLink>
+              </div>
               <!-- Titel für alle anderen Content-Typen -->
               <NuxtLink :to="getItemRoute(item)" class="grid-item__link">
                 <h3 v-if="contentType !== 'sets'" class="grid-item__title">
@@ -1483,7 +1490,6 @@ onMounted(() => {
   max-width: clamp(100%, 100%, var(--page-max-width));
   width: 100%;
 
-  /*settings for content type*/
   &.shows,
   &.sets {
     .active-filters {
@@ -1614,7 +1620,6 @@ onMounted(() => {
     margin-bottom: var(--mid-margin);
   }
 
-  /*  global settings */
   &__filter-bar {
     display: flex;
     flex-flow: row wrap;
@@ -2021,7 +2026,6 @@ onMounted(() => {
     }
   }
 }
-/* Style-spezifische Anpassungen */
 .module-grid {
   .grid-item {
     display: flex;
@@ -2231,15 +2235,21 @@ onMounted(() => {
   }
   &.words {
     .content-grid__items {
+      gap: calc(var(--big-padding) * 3);
       .grid-item {
+        position: relative;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
         justify-content: flex-start;
-        max-width: calc(100% / 3 - var(--big-margin) * 1.325);
         width: 100%;
-        border-bottom: 0.09325rem solid var(--color-text);
-        padding: 0 0 calc(var(--big-margin) / 2) 0;
+        flex: 1 1 50%;
+        max-width: calc(50% - var(--big-padding) * 1.5);
+        background-color: var(--color-text);
+        border-radius: 12px;
+        border: 1px solid var(--color-text);
+        overflow: hidden;
+        padding: 0;
 
         &:last-of-type {
           justify-self: flex-start;
@@ -2252,6 +2262,19 @@ onMounted(() => {
           color: inherit;
         }
 
+        .city-tags,
+        .grid-item__content__interactive {
+          display: none;
+        }
+
+        img {
+          width: 100% !important;
+          height: auto;
+          aspect-ratio: 3 / 2 !important;
+          object-fit: cover;
+          transition: transform 0.3s ease;
+        }
+
         &__image {
           position: relative;
           overflow: hidden;
@@ -2259,7 +2282,7 @@ onMounted(() => {
           img {
             width: 100%;
             height: auto;
-            aspect-ratio: 1 / 1 !important;
+            aspect-ratio: 3 / 1.5 !important;
             object-fit: cover;
             transition: transform 0.3s ease;
           }
@@ -2283,10 +2306,13 @@ onMounted(() => {
           justify-content: flex-start;
           align-items: stretch;
           flex-grow: 1;
-          margin: var(--mid-padding) 0 0 0;
-          gap: var(--mid-padding);
-
+          gap: var(--big-padding);
+          margin: 0;
+          padding: var(--base-margin) var(--mid-padding) var(--base-margin);
           .grid-item__tags {
+            position: absolute;
+            top: var(--base-padding);
+            right: var(--base-padding);
             display: flex;
             flex-flow: row wrap;
             justify-content: flex-start;
@@ -2332,11 +2358,23 @@ onMounted(() => {
             }
           }
 
+          .read-more {
+            position: absolute;
+            transform: translate(0, calc(var(--base-margin) * -1 - 50%));
+            .tag {
+              border: 1px solid var(--color-text);
+              background-color: var(--color-bg);
+              color: var(--color-text);
+            }
+          }
+
           .grid-item__title {
-            font-size: var(--base-font-size);
+            font-size: var(--large-font-size);
+            font-weight: 400;
             text-transform: uppercase;
-            font-family: var(--font-text-semibold);
+            font-family: var(--font-text-regular);
             margin: 0;
+            color: var(--color-bg);
           }
 
           .grid-item__artist {
@@ -2344,6 +2382,10 @@ onMounted(() => {
             text-transform: uppercase;
             font-family: var(--font-text-semibold);
             margin: 0;
+          }
+
+          .rich-text {
+            color: var(--color-bg);
           }
 
           .show-title {

@@ -7,7 +7,7 @@ import { useMainStore } from "~/stores/mainStore";
 const mainStore = useMainStore();
 
 const props = defineProps({
-  sets: {
+  articles: {
     type: Array,
     required: true,
   },
@@ -86,26 +86,31 @@ onMounted(() => {
   }
 });
 
-// Verwende die Sets aus den Props
 const slides = computed(() => {
-  const result = [];
-  // Gruppiere Sets in Paare (2 pro Slide)
-  for (let i = 0; i < props.sets.length; i += 2) {
-    const pair = [props.sets[i]];
-    // Füge das zweite Set hinzu, wenn verfügbar
-    if (i + 1 < props.sets.length) {
-      pair.push(props.sets[i + 1]);
-    }
-    result.push(pair);
-  }
-  return result;
+  // Jeder Artikel bekommt sein eigenes Slide
+  return props.articles.map(article => [article]);
 });
+
+
+// Gruppiere Artikel in Paare (2 pro Slide)
+// const slides = computed(() => {
+//   const result = [];
+//   for (let i = 0; i < props.articles.length; i += 2) {
+//     const pair = [props.articles[i]];
+//     // Füge den zweiten Artikel hinzu, wenn verfügbar
+//     if (i + 1 < props.articles.length) {
+//       pair.push(props.articles[i + 1]);
+//     }
+//     result.push(pair);
+//   }
+//   return result;
+// });
 </script>
 
 <template>
   <div
     v-if="slides.length > 0"
-    :class="`embla intro-set-slider intro-set-slider--default`"
+    :class="`embla intro-article-slider intro-article-slider--default`"
   >
     <div class="embla__nav__container">
       <nav class="embla__nav" v-if="scrollSnaps.length > 1">
@@ -157,37 +162,30 @@ const slides = computed(() => {
         </button>
       </nav>
     </div>
-    <!-- <div class="graphics-behind">
-      <AnimatedGradient class="animated-gradient" />
-      <AnimatedLogoBackground class="animated-logo-background" />
-    </div> -->
     <div ref="emblaNode" class="embla">
       <div ref="emblaContainer" class="embla__container">
         <div
-          v-for="(setGroup, index) in slides"
+          v-for="(articleGroup, index) in slides"
           :key="index"
           class="embla__slide"
           :class="{ active: index === currentIndex }"
         >
-          <div class="set-group">
-            <ModuleIntroSet
-              v-for="(set, setIndex) in setGroup"
-              :key="set._key || setIndex"
-              :set="set"
+          <div class="article-group">
+            <ModuleIntroArticle
+              v-for="(article, articleIndex) in articleGroup"
+              :key="article._key || articleIndex"
+              :article="article"
               :class="`slider-item slider-item--default`"
             />
           </div>
         </div>
       </div>
     </div>
-    <!-- <div class="graphics-front">
-      <AnimatedLogo class="animated-logo" />
-    </div> -->
   </div>
 </template>
 
 <style lang="postcss" scoped>
-.intro-set-slider {
+.intro-article-slider {
   @apply overflow-visible;
   max-width: clamp(100%, 100%, var(--page-max-width));
   position: relative;
@@ -201,53 +199,6 @@ const slides = computed(() => {
     align-items: center;
   }
 
-  .graphics-behind {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    .animated-logo-background {
-      width: 575px;
-      height: 415px;
-      position: absolute;
-      right: calc(var(--big-margin) * 2);
-      top: calc(
-        35.3125rem - var(--big-margin) * 2 + var(--mid-margin) + 0.625rem
-      );
-      transform: translate(33%, -100%);
-      z-index: 0;
-    }
-    .animated-gradient {
-      position: absolute;
-      top: -33%;
-      left: -45%;
-      width: 110%;
-      height: 110%;
-    }
-  }
-  .graphics-front {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    .animated-logo {
-      width: 575px;
-      height: 415px;
-      position: absolute;
-      right: calc(var(--big-margin) * 2);
-      top: calc(
-        35.3125rem - var(--big-margin) * 2 + var(--mid-margin) +
-          var(--menu-text-size) / 2
-      );
-      transform: translate(33%, -100%);
-      z-index: 0;
-    }
-  }
-
   .embla__nav__container {
     width: 100%;
     height: 100%;
@@ -256,6 +207,7 @@ const slides = computed(() => {
       height: 100%;
       position: absolute;
       min-width: var(--page-max-width);
+      padding: 0 var(--big-padding);
       width: var(--page-max-width);
       display: flex;
       flex-flow: row wrap;
@@ -274,12 +226,12 @@ const slides = computed(() => {
           &:hover {
             path {
               @media (min-width: 1024px) {
-                fill: var(--color-pink);
+                fill: var(--color-green);
               }
             }
           }
           path {
-            fill: var(--color-text);
+            fill: var(--color-bg);
           }
         }
 
@@ -293,9 +245,9 @@ const slides = computed(() => {
         @apply flex row items-center justify-start flex-grow-1;
         gap: 0 var(--small-padding);
         width: max-content;
-        bottom: 0;
-        left: 50%;
-        transform: translateX(-50%);
+        top: var(--big-padding);
+        left: var(--big-padding);
+
 
         .embla__dot {
           @apply rounded-full transition-colors;
@@ -305,12 +257,12 @@ const slides = computed(() => {
           pointer-events: all;
 
           &.is-selected {
-            background-color: var(--color-pink);
+            background-color: var(--color-green);
           }
 
           &:hover {
             @media (min-width: 1024px) {
-              background-color: var(--color-pink);
+              background-color: var(--color-green);
             }
           }
         }
@@ -332,11 +284,11 @@ const slides = computed(() => {
     &__slide {
       @apply flex flex-grow-0 flex-shrink-0 flex-basis-auto min-w-0 relative;
       width: 100%; /* Jeder Slide nimmt volle Breite ein */
-      padding: 0 calc(var(--big-margin) / 2);
+      /* padding: 0 calc(var(--big-margin) / 2); */
       opacity: 0;
       transition: opacity 0.15s ease !important;
 
-      .set-group {
+      .article-group {
         @apply flex flex-row w-full;
         flex-flow: row wrap;
         justify-content: space-around;
@@ -348,7 +300,7 @@ const slides = computed(() => {
         }
       }
 
-      .set-group .slider-item {
+      .article-group .slider-item {
         @apply flex-1;
         min-width: 0;
       }
@@ -364,14 +316,14 @@ const slides = computed(() => {
 /* Spezifische Stile für die verschiedenen Slider-Varianten */
 .slider-item {
   &--default {
-    ::v-deep(.set-content) {
+    ::v-deep(.article-content) {
       margin: 0; /* Entferne die Standardränder der Komponente im Slider */
     }
   }
 
   &--grid {
-    ::v-deep(.set-content) {
-      .set-container {
+    ::v-deep(.article-content) {
+      .article-container {
         width: 100%;
         max-width: 100%;
       }
@@ -379,23 +331,23 @@ const slides = computed(() => {
   }
 
   &--compact {
-    ::v-deep(.set-content) {
-      .set-container {
+    ::v-deep(.article-content) {
+      .article-container {
         display: flex;
         flex-direction: row;
         width: 100%;
         max-width: 100%;
 
-        .set-media {
+        .article-media {
           width: 35%;
           min-width: 150px;
 
-          .track-artwork {
+          .article-image {
             aspect-ratio: 1/1;
           }
         }
 
-        .set-info {
+        .article-info {
           width: 65%;
           border-bottom: none;
           border-left: 0.0625rem solid var(--color-text);

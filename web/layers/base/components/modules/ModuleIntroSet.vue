@@ -302,7 +302,7 @@ onMounted(() => {
 <style lang="postcss" scoped>
 .set-content {
   width: 100%;
-  max-width: var(--page-max-width);
+  max-width: 35.3125rem;
   height: max-content;
 
   .set-container {

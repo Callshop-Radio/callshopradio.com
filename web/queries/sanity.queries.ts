@@ -39,7 +39,6 @@ export const SCHEDULE_QUERY = `
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY},
 }`;
-
 export const POOLARCHIVE_QUERY = `
 *[_type == "pool"] | order(_updatedAt desc)[0] {
   ...,
@@ -734,6 +733,79 @@ export const WORDS_QUERY = `
   ...,
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY},
+  slider{
+    ...,
+    count,
+    "articles": select(
+            autoLoad == true => *[_type == 'article'] | order(datetime desc) {
+                ...,
+                _id,
+                _type,
+                title,
+                slug,
+                image ${IMAGE_QUERY},
+                text[] ${RICH_TEXT_QUERY},
+                datetime,
+                useTeaserText,
+                textTeaser[] ${RICH_TEXT_QUERY},
+                contentReferences[]->{
+                    ...,
+                },
+                autoRelatedArticles,
+                relatedArticles[]->{
+                    ...,
+                },
+                socials {
+                  instagram,
+                  soundcloud,
+                  nina,
+                  bandcamp,
+                  web
+                },
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    title
+                }| order(lower(title)),
+            },
+            articles[]->{
+                ...,
+                _id,
+                _type,
+                title,
+                slug,
+                image ${IMAGE_QUERY},
+                text[] ${RICH_TEXT_QUERY},
+                datetime,
+                useTeaserText,
+                textTeaser[] ${RICH_TEXT_QUERY},
+                contentReferences[]->{
+                    ...,
+                },
+                autoRelatedArticles,
+                relatedArticles[]->{
+                    ...,
+                },
+                socials {
+                  instagram,
+                  soundcloud,
+                  nina,
+                  bandcamp,
+                  web
+                },
+                "tags": tags[]->{
+                    ...,
+                    _id,
+                    title
+                }| order(lower(title)),
+                persons[]->{
+                    ...,
+                    _id,
+                    title
+                },
+            }
+        )
+  }
 }`;
 
 export const SITE_OPTIONS_QUERY = `{

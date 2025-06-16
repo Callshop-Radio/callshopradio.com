@@ -87,8 +87,6 @@ export function useShowFormatters() {
   };
 
   // Hilfsfunktion zur Gruppierung von Shows nach Tag
-  // ...existing code...
-  // Hilfsfunktion zur Gruppierung von Shows nach Tag
   const groupShowsByDay = (shows) => {
     // Zuerst alle Shows filtern, die wir anzeigen möchten
     const filteredShows = shows.filter(shouldShowInSchedule);
@@ -134,7 +132,7 @@ export function useShowFormatters() {
       .filter((group) => group.shows.length > 0)
       .sort((a, b) => a.date - b.date);
   };
-  // ...existing code...
+  
   return {
     getShowStart,
     getShowEnd,

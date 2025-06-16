@@ -385,7 +385,6 @@ onMounted(() => {
             class="hero-entry-text"
             v-if="module?.contentReference?._type !== 'set'"
           >
-            <!-- ...existing code... -->
 
             <!-- Für Person und Venue -->
             <RichText
