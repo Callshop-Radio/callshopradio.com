@@ -100,7 +100,6 @@ export default defineNuxtConfig({
       crawlLinks: true,
       // Explizite Routes zum Prerendern
       routes: [
-        '/sitemap.xml',
         '/',
         '/pool',
         '/schedule',
