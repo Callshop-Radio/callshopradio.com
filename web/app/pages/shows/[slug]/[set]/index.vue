@@ -6,17 +6,15 @@ import { useMainStore } from "~/stores/mainStore";
 const mainStore = useMainStore();
 const route = useRoute();
 
-// Den "set"-Parameter aus der URL-Route extrahieren
 const query = groq`${SET_QUERY}`;
 const { data } = await useSanityQuery(query, {
-  slug: route.params.set, // Hier den richtigen Parameter verwenden
+  slug: route.params.set,
 });
 
-// Fehlerbehandlung hinzufügen
 if (!data.value) {
   console.error("Set nicht gefunden:", route.params.set);
 }
-// Filtere das aktuelle Set aus den verwandten Sets
+
 const relatedSets = computed(() => {
   if (
     !data.value?.parentShow?.sets ||
@@ -25,7 +23,6 @@ const relatedSets = computed(() => {
     return [];
   }
 
-  // Filtere das aktuelle Set anhand der slug.current-Eigenschaft
   return data.value.parentShow?.sets.filter((set) => {
     return set.slug.current !== route.params.set;
   });

@@ -9,7 +9,7 @@ const route = useRoute();
 // Den "set"-Parameter aus der URL-Route extrahieren
 const query = groq`${SHOW_QUERY}`;
 const { data } = await useSanityQuery(query, {
-  slug: route.params.slug, // Statt person oder venue den generischen slug parameter verwenden
+  slug: route.params.slug,
 });
 
 // Fehlerbehandlung hinzufügen

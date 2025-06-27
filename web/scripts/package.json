@@ -1,0 +1,9 @@
+{
+  "name": "prerender-check",
+  "scripts": {
+    "check-routes": "node scripts/prerender-routes.js"
+  },
+  "dependencies": {
+    "@sanity/client": "^6.0.0"
+  }
+}

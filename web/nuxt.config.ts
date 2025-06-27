@@ -98,7 +98,51 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: true,
+      // Explizite Routes zum Prerendern
+      routes: [
+        '/sitemap.xml',
+        '/',
+        '/pool',
+        '/schedule',
+        '/shows',
+        '/words',
+        // Dynamische Routen werden durch hooks erfasst
+      ],
+      // Ignoriere bestimmte Routen falls nötig
+      ignore: [
+        '/api/**'
+      ]
     },
+    // Stelle sicher, dass alle Routen korrekt generiert werden
+    experimental: {
+      wasm: true
+    }
+  },
+
+  // Hook zum automatischen Finden aller dynamischen Routen
+  hooks: {
+    async 'nitro:config'(nitroConfig) {
+      // Lade alle Routen aus Sanity
+      try {
+        const { getAllRoutes } = await import('./scripts/prerender-routes.js')
+        const allRoutes = await getAllRoutes()
+        
+        // Füge alle gefundenen Routen hinzu
+        if (nitroConfig.prerender?.routes) {
+          nitroConfig.prerender.routes = [
+            ...nitroConfig.prerender.routes,
+            ...allRoutes
+          ]
+          
+          // Entferne Duplikate
+          nitroConfig.prerender.routes = [...new Set(nitroConfig.prerender.routes)]
+          
+          console.log(`🎯 Total routes to prerender: ${nitroConfig.prerender.routes.length}`)
+        }
+      } catch (error) {
+        console.error('❌ Error loading dynamic routes:', error)
+      }
+    }
   },
 
   runtimeConfig: {

@@ -808,6 +808,40 @@ export const WORDS_QUERY = `
   }
 }`;
 
+export const ENTRY_QUERY = `
+*[_type == "article" && slug.current == $slug] | order(_updatedAt desc)[0] {
+    ...,
+    _id,
+    _type,
+    title,
+    slug,
+    image ${IMAGE_QUERY},
+    text[] ${RICH_TEXT_QUERY},
+    datetime,
+    useTeaserText,
+    textTeaser[] ${RICH_TEXT_QUERY},
+    contentReferences[]->{
+        ...,
+    },
+    autoRelatedArticles,
+    relatedArticles[]->{
+        ...,
+    },
+    socials {
+      instagram,
+      soundcloud,
+      nina,
+      bandcamp,
+      web
+    },
+    "tags": tags[]->{
+        ...,
+        _id,
+        title
+    }| order(lower(title)),
+    ${SEO_QUERY}
+}`;
+
 export const SITE_OPTIONS_QUERY = `{
   "siteCookieBanner" : *[_type == "siteCookieBanner"][0] {
     ...,
