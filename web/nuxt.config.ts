@@ -112,30 +112,23 @@ export default defineNuxtConfig({
         '/api/**'
       ]
     },
-    // Stelle sicher, dass alle Routen korrekt generiert werden
     experimental: {
       wasm: true
     }
   },
 
-  // Hook zum automatischen Finden aller dynamischen Routen
   hooks: {
     async 'nitro:config'(nitroConfig) {
-      // Lade alle Routen aus Sanity
       try {
         const { getAllRoutes } = await import('./scripts/prerender-routes.js')
         const allRoutes = await getAllRoutes()
-        
-        // Füge alle gefundenen Routen hinzu
         if (nitroConfig.prerender?.routes) {
           nitroConfig.prerender.routes = [
             ...nitroConfig.prerender.routes,
             ...allRoutes
           ]
-          
-          // Entferne Duplikate
+          // kill duplicate routes
           nitroConfig.prerender.routes = [...new Set(nitroConfig.prerender.routes)]
-          
           console.log(`🎯 Total routes to prerender: ${nitroConfig.prerender.routes.length}`)
         }
       } catch (error) {

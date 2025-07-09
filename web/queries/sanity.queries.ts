@@ -39,6 +39,7 @@ export const SCHEDULE_QUERY = `
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY},
 }`;
+
 export const POOLARCHIVE_QUERY = `
 *[_type == "pool"] | order(_updatedAt desc)[0] {
   ...,
@@ -839,6 +840,41 @@ export const ENTRY_QUERY = `
         _id,
         title
     }| order(lower(title)),
+    persons[]->{
+        ...,
+        _id,
+        title
+    },
+    modules[] ${MODULE_QUERY},
+    "relatedContent": *[
+        _type == 'article' && 
+        slug.current != $slug && 
+        count((tags[]->._id)[@ in ^.^.tags[]->._id]) > 0
+    ] | order(
+        count((tags[]->._id)[@ in ^.^.tags[]->._id]) desc,
+        datetime desc
+    )[0...12] {
+        ...,
+        _id,
+        _type,
+        title,
+        slug,
+        image ${IMAGE_QUERY},
+        datetime,
+        useTeaserText,
+        textTeaser[] ${RICH_TEXT_QUERY},
+        persons[]->{
+            _id,
+            title,
+            slug
+        },
+        "tags": tags[]->{
+            _id,
+            _type,
+            title
+        }| order(lower(title)),
+        "matchingTagsCount": count((tags[]->._id)[@ in ^.^.tags[]->._id])
+    },
     ${SEO_QUERY}
 }`;
 

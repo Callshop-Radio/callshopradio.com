@@ -51,4 +51,8 @@ p {
 	@apply max-w-80ch whitespace-pre-wrap;
 	font-size: var(--base-font-size);
 }
+
+img {
+	aspect-ratio: auto;
+}
 </style>

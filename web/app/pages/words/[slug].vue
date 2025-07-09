@@ -63,30 +63,18 @@ usePageSeo(data?.value?.seo);
         />
       </div>
     </section>
-    <!-- <section
-      v-if="data?.relatedContent.length > 0"
+    <section
+      v-if="data?.relatedContent && data?.relatedContent.length > 0"
       class="entry-detail__related-content"
     >
-      <h3>Related</h3>
+      <h3>Related Articles</h3>
       <ModuleRelatedContent
         v-if="data?.relatedContent.length > 0"
         :items="data?.relatedContent"
-        type="entries"
+        type="words"
         title=""
       />
     </section>
-    <section v-if="relatedSets.length > 0" class="entry-detail__more-content">
-      <h3 v-if="data?.parentShow?.title === 'No Show'">Similar Sets</h3>
-      <h3 v-else>
-        More Episodes of <span>{{ data?.parentShow?.title }}</span>
-      </h3>
-      <ModuleRelatedContent
-        v-if="relatedSets.length > 0"
-        :items="relatedSets"
-        type="entries"
-        title=""
-      />
-    </section> -->
   </div>
 </template>
 
@@ -107,7 +95,7 @@ section {
   align-items: center;
   gap: var(--content-gap);
   &__intro-section {
-    margin: var(--big-margin) 0 0;
+    margin: 0 0 0;
   }
   &__related-content,
   &__more-content {
