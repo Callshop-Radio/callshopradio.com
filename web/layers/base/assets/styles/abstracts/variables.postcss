@@ -11,7 +11,8 @@
   --color-pink: #f794b3;
   --color-blue: #557fb9;
   --color-white: #f6f6f8;
-  --color-grey: #e8e8e8;
+  --color-grey: rgb(232, 232, 232);
+  --color-grey-transparent: rgba(232, 232, 232, 0.66);
   --color-dark-grey: #525252;
   --color-darker-grey: #2c2c2c;
   --color-yellow: #f9ab0f;
@@ -43,10 +44,14 @@
   --carousel-spacing: 1rem;
   --carousel-height: 25rem;
 
+  /* Calculated Heights */
   --nav-height: calc(
     28px + (var(--base-padding) * 2) + (var(--small-padding) * 2) +
       var(--base-font-size)
   );
+
+  --schedule-block-height: calc( (var(--small-padding) * 2) + (var(--base-font-size) * 4 ) + var(--small-font-size) + (var(--small-padding) / 2));
+  --schedule-nav-height: calc(var(--base-font-size) + var(--base-margin) * 2);
 
   /* Sizes */
   --content-gap: 17.5rem;

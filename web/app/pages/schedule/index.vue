@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { SCHEDULE_QUERY } from "~~/queries/sanity.queries.ts";
 import { useMainStore } from "~/stores/mainStore";
 
@@ -14,6 +14,20 @@ const loading = ref(true);
 const error = ref(null);
 const dusseldorfInstances = ref([]);
 const instanceTracks = ref({});
+
+// Current time management
+const currentTime = ref(new Date());
+const timeUpdateInterval = ref(null);
+
+// Constants for time display
+const GRID_START_HOUR = 7;
+const GRID_END_HOUR = 24;
+const GRID_TOTAL_HOURS = GRID_END_HOUR - GRID_START_HOUR;
+const GRID_SEGMENTS_PER_HOUR = 2; // 30-Minuten-Segmente
+const GRID_TOTAL_SEGMENTS = Math.min(
+  GRID_TOTAL_HOURS * GRID_SEGMENTS_PER_HOUR,
+  35
+); // Maximal 35 Segmente
 
 // Service-Composables einbinden
 const { fetchScheduleData, getDusseldorfShows, getWienShows } =
@@ -39,9 +53,9 @@ const loadData = async () => {
   try {
     await fetchScheduleData();
     extractDusseldorfInstances();
-    await loadAllInstanceTracks(); // Tracks nach dem Extrahieren der Instances laden
+    await loadAllInstanceTracks();
   } catch (err) {
-    console.error("Fehler beim Laden der Daten:", err);
+    console.error("❌ Fehler beim Laden der Daten:", err);
     error.value =
       "Es ist ein Fehler beim Laden der Daten aufgetreten. Bitte versuche es später erneut.";
   } finally {
@@ -52,11 +66,9 @@ const loadData = async () => {
 // Extrahiert die instanceID aus allen Düsseldorf-Shows
 const extractDusseldorfInstances = () => {
   const allShows = getDusseldorfShows();
-  // Set verwenden, um Duplikate zu vermeiden
   const instancesSet = new Set();
 
   for (const show of allShows) {
-    // Wenn show.description leer ist oder nicht existiert, füge instance_id zum Set hinzu
     if (
       (!show.description || show.description.trim() === "") &&
       show.instance_id
@@ -66,17 +78,12 @@ const extractDusseldorfInstances = () => {
   }
 
   dusseldorfInstances.value = [...instancesSet];
-  // console.log(
-  //   "Extrahierte Düsseldorf Instance IDs:",
-  //   dusseldorfInstances.value
-  // );
 };
 
 // Alle Tracks für alle Instances parallel laden
 const loadAllInstanceTracks = async () => {
   const tracksData = {};
 
-  // Promises für alle Requests erstellen und parallel ausführen
   const fetchPromises = dusseldorfInstances.value.map(async (instanceId) => {
     try {
       const tracks = await fetchTracksForInstance(instanceId);
@@ -86,17 +93,15 @@ const loadAllInstanceTracks = async () => {
       return null;
     } catch (error) {
       console.error(
-        `Fehler beim Laden der Tracks für Instance ${instanceId}:`,
+        `❌ Error loading tracks for instance ${instanceId}:`,
         error
       );
       return null;
     }
   });
 
-  // Auf alle Promises warten und Ergebnisse verarbeiten
   const results = await Promise.all(fetchPromises);
 
-  // Ergebnisse in tracksData zusammenführen
   for (const result of results) {
     if (result && result.instanceId && result.tracks) {
       tracksData[result.instanceId] = result.tracks;
@@ -104,10 +109,6 @@ const loadAllInstanceTracks = async () => {
   }
 
   instanceTracks.value = tracksData;
-  // console.log(
-  //   "Geladene Tracks für alle Instances:",
-  //   Object.keys(tracksData).length
-  // );
 };
 // Daten beim Mounting laden
 onMounted(() => {
@@ -117,19 +118,30 @@ onMounted(() => {
 // Tracks für eine Instance-ID laden
 const fetchTracksForInstance = async (instanceId) => {
   try {
-    const response = await fetch(
-      `https://libretime.callshopradio.com/api/show-tracks/?instance_id=${instanceId}`
-    );
+    const url = `https://libretime.callshopradio.com/api/show-tracks/?instance_id=${instanceId}`;
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     const data = await response.json();
+
+    // Log cue points for all tracks in this instance
+    if (data && Array.isArray(data) && data.length > 0) {
+      console.log(`🎵 Instance ${instanceId} - Cue Points:`);
+      data.forEach((track, index) => {
+        console.log(
+          `  ${index + 1}. ${track.title || "No title"} | Start: ${
+            track.starts
+          } | Cue In: ${track.cue_in || "null"} | Cue Out: ${
+            track.cue_out || "null"
+          }`
+        );
+      });
+    }
+
     return data;
   } catch (err) {
-    console.error(
-      `Fehler beim Laden der Tracks für Instance ${instanceId}:`,
-      err
-    );
+    console.error(`❌ Error fetching tracks for instance ${instanceId}:`, err);
     return null;
   }
 };
@@ -256,6 +268,8 @@ usePageSeo(data?.value?.seo);
   flex-flow: column;
   justify-content: flex-start;
   align-items: flex-start;
+  max-height: calc(100svh - var(--nav-height) - var(--big-margin));
+
   &__background {
     position: fixed;
     top: calc(var(--big-margin));
@@ -280,10 +294,6 @@ usePageSeo(data?.value?.seo);
   &__content {
     z-index: 10;
     width: 100%;
-    display: flex;
-    flex-flow: column;
-    justify-content: flex-start;
-    align-items: flex-start;
   }
 }
 </style>

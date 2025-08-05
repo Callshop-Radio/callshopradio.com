@@ -1,15 +1,27 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import emblaCarouselVue from "embla-carousel-vue";
 import { useThrottleFn } from "@vueuse/core";
 import { useMainStore } from "~/stores/mainStore";
 
-// Store einbinden
 const mainStore = useMainStore();
 
 interface Group {
   date: string | Date;
   shows: any[];
+  isToday?: boolean;
+}
+
+interface ProcessedItem {
+  type: "show" | "track";
+  id: string;
+  title: string;
+  artist?: string;
+  startTime: Date;
+  endTime: Date;
+  formattedTime: string;
+  date: string | Date;
+  isLive?: boolean;
 }
 
 const props = defineProps<{
@@ -27,245 +39,418 @@ const props = defineProps<{
   isLiveShow: (show: any) => boolean;
 }>();
 
-const {
-  groups,
-  formatDate,
-  getShowTitle,
-  getShowStart,
-  getShowEnd,
-  formatTimeRange,
-  getShowDescription,
-  isLiveShow,
-} = props;
-
+// Carousel setup
 const [emblaNode, emblaApi] = emblaCarouselVue({
   align: "start",
   containScroll: false,
 });
 
-const emblaContainer = ref<HTMLElement>();
+const currentSlideIndex = ref(0);
+const canScrollPrev = ref(false);
+const canScrollNext = ref(true);
 
-let containerStyle: string;
+// Time management
+const currentTime = ref(new Date());
+const timeUpdateInterval = ref<NodeJS.Timeout | null>(null);
 
-const saveTranslatePositions = useThrottleFn(() => {
-  if (!emblaContainer.value) return;
-  containerStyle = emblaContainer.value.style.transform;
-}, 100);
+// Current time formatting and positioning
+const currentTimeFormatted = computed(() => {
+  const hours = currentTime.value.getHours().toString().padStart(2, "0");
+  const minutes = currentTime.value.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+});
 
-async function restoreTranslatePositions() {
-  if (!emblaContainer.value) return;
-  emblaContainer.value.style.transform = containerStyle;
-}
+const currentTimeIndicatorStyle = computed(() => {
+  const now = currentTime.value;
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
 
-// Funktion zur Berechnung der Endzeit eines Tracks
-const calculateTrackEndTime = (track) => {
-  if (!track.starts || !track.length) return null;
+  // Check if current time is within our grid range (7-24h)
+  if (hours < GRID_START_HOUR || hours >= GRID_END_HOUR) {
+    return { display: "none" };
+  }
+
+  // Calculate grid position using same logic as events
+  const decimalHours = hours - GRID_START_HOUR + minutes / 60;
+  const segments = Math.floor(decimalHours * GRID_SEGMENTS_PER_HOUR);
+
+  // Calculate minute offset within the current segment (as percentage)
+  const remainingMinutes = minutes % 30;
+  const offsetPercentage = (remainingMinutes / 30) * 100;
+
+  return {
+    gridRow: `${segments + 1}`, // Position in the specific grid row (1-indexed)
+    display: "flex",
+    alignItems: "flex-start",
+    paddingTop: `${offsetPercentage}%`, // Offset within the grid cell
+  };
+});
+
+// Constants
+const GRID_START_HOUR = 7;
+const GRID_END_HOUR = 24;
+const GRID_TOTAL_HOURS = GRID_END_HOUR - GRID_START_HOUR;
+const GRID_SEGMENTS_PER_HOUR = 2; // 30-Minuten-Segmente
+const GRID_TOTAL_SEGMENTS = Math.min(
+  GRID_TOTAL_HOURS * GRID_SEGMENTS_PER_HOUR,
+  35
+); // Maximal 35 Segmente
+
+// Utility functions (memoized)
+const parseTrackLength = (
+  length: string
+): { hours: number; minutes: number; seconds: number } => {
+  const parts = length.split(":");
+  if (parts.length === 3) {
+    return {
+      hours: parseInt(parts[0] || "0", 10) || 0,
+      minutes: parseInt(parts[1] || "0", 10) || 0,
+      seconds: parseFloat(parts[2] || "0") || 0,
+    };
+  } else if (parts.length === 2) {
+    return {
+      hours: 0,
+      minutes: parseInt(parts[0] || "0", 10) || 0,
+      seconds: parseFloat(parts[1] || "0") || 0,
+    };
+  }
+  return { hours: 0, minutes: 0, seconds: 0 };
+};
+
+const calculateTrackEndTime = (track: any): Date | null => {
+  if (!track.starts) return null;
 
   const startTime = new Date(track.starts);
 
-  // Verarbeite den length-Wert (kann verschiedene Formate haben)
-  const lengthParts = track.length.split(":");
-  let hours = 0;
-  let minutes = 0;
-  let seconds = 0;
-
-  if (lengthParts.length === 3) {
-    // Format: "Stunden:Minuten:Sekunden"
-    hours = parseInt(lengthParts[0], 10);
-    minutes = parseInt(lengthParts[1], 10);
-    seconds = parseFloat(lengthParts[2]);
-  } else if (lengthParts.length === 2) {
-    // Format: "Minuten:Sekunden"
-    minutes = parseInt(lengthParts[0], 10);
-    seconds = parseFloat(lengthParts[1]);
+  // For tracks: calculate end time using cue_out (duration format HH:MM:SS)
+  if (track.cue_out) {
+    const { hours, minutes, seconds } = parseTrackLength(track.cue_out);
+    if (hours > 0 || minutes > 0 || seconds > 0) {
+      const endTime = new Date(startTime.getTime());
+      endTime.setHours(endTime.getHours() + hours);
+      endTime.setMinutes(endTime.getMinutes() + minutes);
+      endTime.setSeconds(endTime.getSeconds() + Math.floor(seconds));
+      return endTime;
+    }
   }
 
-  // Addiere Stunden, Minuten und Sekunden zum Startdatum
-  const endTime = new Date(startTime.getTime());
-  endTime.setHours(endTime.getHours() + hours);
-  endTime.setMinutes(endTime.getMinutes() + minutes);
-  endTime.setSeconds(endTime.getSeconds() + Math.floor(seconds));
+  // Fallback: Use length field if cue_out is not available
+  if (track.length) {
+    const { hours, minutes, seconds } = parseTrackLength(track.length);
+    const endTime = new Date(startTime.getTime());
+    endTime.setHours(endTime.getHours() + hours);
+    endTime.setMinutes(endTime.getMinutes() + minutes);
+    endTime.setSeconds(endTime.getSeconds() + Math.floor(seconds));
+    return endTime;
+  }
 
-  return endTime;
+  // If no duration info available, return startTime (0 duration)
+  return startTime;
 };
 
-const formatTrackTime = (dateTime) => {
-  // Überprüfen, ob dateTime ein gültiges Datum ist
-  if (!dateTime || !(dateTime instanceof Date) || isNaN(dateTime.getTime())) {
-    return "";
-  }
+const formatTrackTime = (dateTime: Date | null): string => {
+  if (!dateTime || isNaN(dateTime.getTime())) return "";
 
-  // Kopie des Datums erstellen, um das Original nicht zu verändern
-  const roundedTime = new Date(dateTime);
+  // No rounding - use exact time
+  const hours = dateTime.getHours().toString().padStart(2, "0");
+  const minutes = dateTime.getMinutes().toString().padStart(2, "0");
 
-  // Bei 30 Minuten oder mehr zur nächsten Stunde aufrunden, sonst abrunden
-  if (roundedTime.getMinutes() >= 30) {
-    roundedTime.setHours(roundedTime.getHours() + 1);
-  }
-
-  // Minuten und Sekunden auf 0 setzen (volle Stunde)
-  roundedTime.setMinutes(0);
-  roundedTime.setSeconds(0);
-  roundedTime.setMilliseconds(0);
-
-  // Formatieren als "HH:00"
-  const hours = roundedTime.getHours().toString().padStart(2, "0");
-
-  return `${hours}:00`;
+  return `${hours}:${minutes}`;
 };
 
-// Funktion zur Berechnung und Formatierung des Zeitbereichs eines Tracks
-const getTrackTimeRange = (track) => {
+const getTrackTimeRange = (track: any): string => {
   if (!track.starts) return "";
 
   const startTime = new Date(track.starts);
   const endTime = calculateTrackEndTime(track);
-
-  // Prüfen, ob die Zeiten gültig sind
   const startFormatted = formatTrackTime(startTime);
 
-  // Wenn keine Endzeit verfügbar ist oder die Berechnung fehlschlägt, nur Startzeit zurückgeben
   if (!endTime) return startFormatted;
 
   const endFormatted = formatTrackTime(endTime);
-
-  // Nur einen vollständigen String zurückgeben, wenn beide Teile vorhanden sind
   return `${startFormatted} – ${endFormatted}`;
 };
 
-// Neue Funktion zum Flatten der Shows und Tracks
-const flattenShowsAndTracks = computed(() => {
-  if (!groups || groups.length === 0) return [];
+// Helper function to convert time to grid segment
+const timeToGridSegment = (date: Date): number => {
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
 
-  const flattened = [];
+  // Convert to decimal hours from GRID_START_HOUR
+  const decimalHours = hours - GRID_START_HOUR + minutes / 60;
 
-  // Durch alle Gruppen (Tage) iterieren
-  for (const group of groups) {
-    const date = group.date;
+  // Convert to 30-minute segments (no rounding - floor for exact positioning)
+  const segments = Math.floor(decimalHours * GRID_SEGMENTS_PER_HOUR);
 
-    // Durch alle Shows des Tages iterieren
+  return Math.max(0, Math.min(segments, GRID_TOTAL_SEGMENTS - 1));
+};
+
+// Helper function to calculate show duration in segments
+const calculateShowDurationInSegments = (
+  startTime: Date,
+  endTime: Date
+): number => {
+  const startSegment = timeToGridSegment(startTime);
+
+  // Handle end time: if 00:00, calculate as if it's 24:00 (end of same day)
+  let endHours = endTime.getHours();
+  let endMinutes = endTime.getMinutes();
+
+  // If end time is 00:00, treat it as 24:00 for calculation
+  if (endHours === 0 && endMinutes === 0) {
+    endHours = 24;
+    endMinutes = 0;
+  }
+
+  // Calculate end segment with the corrected end time
+  let endDecimalHours = endHours - GRID_START_HOUR + endMinutes / 60;
+
+  // If end time is after our grid (24h), clamp it to the grid end
+  if (endDecimalHours > GRID_TOTAL_HOURS) {
+    endDecimalHours = GRID_TOTAL_HOURS;
+  }
+
+  const endSegment = Math.floor(endDecimalHours * GRID_SEGMENTS_PER_HOUR);
+  const clampedEndSegment = Math.max(
+    0,
+    Math.min(endSegment, GRID_TOTAL_SEGMENTS)
+  );
+
+  // Calculate exact duration in segments
+  const durationSegments = clampedEndSegment - startSegment;
+
+  // Debug logging
+  console.log(`🧮 Duration Calculation:`, {
+    startTime: startTime.toLocaleTimeString(),
+    originalEndTime: endTime.toLocaleTimeString(),
+    calculatedEndHours: endHours,
+    endDecimalHours,
+    startSegment,
+    endSegment,
+    clampedEndSegment,
+    durationSegments,
+    endTimeWasMidnight: endTime.getHours() === 0 && endTime.getMinutes() === 0,
+  });
+
+  // Ensure minimum 1 segment duration
+  return Math.max(1, durationSegments);
+};
+
+// Helper function to calculate item duration in segments (differentiates between shows and tracks)
+const calculateItemDurationInSegments = (item: ProcessedItem): number => {
+  if (item.type === "show") {
+    // For shows: use traditional start/end time calculation
+    return calculateShowDurationInSegments(item.startTime, item.endTime);
+  } else {
+    // For tracks: use calculated track end time (from cue points)
+    return calculateShowDurationInSegments(item.startTime, item.endTime);
+  }
+};
+
+// Format grid segment time for display
+const formatGridSegmentTime = (segment: number): string => {
+  const hours = Math.floor(segment / GRID_SEGMENTS_PER_HOUR) + GRID_START_HOUR;
+  const minutes = (segment % GRID_SEGMENTS_PER_HOUR) * 30;
+
+  return `${hours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}`;
+};
+
+// Main computed property - processes all items once
+const processedItems = computed(() => {
+  if (!props.groups?.length) return new Map<string, ProcessedItem[]>();
+
+  const itemsByDate = new Map<string, ProcessedItem[]>();
+
+  for (const group of props.groups) {
+    const dateKey = new Date(group.date).toDateString();
+    const items: ProcessedItem[] = [];
+
     for (const show of group.shows) {
-      // Show als Eintrag hinzufügen - aber nur wenn description "live" ist
-      const description = getShowDescription(show);
-      if (description && description.toLowerCase() === "live") {
-        flattened.push({
+      const description = props.getShowDescription(show);
+
+      // Log show processing
+      if (show.tracks?.length > 0) {
+        // console.log(`🎵 Processing show with tracks:`, {
+        //   showTitle: props.getShowTitle(show),
+        //   showStart: props.getShowStart(show),
+        //   showEnd: props.getShowEnd(show),
+        //   tracksCount: show.tracks.length,
+        //   firstTrack: show.tracks[0] ? {
+        //     title: show.tracks[0].title,
+        //     starts: show.tracks[0].starts,
+        //     length: show.tracks[0].length,
+        //     artist: show.tracks[0].artist || show.tracks[0].creator || show.tracks[0].performer
+        //   } : null
+        // });
+      }
+
+      // Only add live shows
+      if (description?.toLowerCase() === "live") {
+        const showStartTime = new Date(props.getShowStart(show));
+        const showEndTime = new Date(props.getShowEnd(show));
+
+        // Log show duration calculation
+        console.log(`📺 Live Show Duration:`, {
+          title: props.getShowTitle(show),
+          start: showStartTime,
+          end: showEndTime,
+          startFormatted: showStartTime.toLocaleTimeString(),
+          endFormatted: showEndTime.toLocaleTimeString(),
+          durationHours:
+            (showEndTime.getTime() - showStartTime.getTime()) /
+            (1000 * 60 * 60),
+          crossesMidnight: showEndTime.getTime() < showStartTime.getTime(),
+        });
+
+        items.push({
           type: "show",
-          id: show.id || `show-${show.name}-${getShowStart(show)}`,
-          title: getShowTitle(show),
-          startTime: getShowStart(show),
-          endTime: getShowEnd(show),
-          description: description,
-          formattedTime: formatTimeRange(
-            getShowStart(show),
-            getShowEnd(show),
+          id: show.id || `show-${show.name}-${props.getShowStart(show)}`,
+          title: props.getShowTitle(show),
+          startTime: showStartTime,
+          endTime: showEndTime,
+          formattedTime: props.formatTimeRange(
+            props.getShowStart(show),
+            props.getShowEnd(show),
             false
           ),
-          date: date,
-          isLive: isLiveShow(show),
-          rawData: show,
+          date: group.date,
+          isLive: props.isLiveShow(show),
         });
       }
 
-      // Wenn Show Tracks hat, diese auch als Einträge hinzufügen
-      if (show.tracks && show.tracks.length > 0) {
+      // Add tracks
+      if (show.tracks?.length) {
         for (const track of show.tracks) {
-          // Überprüfen, ob der Track gültige Daten enthält
-          if (!track || !track.title) continue;
+          if (!track?.title) continue;
 
           const startTime = track.starts ? new Date(track.starts) : null;
           const endTime = calculateTrackEndTime(track);
 
-          // Nur den Track-Titel verwenden, ohne Künstlernamen
-          const trackTitle = track.title || "Unbekannter Titel";
+          // Log track processing
+          if (startTime) {
+            console.log(`🎵 Processing track:`, {
+              title: track.title,
+              startTime,
+              endTime,
+              rawStarts: track.starts,
+              rawLength: track.length,
+              calculatedDuration: endTime
+                ? (endTime.getTime() - startTime.getTime()) / 1000 / 60
+                : null,
+            });
+          }
 
-          flattened.push({
-            type: "track",
-            id: track.id || `track-${trackTitle}-${Date.now()}`,
-            title: trackTitle, // Nur den Titel ohne Künstlernamen
-            startTime: startTime,
-            endTime: endTime,
-            formattedTime: getTrackTimeRange(track),
-            parentShowId: show.id || `show-${show.name}-${getShowStart(show)}`,
-            date: date,
-            rawData: track,
-          });
+          if (startTime) {
+            items.push({
+              type: "track",
+              id: track.id || `track-${track.title}-${startTime.getTime()}`,
+              title: track.title,
+              artist: track.artist || track.creator || track.performer || null,
+              startTime,
+              endTime: endTime || startTime,
+              formattedTime: getTrackTimeRange(track),
+              date: group.date,
+            });
+          }
         }
       }
     }
+
+    // Sort by start time and filter by time range (7-24h)
+    const filteredItems = items
+      .filter((item) => {
+        const startHour =
+          item.startTime.getHours() + item.startTime.getMinutes() / 60;
+        const endHour =
+          item.endTime.getHours() + item.endTime.getMinutes() / 60;
+        return (
+          (startHour >= GRID_START_HOUR && startHour < GRID_END_HOUR) ||
+          (endHour > GRID_START_HOUR && startHour < GRID_END_HOUR)
+        );
+      })
+      .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+
+    itemsByDate.set(dateKey, filteredItems);
   }
 
-  // Nach Startzeit sortieren
-  return flattened.sort((a, b) => {
-    const timeA =
-      a.type === "track" && a.startTime
-        ? a.startTime.getTime()
-        : new Date(a.startTime).getTime();
-    const timeB =
-      b.type === "track" && b.startTime
-        ? b.startTime.getTime()
-        : new Date(b.startTime).getTime();
-    return timeA - timeB;
-  });
+  return itemsByDate;
 });
-// Referenz für den aktuellen Slide-Index
-const currentSlideIndex = ref(0);
-// Anzahl der Slides
-const slideCount = computed(() => groups.length);
 
-// Navigationsroutinen
-const scrollPrev = () => {
-  emblaApi.value?.scrollPrev();
+// Get items for specific day (now just a lookup)
+const getItemsForDay = (date: string | Date): ProcessedItem[] => {
+  const dateKey = new Date(date).toDateString();
+  return processedItems.value.get(dateKey) || [];
 };
 
-const scrollNext = () => {
-  emblaApi.value?.scrollNext();
+// Grid-based position calculation
+const getItemGridPosition = (item: ProcessedItem) => {
+  const startSegment = timeToGridSegment(item.startTime);
+  const durationSegments = calculateItemDurationInSegments(item);
+
+  const gridPosition = {
+    gridRowStart: startSegment + 1, // CSS Grid ist 1-indexed
+    gridRowEnd: startSegment + durationSegments + 1,
+    gridColumn: 1,
+  };
+
+  // Debug logging for shows
+  if (item.type === "show") {
+    console.log(`📍 Grid Position for Show:`, {
+      title: item.title,
+      startTime: item.startTime.toLocaleTimeString(),
+      endTime: item.endTime.toLocaleTimeString(),
+      startSegment,
+      durationSegments,
+      gridRowStart: gridPosition.gridRowStart,
+      gridRowEnd: gridPosition.gridRowEnd,
+    });
+  }
+
+  return gridPosition;
 };
 
-// Springe zu einem bestimmten Slide
-const scrollTo = (index) => {
-  emblaApi.value?.scrollTo(index);
+// Navigation
+const scrollPrev = () => emblaApi.value?.scrollPrev();
+const scrollNext = () => emblaApi.value?.scrollNext();
+const scrollTo = (index: number) => emblaApi.value?.scrollTo(index);
+
+// Throttled save function
+const saveTranslatePositions = useThrottleFn(() => {
+  // Implementation if needed
+}, 100);
+
+const updateCurrentTime = () => {
+  currentTime.value = new Date();
 };
 
-// Prüfen, ob das Scrollen zurück möglich ist
-const canScrollPrev = ref(false);
-// Prüfen, ob das Scrollen vorwärts möglich ist
-const canScrollNext = ref(true);
-
+// Lifecycle
 onMounted(() => {
   if (emblaApi.value) {
-    emblaApi.value.on("scroll", saveTranslatePositions);
-    emblaApi.value.on("destroy", restoreTranslatePositions);
-
-    // Index-Updates und Scroll-Limitierungen
     emblaApi.value.on("select", () => {
       currentSlideIndex.value = emblaApi.value?.selectedScrollSnap() || 0;
       canScrollPrev.value = emblaApi.value?.canScrollPrev() || false;
       canScrollNext.value = emblaApi.value?.canScrollNext() || false;
     });
   }
+
   updateCurrentTime();
-  timeUpdateInterval.value = setInterval(updateCurrentTime, 30000); // Jede Minute aktualisieren
+  timeUpdateInterval.value = setInterval(updateCurrentTime, 30000);
 });
 
-// Cleanup beim Unmounten
 onUnmounted(() => {
   if (timeUpdateInterval.value) {
     clearInterval(timeUpdateInterval.value);
   }
 });
 
-// Funktion zum Aktualisieren der aktuellen Zeit
-const updateCurrentTime = () => {
-  currentTime.value = new Date();
-};
-
-// Watch auf Änderungen der groups zum Re-Initialisieren der Embla-Instanz
+// Watch for groups changes
 watch(
-  () => groups,
+  () => props.groups,
   () => {
     if (emblaApi.value) {
       emblaApi.value.reInit();
-      // Nach Re-Init den Status aktualisieren
       currentSlideIndex.value = emblaApi.value?.selectedScrollSnap() || 0;
       canScrollPrev.value = emblaApi.value?.canScrollPrev() || false;
       canScrollNext.value = emblaApi.value?.canScrollNext() || false;
@@ -273,123 +458,12 @@ watch(
   },
   { deep: true }
 );
-
-// Funktion zum Filtern der Items für einen bestimmten Tag
-const getItemsForDay = (date) => {
-  return flattenShowsAndTracks.value.filter((item) => {
-    // Prüfen, ob das Datum übereinstimmt
-    const isSameDate =
-      new Date(item.date).toDateString() === new Date(date).toDateString();
-
-    if (!isSameDate) return false;
-
-    // Start- und Endzeit als Date-Objekte
-    const startDate =
-      item.type === "track" && item.startTime
-        ? item.startTime
-        : new Date(item.startTime);
-
-    const endDate =
-      item.type === "track" && item.endTime
-        ? item.endTime
-        : new Date(item.endTime);
-
-    // Stunde als Zahl (0-23)
-    const startHour = startDate.getHours() + startDate.getMinutes() / 60;
-    const endHour = endDate.getHours() + endDate.getMinutes() / 60;
-
-    // Prüfen, ob die Show innerhalb des Zeitfensters 8:00 - 0:00 Uhr liegt
-    // Entweder beginnt sie nach 8 Uhr, oder sie endet nach 8 Uhr und beginnt vor Mitternacht
-    return (
-      (startHour >= 8 && startHour < 24) || (endHour > 8 && startHour < 24)
-    );
-  });
-};
-
-// Funktion zum Berechnen der Position und Größe eines Items im Grid
-const getItemPositionStyle = (item) => {
-  // Start- und Endzeit als Date-Objekte
-  const startDate =
-    item.type === "track" && item.startTime
-      ? item.startTime
-      : new Date(item.startTime);
-
-  const endDate =
-    item.type === "track" && item.endTime
-      ? item.endTime
-      : new Date(item.endTime);
-
-  // Stunde als Zahl (0-23)
-  const startHour = startDate.getHours() + startDate.getMinutes() / 60;
-  const endHour = endDate.getHours() + endDate.getMinutes() / 60;
-
-  // Begrenzung auf unseren Zeitbereich (8-24 Uhr)
-  const gridStartHour = 8;
-  const gridEndHour = 24;
-
-  // Position berechnen (relativ zum Start des Grids)
-  const startPosition = Math.max(0, startHour - gridStartHour);
-  const endPosition = Math.min(
-    gridEndHour - gridStartHour,
-    endHour - gridStartHour
-  );
-
-  // Länge des Items
-  const duration = endPosition - startPosition;
-
-  // CSS-Positionen berechnen (in Prozent)
-  const top = (startPosition / (gridEndHour - gridStartHour)) * 100;
-  const height = (duration / (gridEndHour - gridStartHour)) * 100;
-
-  // Sicherstellen, dass die Elemente eine Mindesthöhe haben
-  const minHeight = 4; // Prozent
-
-  return {
-    top: `calc(${top}%)`,
-    height: `calc(${Math.max(height, minHeight)}%)`,
-  };
-};
-
-const currentTime = ref(new Date());
-const timeUpdateInterval = ref(null);
-
-// Formatierte aktuelle Uhrzeit (HH:MM)
-const formattedCurrentTime = computed(() => {
-  const hours = currentTime.value.getHours().toString().padStart(2, "0");
-  const minutes = currentTime.value.getMinutes().toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
-});
-
-// Position des aktuellen Zeitmarkers berechnen
-const currentTimePosition = computed(() => {
-  const now = currentTime.value;
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-
-  // Stunde als Dezimalzahl (z.B. 14.5 für 14:30)
-  const decimalHour = hours + minutes / 60;
-
-  // Position in Prozent berechnen (relativ zum Zeitfenster 8-24 Uhr)
-  const gridStartHour = 8;
-  const gridEndHour = 24;
-
-  // Wenn außerhalb des sichtbaren Zeitraums, nicht anzeigen
-  if (decimalHour < gridStartHour || decimalHour >= gridEndHour) {
-    return { display: "none" };
-  }
-
-  // Position berechnen (in Prozent)
-  const position =
-    ((decimalHour - gridStartHour) / (gridEndHour - gridStartHour)) * 100;
-
-  return {
-    top: `${position}%`,
-  };
-});
 </script>
 <template>
-  <div clas="module-schedule-slider">
+  <div class="module-schedule-slider">
+    <!-- Navigation Controls -->
     <div class="navigation-controls">
+      <!-- Channel Switch -->
       <div class="location-switch">
         <button
           @click="mainStore.setActiveScheduleLocation('channelOne')"
@@ -416,16 +490,20 @@ const currentTimePosition = computed(() => {
           CH2
         </button>
       </div>
+
+      <!-- Dot Navigation -->
       <div class="dot-navigation">
         <button
-          v-for="(_, index) in groups"
-          :key="'dot-' + index"
+          v-for="(_, index) in props.groups"
+          :key="`dot-${index}`"
           @click="scrollTo(index)"
           class="dot"
           :class="{ active: currentSlideIndex === index }"
-          :aria-label="`Tag ${index + 1} von ${groups.length}`"
-        ></button>
+          :aria-label="`Tag ${index + 1} von ${props.groups.length}`"
+        />
       </div>
+
+      <!-- Arrow Navigation -->
       <div class="arrow-navigation">
         <button
           @click="scrollPrev"
@@ -434,13 +512,7 @@ const currentTimePosition = computed(() => {
           :disabled="!canScrollPrev"
           aria-label="Vorheriger Tag"
         >
-          <svg
-            width="22"
-            height="20"
-            viewBox="0 0 22 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg width="22" height="20" viewBox="0 0 22 20" fill="none">
             <path
               d="M1.67986e-07 9.84832L21.1305 0.452866L21.1305 19.2438L1.67986e-07 9.84832Z"
               fill="black"
@@ -455,13 +527,7 @@ const currentTimePosition = computed(() => {
           :disabled="!canScrollNext"
           aria-label="Nächster Tag"
         >
-          <svg
-            width="22"
-            height="20"
-            viewBox="0 0 22 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg width="22" height="20" viewBox="0 0 22 20" fill="none">
             <path
               d="M22 9.84894L0.86951 19.2444L0.869511 0.453482L22 9.84894Z"
               fill="black"
@@ -470,96 +536,172 @@ const currentTimePosition = computed(() => {
         </button>
       </div>
     </div>
-    <section ref="emblaNode" class="embla schedule__city">
-      <div
-        v-if="groups.length >= 0"
-        ref="emblaContainer"
-        class="embla__container show-days"
-      >
-        <div
-          v-for="(group, index) in groups"
-          :key="'group-' + index"
-          class="show-day embla__slide"
-          :class="{
-            'show-day--today': group.isToday,
-            'embla__slide--active': currentSlideIndex === index,
-          }"
-        >
-          <h3 class="show-day__heading">
-            <span v-if="group.isToday" class="today-badge">Today</span
-            >{{ formatDate(group.date, false) }}
-          </h3>
 
-          <!-- Zeitraster für 08:00 - 00:00 Uhr -->
-          <div class="events">
-            <!-- Grid für Shows und Tracks -->
-            <div class="events-grid">
-              <template
-                v-for="(item, itemIndex) in getItemsForDay(group.date)"
-                :key="'item-' + itemIndex"
-              >
-                <div
-                  class="event-item"
-                  :class="{
-                    'event-item--show': item.type === 'show',
-                    'event-item--track': item.type === 'track',
-                  }"
-                  :style="getItemPositionStyle(item)"
-                >
-                  <div
-                    class="event-item__content"
-                    :class="{ live: isLiveShow(item) }"
-                  >
-                    <div class="event-item__time">{{ item.formattedTime }}</div>
-                    <div class="event-item__title">{{ item.title }}</div>
+    <!-- Schedule Content -->
+    <div class="schedule__content">
+      <!-- Schedule Slider Column -->
+      <div class="schedule__slider-column">
+        <!-- Carousel -->
+        <section ref="emblaNode" class="embla schedule__city">
+          <div
+            v-if="props.groups.length > 0"
+            class="embla__container show-days"
+          >
+            <div
+              v-for="(group, index) in props.groups"
+              :key="`group-${index}`"
+              class="show-day embla__slide"
+              :class="{
+                'show-day--today': group.isToday,
+                'embla__slide--active': currentSlideIndex === index,
+              }"
+            >
+              <!-- Day Header -->
+              <h3 class="show-day__heading">
+                <span v-if="group.isToday" class="today-badge">Today</span>
+                {{ props.formatDate(group.date, false) }}
+              </h3>
+
+              <!-- Day Content with Time Display and Events -->
+              <div class="day-content">
+                <!-- Time Display Column -->
+                <div class="day-content__time-column">
+                  <div class="time-display">
+                    <!-- Time slots for each hour from 7-24 -->
+                    <div class="time-display__slots">
+                      <div
+                        v-for="hour in 17"
+                        :key="`time-${hour}`"
+                        class="time-slot"
+                      >
+                        <div class="time-slot__label">
+                          {{ String(6 + hour).padStart(2, "0") }}:00
+                        </div>
+                        <div class="time-slot__line"></div>
+                      </div>
+
+                      <!-- Current time marker -->
+                      <div
+                        class="current-time-marker"
+                        :style="currentTimeIndicatorStyle"
+                      >
+                        <div class="current-time-marker__pulse" />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </template>
+
+                <!-- Events Column -->
+                <div class="day-content__events-column">
+                  <!-- Events Grid -->
+                  <div class="events">
+                    <div class="events-grid">
+                      <!-- Actual Events -->
+                      <div
+                        v-for="(item, itemIndex) in getItemsForDay(group.date)"
+                        :key="`item-${itemIndex}`"
+                        class="event-item"
+                        :class="{
+                          'event-item--show': item.type === 'show',
+                          'event-item--track': item.type === 'track',
+                          'event-item--live-show':
+                            item.type === 'show' && item.isLive,
+                        }"
+                        :style="getItemGridPosition(item)"
+                      >
+                        <div
+                          class="event-item__content"
+                          :class="{ live: item.isLive }"
+                        >
+                          <h4 class="event-item__time">
+                            {{ item.formattedTime }}
+                          </h4>
+                          <h2 class="event-item__title">
+                            <span
+                              v-if="item.type === 'show' && item.isLive"
+                              class="live-indicator"
+                              >LIVE</span
+                            >
+                            {{ item.title }}
+                          </h2>
+                          <h3
+                            v-if="item.type === 'track' && item.artist"
+                            class="event-item__artist"
+                          >
+                            with&nbsp;{{ item.artist }}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
-      <div class="time-markers__container">
-        <div class="time-markers">
-          <div v-for="hour in 17" :key="'hour-' + hour" class="time-marker">
-            {{ String(7 + hour).padStart(2, "0") }}:00
-          </div>
-          <!-- Neuer aktueller Zeitmarker -->
-          <div class="current-time-marker" :style="currentTimePosition">
-            <div class="current-time-marker__pulse"></div>
-          </div>
-        </div>
-      </div>
-    </section>
+    </div>
   </div>
 </template>
 <style scoped lang="postcss">
+.module-schedule-slider {
+  width: 100%;
+  max-width: var(--page-max-width);
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule__content {
+  z-index: 10;
+  width: 100%;
+}
+
+.schedule__slider-column {
+  flex-grow: 1;
+  width: 100%;
+  max-height: calc(
+    100svh - var(--nav-height) - var(--big-margin) - var(--schedule-nav-height)
+  );
+}
+
+.schedule-city {
+  width: max-content;
+}
+
 .embla {
-  @apply overflow-hidden;
   height: max-content;
   width: 100%;
   max-width: calc(
     var(--page-max-width) + (100vw - var(--page-max-width)) / 2 + 2.75rem
   );
   position: relative;
-  margin: 0 0 0 -2.75rem;
 
   &__container {
     @apply flex backface-hidden touch-pan-y;
     height: 100%;
-    width: 100%;
-    padding: 0 0 0;
+    width: max-content;
+    margin: 0 0 0 calc(var(--big-margin) * -1);
+    max-height: calc(
+      100svh - var(--nav-height) - var(--big-margin) -
+        var(--schedule-nav-height)
+    );
   }
 
   &__slide {
     @apply flex flex-grow-0 flex-shrink-0 flex-basis-auto max-w-full min-w-0 relative;
-    &--active {
-      padding: 0 0 0 2.75rem;
-    }
 
     :deep(img),
     :deep(.video-wrapper) {
       @apply h-[var(--carousel-height)] max-w-full w-auto;
+    }
+    &--active {
+      .show-day__heading {
+        margin: 0 0 var(--small-padding)
+          calc(var(--small-padding) + var(--big-margin));
+      }
+      .day-content__time-column {
+        width: var(--big-margin);
+      }
     }
   }
 }
@@ -604,6 +746,7 @@ const currentTimePosition = computed(() => {
     }
 
     &:hover:not(&--active) {
+      opacity: 0.8;
     }
   }
 
@@ -678,9 +821,16 @@ const currentTimePosition = computed(() => {
 
 .show-day {
   display: flex;
-  flex-flow: column wrap;
+  flex-flow: column;
   justify-content: flex-start;
   align-items: flex-start;
+  flex-grow: 1;
+  max-height: calc(
+    100svh - var(--schedule-nav-height) - var(--nav-height) - var(--big-margin) -
+      var(--h4-size)
+  );
+  overflow-y: scroll;
+  overflow-x: visible;
 
   & > * {
     font-weight: 550;
@@ -690,6 +840,7 @@ const currentTimePosition = computed(() => {
   &__heading {
     font-size: var(--h4-size);
     color: var(--color-text);
+    margin: 0 0 var(--small-padding) var(--small-padding);
     .today-badge {
       color: var(--color-pink);
       text-transform: uppercase;
@@ -698,117 +849,284 @@ const currentTimePosition = computed(() => {
   }
 }
 
-.time-markers {
-  &__container {
-    position: absolute;
-    top: 0;
-    margin: calc(var(--h3-size) + var(--base-padding) / 2) 0 0;
-    height: 150vh;
-    display: flex;
-    width: 2.75;
+.day-content {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 0;
+  width: 100%;
+
+  &__time-column {
+    width: var(--big-margin);
+    flex-shrink: 0;
+    width: 0;
+    overflow: hidden;
+    transition: width 0.125s ease;
   }
 
-  font-size: var(--base-font-size);
-  font-weight: 550;
-  position: relative;
-  height: 100%;
-  width: 25px;
+  &__events-column {
+    flex: 1;
+    width: calc(100% - var(--big-margin));
+  }
+}
 
-  .time-marker {
-    @apply absolute w-full text-right pr-2;
-    height: 20px;
-    margin: var(--small-padding) 0 0 0;
+.events {
+  @apply relative;
+  width: clamp(250px, 30svw, 40svh);
+
+  &-grid {
+    display: grid;
+    grid-template-rows: repeat(
+      35,
+      var(--schedule-block-height)
+    ); /* Maximal 35 half-hour segments - fixed height */
+    grid-template-columns: 1fr;
+    gap: var(--small-padding); /* No gap for precise grid alignment */
+    position: relative;
+    padding: 0;
+  }
+}
+
+.event-item {
+  background: transparent;
+  overflow: hidden;
+  z-index: 2;
+  position: relative;
+
+  &__content {
+    background-color: var(--color-grey-transparent);
+    padding: var(--small-padding);
+    height: 100%;
+    border: 1px solid rgba(var(--color-text-rgb), 0.1);
+    box-sizing: border-box; /* Ensure padding doesn't affect total height */
+    margin: 0 var(--small-padding) 0 0;
+
+    &.live {
+      border-color: var(--color-pink);
+    }
+
+    @apply flex flex-col overflow-hidden;
+  }
+
+  & * {
     color: var(--color-text);
     @media (prefers-color-scheme: dark) {
       color: var(--color-bg);
     }
+  }
 
-    &:nth-child(1) {
-      top: 0%;
+  &--show {
+    .event-item__content {
+      background-color: rgba(var(--color-pink-rgb), 0.1);
+      border: 2px solid var(--color-pink);
+      position: relative;
+      margin: 0 var(--small-padding) 0 0;
+
+      &.live {
+        background-color: var(--color-pink);
+        border-color: var(--color-pink);
+        box-shadow: 0 0 8px rgba(var(--color-pink-rgb), 0.4);
+      }
     }
-    &:nth-child(2) {
-      top: 6.25%;
+  }
+
+  .live-indicator {
+    font-size: var(--small-font-size);
+    font-weight: 400;
+    color: var(--color-grey);
+    margin-right: 4px;
+    position: absolute;
+    top: var(--small-padding);
+    right: var(--small-padding);
+
+    .live & {
+      color: white;
     }
-    &:nth-child(3) {
-      top: 12.5%;
+  }
+
+  &__time {
+    font-size: var(--small-font-size);
+    margin: 0 0 calc(var(--small-padding) / 2) 0;
+    opacity: 75%;
+    line-height: 1.2;
+  }
+
+  &__title {
+    font-size: var(--h4-size);
+    font-weight: 400;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  &__artist {
+    font-size: var(--h4-size);
+    font-weight: 400;
+    margin-top: calc(var(--small-padding) / 4);
+    overflow: hidden;
+  }
+}
+
+.time-display {
+  position: relative;
+  width: 100%;
+
+  &__slots {
+    display: grid;
+    grid-template-rows: repeat(
+      35,
+      var(--schedule-block-height)
+    ); /* Identical to events-grid: 35 segments with block-height */
+    grid-template-columns: 1fr;
+    gap: var(--small-padding); /* Same gap as events-grid */
+    position: relative;
+  }
+}
+
+.time-slot {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 0;
+
+  /* Each time slot occupies 2 grid rows (1 hour = 2 segments of 30 minutes) */
+  /* 07:00 */
+  &:nth-child(1) {
+    grid-row: 1 / 3;
+  }
+  /* 08:00 */
+  &:nth-child(2) {
+    grid-row: 3 / 5;
+  }
+  /* 09:00 */
+  &:nth-child(3) {
+    grid-row: 5 / 7;
+  }
+  /* 10:00 */
+  &:nth-child(4) {
+    grid-row: 7 / 9;
+  }
+  /* 11:00 */
+  &:nth-child(5) {
+    grid-row: 9 / 11;
+  }
+  /* 12:00 */
+  &:nth-child(6) {
+    grid-row: 11 / 13;
+  }
+  /* 13:00 */
+  &:nth-child(7) {
+    grid-row: 13 / 15;
+  }
+  /* 14:00 */
+  &:nth-child(8) {
+    grid-row: 15 / 17;
+  }
+  /* 15:00 */
+  &:nth-child(9) {
+    grid-row: 17 / 19;
+  }
+  /* 16:00 */
+  &:nth-child(10) {
+    grid-row: 19 / 21;
+  }
+  /* 17:00 */
+  &:nth-child(11) {
+    grid-row: 21 / 23;
+  }
+  /* 18:00 */
+  &:nth-child(12) {
+    grid-row: 23 / 25;
+  }
+  /* 19:00 */
+  &:nth-child(13) {
+    grid-row: 25 / 27;
+  }
+  /* 20:00 */
+  &:nth-child(14) {
+    grid-row: 27 / 29;
+  }
+  /* 21:00 */
+  &:nth-child(15) {
+    grid-row: 29 / 31;
+  }
+  /* 22:00 */
+  &:nth-child(16) {
+    grid-row: 31 / 33;
+  }
+  /* 23:00 */
+  &:nth-child(17) {
+    grid-row: 33 / 35;
+  }
+
+  &__label {
+    font-size: var(--small-font-size);
+    font-weight: 550;
+    color: var(--color-grey);
+    text-align: right;
+    padding-right: var(--small-padding);
+    line-height: 1;
+
+    @media (prefers-color-scheme: dark) {
+      color: var(--color-grey);
     }
-    &:nth-child(4) {
-      top: 18.75%;
-    }
-    &:nth-child(5) {
-      top: 25%;
-    }
-    &:nth-child(6) {
-      top: 31.25%;
-    }
-    &:nth-child(7) {
-      top: 37.5%;
-    }
-    &:nth-child(8) {
-      top: 43.75%;
-    }
-    &:nth-child(9) {
-      top: 50%;
-    }
-    &:nth-child(10) {
-      top: 56.25%;
-    }
-    &:nth-child(11) {
-      top: 62.5%;
-    }
-    &:nth-child(12) {
-      top: 68.75%;
-    }
-    &:nth-child(13) {
-      top: 75%;
-    }
-    &:nth-child(14) {
-      top: 81.25%;
-    }
-    &:nth-child(15) {
-      top: 87.5%;
-    }
-    &:nth-child(16) {
-      top: 93.75%;
-    }
-    &:nth-child(17) {
-      top: 100%;
+  }
+
+  &__line {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 1px;
+    background-color: rgba(var(--color-text-rgb), 0.2);
+
+    @media (prefers-color-scheme: dark) {
+      background-color: rgba(var(--color-bg-rgb), 0.2);
     }
   }
 }
 
 .current-time-marker {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  height: 20px;
+  z-index: 10;
+  pointer-events: none;
   width: 100%;
-  z-index: 5;
 
   &__pulse {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    right: 0;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background-color: var(--color-pink);
-    z-index: 2;
-    transform: translate(-50%, 50%);
+    position: relative;
+    margin-left: calc(var(--base-padding) * -2);
 
     &::before {
       content: "";
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 20px;
-      height: 15px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background-color: var(--color-pink);
       transform: translate(-50%, -50%);
-      z-index: 1;
-      opacity: 0.8;
+      opacity: 0.6;
       animation: pulseOpacity 2s ease-in-out infinite;
-      filter: blur(5px);
+      filter: blur(4px);
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background-color: var(--color-pink);
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 10px var(--color-pink);
     }
   }
 }
@@ -825,64 +1143,6 @@ const currentTimePosition = computed(() => {
   100% {
     opacity: 0.5;
     transform: translate(-50%, -50%) scale(0.8);
-  }
-}
-
-.events {
-  @apply relative;
-  height: 150vh;
-  display: flex;
-  width: clamp(200px, 24svw, 33svh);
-
-  &-grid {
-    @apply flex-grow relative;
-    display: flex;
-    flex-flow: column nowrap;
-    gap: var(--base-padding) 0;
-  }
-}
-
-.event-item {
-  @apply absolute overflow-hidden;
-  min-height: 24px;
-  padding: var(--base-padding) 0 0 0;
-  width: calc(100% - 20px);
-  z-index: 1;
-  transition: transform 0.2s, box-shadow 0.2s;
-
-  &__content {
-    background-color: var(--color-grey);
-    padding: calc(var(--small-padding) / 2) var(--small-padding);
-
-    &.live {
-      background-color: var(--color-pink);
-    }
-
-    @apply flex flex-col overflow-hidden;
-    height: 100%;
-  }
-
-  & > * {
-    color: var(--color-text);
-    @media (prefers-color-scheme: dark) {
-      color: var(--color-bg);
-    }
-  }
-
-  &--show {
-  }
-
-  &--track {
-  }
-
-  &__time {
-    font-size: var(--small-font-size);
-    margin: 0 0 var(--small-padding) 0;
-    opacity: 75%;
-  }
-
-  &__title {
-    @apply font-medium text-sm truncate;
   }
 }
 </style>

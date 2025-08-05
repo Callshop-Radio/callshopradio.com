@@ -137,6 +137,7 @@ export function useScheduleService() {
   );
   const processedWien = computed(() => processWeekInfo(weekInfoWienData.value));
 
+
   // Getters for sorted shows
   const getDusseldorfShows = () => {
     return processedDusseldorf.value.sort(
@@ -153,7 +154,7 @@ export function useScheduleService() {
         new Date(b.starts || b.start_timestamp)
     );
   };
-
+  
   return {
     fetchScheduleData,
     getDusseldorfShows,
