@@ -163,6 +163,7 @@ function getItemRoute(item) {
         );
       }
       // Fallback falls parentShow nicht verfügbar ist
+      console.log(`No parent show found for item ${item?.slug?.current}`);
       return localePath(`/shows/${item?.slug?.current}`);
 
     case "article":
