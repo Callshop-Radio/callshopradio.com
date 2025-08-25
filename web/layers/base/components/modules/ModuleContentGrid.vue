@@ -588,8 +588,6 @@ function getItemRoute(item) {
         );
       }
       // Fallback falls parentShow nicht verfügbar ist
-      console.log(`No parent show found for item ${item?.slug?.current}`);
-
       return localePath(`/shows/${item?.slug?.current}`);
 
     case "article":
@@ -885,8 +883,8 @@ onMounted(() => {
         module.style || 'default'
       } ${categoryType.toLowerCase()}`"
     >
-      <!-- <div class="module-grid__header">
-        <div class="module-grid__header__left">
+      <div class="module-grid__header">
+        <!-- <div class="module-grid__header__left">
           <h3 v-if="module.title" class="module-grid__title">
             {{ module.title }}
           </h3>
@@ -899,326 +897,315 @@ onMounted(() => {
           <section v-else class="module-grid__header__type">
             <h2 class="module-grid__header__type__pill">{{ categoryType }}</h2>
           </section>
-        </div>
-      </div> -->
+        </div> -->
+      </div>
 
       <!-- Filter Panel -->
-      <div class="content-grid__filter-section">
-        <div class="content-grid__filter-bar">
-          <div class="active-filters">
-            <h4
-              class="active-filters__title"
-              :class="{ active: activeFilters.size > 0 }"
-              @click="resetFilters()"
-            >
-              <span @click="resetFilters()" class="close-cross"
-                ><svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 8 8"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle cx="4" cy="4" r="4" fill="black" />
-                  <rect
-                    x="1.77783"
-                    y="2.4082"
-                    width="0.888889"
-                    height="5.33333"
-                    transform="rotate(-45 1.77783 2.4082)"
-                    fill="#E8E8E8"
-                  />
-                  <path
-                    d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
-                    fill="#E8E8E8"
-                  />
-                </svg> </span
-              >Tags
-            </h4>
-            <div class="active-filters__list tags">
-              <div
-                v-for="filterId in activeFilters"
-                :key="filterId"
-                class="active-filter tag"
-              >
-                <span
-                  class="active-filter__name"
-                  @click="toggleFilter(filterId)"
-                >
-                  {{ getTagNameById(filterId)
-                  }}<span @click="toggleFilter(filterId)" class="close-cross"
-                    ><svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 8 8"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      @click="toggleFilter(filterId)"
-                    >
-                      <circle cx="4" cy="4" r="4" fill="black" />
-                      <rect
-                        x="1.77783"
-                        y="2.4082"
-                        width="0.888889"
-                        height="5.33333"
-                        transform="rotate(-45 1.77783 2.4082)"
-                        fill="#E8E8E8"
-                      />
-                      <path
-                        d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
-                        fill="#E8E8E8"
-                      />
-                    </svg>
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
-          <!-- Cities-->
-          <div
-            v-if="categorizedTags.cities && categorizedTags.cities.length > 0"
-            class="filter-cities tags"
+      <div class="content-grid__filter-bar">
+        <div class="active-filters">
+          <h4
+            class="active-filters__title"
+            :class="{ active: activeFilters.size > 0 }"
+            @click="resetFilters()"
           >
-            <h4 class="filter-cities__title">City</h4>
-            <div class="filter-tags">
-              <!-- Hauptstädte anzeigen -->
-              <button
-                v-for="tag in categorizedTags.cities.filter((tag) =>
-                  isMainCity(tag)
-                )"
-                :key="tag._id"
-                class="tag"
-                :class="[
-                  'filter-tag',
-                  'filter-tag--city',
-                  { 'filter-tag--active': activeFilters.has(tag._id) },
-                ]"
-                @click="toggleFilter(tag._id)"
+            <span @click="resetFilters()" class="close-cross"
+              ><svg
+                width="10"
+                height="10"
+                viewBox="0 0 8 8"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                {{ parseI18nObj(tag.title) }}
-              </button>
-
-              <!-- "Others"-Option anzeigen, wenn es Tags gibt, die keine Hauptstädte sind -->
-              <button
-                v-if="categorizedTags.cities.some((tag) => !isMainCity(tag))"
-                class="tag"
-                :class="[
-                  'filter-tag',
-                  'filter-tag--city',
-                  { 'filter-tag--active': isOtherCitiesActive },
-                ]"
-                @click="toggleFilter('others')"
-              >
-                Elsewhere
-              </button>
+                <circle cx="4" cy="4" r="4" fill="black" />
+                <rect
+                  x="1.77783"
+                  y="2.4082"
+                  width="0.888889"
+                  height="5.33333"
+                  transform="rotate(-45 1.77783 2.4082)"
+                  fill="#E8E8E8"
+                />
+                <path
+                  d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
+                  fill="#E8E8E8"
+                />
+              </svg> </span
+            >Tags
+          </h4>
+          <div class="active-filters__list tags">
+            <div
+              v-for="filterId in activeFilters"
+              :key="filterId"
+              class="active-filter tag"
+            >
+              <span class="active-filter__name" @click="toggleFilter(filterId)">
+                {{ getTagNameById(filterId)
+                }}<span @click="toggleFilter(filterId)" class="close-cross"
+                  ><svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 8 8"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    @click="toggleFilter(filterId)"
+                  >
+                    <circle cx="4" cy="4" r="4" fill="black" />
+                    <rect
+                      x="1.77783"
+                      y="2.4082"
+                      width="0.888889"
+                      height="5.33333"
+                      transform="rotate(-45 1.77783 2.4082)"
+                      fill="#E8E8E8"
+                    />
+                    <path
+                      d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
+                      fill="#E8E8E8"
+                    />
+                  </svg>
+                </span>
+              </span>
             </div>
           </div>
-          <!-- Sortierungsoptionen -->
-          <div class="sort-options">
-            <h4 class="sort-options__title">Sort</h4>
+        </div>
+        <!-- Cities-->
+        <div
+          v-if="categorizedTags.cities && categorizedTags.cities.length > 0"
+          class="filter-cities tags"
+        >
+          <h4 class="filter-cities__title">City</h4>
+          <div class="filter-tags">
+            <!-- Hauptstädte anzeigen -->
+            <button
+              v-for="tag in categorizedTags.cities.filter((tag) =>
+                isMainCity(tag)
+              )"
+              :key="tag._id"
+              class="tag"
+              :class="[
+                'filter-tag',
+                'filter-tag--city',
+                { 'filter-tag--active': activeFilters.has(tag._id) },
+              ]"
+              @click="toggleFilter(tag._id)"
+            >
+              {{ parseI18nObj(tag.title) }}
+            </button>
 
+            <!-- "Others"-Option anzeigen, wenn es Tags gibt, die keine Hauptstädte sind -->
             <button
-              :class="['sort-button', { active: sortMode === 'new' }]"
-              @click="changeSortMode('new')"
+              v-if="categorizedTags.cities.some((tag) => !isMainCity(tag))"
+              class="tag"
+              :class="[
+                'filter-tag',
+                'filter-tag--city',
+                { 'filter-tag--active': isOtherCitiesActive },
+              ]"
+              @click="toggleFilter('others')"
             >
-              <div class="dot"></div>
-              New
-            </button>
-            <button
-              :class="['sort-button', { active: sortMode === 'alpha' }]"
-              @click="changeSortMode('alpha')"
-            >
-              <div class="dot"></div>
-              A–Z
-            </button>
-            <button
-              :class="['sort-button', { active: sortMode === 'shuffle' }]"
-              @click="changeSortMode('shuffle')"
-            >
-              <div class="dot"></div>
-              Shuffle
+              Elsewhere
             </button>
           </div>
         </div>
+        <!-- Sortierungsoptionen -->
+        <div class="sort-options">
+          <h4 class="sort-options__title">Sort</h4>
 
-        <div
-          v-if="allItems.length > 0 && module.availableTags"
-          class="content-grid__filters"
-        >
-          <div class="filter-container tags">
-            <!-- Filter für Sets mit verschachtelten Genres -->
-            <template v-if="contentType === 'sets'">
-              <!-- Genre mit Subgenres -->
-              <div
-                v-if="
-                  categorizedTags.genres && categorizedTags.genres.length > 0
-                "
-                class="filter-category tags"
-              >
-                <div class="filter-genres">
+          <button
+            :class="['sort-button', { active: sortMode === 'new' }]"
+            @click="changeSortMode('new')"
+          >
+            <div class="dot"></div>
+            New
+          </button>
+          <button
+            :class="['sort-button', { active: sortMode === 'alpha' }]"
+            @click="changeSortMode('alpha')"
+          >
+            <div class="dot"></div>
+            A–Z
+          </button>
+          <button
+            :class="['sort-button', { active: sortMode === 'shuffle' }]"
+            @click="changeSortMode('shuffle')"
+          >
+            <div class="dot"></div>
+            Shuffle
+          </button>
+        </div>
+      </div>
+
+      <div
+        v-if="allItems.length > 0 && module.availableTags"
+        class="content-grid__filters"
+      >
+        <div class="filter-container tags">
+          <!-- Filter für Sets mit verschachtelten Genres -->
+          <template v-if="contentType === 'sets'">
+            <!-- Genre mit Subgenres -->
+            <div
+              v-if="categorizedTags.genres && categorizedTags.genres.length > 0"
+              class="filter-category tags"
+            >
+              <div class="filter-genres">
+                <div
+                  v-for="(genre, index) in categorizedTags.genres"
+                  :key="genre._id"
+                  class="filter-genre"
+                >
+                  <button
+                    class="tag"
+                    :class="[
+                      'filter-tag',
+                      'filter-tag--genre',
+                      { 'filter-tag--active': index === currentIndex },
+                    ]"
+                    @click="toggleSubFilter(genre._id), onSelect(index)"
+                  >
+                    {{ genre.title }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="filter-subgenres">
+                <div
+                  v-for="genre in categorizedTags.genres"
+                  :key="genre._id"
+                  class="filter-subgenre"
+                  :class="{ hidden: activeSubFilters !== genre._id }"
+                >
+                  <!-- Subgenres -->
                   <div
-                    v-for="(genre, index) in categorizedTags.genres"
-                    :key="genre._id"
-                    class="filter-genre"
+                    v-if="
+                      genre.subGenres &&
+                      genre.subGenres.length > 0 &&
+                      activeSubFilters == genre._id
+                    "
+                    class="filter-subgenre__tags"
                   >
                     <button
+                      v-for="subGenre in genre.subGenres"
+                      :key="subGenre._id"
                       class="tag"
                       :class="[
                         'filter-tag',
-                        'filter-tag--genre',
-                        { 'filter-tag--active': index === currentIndex },
+                        'filter-tag--subgenre',
+                        {
+                          'filter-tag--active': activeFilters.has(subGenre._id),
+                        },
                       ]"
-                      @click="toggleSubFilter(genre._id), onSelect(index)"
+                      @click="toggleFilter(subGenre._id)"
                     >
-                      {{ genre.title }}
+                      {{ subGenre.title }}
                     </button>
                   </div>
                 </div>
-
-                <div class="filter-subgenres">
-                  <div
-                    v-for="genre in categorizedTags.genres"
-                    :key="genre._id"
-                    class="filter-subgenre"
-                    :class="{ hidden: activeSubFilters !== genre._id }"
-                  >
-                    <!-- Subgenres -->
-                    <div
-                      v-if="
-                        genre.subGenres &&
-                        genre.subGenres.length > 0 &&
-                        activeSubFilters == genre._id
-                      "
-                      class="filter-subgenre__tags"
-                    >
-                      <button
-                        v-for="subGenre in genre.subGenres"
-                        :key="subGenre._id"
-                        class="tag"
-                        :class="[
-                          'filter-tag',
-                          'filter-tag--subgenre',
-                          {
-                            'filter-tag--active': activeFilters.has(
-                              subGenre._id
-                            ),
-                          },
-                        ]"
-                        @click="toggleFilter(subGenre._id)"
-                      >
-                        {{ subGenre.title }}
-                      </button>
-                    </div>
-                  </div>
-                </div>
               </div>
-            </template>
+            </div>
+          </template>
 
-            <!-- Filter für Pool -->
-            <template v-else>
+          <!-- Filter für Pool -->
+          <template v-else>
+            <div
+              v-if="getContentTypeSpecificTags.length > 0"
+              class="filter-category tags"
+            >
+              <!-- Filtertypen (Musician, Venue, Crafts) -->
+              <div class="filter-types tags">
+                <button
+                  v-if="poolTags.musicians.length > 0"
+                  :class="[
+                    'filter-type tag',
+                    { 'filter-type--active': activeFilterType === 'musicians' },
+                  ]"
+                  @click="toggleFilterType('musicians')"
+                >
+                  Musicians
+                </button>
+                <button
+                  v-if="poolTags.venues.length > 0"
+                  :class="[
+                    'filter-type tag',
+                    { 'filter-type--active': activeFilterType === 'venues' },
+                  ]"
+                  @click="toggleFilterType('venues')"
+                >
+                  Venues
+                </button>
+                <button
+                  v-if="poolTags.crafts.length > 0"
+                  :class="[
+                    'filter-type tag',
+                    { 'filter-type--active': activeFilterType === 'crafts' },
+                  ]"
+                  @click="toggleFilterType('crafts')"
+                >
+                  Crafts
+                </button>
+              </div>
+
+              <!-- Musician Tags -->
               <div
-                v-if="getContentTypeSpecificTags.length > 0"
-                class="filter-category tags"
+                v-if="
+                  activeFilterType === 'musicians' &&
+                  poolTags.musicians.length > 0
+                "
+                class="filter-tags tags"
               >
-                <!-- Filtertypen (Musician, Venue, Crafts) -->
-                <div class="filter-types tags">
-                  <button
-                    v-if="poolTags.musicians.length > 0"
-                    :class="[
-                      'filter-type tag',
-                      {
-                        'filter-type--active': activeFilterType === 'musicians',
-                      },
-                    ]"
-                    @click="toggleFilterType('musicians')"
-                  >
-                    Musicians
-                  </button>
-                  <button
-                    v-if="poolTags.venues.length > 0"
-                    :class="[
-                      'filter-type tag',
-                      { 'filter-type--active': activeFilterType === 'venues' },
-                    ]"
-                    @click="toggleFilterType('venues')"
-                  >
-                    Venues
-                  </button>
-                  <button
-                    v-if="poolTags.crafts.length > 0"
-                    :class="[
-                      'filter-type tag',
-                      { 'filter-type--active': activeFilterType === 'crafts' },
-                    ]"
-                    @click="toggleFilterType('crafts')"
-                  >
-                    Crafts
-                  </button>
-                </div>
-
-                <!-- Musician Tags -->
-                <div
-                  v-if="
-                    activeFilterType === 'musicians' &&
-                    poolTags.musicians.length > 0
-                  "
-                  class="filter-tags tags"
+                <button
+                  v-for="tag in poolTags.musicians"
+                  :key="tag._id"
+                  :class="[
+                    'filter-tag tag',
+                    { 'filter-tag--active': activeFilters.has(tag._id) },
+                  ]"
+                  @click="toggleFilter(tag._id)"
                 >
-                  <button
-                    v-for="tag in poolTags.musicians"
-                    :key="tag._id"
-                    :class="[
-                      'filter-tag tag',
-                      { 'filter-tag--active': activeFilters.has(tag._id) },
-                    ]"
-                    @click="toggleFilter(tag._id)"
-                  >
-                    {{ tag.title }}
-                  </button>
-                </div>
-
-                <!-- Venue Tags -->
-                <div
-                  v-if="
-                    activeFilterType === 'venues' && poolTags.venues.length > 0
-                  "
-                  class="filter-tags tags"
-                >
-                  <button
-                    v-for="tag in poolTags.venues"
-                    :key="tag._id"
-                    :class="[
-                      'filter-tag tag',
-                      { 'filter-tag--active': activeFilters.has(tag._id) },
-                    ]"
-                    @click="toggleFilter(tag._id)"
-                  >
-                    {{ tag.title }}
-                  </button>
-                </div>
-
-                <!-- Crafts Tags -->
-                <div
-                  v-if="
-                    activeFilterType === 'crafts' && poolTags.crafts.length > 0
-                  "
-                  class="filter-tags tags"
-                >
-                  <button
-                    v-for="tag in poolTags.crafts"
-                    :key="tag._id"
-                    :class="[
-                      'filter-tag tag',
-                      { 'filter-tag--active': activeFilters.has(tag._id) },
-                    ]"
-                    @click="toggleFilter(tag._id)"
-                  >
-                    {{ tag.title }}
-                  </button>
-                </div>
+                  {{ tag.title }}
+                </button>
               </div>
-            </template>
-          </div>
+
+              <!-- Venue Tags -->
+              <div
+                v-if="
+                  activeFilterType === 'venues' && poolTags.venues.length > 0
+                "
+                class="filter-tags tags"
+              >
+                <button
+                  v-for="tag in poolTags.venues"
+                  :key="tag._id"
+                  :class="[
+                    'filter-tag tag',
+                    { 'filter-tag--active': activeFilters.has(tag._id) },
+                  ]"
+                  @click="toggleFilter(tag._id)"
+                >
+                  {{ tag.title }}
+                </button>
+              </div>
+
+              <!-- Crafts Tags -->
+              <div
+                v-if="
+                  activeFilterType === 'crafts' && poolTags.crafts.length > 0
+                "
+                class="filter-tags tags"
+              >
+                <button
+                  v-for="tag in poolTags.crafts"
+                  :key="tag._id"
+                  :class="[
+                    'filter-tag tag',
+                    { 'filter-tag--active': activeFilters.has(tag._id) },
+                  ]"
+                  @click="toggleFilter(tag._id)"
+                >
+                  {{ tag.title }}
+                </button>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -1329,11 +1316,7 @@ onMounted(() => {
                 <!-- Show-Titel (für Sets) -->
                 <NuxtLink
                   v-if="item.parentShow?.title !== 'No Show' && item.parentShow"
-                  :to="
-                    localePath(
-                      `/shows/no-show/${item.parentShow?.slug.current}`
-                    )
-                  "
+                  :to="localePath(`/shows/${item.parentShow?.slug.current}`)"
                   class="grid-item__link"
                 >
                   <h3
@@ -1503,7 +1486,7 @@ onMounted(() => {
 </template>
 <style lang="postcss" scoped>
 .content-grid {
-  position: relative;
+  @apply overflow-hidden;
   max-width: clamp(100%, 100%, var(--page-max-width));
   width: 100%;
 
@@ -1637,32 +1620,13 @@ onMounted(() => {
     margin-bottom: var(--mid-margin);
   }
 
-  &__filter-section {
-    position: sticky;
-    top: var(--base-margin);
-    z-index: 9999;
-    &::before {
-      content: "";
-      position: absolute;
-      top: calc(var(--base-margin) * -1);
-      left: calc(var(--big-margin) * -1);
-      height: var(--big-margin);
-      background-color: var(--color-bg);
-      backdrop-filter: blur(10px);
-      z-index: -1;
-      width: calc(var(--page-max-width) + var(--big-margin) * 2);
-    }
-  }
-
   &__filter-bar {
-    position: relative;
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
     padding: var(--small-padding) 0;
     background-color: var(--color-text);
     border-radius: 100px;
-    z-index: 50;
     .active-filters {
       width: calc(33% - var(--big-margin) / 2 + (var(--mid-margin) / 2) - 1px);
     }
@@ -1881,17 +1845,6 @@ onMounted(() => {
       gap: var(--mid-padding);
     }
 
-    .filter-category {
-      /* background-color: var(--color-bg-transparent);
-      transform: translate(0,calc(var(--mid-padding) * -1.25));
-      padding: var(--mid-padding) 0;
-      backdrop-filter: blur(10px);
-      border-bottom-right-radius: 1.56125rem;
-      border-bottom-left-radius: 1.56125rem;
-      border: 1px solid var(--color-bg);
-      z-index: 1; */
-    }
-
     .filter-tags {
       display: flex;
       flex-wrap: wrap;
@@ -1988,8 +1941,6 @@ onMounted(() => {
       cursor: pointer;
       transition: all 0.2s ease;
       background-color: var(--color-bg);
-      /* background-color: var(--color-bg-transparent);
-      backdrop-filter: blur(10px); */
       color: var(--color-text);
 
       &:hover {
@@ -2206,7 +2157,7 @@ onMounted(() => {
   &.sets {
     .content-grid__items {
       .grid-item {
-        /* border-bottom: 0.09325rem solid var(--color-text); */
+        border-bottom: 0.09325rem solid var(--color-text);
         &__image {
           position: relative;
           overflow: hidden;
@@ -2236,7 +2187,7 @@ onMounted(() => {
   &.pool {
     .content-grid__items {
       .grid-item {
-        /* border-bottom: 0.09325rem solid var(--color-text); */
+        border-bottom: 0.09325rem solid var(--color-text);
         /* position: relative;
         overflow: visible;
         &:nth-child(3n + 1) {
