@@ -1316,7 +1316,7 @@ onMounted(() => {
                 <!-- Show-Titel (für Sets) -->
                 <NuxtLink
                   v-if="item.parentShow?.title !== 'No Show' && item.parentShow"
-                  :to="localePath(`/shows/${item.parentShow?.slug.current}`)"
+                  :to="localePath(`/shows/no-show/${item.parentShow?.slug.current}`)"
                   class="grid-item__link"
                 >
                   <h3

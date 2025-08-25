@@ -640,7 +640,7 @@ function playTrack(item) {
                       item?.parentShow?.title !== 'No Show'
                     "
                     :to="
-                      localePath(`/shows/${item?.parentShow?.slug?.current}`)
+                      localePath(`/shows/no-show/${item?.parentShow?.slug?.current}`)
                     "
                     class="slide__link"
                   >

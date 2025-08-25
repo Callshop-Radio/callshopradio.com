@@ -129,7 +129,7 @@ export default defineNuxtConfig({
           ]
           // kill duplicate routes
           nitroConfig.prerender.routes = [...new Set(nitroConfig.prerender.routes)]
-          // console.log(`🎯 Total routes to prerender: ${nitroConfig.prerender.routes.length}`)
+          console.log(`🎯 Total routes to prerender: ${nitroConfig.prerender.routes.length}`)
         }
       } catch (error) {
         console.error('❌ Error loading dynamic routes:', error)

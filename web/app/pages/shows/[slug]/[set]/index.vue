@@ -28,8 +28,6 @@ const relatedSets = computed(() => {
   });
 });
 
-console.log(relatedSets.value);
-
 
 usePageSeo(data?.value?.seo);
 </script>
