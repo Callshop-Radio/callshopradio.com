@@ -649,10 +649,15 @@ watch(
 </template>
 <style scoped lang="postcss">
 .module-schedule-slider {
+  position: relative;
   width: 100%;
-  max-width: var(--page-max-width);
+  height: max-content;
+  /* max-width: calc(var(--page-max-width) + ((100svw - var(--page-max-width)) / 2)); */
   display: flex;
   flex-direction: column;
+  max-height: calc(100svh - var(--nav-height));
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .schedule__content {
@@ -663,9 +668,6 @@ watch(
 .schedule__slider-column {
   flex-grow: 1;
   width: 100%;
-  max-height: calc(
-    100svh - var(--nav-height) - var(--big-margin) - var(--schedule-nav-height)
-  );
 }
 
 .schedule-city {
@@ -675,19 +677,17 @@ watch(
 .embla {
   height: max-content;
   width: 100%;
-  max-width: calc(
+  /* max-width: calc(
     var(--page-max-width) + (100vw - var(--page-max-width)) / 2 + 2.75rem
-  );
+  ); */
   position: relative;
+  padding: 0 0 0 calc((100svw - var(--page-max-width)) / 2);
+
 
   &__container {
     @apply flex backface-hidden touch-pan-y;
     height: 100%;
     width: max-content;
-    max-height: calc(
-      100svh - var(--nav-height) - var(--big-margin) -
-        var(--schedule-nav-height)
-    );
     margin: 0 0 0 calc(var(--small-padding) * -1);
   }
 
@@ -702,10 +702,14 @@ watch(
 }
 
 .navigation-controls {
+  position: sticky;
+  top: var(--base-margin);
   @apply flex items-center justify-start flex-row flex-wrap items-stretch;
   gap: 0 var(--mid-padding);
   height: calc(var(--base-font-size) + var(--small-padding) * 2);
-  margin: var(--base-margin) 0;
+  z-index: 999;
+  margin: var(--base-margin) 0 var(--base-margin) calc((100svw - var(--page-max-width)) / 2);
+
 }
 
 .location-switch {
@@ -716,6 +720,7 @@ watch(
   height: calc(var(--base-font-size) + var(--small-padding));
   padding: 4px;
   background: rgba(225, 225, 225, 0.25);
+  backdrop-filter: blur(3px);
   border-radius: 30px;
   max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
   height: 100%;
@@ -774,6 +779,7 @@ watch(
   border-radius: 25px;
   background-color: rgba(225, 225, 225, 0.25);
   max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
+  backdrop-filter: blur(3px);
 
   .dot {
     @apply rounded-full transition-colors;
@@ -800,6 +806,7 @@ watch(
   padding: 0 var(--small-padding);
   border-radius: 25px;
   background-color: rgba(225, 225, 225, 0.25);
+  backdrop-filter: blur(3px);
 
   .nav-button {
     @apply flex items-center justify-center w-5 h-5 rounded-full bg-transparent transition-all;
@@ -820,12 +827,6 @@ watch(
   justify-content: flex-start;
   align-items: flex-start;
   flex-grow: 1;
-  max-height: calc(
-    100svh - var(--schedule-nav-height) - var(--nav-height) - var(--big-margin) -
-      var(--h4-size)
-  );
-  overflow-y: scroll;
-  overflow-x: visible;
 
   & > * {
     font-weight: 550;
@@ -879,14 +880,12 @@ watch(
     gap: var(--small-padding); /* No gap for precise grid alignment */
     position: relative;
     padding: 0;
-    overflow: visible;
     margin: 0 0 0 var(--small-padding);
   }
 }
 
 .event-item {
   background: transparent;
-  overflow: hidden;
   z-index: 2;
   position: relative;
 
@@ -901,7 +900,7 @@ watch(
       border-color: var(--color-pink);
     }
 
-    @apply flex flex-col overflow-hidden;
+    @apply flex flex-col;
   }
 
   & * {

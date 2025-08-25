@@ -635,7 +635,10 @@ function playTrack(item) {
                     </button>
                   </section>
                   <NuxtLink
-                    v-if="item?.parentShow?.slug && item?.clickableTitle && item?.parentShow?.title != 'No Show'"
+                    v-if="
+                      item?.clickableTitle &&
+                      item?.parentShow?.title !== 'No Show'
+                    "
                     :to="
                       localePath(`/shows/${item?.parentShow?.slug?.current}`)
                     "
@@ -647,7 +650,7 @@ function playTrack(item) {
                   </NuxtLink>
                   <h3
                     v-else-if="
-                      item?.parentShow && item?.parentShow?.title != 'No Show'
+                      item?.parentShow && item?.parentShow?.title !== 'No Show'
                     "
                     class="slide-title show-title"
                   >
@@ -656,7 +659,6 @@ function playTrack(item) {
                   <NuxtLink
                     v-if="item?.slug"
                     :to="getItemRoute(item)"
-                    a
                     class="slide__link"
                   >
                     <h3 class="slide-title" v-if="contentType !== 'sets'">
@@ -945,7 +947,7 @@ function playTrack(item) {
                     </button>
                   </section>
                   <NuxtLink
-                    v-if="item?.parentShow?.slug && item?.clickableTitle"
+                    v-if="item?.parentShow?.slug && item?.clickableTitle && item?.parentShow?.title !== 'No Show'"
                     :to="localePath(`/shows/${item?.parentShow?.slug.current}`)"
                     class="slide__link"
                   >
@@ -955,7 +957,7 @@ function playTrack(item) {
                   </NuxtLink>
                   <h3
                     v-else-if="
-                      item?.parentShow && item?.parentShow?.title != 'No Show'
+                      item?.parentShow && item?.parentShow?.title !== 'No Show'
                     "
                     class="slide-title show-title"
                   >
@@ -1189,10 +1191,17 @@ function playTrack(item) {
                   width: calc(var(--base-font-size) + 4px);
                   height: calc(var(--base-font-size) + 4px);
                   background-color: var(--color-text);
+                  @media screen and (max-width: 900px) {
+                    width: calc(var(--h3-size) + 4px);
+                    height: calc(var(--h3-size) + 4px);
+                  }
 
                   svg {
                     height: var(--base-font-size);
                     transform: translate(1px, 0);
+                    @media screen and (max-width: 900px) {
+                      height: var(--h3-size);
+                    }
                     rect,
                     path {
                       fill: var(--color-bg);

@@ -1,6 +1,6 @@
 <script setup>
 const { creditLog, favicon } = useUtils();
-favicon()
+favicon();
 // creditLog()
 </script>
 
@@ -27,12 +27,24 @@ favicon()
     flex-direction: column wrap;
     justify-content: center;
     align-items: flex-start;
+    @media screen and (max-width: 900px) {
+      padding: 0 var(--mid-padding);
+    }
   }
 
   .menu,
   main,
   .footer {
     @apply flex-shrink-0;
+  }
+}
+
+.schedule .site {
+  main {
+    padding: 0;
+  }
+  @media screen and (max-width: 900px) {
+    padding: 0 var(--mid-padding);
   }
 }
 </style>

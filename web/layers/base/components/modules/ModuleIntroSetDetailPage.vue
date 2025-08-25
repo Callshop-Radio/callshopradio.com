@@ -194,7 +194,7 @@ const useSoundCloud = () => {
 const computedSetMainHeight = computed(() => {
   // Unter 900px Bildschirmbreite soll die Höhe 100% sein
   if (windowWidth.value <= 900) {
-    return '100%';
+    return "100%";
   }
   return setMainHeight.value;
 });
@@ -208,7 +208,7 @@ const updateSetMainHeight = () => {
 
 // Funktion zum Aktualisieren der Fensterbreite
 const updateWindowWidth = () => {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     windowWidth.value = window.innerWidth;
   }
 };
@@ -246,7 +246,7 @@ onMounted(async () => {
       updateWindowWidth();
       updateSetMainHeight();
     };
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     // MutationObserver für DOM-Änderungen
     const mutationObserver = new MutationObserver(() => {
@@ -586,11 +586,14 @@ onMounted(async () => {
     border-bottom: 1px solid var(--color-text);
     border-top-right-radius: 1.5625rem;
     border-bottom-right-radius: 1.5625rem; */
-        @media screen and (max-width: 900px) {
+    @media screen and (max-width: 900px) {
       max-width: 100%;
       max-height: 100% !important;
+      width: 100%;
+      padding: var(--base-margin) var(--base-margin) var(--big-margin);
     }
     section {
+      width: 100%;
       h3,
       h2,
       h4 {
@@ -602,6 +605,7 @@ onMounted(async () => {
       }
       &.tracklist {
         .rich-text {
+          width: 100%;
           p {
             line-height: 1.5;
           }

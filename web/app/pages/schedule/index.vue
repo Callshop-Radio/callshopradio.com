@@ -209,6 +209,12 @@ const refreshData = () => {
 };
 
 usePageSeo(data?.value?.seo);
+
+useHead({
+  bodyAttrs: {
+    class: `schedule`,
+  },
+});
 </script>
 
 <template>
@@ -261,14 +267,19 @@ usePageSeo(data?.value?.seo);
 </template>
 
 <style lang="postcss" scoped>
+main {
+  margin: 0 0 0 0 !important;
+}
 .schedule {
-  max-width: var(--page-max-width);
+  position: relative;
+  min-height: max-content;
+  /* max-width: calc(var(--page-max-width) + ((100svw - var(--page-max-width)) / 2));
+  margin: 0 0 0 calc((100svw - var(--page-max-width)) / 2); */
   width: 100%;
   display: flex;
   flex-flow: column;
   justify-content: flex-start;
   align-items: flex-start;
-  max-height: calc(100svh - var(--nav-height) - var(--big-margin));
 
   &__background {
     position: fixed;
