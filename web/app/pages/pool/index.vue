@@ -13,12 +13,12 @@ usePageSeo(data?.value?.seo);
 
 <template>
   <div class="pool-archive">
-    <section class="intro-section">
+    <!-- <section class="intro-section">
       <ModuleIntroPoolSlider
         :poolItems="data?.slider?.pool?.slice(0, data?.slider?.count * 2)"
         :title="'Pool Content'"
       />
-    </section>
+    </section> -->
     <section
       class="module-section"
       v-if="data?.modules && data.modules.length > 0"

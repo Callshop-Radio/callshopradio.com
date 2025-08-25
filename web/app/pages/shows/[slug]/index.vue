@@ -91,9 +91,9 @@ section {
   }
   &__related-content,
   &__more-content {
-    @media screen and (max-width: 900px) {
+    /* @media screen and (max-width: 900px) {
       padding: 0 var(--big-margin);
-    }
+    } */
     h3 {
       font-size: var(--h3-size);
       text-transform: uppercase;

@@ -371,7 +371,7 @@ const slides = computed(() => {
 
   &--grid {
     ::v-deep(.set-content) {
-      .set-container {
+      .set-main {
         width: 100%;
         max-width: 100%;
       }
@@ -380,7 +380,7 @@ const slides = computed(() => {
 
   &--compact {
     ::v-deep(.set-content) {
-      .set-container {
+      .set-main {
         display: flex;
         flex-direction: row;
         width: 100%;

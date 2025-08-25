@@ -483,7 +483,7 @@ onMounted(() => {
   &.layout-set {
     .hero-entry-content {
       @media screen and (max-width: 900px) {
-        min-width: calc(100svw - var(--big-margin) * 2);
+        min-width: calc(100svw - var(--big-margin) * 4);
         width: 100%;
         transform: translate(calc(var(--big-margin) / 4), 0);
       }
@@ -541,7 +541,7 @@ onMounted(() => {
   &.layout-venue {
     .hero-entry-content {
       @media screen and (max-width: 900px) {
-        min-width: calc(100svw - var(--big-margin) * 2);
+        min-width: calc(100svw - var(--big-margin) * 4);
         width: 100%;
         transform: translate(calc(var(--big-margin) / 4), 0);
       }

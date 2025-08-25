@@ -192,7 +192,7 @@ onMounted(() => {
 
 <template>
   <div v-if="set" class="set-content">
-    <div class="set-container">
+    <div class="set-main">
       <!-- Bild/Media-Bereich -->
       <div class="set-media">
         <NuxtLink v-if="set" :to="getItemRoute(set)" class="grid-item__link">
@@ -305,7 +305,7 @@ onMounted(() => {
   max-width: 35.3125rem;
   height: max-content;
 
-  .set-container {
+  .set-main {
     width: max-content;
     display: flex;
     flex-flow: column wrap;

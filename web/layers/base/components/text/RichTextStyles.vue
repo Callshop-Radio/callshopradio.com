@@ -50,6 +50,7 @@ h3,h4,h5 {
 p {
 	@apply max-w-80ch whitespace-pre-wrap;
 	font-size: var(--base-font-size);
+	line-height: 1.5;
 }
 
 img {

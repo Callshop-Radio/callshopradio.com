@@ -74,8 +74,8 @@ export async function getAllRoutes() {
     // Entferne Duplikate und sortiere
     const uniqueRoutes = [...new Set(routes)].sort()
     
-    console.log(`🚀 Found ${uniqueRoutes.length} routes to prerender:`)
-    uniqueRoutes.forEach(route => console.log(`  - ${route}`))
+    // console.log(`🚀 Found ${uniqueRoutes.length} routes to prerender:`)
+    // uniqueRoutes.forEach(route => console.log(`  - ${route}`))
     
     return uniqueRoutes
   } catch (error) {

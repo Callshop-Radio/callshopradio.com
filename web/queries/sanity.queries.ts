@@ -507,6 +507,7 @@ export const SHOW_QUERY = `
           title,
           slug,
           image { asset-> },
+          content[] ${RICH_TEXT_QUERY}
     },
     persons[]->{
       ...,

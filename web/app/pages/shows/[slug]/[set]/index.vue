@@ -32,9 +32,9 @@ usePageSeo(data?.value?.seo);
 </script>
 
 <template>
-  <div class="set-detail">
+  <div class="set-detail" ref="setDetailRef">
     <section class="set-detail__intro-section" v-if="data">
-      <ModuleIntroSetDetailPage :set="data" :title="'Neueste Shows'" />
+      <ModuleIntroSetDetailPage :set="data" :title="data?.title" />
     </section>
     <section
       class="module-section"
@@ -100,7 +100,7 @@ section {
   }
 }
 .set-detail {
-  width: 100%;
+  width: var(--page-max-width);
   display: flex;
   flex-flow: column wrap;
   justify-content: flex-start;
@@ -111,9 +111,9 @@ section {
   }
   &__related-content,
   &__more-content {
-    @media screen and (max-width: 900px) {
+    /* @media screen and (max-width: 900px) {
       padding: 0 var(--big-margin);
-    }
+    } */
     h3 {
       font-size: var(--h3-size);
       text-transform: uppercase;

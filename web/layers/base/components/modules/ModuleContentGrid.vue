@@ -1822,7 +1822,7 @@ onMounted(() => {
   }
 
   &__filters {
-    margin-bottom: var(--mid-margin);
+    margin-bottom: var(--big-margin);
 
     .filter-tag--city {
       background-color: var(--color-pink);
@@ -1849,6 +1849,7 @@ onMounted(() => {
       display: flex;
       flex-wrap: wrap;
       gap: var(--small-padding);
+      cursor: pointer !important;
     }
 
     .filter-genres {

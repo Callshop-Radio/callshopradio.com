@@ -124,7 +124,7 @@ const itemLocation = computed(() => {
 
 <template>
   <div v-if="poolItem" class="set-content pool-content">
-    <div class="set-container pool-container">
+    <div class="set-main pool-container">
       <!-- Tags-Icon -->
       <div v-if="poolItem?.tags?.length" class="set-tags pool-tags tags">
         <button

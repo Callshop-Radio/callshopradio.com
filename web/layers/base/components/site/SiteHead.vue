@@ -95,7 +95,8 @@ const togglePlayerVisibility = () => {
   justify-content: flex-start;
   align-items: center;
   width: 100%;
-  margin: var(--big-margin) auto 0;
+  /* margin: var(--big-margin) auto 0; */
+  margin: 0 0;
   padding: 0 0;
   background-color: var(--color-bg);
   @media screen and (max-width: 1100px) {
@@ -112,7 +113,7 @@ const togglePlayerVisibility = () => {
   height: auto;
   min-height: max-content;
   z-index: 99999;
-  &::before {
+  /* &::before {
     content: "";
     position: absolute;
     top: 0;
@@ -125,7 +126,7 @@ const togglePlayerVisibility = () => {
     @media screen and (max-width: 1100px) {
       display: none;
     }
-  }
+  } */
   &__title-section {
     width: 100%;
     max-width: var(--page-max-width);

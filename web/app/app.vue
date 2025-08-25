@@ -22,7 +22,7 @@ favicon()
 
   main {
     @apply flex-grow-1;
-    padding: 0 0;
+    padding: 0 var(--big-margin);
     display: flex;
     flex-direction: column wrap;
     justify-content: center;

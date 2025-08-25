@@ -1,9 +1,17 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale, setLocale } = useI18n();
 const localePath = useLocalePath();
+
+// Template-Referenzen
+const setContentRef = ref<HTMLElement | null>(null);
+const setMainRef = ref<HTMLElement | null>(null);
+
+// Reactive height tracking
+const setMainHeight = ref(0);
+const windowWidth = ref(0);
 
 // Typdefinitionen
 interface Image {
@@ -22,11 +30,12 @@ interface Set {
   _type?: string;
   title?: string;
   image?: Image;
-  content: Object;
+  content?: Object;
   mainImage?: Image;
   parentShow?: {
     title?: string;
     image?: Image;
+    content?: Object;
   };
   datetime?: string;
   _updatedAt?: string;
@@ -181,19 +190,81 @@ const useSoundCloud = () => {
   };
 };
 
+// Computed property für die Höhe von set-main
+const computedSetMainHeight = computed(() => {
+  // Unter 900px Bildschirmbreite soll die Höhe 100% sein
+  if (windowWidth.value <= 900) {
+    return '100%';
+  }
+  return setMainHeight.value;
+});
+
+// Funktion zum Aktualisieren der Höhe
+const updateSetMainHeight = () => {
+  if (setMainRef.value) {
+    setMainHeight.value = setMainRef.value.offsetHeight;
+  }
+};
+
+// Funktion zum Aktualisieren der Fensterbreite
+const updateWindowWidth = () => {
+  if (typeof window !== 'undefined') {
+    windowWidth.value = window.innerWidth;
+  }
+};
+
 // Anwendung der Composables
 const { getItemImage } = useImageManagement();
 const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
 
+// Funktion zum Anpassen der Höhe
+const adjustSetContentHeight = () => {
+  if (setMainRef.value && setContentRef.value) {
+    const setMainHeight = setMainRef.value.offsetHeight;
+    setContentRef.value.style.height = `${setMainHeight}px`;
+  }
+};
+
 // Lebenszyklus-Hooks
-onMounted(() => {
-  loadArtworkUrl();
+onMounted(async () => {
+  await loadArtworkUrl();
+  await nextTick();
+
+  // Initiale Messungen
+  updateSetMainHeight();
+  updateWindowWidth();
+
+  // ResizeObserver für responsive Änderungen
+  if (typeof window !== "undefined" && setMainRef.value) {
+    const resizeObserver = new ResizeObserver(() => {
+      updateSetMainHeight();
+    });
+    resizeObserver.observe(setMainRef.value);
+
+    // Window resize listener für Fenstergrößenänderungen
+    const handleResize = () => {
+      updateWindowWidth();
+      updateSetMainHeight();
+    };
+    window.addEventListener('resize', handleResize);
+
+    // MutationObserver für DOM-Änderungen
+    const mutationObserver = new MutationObserver(() => {
+      updateSetMainHeight();
+    });
+    mutationObserver.observe(setMainRef.value, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["style", "class"],
+    });
+  }
 });
 </script>
 
 <template>
-  <div v-if="set" class="set-content">
-    <div class="set-container">
+  <div v-if="set" class="set-content" ref="setContentRef">
+    <div class="set-main" ref="setMainRef">
       <!-- Bild/Media-Bereich -->
       <div class="set-media">
         <NuxtLink v-if="set" :to="getItemRoute(set)" class="grid-item__link">
@@ -298,24 +369,51 @@ onMounted(() => {
             </button>
           </div>
         </div>
-        <div class="set-text"></div>
       </div>
+    </div>
+    <div
+      class="set-details"
+      :style="` max-height: ${computedSetMainHeight}px; height: ${computedSetMainHeight}px`"
+    >
+      <section v-if="set?.parentShow?.content">
+        <h2>{{ set?.parentShow?.title }}</h2>
+        <RichText :blocks="set?.parentShow?.content" />
+      </section>
+      <section v-if="set?.content">
+        <h3>About this Episode</h3>
+        <RichText :blocks="set?.content" />
+      </section>
+      <section class="tracklist" v-if="set?.tracklistRich">
+        <h3>Tracklist</h3>
+        <RichText class="tracklist-rich" :blocks="set?.tracklistRich" />
+      </section>
+      <section class="tracklist" v-else-if="set?.tracklist">
+        <h3>Tracklist</h3>
+        <div class="rich-text">
+          <p v-for="track in set?.tracklist" :key="track._key">{{ track }}</p>
+        </div>
+      </section>
     </div>
   </div>
 </template>
 
 <style lang="postcss" scoped>
 .set-content {
-  width: max-content;
-  height: max-content;
-  margin: 0 auto;
-  width: 100%;
+  /* margin: 0 auto; */
+  width: var(--page-max-width);
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  position: relative;
+  border: 0.0625rem solid var(--color-text);
+  border-radius: 1.5625rem;
   @media screen and (max-width: 900px) {
-    padding: 0 var(--big-margin);
+    flex-flow: column wrap;
   }
 
-  .set-container {
-    width: max-content;
+  .set-main {
+    max-width: calc(var(--page-max-width) / 2.5);
     display: flex;
     flex-flow: column wrap;
     justify-content: center;
@@ -323,26 +421,32 @@ onMounted(() => {
     position: relative;
     width: 100%;
     height: 100%;
-    border: 0.0625rem solid var(--color-text);
-    border-radius: 1.5625rem;
-    overflow: hidden;
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
+    border-right: 0.0625rem solid var(--color-text);
+    /* border: 0.0625rem solid var(--color-text);
+    border-top-left-radius: 1.5625rem;
+    border-bottom-left-radius: 1.5625rem; */
+    overflow: scroll;
+    @media screen and (max-width: 900px) {
+      max-width: 100%;
+      border-right: none;
     }
 
     .set-media {
       order: 2;
-      border-radius: 1.5625rem;
+      border-bottom-left-radius: 1.5625rem;
       width: 100%;
       height: 100%;
       max-width: 35.3125rem;
-      max-height: 35.3125rem;
+      max-height: calc(var(--page-max-width) / 2.5);
+      overflow: hidden;
       @media screen and (max-width: 900px) {
         max-width: 100%;
         max-height: 100%;
+        border-bottom-left-radius: 0;
       }
       @media screen and (min-width: 900px) {
-        min-width: 35.3125rem;
+        min-width: calc(var(--page-max-width) / 2.5);
+        border-bottom: 1px solid var(--color-text);
       }
       .track-artwork,
       .track-artwork-placeholder {
@@ -351,7 +455,7 @@ onMounted(() => {
         object-fit: cover;
         background-color: var(--color-grey);
         max-width: 35.3125rem;
-        max-height: 35.3125rem;
+        max-height: calc(var(--page-max-width) / 2.5);
         @media screen and (max-width: 900px) {
           max-width: 100%;
           max-height: 100%;
@@ -376,6 +480,8 @@ onMounted(() => {
     border-bottom: 0.0625rem solid var(--color-text);
     shape-rendering: crispEdges;
     z-index: 10;
+    border-top-left-radius: 1.5625rem;
+    border-top-right-radius: 1.5625rem;
 
     .play-button {
       display: flex;
@@ -458,6 +564,50 @@ onMounted(() => {
         .set-date {
           font-size: var(--small-font-size);
           text-transform: uppercase;
+        }
+      }
+    }
+  }
+
+  .set-details {
+    position: relative;
+    display: flex;
+    flex-flow: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    position: relative;
+    overflow: scroll;
+    height: 100%;
+    width: calc(100% - calc(var(--page-max-width) / 2.5));
+    padding: var(--base-margin) var(--big-margin) var(--big-margin);
+    gap: var(--base-margin) 0;
+    /* border-right: 1px solid var(--color-text);
+    border-top: 1px solid var(--color-text);
+    border-bottom: 1px solid var(--color-text);
+    border-top-right-radius: 1.5625rem;
+    border-bottom-right-radius: 1.5625rem; */
+        @media screen and (max-width: 900px) {
+      max-width: 100%;
+      max-height: 100% !important;
+    }
+    section {
+      h3,
+      h2,
+      h4 {
+        margin: 0 0 var(--base-padding) 0;
+        text-transform: uppercase;
+        font-family: var(--font-text-semibold);
+        font-size: var(--base-font-size);
+        font-weight: 500;
+      }
+      &.tracklist {
+        .rich-text {
+          p {
+            line-height: 1.5;
+          }
+          :deep(p) {
+            line-height: 1.5;
+          }
         }
       }
     }

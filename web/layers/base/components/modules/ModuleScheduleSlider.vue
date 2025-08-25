@@ -70,21 +70,44 @@ const currentTimeIndicatorStyle = computed(() => {
     return { display: "none" };
   }
 
-  // Calculate grid position using same logic as events
+  // Use the same calculation as timeToGridSegment for consistency
   const decimalHours = hours - GRID_START_HOUR + minutes / 60;
-  const segments = Math.floor(decimalHours * GRID_SEGMENTS_PER_HOUR);
-
-  // Calculate minute offset within the current segment (as percentage)
-  const remainingMinutes = minutes % 30;
-  const offsetPercentage = (remainingMinutes / 30) * 100;
+  const segments = decimalHours * GRID_SEGMENTS_PER_HOUR;
+  
+  // Calculate grid row position (1-indexed for CSS Grid)
+  const gridRow = Math.floor(segments) + 1;
+  
+  // Calculate offset within the current grid cell
+  const segmentFraction = segments - Math.floor(segments);
+  const offsetPercentage = segmentFraction * 100;
 
   return {
-    gridRow: `${segments + 1}`, // Position in the specific grid row (1-indexed)
+    gridRow: `${gridRow}`,
+    gridColumn: "1",
+    position: "relative" as const,
+    top: `${offsetPercentage}%`,
     display: "flex",
-    alignItems: "flex-start",
-    paddingTop: `${offsetPercentage}%`, // Offset within the grid cell
+    alignItems: "center",
+    justifyContent: "flex-start",
+    width: "100%",
+    zIndex: 20,
+    pointerEvents: "none" as const,
+    marginLeft: "var(--small-padding)",
   };
 });
+
+// Check if current time marker should be shown for a specific date
+const shouldShowTimeMarkerForDate = (date: string | Date): boolean => {
+  const now = currentTime.value;
+  const targetDate = new Date(date);
+
+  // Check if it's the same day
+  return (
+    now.getDate() === targetDate.getDate() &&
+    now.getMonth() === targetDate.getMonth() &&
+    now.getFullYear() === targetDate.getFullYear()
+  );
+};
 
 // Constants
 const GRID_START_HOUR = 7;
@@ -564,38 +587,19 @@ watch(
 
               <!-- Day Content with Time Display and Events -->
               <div class="day-content">
-                <!-- Time Display Column -->
-                <div class="day-content__time-column">
-                  <div class="time-display">
-                    <!-- Time slots for each hour from 7-24 -->
-                    <div class="time-display__slots">
-                      <div
-                        v-for="hour in 17"
-                        :key="`time-${hour}`"
-                        class="time-slot"
-                      >
-                        <div class="time-slot__label">
-                          {{ String(6 + hour).padStart(2, "0") }}:00
-                        </div>
-                        <div class="time-slot__line"></div>
-                      </div>
-
-                      <!-- Current time marker -->
-                      <div
-                        class="current-time-marker"
-                        :style="currentTimeIndicatorStyle"
-                      >
-                        <div class="current-time-marker__pulse" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 <!-- Events Column -->
                 <div class="day-content__events-column">
                   <!-- Events Grid -->
                   <div class="events">
                     <div class="events-grid">
+                      <!-- Current Time Marker - only show for today -->
+                      <div
+                        v-if="shouldShowTimeMarkerForDate(group.date)"
+                        class="current-time-marker"
+                        :style="currentTimeIndicatorStyle"
+                      >
+                        <div class="current-time-marker__pulse" />
+                      </div>
                       <!-- Actual Events -->
                       <div
                         v-for="(item, itemIndex) in getItemsForDay(group.date)"
@@ -680,11 +684,11 @@ watch(
     @apply flex backface-hidden touch-pan-y;
     height: 100%;
     width: max-content;
-    margin: 0 0 0 calc(var(--big-margin) * -1);
     max-height: calc(
       100svh - var(--nav-height) - var(--big-margin) -
         var(--schedule-nav-height)
     );
+    margin: 0 0 0 calc(var(--small-padding) * -1);
   }
 
   &__slide {
@@ -693,15 +697,6 @@ watch(
     :deep(img),
     :deep(.video-wrapper) {
       @apply h-[var(--carousel-height)] max-w-full w-auto;
-    }
-    &--active {
-      .show-day__heading {
-        margin: 0 0 var(--small-padding)
-          calc(var(--small-padding) + var(--big-margin));
-      }
-      .day-content__time-column {
-        width: var(--big-margin);
-      }
     }
   }
 }
@@ -861,7 +856,6 @@ watch(
     width: var(--big-margin);
     flex-shrink: 0;
     width: 0;
-    overflow: hidden;
     transition: width 0.125s ease;
   }
 
@@ -885,6 +879,8 @@ watch(
     gap: var(--small-padding); /* No gap for precise grid alignment */
     position: relative;
     padding: 0;
+    overflow: visible;
+    margin: 0 0 0 var(--small-padding);
   }
 }
 
@@ -900,7 +896,6 @@ watch(
     height: 100%;
     border: 1px solid rgba(var(--color-text-rgb), 0.1);
     box-sizing: border-box; /* Ensure padding doesn't affect total height */
-    margin: 0 var(--small-padding) 0 0;
 
     &.live {
       border-color: var(--color-pink);
@@ -973,126 +968,19 @@ watch(
 .time-display {
   position: relative;
   width: 100%;
-
-  &__slots {
-    display: grid;
-    grid-template-rows: repeat(
-      35,
-      var(--schedule-block-height)
-    ); /* Identical to events-grid: 35 segments with block-height */
-    grid-template-columns: 1fr;
-    gap: var(--small-padding); /* Same gap as events-grid */
-    position: relative;
-  }
-}
-
-.time-slot {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding: 0;
-
-  /* Each time slot occupies 2 grid rows (1 hour = 2 segments of 30 minutes) */
-  /* 07:00 */
-  &:nth-child(1) {
-    grid-row: 1 / 3;
-  }
-  /* 08:00 */
-  &:nth-child(2) {
-    grid-row: 3 / 5;
-  }
-  /* 09:00 */
-  &:nth-child(3) {
-    grid-row: 5 / 7;
-  }
-  /* 10:00 */
-  &:nth-child(4) {
-    grid-row: 7 / 9;
-  }
-  /* 11:00 */
-  &:nth-child(5) {
-    grid-row: 9 / 11;
-  }
-  /* 12:00 */
-  &:nth-child(6) {
-    grid-row: 11 / 13;
-  }
-  /* 13:00 */
-  &:nth-child(7) {
-    grid-row: 13 / 15;
-  }
-  /* 14:00 */
-  &:nth-child(8) {
-    grid-row: 15 / 17;
-  }
-  /* 15:00 */
-  &:nth-child(9) {
-    grid-row: 17 / 19;
-  }
-  /* 16:00 */
-  &:nth-child(10) {
-    grid-row: 19 / 21;
-  }
-  /* 17:00 */
-  &:nth-child(11) {
-    grid-row: 21 / 23;
-  }
-  /* 18:00 */
-  &:nth-child(12) {
-    grid-row: 23 / 25;
-  }
-  /* 19:00 */
-  &:nth-child(13) {
-    grid-row: 25 / 27;
-  }
-  /* 20:00 */
-  &:nth-child(14) {
-    grid-row: 27 / 29;
-  }
-  /* 21:00 */
-  &:nth-child(15) {
-    grid-row: 29 / 31;
-  }
-  /* 22:00 */
-  &:nth-child(16) {
-    grid-row: 31 / 33;
-  }
-  /* 23:00 */
-  &:nth-child(17) {
-    grid-row: 33 / 35;
-  }
-
-  &__label {
-    font-size: var(--small-font-size);
-    font-weight: 550;
-    color: var(--color-grey);
-    text-align: right;
-    padding-right: var(--small-padding);
-    line-height: 1;
-
-    @media (prefers-color-scheme: dark) {
-      color: var(--color-grey);
-    }
-  }
-
-  &__line {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 20px;
-    height: 1px;
-    background-color: rgba(var(--color-text-rgb), 0.2);
-
-    @media (prefers-color-scheme: dark) {
-      background-color: rgba(var(--color-bg-rgb), 0.2);
-    }
-  }
+  height: calc(
+    35 * var(--schedule-block-height) + 34 * var(--small-padding)
+  ); /* Match events-grid height */
 }
 
 .current-time-marker {
-  z-index: 10;
+  z-index: 20;
   pointer-events: none;
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  transform: translate(calc(var(--small-padding) * -1), 0);
 
   &__pulse {
     width: 8px;
@@ -1100,7 +988,8 @@ watch(
     border-radius: 50%;
     background-color: var(--color-pink);
     position: relative;
-    margin-left: calc(var(--base-padding) * -2);
+    margin-right: var(--small-padding);
+    flex-shrink: 0;
 
     &::before {
       content: "";
@@ -1112,22 +1001,25 @@ watch(
       border-radius: 50%;
       background-color: var(--color-pink);
       transform: translate(-50%, -50%);
-      opacity: 0.6;
+      opacity: 0.4;
       animation: pulseOpacity 2s ease-in-out infinite;
-      filter: blur(4px);
+      filter: blur(2px);
     }
 
-    &::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 100%;
-      height: 2px;
-      background-color: var(--color-pink);
-      transform: translate(-50%, -50%);
-      box-shadow: 0 0 10px var(--color-pink);
-    }
+  }
+
+  &__time {
+    font-size: var(--small-font-size);
+    color: var(--color-pink);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background-color: var(--color-bg);
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--color-pink);
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(var(--color-pink-rgb), 0.2);
   }
 }
 
