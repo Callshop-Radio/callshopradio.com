@@ -6,7 +6,8 @@
   width: 100%;
   max-width: var(--page-max-width);
   &__content {
-    padding: var(--big-margin) var(--base-padding) var(--content-gap) var(--base-padding);
+    padding: var(--big-margin) var(--base-padding) var(--content-gap)
+      var(--base-padding);
     gap: var(--content-gap) 0;
   }
 }
@@ -18,6 +19,9 @@
   justify-content: flex-start;
   align-items: center;
   gap: var(--content-gap) 0;
+  @media screen and (max-width: 900px) {
+    max-height: max-content;
+  }
   .module {
     width: 100%;
     max-width: var(--page-max-width);

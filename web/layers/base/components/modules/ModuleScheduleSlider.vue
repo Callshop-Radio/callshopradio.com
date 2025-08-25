@@ -720,7 +720,7 @@ watch(
   height: calc(var(--base-font-size) + var(--small-padding));
   padding: 4px;
   background: rgba(225, 225, 225, 0.25);
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(5px);
   border-radius: 30px;
   max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
   height: 100%;

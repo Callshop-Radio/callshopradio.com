@@ -39,7 +39,8 @@ favicon();
   }
 }
 
-.schedule .site {
+.schedule .site,
+.shows-archive .site {
   main {
     padding: 0;
   }

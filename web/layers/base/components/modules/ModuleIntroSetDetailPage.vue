@@ -433,6 +433,9 @@ onMounted(async () => {
         <h3>About this Episode</h3>
         <RichText :blocks="set?.content" />
       </section>
+      <section v-else>
+        <RichText :blocks="mainStore?.siteFallbacks?.fallbackSet?.description" />
+      </section>
       <section class="tracklist" v-if="set?.tracklistRich">
         <h3>Tracklist</h3>
         <RichText class="tracklist-rich" :blocks="set?.tracklistRich" />
