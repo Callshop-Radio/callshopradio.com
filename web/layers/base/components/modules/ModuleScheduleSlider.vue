@@ -915,7 +915,7 @@ watch(
       background-color: rgba(var(--color-pink-rgb), 0.1);
       border: 2px solid var(--color-pink);
       position: relative;
-      margin: 0 var(--small-padding) 0 0;
+      margin: 0 0 0 0;
 
       &.live {
         background-color: var(--color-pink);

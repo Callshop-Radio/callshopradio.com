@@ -101,7 +101,7 @@ function loadMoreItems() {
         visibleItemCount.value
       );
       newItems.forEach((item) => {
-        if (!artworkUrls.value.has(item._id)) {
+        if (!artworkUrls.value.has(item?._id)) {
           loadArtworkUrl(item);
         }
       });
@@ -139,10 +139,10 @@ function getItemImage(item) {
   let image = null;
 
   // Bild aus dem Item selbst
-  if (item.image && item.image.asset) {
-    image = item.image;
-  } else if (item.mainImage && item.mainImage.asset) {
-    image = item.mainImage;
+  if (item?.image && item?.image.asset) {
+    image = item?.image;
+  } else if (item?.mainImage && item?.mainImage.asset) {
+    image = item?.mainImage;
   } else {
     // Fallback-Bilder je nach Typ
     switch (itemType) {
@@ -157,8 +157,8 @@ function getItemImage(item) {
         break;
       case "set":
         // Versuche zuerst das parentShow Bild
-        if (item.parentShow?.image?.asset?.url) {
-          image = item.parentShow?.image;
+        if (item?.parentShow?.image?.asset?.url) {
+          image = item?.parentShow?.image;
         } else {
           image = mainStore?.siteFallbacks?.fallbackSet?.image;
         }
@@ -181,19 +181,19 @@ async function loadArtworkUrl(item) {
   if (!item) return;
 
   // Prüfen, ob die URL bereits im Cache ist
-  if (artworkUrls.value.has(item._id)) return;
+  if (artworkUrls.value.has(item?._id)) return;
 
   try {
     const url = await getSoundcloudArtwork(item);
-    artworkUrls.value.set(item._id, url);
+    artworkUrls.value.set(item?._id, url);
   } catch (error) {
     console.error("Fehler beim Laden des Artworks:", error);
     // Bei Fehler ein Fallback setzen
-    if (item.parentShow?.image?.asset?.url) {
-      artworkUrls.value.set(item._id, item.parentShow?.image.asset.url);
+    if (item?.parentShow?.image?.asset?.url) {
+      artworkUrls.value.set(item?._id, item?.parentShow?.image.asset.url);
     } else if (mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url) {
       artworkUrls.value.set(
-        item._id,
+        item?._id,
         mainStore.siteFallbacks.fallbackSet.image.asset.url
       );
     }
@@ -246,7 +246,7 @@ function getItemRoute(item) {
       // Prüfe, ob parentShow vorhanden ist
       if (item?.parentShow?.slug?.current) {
         return localePath(
-          `/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
+          `/shows/${item?.parentShow?.slug?.current}/${item?.slug?.current}`
         );
       }
       // Fallback falls parentShow nicht verfügbar ist
@@ -267,7 +267,7 @@ function getItemRoute(item) {
 // SoundCloud-Track abspielen
 function playTrack(item) {
   if (item?.soundcloud?.tracks?.[0]) {
-    const track = item.soundcloud.tracks[0];
+    const track = item?.soundcloud.tracks[0];
     if (!track.permalink_url && track.id) {
       track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
     }
@@ -280,8 +280,8 @@ function getItemCityTags(item) {
   const cityTags = [];
 
   // Direkte City-Tags
-  if (item.tags && Array.isArray(item.tags)) {
-    item.tags.forEach((tag) => {
+  if (item?.tags && Array.isArray(item?.tags)) {
+    item?.tags.forEach((tag) => {
       if (tag._type === "tag.city") {
         cityTags.push(tag);
       }
@@ -289,8 +289,8 @@ function getItemCityTags(item) {
   }
 
   // City-Tags aus parentShow
-  if (item.parentShow?.tags && Array.isArray(item.parentShow?.tags)) {
-    item.parentShow?.tags.forEach((tag) => {
+  if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
+    item?.parentShow?.tags.forEach((tag) => {
       if (tag._type === "tag.city") {
         if (!cityTags.some((existingTag) => existingTag._id === tag._id)) {
           cityTags.push(tag);
@@ -304,8 +304,8 @@ function getItemCityTags(item) {
 
 // Nicht-Stadt-Tags abrufen
 function getItemNonCityTags(item) {
-  if (!item.tags || !Array.isArray(item.tags)) return [];
-  return item.tags.filter((tag) => tag._type !== "tag.city");
+  if (!item?.tags || !Array.isArray(item?.tags)) return [];
+  return item?.tags.filter((tag) => tag._type !== "tag.city");
 }
 
 // Watcher für visibleItems, um Artwork-URLs für neue Items zu laden
@@ -314,7 +314,7 @@ watch(
   (newItems) => {
     if (props.type === "sets") {
       newItems.forEach((item) => {
-        if (!artworkUrls.value.has(item._id)) {
+        if (!artworkUrls.value.has(item?._id)) {
           loadArtworkUrl(item);
         }
       });
@@ -349,11 +349,11 @@ onMounted(() => {
       <!-- Grid-Items -->
       <div
         v-for="item in visibleItems"
-        :key="item._id"
+        :key="item?._id"
         :class="`related-item related-item--${style} ${typeClass}`"
       >
         <!-- Stadt-Tags falls vorhanden -->
-        <div class="related-item__tags city-tags">
+        <!-- <div class="related-item__tags city-tags">
           <span
             v-for="tag in getItemCityTags(item)"
             :key="tag._id"
@@ -361,7 +361,7 @@ onMounted(() => {
           >
             {{ parseI18nObj(tag?.short) }}
           </span>
-        </div>
+        </div> -->
 
         <!-- Bild -->
         <NuxtLink
@@ -371,15 +371,16 @@ onMounted(() => {
         >
           <div class="related-item__image" v-if="type === 'sets'">
             <img
-              v-if="item.image && item.image.asset && item.image.asset.url"
-              :src="item.image.asset.url"
-              :alt="item.title || ''"
+              v-if="item?.image && item?.image.asset && item?.image.asset.url"
+              :src="item?.image.asset.url"
+              :alt="item?.title || ''"
             />
-            <div v-else-if="item.soundcloud" class="track-artwork">
+            <div v-else-if="item?.soundcloud" class="track-artwork">
               <img
-                v-if="artworkUrls.get(item._id)"
-                :src="artworkUrls.get(item._id)"
+                v-if="artworkUrls.get(item?._id)"
+                :src="artworkUrls.get(item?._id)"
                 alt="Track Artwork"
+                class="track-image"
               />
               <div v-else class="track-artwork-placeholder"></div>
             </div>
@@ -389,6 +390,7 @@ onMounted(() => {
                 v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
                 :src="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
                 alt="Fallback Image"
+                class="fallback-image"
               />
             </div>
           </div>
@@ -400,13 +402,14 @@ onMounted(() => {
                 getItemImage(item).asset.url
               "
               :src="getItemImage(item).asset.url"
-              :alt="item.title || ''"
+              :alt="item?.title || ''"
             />
             <div v-else class="image-placeholder">
               <img
                 v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
                 :src="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
                 alt="Fallback Image"
+                class="fallback-image"
               />
             </div>
           </div>
@@ -422,26 +425,26 @@ onMounted(() => {
             <!-- Datum (falls vorhanden) -->
             <div
               v-if="
-                item.datetime ||
-                item.publishedAt ||
-                item._updatedAt ||
-                item._createdAt
+                item?.datetime ||
+                item?.publishedAt ||
+                item?._updatedAt ||
+                item?._createdAt
               "
               class="related-item__date"
             >
               {{
                 formatDate(
-                  item.datetime ||
-                    item.publishedAt ||
-                    item._updatedAt ||
-                    item._createdAt
+                  item?.datetime ||
+                    item?.publishedAt ||
+                    item?._updatedAt ||
+                    item?._createdAt
                 )
               }}
             </div>
 
             <!-- Play-Button für Sets -->
             <button
-              v-if="type === 'sets' && item.soundcloud"
+              v-if="type === 'sets' && item?.soundcloud"
               @click.prevent="playTrack(item)"
               class="play-button"
             >
@@ -460,23 +463,23 @@ onMounted(() => {
 
           <!-- Show-Informationen für Sets -->
           <div
-            v-if="item.parentShow && type === 'sets'"
+            v-if="item?.parentShow && type === 'sets'"
             class="related-item__content__show"
           >
             <!-- Show-Titel -->
             <NuxtLink
               v-if="
-                item.parentShow?.title !== 'No Show' && item.parentShow?.slug
+                item?.parentShow?.title !== 'No Show' && item?.parentShow?.slug
               "
-              :to="localePath(`/shows/${item.parentShow?.slug.current}`)"
+              :to="localePath(`/shows/${item?.parentShow?.slug.current}`)"
               class="related-item__link"
             >
               <h3 class="related-item__title show-title">
-                {{ item.parentShow?.title }}
+                {{ item?.parentShow?.title }}
               </h3>
             </NuxtLink>
             <h3 v-else class="related-item__title show-title">
-              {{ item.title || item.parentShow?.title }}
+              {{ item?.title || item?.parentShow?.title }}
             </h3>
 
             <!-- Künstler (für Sets) -->
@@ -512,7 +515,7 @@ onMounted(() => {
             class="related-item__link"
           >
             <h3 class="related-item__title">
-              {{ item.title || item.name }}
+              {{ item?.title || item?.name }}
             </h3>
           </NuxtLink>
           <RichText
@@ -521,7 +524,7 @@ onMounted(() => {
           />
           <RichText
             v-else-if="
-              !item?.useTeaserText && item?.text && item.text.length > 0
+              !item?.useTeaserText && item?.text && item?.text.length > 0
             "
             :blocks="parseI18nObj(item?.text)?.slice(0, 1)"
           />
@@ -529,8 +532,8 @@ onMounted(() => {
             v-else-if="
               !item?.text &&
               item?.description &&
-              item.description.length > 0 &&
-              (item.description[0]?.value || item.description[1]?.value)
+              item?.description.length > 0 &&
+              (item?.description[0]?.value || item?.description[1]?.value)
             "
             :blocks="
               limitTextBlocks(parseI18nObj(item?.description)?.slice(0, 1), 100)

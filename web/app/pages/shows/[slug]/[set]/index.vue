@@ -28,6 +28,9 @@ const relatedSets = computed(() => {
   });
 });
 
+console.log(relatedSets.value);
+
+
 usePageSeo(data?.value?.seo);
 </script>
 
@@ -73,6 +76,7 @@ usePageSeo(data?.value?.seo);
         :items="data?.relatedContent"
         type="sets"
         title=""
+        :limit="6"
       />
     </section>
     <section v-if="relatedSets.length > 0" class="set-detail__more-content">
@@ -85,6 +89,7 @@ usePageSeo(data?.value?.seo);
         :items="relatedSets"
         type="sets"
         title=""
+        :limit="6"
       />
     </section>
   </div>

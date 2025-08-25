@@ -23,6 +23,17 @@ interface Image {
 interface Person {
   _key?: string;
   title?: string;
+  poolVisibility?: boolean;
+  slug?: {
+    current?: string;
+  };
+}
+
+interface Tag {
+  _id?: string;
+  _type?: string;
+  title?: any;
+  short?: any;
 }
 
 interface Set {
@@ -30,17 +41,23 @@ interface Set {
   _type?: string;
   title?: string;
   image?: Image;
-  content?: Object;
+  content?: any;
   mainImage?: Image;
   parentShow?: {
     title?: string;
     image?: Image;
-    content?: Object;
+    content?: any;
+    slug?: {
+      current?: string;
+    };
+    tags?: Tag[];
   };
   datetime?: string;
   _updatedAt?: string;
   persons?: Person[];
-  tags?: any[];
+  tags?: Tag[];
+  tracklistRich?: any;
+  tracklist?: any[];
   soundcloud?: {
     tracks?: Array<{
       id?: string;
@@ -225,6 +242,39 @@ const adjustSetContentHeight = () => {
   }
 };
 
+// Stadt-Tags abrufen
+function getItemCityTags(item: Set): Tag[] {
+  const cityTags: Tag[] = [];
+
+  // Direkte City-Tags
+  if (item?.tags && Array.isArray(item?.tags)) {
+    item?.tags.forEach((tag: Tag) => {
+      if (tag._type === "tag.city") {
+        cityTags.push(tag);
+      }
+    });
+  }
+
+  // City-Tags aus parentShow
+  if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
+    item?.parentShow?.tags.forEach((tag: Tag) => {
+      if (tag._type === "tag.city") {
+        if (!cityTags.some((existingTag) => existingTag._id === tag._id)) {
+          cityTags.push(tag);
+        }
+      }
+    });
+  }
+
+  return cityTags;
+}
+
+// Nicht-Stadt-Tags abrufen
+function getItemNonCityTags(item: Set): Tag[] {
+  if (!item?.tags || !Array.isArray(item?.tags)) return [];
+  return item?.tags.filter((tag: Tag) => tag._type !== "tag.city");
+}
+
 // Lebenszyklus-Hooks
 onMounted(async () => {
   await loadArtworkUrl();
@@ -318,7 +368,7 @@ onMounted(async () => {
               <h3 class="set-date" v-else-if="set?._updatedAt">
                 {{ formatDate(set._updatedAt) }}
               </h3>
-              <h3 class="set-date" v-else-if="set?._updatedAt">
+              <h3 class="set-date" v-else-if="set?.title">
                 {{ set.title }}
               </h3>
             </div>
@@ -354,9 +404,9 @@ onMounted(async () => {
               </div>
             </div>
           </div>
-          <div v-if="set?.tags?.length" class="set-tags tags">
+          <div v-if="getItemNonCityTags(set).length > 0" class="set-tags tags">
             <button
-              v-for="tag in set?.tags"
+              v-for="(tag, index) in getItemNonCityTags(set)"
               :key="tag._id || index"
               class="tag"
               type="button"
@@ -436,17 +486,17 @@ onMounted(async () => {
       border-bottom-left-radius: 1.5625rem;
       width: 100%;
       height: 100%;
-      max-width: 35.3125rem;
-      max-height: calc(var(--page-max-width) / 2.5);
+      max-width: 100%;
+      object-fit: cover;
       overflow: hidden;
       @media screen and (max-width: 900px) {
         max-width: 100%;
         max-height: 100%;
         border-bottom-left-radius: 0;
+        border-bottom: 1px solid var(--color-text);
       }
       @media screen and (min-width: 900px) {
         min-width: calc(var(--page-max-width) / 2.5);
-        border-bottom: 1px solid var(--color-text);
       }
       .track-artwork,
       .track-artwork-placeholder {
@@ -454,8 +504,8 @@ onMounted(async () => {
         aspect-ratio: 1 / 1;
         object-fit: cover;
         background-color: var(--color-grey);
-        max-width: 35.3125rem;
-        max-height: calc(var(--page-max-width) / 2.5);
+        max-width: 100%;
+        max-height: 100%;
         @media screen and (max-width: 900px) {
           max-width: 100%;
           max-height: 100%;

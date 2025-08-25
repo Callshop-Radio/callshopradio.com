@@ -58,7 +58,7 @@ usePageSeo(data?.value?.seo);
         <h3 v-else>
           More Episodes of <span>{{ data?.title }}</span>
         </h3>
-        <ModuleRelatedContent :items="data?.sets" type="sets" title="" />
+        <ModuleRelatedContent :items="data?.sets" :limit="9" type="sets" title="" />
       </div>
     </section>
   </div>
