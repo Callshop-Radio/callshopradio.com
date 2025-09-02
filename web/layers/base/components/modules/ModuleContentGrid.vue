@@ -24,6 +24,10 @@ const lastScrollY = ref(0); // Letzte Scroll-Position
 const scrollThreshold = 30; // Scroll-Schwellenwert in Pixeln (reduziert für früheres Ausblenden)
 const moduleContainer = ref(null); // Template-Referenz für das Modul-Container
 
+// Genre-Filter-Zustand (separate Logik)
+const activeGenre = ref(null); // Aktuell ausgewähltes Genre
+const activeSubGenres = ref(new Set()); // Ausgewählte SubGenres
+
 const onSelect = (index: number) => {
   currentIndex.value = index;
 };
@@ -299,6 +303,11 @@ function toggleFilter(tagId) {
   if (activeFilters.value.has(tagId)) {
     activeFilters.value.delete(tagId);
     filterCategories[category].delete(tagId);
+    
+    // Wenn es ein SubGenre ist, auch aus activeSubGenres entfernen
+    if (category === "subGenre") {
+      activeSubGenres.value.delete(tagId);
+    }
 
     // "Others"-Filter-Status zurücksetzen
     if (tagId === "others") {
@@ -323,6 +332,45 @@ function toggleFilter(tagId) {
 //Toggle SubFilter
 function toggleSubFilter(subFilterId) {
   activeSubFilters.value = subFilterId;
+}
+
+// Genre-Filter-Funktionen
+function toggleGenreFilter(genreId) {
+  if (activeGenre.value === genreId) {
+    // Genre deaktivieren
+    activeGenre.value = null;
+    // Alle SubGenres aus aktiven Filtern entfernen
+    for (const subGenreId of activeSubGenres.value) {
+      activeFilters.value.delete(subGenreId);
+    }
+    activeSubGenres.value.clear();
+  } else {
+    // Vorherige SubGenres aus aktiven Filtern entfernen
+    for (const subGenreId of activeSubGenres.value) {
+      activeFilters.value.delete(subGenreId);
+    }
+    // Neues Genre aktivieren
+    activeGenre.value = genreId;
+    activeSubGenres.value.clear();
+  }
+  
+  // Aktualisiere gefilterte Items
+  visibleItemCount.value = itemsPerPage;
+}
+
+function toggleSubGenreFilter(subGenreId) {
+  if (activeSubGenres.value.has(subGenreId)) {
+    activeSubGenres.value.delete(subGenreId);
+    // Auch aus den normalen aktiven Filtern entfernen
+    activeFilters.value.delete(subGenreId);
+  } else {
+    activeSubGenres.value.add(subGenreId);
+    // Auch zu den normalen aktiven Filtern hinzufügen (für die Filter-Bar)
+    activeFilters.value.add(subGenreId);
+  }
+  
+  // Aktualisiere gefilterte Items
+  visibleItemCount.value = itemsPerPage;
 }
 
 // Toggle Filter-Sichtbarkeit
@@ -353,6 +401,10 @@ function resetFilters() {
   activeFilters.value.clear();
   Object.values(filterCategories).forEach((categorySet) => categorySet.clear());
   isOtherCitiesActive.value = false;
+  
+  // Genre-Filter auch zurücksetzen
+  activeGenre.value = null;
+  activeSubGenres.value.clear();
 }
 
 // Anzahl der anzuzeigenden Items steuern
@@ -633,86 +685,88 @@ function getItemRoute(item) {
 
 // Prüft, ob ein Item den aktiven Filtern entspricht
 function itemMatchesFilters(item) {
-  if (activeFilters.value.size === 0) {
-    return true; // Keine Filter aktiv, alle Items anzeigen
-  }
-
-  // Gruppiere aktive Filter nach Kategorien
-  const activeFiltersByCategory = {};
-
-  // Initialisiere alle Kategorien
-  Object.keys(filterCategories).forEach((category) => {
-    activeFiltersByCategory[category] = new Set();
-  });
-
-  // Fülle die Kategorien mit den aktiven Filtern
-  for (const filterId of activeFilters.value) {
-    const category = getTagCategory(filterId);
-    activeFiltersByCategory[category].add(filterId);
-  }
-
-  // Spezialbehandlung für "Others" Filter in der city-Kategorie
-  if (activeFiltersByCategory.city.has("others")) {
-    const cityTags = getItemCityTags(item);
-    const isOthersMatch =
-      cityTags.length === 0 || cityTags.every((tag) => !isMainCity(tag));
-
-    // Wenn "others" der einzige city-Filter ist und es passt nicht, sofort false zurückgeben
-    if (activeFiltersByCategory.city.size === 1 && !isOthersMatch) {
-      return false;
-    }
-
-    // Wenn "others" mit anderen city-Filtern kombiniert wird und mindestens einer passt
-    if (activeFiltersByCategory.city.size > 1) {
-      let hasMatchingCityTag = isOthersMatch;
-
-      // Prüfe, ob das Item einen der anderen city-Filter erfüllt
-      for (const cityFilterId of activeFiltersByCategory.city) {
-        if (cityFilterId !== "others") {
-          // Prüfe direkte Tags
-          if (item.tags && Array.isArray(item.tags)) {
-            if (item.tags.some((tag) => tag._id === cityFilterId)) {
-              hasMatchingCityTag = true;
-              break;
-            }
+  // Genre-Filter prüfen (hat Vorrang vor normalen Filtern)
+  if (activeGenre.value) {
+    // Wenn SubGenres ausgewählt sind, nur diese anzeigen (substraktiv)
+    if (activeSubGenres.value.size > 0) {
+      let hasAllSubGenres = true;
+      
+      for (const subGenreId of activeSubGenres.value) {
+        let hasSubGenre = false;
+        
+        // Prüfe direkte Tags
+        if (item.tags && Array.isArray(item.tags)) {
+          if (item.tags.some((tag) => tag._id === subGenreId)) {
+            hasSubGenre = true;
           }
-
-          // Prüfe Tags aus parentShow
-          if (
-            !hasMatchingCityTag &&
-            item.parentShow &&
-            item.parentShow?.tags &&
-            Array.isArray(item.parentShow?.tags)
-          ) {
-            if (item.parentShow?.tags.some((tag) => tag._id === cityFilterId)) {
-              hasMatchingCityTag = true;
-              break;
-            }
+        }
+        
+        // Prüfe Tags aus parentShow
+        if (!hasSubGenre && item.parentShow && item.parentShow?.tags && Array.isArray(item.parentShow?.tags)) {
+          if (item.parentShow?.tags.some((tag) => tag._id === subGenreId)) {
+            hasSubGenre = true;
+          }
+        }
+        
+        if (!hasSubGenre) {
+          hasAllSubGenres = false;
+          break;
+        }
+      }
+      
+      if (!hasAllSubGenres) {
+        return false;
+      }
+    } else {
+      // Nur Genre ausgewählt - zeige alle Items mit diesem Genre oder seinen SubGenres (additiv)
+      let hasGenreOrSubGenre = false;
+      
+      // Hole das Genre-Objekt und alle seine SubGenres
+      const genreObj = categorizedTags.value.genres.find(g => g._id === activeGenre.value);
+      if (genreObj) {
+        const allGenreIds = [genreObj._id];
+        if (genreObj.subGenres) {
+          allGenreIds.push(...genreObj.subGenres.map(sg => sg._id));
+        }
+        
+        // Prüfe direkte Tags
+        if (item.tags && Array.isArray(item.tags)) {
+          if (item.tags.some((tag) => allGenreIds.includes(tag._id))) {
+            hasGenreOrSubGenre = true;
+          }
+        }
+        
+        // Prüfe Tags aus parentShow
+        if (!hasGenreOrSubGenre && item.parentShow && item.parentShow?.tags && Array.isArray(item.parentShow?.tags)) {
+          if (item.parentShow?.tags.some((tag) => allGenreIds.includes(tag._id))) {
+            hasGenreOrSubGenre = true;
           }
         }
       }
-
-      // Wenn keine der Stadt-Filter passt
-      if (!hasMatchingCityTag) {
+      
+      if (!hasGenreOrSubGenre) {
         return false;
       }
     }
-
-    // Entferne "others" aus der Menge, damit es in der normalen Logik nicht berücksichtigt wird
-    activeFiltersByCategory.city.delete("others");
+  }
+  
+  // Normale Filter prüfen (substraktiv wie bisher)
+  if (activeFilters.value.size === 0) {
+    return true; // Keine normalen Filter aktiv
   }
 
-  // Prüfe für jede Kategorie mit aktiven Filtern
-  for (const [category, filters] of Object.entries(activeFiltersByCategory)) {
-    // Wenn keine Filter in dieser Kategorie, überspringen
-    if (filters.size === 0) continue;
+  // Alle aktiven normalen Filter müssen erfüllt sein (UND-Verknüpfung)
+  for (const filterId of activeFilters.value) {
+    let hasMatchingTag = false;
 
-    // Für jede Kategorie muss mindestens ein Filter übereinstimmen (ODER-Beziehung innerhalb einer Kategorie)
-    let hasCategoryMatch = false;
-
-    for (const filterId of filters) {
-      let hasMatchingTag = false;
-
+    // Spezialbehandlung für "Others" Filter
+    if (filterId === "others") {
+      const cityTags = getItemCityTags(item);
+      const isOthersMatch = cityTags.length === 0 || cityTags.every((tag) => !isMainCity(tag));
+      if (isOthersMatch) {
+        hasMatchingTag = true;
+      }
+    } else {
       // Prüfe direkte Tags
       if (item.tags && Array.isArray(item.tags)) {
         if (item.tags.some((tag) => tag._id === filterId)) {
@@ -720,7 +774,7 @@ function itemMatchesFilters(item) {
         }
       }
 
-      // Prüfe Tags aus parentShow
+      // Prüfe Tags aus parentShow (falls noch nicht gefunden)
       if (
         !hasMatchingTag &&
         item.parentShow &&
@@ -731,21 +785,16 @@ function itemMatchesFilters(item) {
           hasMatchingTag = true;
         }
       }
-
-      // Wenn ein Tag in dieser Kategorie übereinstimmt, ist die Kategorie erfüllt
-      if (hasMatchingTag) {
-        hasCategoryMatch = true;
-        break;
-      }
     }
 
-    // Wenn keine Übereinstimmung in dieser Kategorie gefunden wurde
-    if (!hasCategoryMatch && filters.size > 0) {
+    // Wenn dieser normale Filter nicht erfüllt ist, Item ausschließen
+    if (!hasMatchingTag) {
       return false;
     }
   }
 
-  return true; // Alle Kategorie-Bedingungen sind erfüllt
+  // Alle Filter sind erfüllt
+  return true;
 }
 // Gibt alle nicht-City-Tags eines Items zurück
 function getItemNonCityTags(item) {
@@ -1109,7 +1158,7 @@ onUnmounted(() => {
               >
                 <div class="filter-genres">
                   <div
-                    v-for="(genre, index) in categorizedTags.genres"
+                    v-for="genre in categorizedTags.genres"
                     :key="genre._id"
                     class="filter-genre"
                   >
@@ -1118,9 +1167,9 @@ onUnmounted(() => {
                       :class="[
                         'filter-tag',
                         'filter-tag--genre',
-                        { 'filter-tag--active': index === currentIndex },
+                        { 'filter-tag--active': activeGenre === genre._id },
                       ]"
-                      @click="toggleSubFilter(genre._id), onSelect(index)"
+                      @click="toggleGenreFilter(genre._id)"
                     >
                       {{ genre.title }}
                     </button>
@@ -1129,34 +1178,23 @@ onUnmounted(() => {
 
                 <div class="filter-subgenres">
                   <div
-                    v-for="genre in categorizedTags.genres"
-                    :key="genre._id"
+                    v-if="activeGenre && categorizedTags.genres.find(g => g._id === activeGenre)?.subGenres?.length > 0"
                     class="filter-subgenre"
-                    :class="{ hidden: activeSubFilters !== genre._id }"
                   >
                     <!-- Subgenres -->
-                    <div
-                      v-if="
-                        genre.subGenres &&
-                        genre.subGenres.length > 0 &&
-                        activeSubFilters == genre._id
-                      "
-                      class="filter-subgenre__tags"
-                    >
+                    <div class="filter-subgenre__tags">
                       <button
-                        v-for="subGenre in genre.subGenres"
+                        v-for="subGenre in categorizedTags.genres.find(g => g._id === activeGenre)?.subGenres"
                         :key="subGenre._id"
                         class="tag"
                         :class="[
                           'filter-tag',
                           'filter-tag--subgenre',
                           {
-                            'filter-tag--active': activeFilters.has(
-                              subGenre._id
-                            ),
+                            'filter-tag--active': activeSubGenres.has(subGenre._id),
                           },
                         ]"
-                        @click="toggleFilter(subGenre._id)"
+                        @click="toggleSubGenreFilter(subGenre._id)"
                       >
                         {{ subGenre.title }}
                       </button>
