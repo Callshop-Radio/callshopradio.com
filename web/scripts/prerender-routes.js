@@ -75,7 +75,7 @@ export async function getAllRoutes() {
     const uniqueRoutes = [...new Set(routes)].sort()
     
     console.log(`🚀 Found ${uniqueRoutes.length} routes to prerender:`)
-    uniqueRoutes.forEach(route => console.log(`  - ${route}`))
+    // uniqueRoutes.forEach(route => console.log(`  - ${route}`))
     
     return uniqueRoutes
   } catch (error) {

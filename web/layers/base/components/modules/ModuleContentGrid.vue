@@ -21,7 +21,7 @@ const isOtherCitiesActive = ref(false); // Zustand für "Others"-Filter
 const currentIndex = ref(false);
 const showFilters = ref(true); // Zustand für Filter-Sichtbarkeit
 const lastScrollY = ref(0); // Letzte Scroll-Position
-const scrollThreshold = 100; // Scroll-Schwellenwert in Pixeln
+const scrollThreshold = 30; // Scroll-Schwellenwert in Pixeln (reduziert für früheres Ausblenden)
 const moduleContainer = ref(null); // Template-Referenz für das Modul-Container
 
 const onSelect = (index: number) => {
@@ -331,16 +331,21 @@ function toggleFiltersVisibility() {
 }
 
 // Scroll-Handler für automatisches Ein-/Ausblenden der Filter
-function handleScroll() {
-  if (!moduleContainer.value) return;
-  
-  const currentScrollY = moduleContainer.value.scrollTop;
-  const scrollDifference = Math.abs(currentScrollY - lastScrollY.value);
-  
-  if (scrollDifference >= scrollThreshold) {
-    showFilters.value = !showFilters.value;
-    lastScrollY.value = currentScrollY;
+function handleScroll(event: Event) {
+  const scrollContainer = event.target as HTMLElement;
+  const currentScrollY = scrollContainer.scrollTop;
+  const scrollDifference = currentScrollY - lastScrollY.value;
+
+  // Wenn nach unten gescrollt wird und der Schwellenwert überschritten wird
+  if (scrollDifference > scrollThreshold && showFilters.value) {
+    showFilters.value = false;
   }
+  // Filter nur wieder einblenden, wenn man fast ganz oben ist (weniger als 50px vom Anfang)
+  else if (currentScrollY < 50 && !showFilters.value) {
+    showFilters.value = true;
+  }
+
+  lastScrollY.value = currentScrollY;
 }
 
 // Zurücksetzen aller Filter
@@ -891,24 +896,29 @@ function playTrack(item) {
   }
 }
 
+// Referenz für das Scroll-Container Element
+const scrollContainer = ref<HTMLElement | null>(null);
+
 onMounted(() => {
   if (contentType.value === "sets") {
     allItems.value.forEach((item) => {
       loadArtworkUrl(item);
     });
   }
-  
-  // Scroll-Listener auf das Modul-Container setzen
-  if (moduleContainer.value) {
-    lastScrollY.value = moduleContainer.value.scrollTop;
-    moduleContainer.value.addEventListener('scroll', handleScroll);
+
+  // Finde das erste div nach main Element
+  const mainElement = document.querySelector('main');
+  if (mainElement && mainElement.firstElementChild instanceof HTMLElement) {
+    scrollContainer.value = mainElement.firstElementChild;
+    lastScrollY.value = scrollContainer.value.scrollTop;
+    scrollContainer.value.addEventListener("scroll", handleScroll, { passive: true });
   }
 });
 
 onUnmounted(() => {
   // Scroll-Listener entfernen
-  if (moduleContainer.value) {
-    moduleContainer.value.removeEventListener('scroll', handleScroll);
+  if (scrollContainer.value) {
+    scrollContainer.value.removeEventListener("scroll", handleScroll);
   }
 });
 </script>
@@ -945,7 +955,6 @@ onUnmounted(() => {
             <h4
               class="active-filters__title"
               :class="{ active: activeFilters.size > 0 }"
-              @click="resetFilters()"
             >
               <span @click="resetFilters()" class="close-cross"
                 ><svg
@@ -968,8 +977,13 @@ onUnmounted(() => {
                     d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
                     fill="#E8E8E8"
                   />
-                </svg> </span
-              >Tags
+                </svg>
+              </span>
+              <span @click="toggleFiltersVisibility">
+                Tags&nbsp;<span class="toggle-arrow">{{
+                  showFilters ? "↑" : "↓"
+                }}</span>
+              </span>
             </h4>
             <div class="active-filters__list tags">
               <div
@@ -1076,20 +1090,8 @@ onUnmounted(() => {
             </button>
           </div>
         </div>
-
-        <!-- Toggle Filter Button -->
-        <div class="filter-toggle">
-          <button
-            @click="toggleFiltersVisibility"
-            class="filter-toggle__button"
-          >
-            {{ showFilters ? 'Hide Filter' : 'Show Filter' }}
-          </button>
-        </div>
-
         <div
           v-if="allItems.length > 0 && module.availableTags"
-          v-show="showFilters"
           class="content-grid__filters"
         >
           <div class="filter-container tags">
@@ -1101,6 +1103,9 @@ onUnmounted(() => {
                   categorizedTags.genres && categorizedTags.genres.length > 0
                 "
                 class="filter-category tags"
+                :class="{
+                  active: showFilters,
+                }"
               >
                 <div class="filter-genres">
                   <div
@@ -1558,8 +1563,15 @@ onUnmounted(() => {
   &.sets {
     .active-filters {
       &__title {
+        height: var(--small-font-size);
+        cursor: pointer;
         &.active {
           color: var(--color-pink);
+        }
+        .toggle-arrow {
+          position: absolute;
+          font-size: var(--small-font-size);
+          transform: translate(0,-1px);
         }
       }
     }
@@ -1932,7 +1944,7 @@ onUnmounted(() => {
     position: absolute;
     top: calc(var(--small-padding) * 1.25);
     width: max-content;
-    transform: translate(calc((100% + var(--base-padding)) * -1),0);
+    transform: translate(calc(-100% + var(--base-padding)), 0);
     display: flex;
     justify-content: center;
 
@@ -1940,8 +1952,11 @@ onUnmounted(() => {
       background-color: var(--color-text);
       color: var(--color-bg);
       border: none;
-      padding: var(--small-padding) var(--mid-padding);
-      border-radius: 100px;
+      padding: var(--small-padding) calc(var(--base-padding) * 2)
+        var(--small-padding) var(--base-padding);
+      border-bottom-left-radius: 100px;
+      border-top-left-radius: 100px;
+
       cursor: pointer;
       font-size: var(--small-font-size);
       font-family: var(--font-text-semibold);
@@ -1981,15 +1996,21 @@ onUnmounted(() => {
     }
 
     .filter-category {
+      width: var(--page-max-width);
       position: absolute;
       background-color: var(--color-bg-transparent);
-      transform: translate(0,calc(var(--mid-padding) * -1.25));
-      padding: var(--mid-padding) 0;
+      transform: translate(0, calc(var(--mid-padding) * -1.75));
+      padding: calc(var(--mid-padding) * 1.75) 0 var(--mid-padding);
       backdrop-filter: blur(10px);
       border-bottom-right-radius: 1.56125rem;
       border-bottom-left-radius: 1.56125rem;
       border: 1px solid var(--color-bg);
       z-index: 1;
+      transition: all 0.3s ease;
+      opacity: 0;
+      &.active {
+        opacity: 1;
+      }
     }
 
     .filter-tags {
@@ -2004,7 +2025,7 @@ onUnmounted(() => {
       flex-flow: row wrap;
       align-items: center;
       justify-content: center;
-      margin: var(--base-padding) auto var(--big-padding);
+      margin: var(--base-padding) auto var(--mid-padding);
       max-width: 66%;
       width: 66%;
       gap: var(--small-padding);
@@ -2131,7 +2152,7 @@ onUnmounted(() => {
 
   &__container {
     min-width: calc(var(--page-max-width) + var(--big-margin));
-    margin: var(--big-margin) 0 0 calc(var(--big-margin) * -0.5);
+    margin: calc(var(--big-margin) * 2) 0 0 calc(var(--big-margin) * -0.5);
     display: flex;
     flex-direction: column;
   }
