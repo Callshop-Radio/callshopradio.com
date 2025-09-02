@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://callshopradio.com/sitemap.xml
+
+# Blockiere unwichtige Verzeichnisse
+Disallow: /api/
+Disallow: /_nuxt/
+Disallow: /.well-known/
+Disallow: /admin/

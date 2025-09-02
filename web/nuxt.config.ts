@@ -5,6 +5,15 @@ export default defineNuxtConfig({
   },
   site: {
     debug: false,
+    url: process.env.NUXT_PUBLIC_SITE_URL || 'https://callshopradio.com',
+  },
+
+  sitemap: {
+    hostname: process.env.NUXT_PUBLIC_SITE_URL || 'https://callshopradio.com',
+    gzip: true,
+    sources: [
+      '/api/sitemap'
+    ]
   },
   devtools: { enabled: false },
   ssr: true,
@@ -20,7 +29,7 @@ export default defineNuxtConfig({
     "nuxt-gtag",
     "@nuxt/eslint",
     "@nuxtjs/i18n",
-    // '@nuxtjs/sitemap'
+    "@nuxtjs/sitemap"
   ],
 
   gtag: {
@@ -105,6 +114,7 @@ export default defineNuxtConfig({
         '/schedule',
         '/shows',
         '/words',
+        '/sitemap.xml',
         // Dynamische Routen werden durch hooks erfasst
       ],
       // Ignoriere bestimmte Routen falls nötig
@@ -151,6 +161,12 @@ export default defineNuxtConfig({
 
   routeRules: {
     "/**": { prerender: true },
+    "/sitemap.xml": { 
+      headers: { 
+        "content-type": "application/xml; charset=utf-8",
+        "cache-control": "max-age=3600"
+      }
+    },
   },
 
   compatibilityDate: "2024-12-19",

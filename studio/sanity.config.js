@@ -25,7 +25,6 @@ export default defineConfig({
 
   projectId: process.env.SANITY_STUDIO_PROJECT_ID,
   dataset: process.env.SANITY_STUDIO_DATASET,
-  token: process.env.SANITY_STUDIO_TOKEN,
 
   icon: Logo,
 

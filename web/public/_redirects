@@ -1,0 +1,7 @@
+# Netlify Redirects für Callshop Radio
+
+# Sitemap explizit ausschließen vom Catch-All
+/sitemap.xml /sitemap.xml 200!
+
+# Catch-All für SPA
+/* /index.html 200
