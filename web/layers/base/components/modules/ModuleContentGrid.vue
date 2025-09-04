@@ -25,7 +25,7 @@ const scrollThreshold = 30; // Scroll-Schwellenwert in Pixeln (reduziert für fr
 const moduleContainer = ref(null); // Template-Referenz für das Modul-Container
 
 // Genre-Filter-Zustand (separate Logik)
-const activeGenre = ref(null); // Aktuell ausgewähltes Genre
+const activeGenres = ref(new Set()); // Aktuell ausgewählte Genres (kann mehrere sein)
 const activeSubGenres = ref(new Set()); // Ausgewählte SubGenres
 
 const onSelect = (index: number) => {
@@ -336,22 +336,21 @@ function toggleSubFilter(subFilterId) {
 
 // Genre-Filter-Funktionen
 function toggleGenreFilter(genreId) {
-  if (activeGenre.value === genreId) {
+  if (activeGenres.value.has(genreId)) {
     // Genre deaktivieren
-    activeGenre.value = null;
-    // Alle SubGenres aus aktiven Filtern entfernen
-    for (const subGenreId of activeSubGenres.value) {
-      activeFilters.value.delete(subGenreId);
+    activeGenres.value.delete(genreId);
+    
+    // Entferne alle SubGenres dieses Genres aus den aktiven SubGenres
+    const genreObj = categorizedTags.value.genres.find(g => g._id === genreId);
+    if (genreObj && genreObj.subGenres) {
+      genreObj.subGenres.forEach(subGenre => {
+        activeSubGenres.value.delete(subGenre._id);
+        activeFilters.value.delete(subGenre._id);
+      });
     }
-    activeSubGenres.value.clear();
   } else {
-    // Vorherige SubGenres aus aktiven Filtern entfernen
-    for (const subGenreId of activeSubGenres.value) {
-      activeFilters.value.delete(subGenreId);
-    }
-    // Neues Genre aktivieren
-    activeGenre.value = genreId;
-    activeSubGenres.value.clear();
+    // Genre aktivieren - nur zur Sichtbarkeit, keine SubGenres automatisch aktivieren
+    activeGenres.value.add(genreId);
   }
   
   // Aktualisiere gefilterte Items
@@ -360,12 +359,12 @@ function toggleGenreFilter(genreId) {
 
 function toggleSubGenreFilter(subGenreId) {
   if (activeSubGenres.value.has(subGenreId)) {
+    // SubGenre deaktivieren
     activeSubGenres.value.delete(subGenreId);
-    // Auch aus den normalen aktiven Filtern entfernen
     activeFilters.value.delete(subGenreId);
   } else {
+    // SubGenre aktivieren
     activeSubGenres.value.add(subGenreId);
-    // Auch zu den normalen aktiven Filtern hinzufügen (für die Filter-Bar)
     activeFilters.value.add(subGenreId);
   }
   
@@ -403,7 +402,7 @@ function resetFilters() {
   isOtherCitiesActive.value = false;
   
   // Genre-Filter auch zurücksetzen
-  activeGenre.value = null;
+  activeGenres.value.clear();
   activeSubGenres.value.clear();
 }
 
@@ -686,7 +685,7 @@ function getItemRoute(item) {
 // Prüft, ob ein Item den aktiven Filtern entspricht
 function itemMatchesFilters(item) {
   // Genre-Filter prüfen (hat Vorrang vor normalen Filtern)
-  if (activeGenre.value) {
+  if (activeGenres.value.size > 0) {
     // Wenn SubGenres ausgewählt sind, nur diese anzeigen (substraktiv)
     if (activeSubGenres.value.size > 0) {
       let hasAllSubGenres = true;
@@ -718,33 +717,34 @@ function itemMatchesFilters(item) {
         return false;
       }
     } else {
-      // Nur Genre ausgewählt - zeige alle Items mit diesem Genre oder seinen SubGenres (additiv)
-      let hasGenreOrSubGenre = false;
+      // Nur Genres ausgewählt (keine SubGenres aktiv) - zeige alle Items der ausgewählten Genres oder ihrer SubGenres (additiv)
+      let hasAnyGenreOrSubGenre = false;
       
-      // Hole das Genre-Objekt und alle seine SubGenres
-      const genreObj = categorizedTags.value.genres.find(g => g._id === activeGenre.value);
-      if (genreObj) {
-        const allGenreIds = [genreObj._id];
-        if (genreObj.subGenres) {
-          allGenreIds.push(...genreObj.subGenres.map(sg => sg._id));
+      // Sammle alle Genre-IDs und ihre SubGenre-IDs
+      const allAllowedIds = new Set();
+      activeGenres.value.forEach(genreId => {
+        allAllowedIds.add(genreId);
+        const genreObj = categorizedTags.value.genres.find(g => g._id === genreId);
+        if (genreObj && genreObj.subGenres) {
+          genreObj.subGenres.forEach(sg => allAllowedIds.add(sg._id));
         }
-        
-        // Prüfe direkte Tags
-        if (item.tags && Array.isArray(item.tags)) {
-          if (item.tags.some((tag) => allGenreIds.includes(tag._id))) {
-            hasGenreOrSubGenre = true;
-          }
-        }
-        
-        // Prüfe Tags aus parentShow
-        if (!hasGenreOrSubGenre && item.parentShow && item.parentShow?.tags && Array.isArray(item.parentShow?.tags)) {
-          if (item.parentShow?.tags.some((tag) => allGenreIds.includes(tag._id))) {
-            hasGenreOrSubGenre = true;
-          }
+      });
+      
+      // Prüfe direkte Tags
+      if (item.tags && Array.isArray(item.tags)) {
+        if (item.tags.some((tag) => allAllowedIds.has(tag._id))) {
+          hasAnyGenreOrSubGenre = true;
         }
       }
       
-      if (!hasGenreOrSubGenre) {
+      // Prüfe Tags aus parentShow
+      if (!hasAnyGenreOrSubGenre && item.parentShow && item.parentShow?.tags && Array.isArray(item.parentShow?.tags)) {
+        if (item.parentShow?.tags.some((tag) => allAllowedIds.has(tag._id))) {
+          hasAnyGenreOrSubGenre = true;
+        }
+      }
+      
+      if (!hasAnyGenreOrSubGenre) {
         return false;
       }
     }
@@ -1167,7 +1167,7 @@ onUnmounted(() => {
                       :class="[
                         'filter-tag',
                         'filter-tag--genre',
-                        { 'filter-tag--active': activeGenre === genre._id },
+                        { 'filter-tag--active': activeGenres.has(genre._id) },
                       ]"
                       @click="toggleGenreFilter(genre._id)"
                     >
@@ -1178,26 +1178,28 @@ onUnmounted(() => {
 
                 <div class="filter-subgenres">
                   <div
-                    v-if="activeGenre && categorizedTags.genres.find(g => g._id === activeGenre)?.subGenres?.length > 0"
+                    v-if="activeGenres.size > 0"
                     class="filter-subgenre"
                   >
-                    <!-- Subgenres -->
+                    <!-- Subgenres für alle aktiven Genres -->
                     <div class="filter-subgenre__tags">
-                      <button
-                        v-for="subGenre in categorizedTags.genres.find(g => g._id === activeGenre)?.subGenres"
-                        :key="subGenre._id"
-                        class="tag"
-                        :class="[
-                          'filter-tag',
-                          'filter-tag--subgenre',
-                          {
-                            'filter-tag--active': activeSubGenres.has(subGenre._id),
-                          },
-                        ]"
-                        @click="toggleSubGenreFilter(subGenre._id)"
-                      >
-                        {{ subGenre.title }}
-                      </button>
+                      <template v-for="genre in categorizedTags.genres.filter(g => activeGenres.has(g._id))" :key="genre._id">
+                        <button
+                          v-for="subGenre in genre.subGenres || []"
+                          :key="subGenre._id"
+                          class="tag"
+                          :class="[
+                            'filter-tag',
+                            'filter-tag--subgenre',
+                            {
+                              'filter-tag--active': activeSubGenres.has(subGenre._id),
+                            },
+                          ]"
+                          @click="toggleSubGenreFilter(subGenre._id)"
+                        >
+                          {{ subGenre.title }}
+                        </button>
+                      </template>
                     </div>
                   </div>
                 </div>
