@@ -357,6 +357,10 @@ export const MODULE_QUERY = `{
                 title,
                 name,
                 slug,
+                image ${IMAGE_QUERY},
+                datetime,
+                _updatedAt,
+                _createdAt,
                 "tags": tags[]->{
                     ...,
                     _id,
@@ -371,6 +375,10 @@ export const MODULE_QUERY = `{
                 title,
                 name,
                 slug,
+                image ${IMAGE_QUERY},
+                datetime,
+                _updatedAt,
+                _createdAt,
                 "tags": tags[]->{
                     ...,
                     _id,
@@ -380,7 +388,7 @@ export const MODULE_QUERY = `{
             }
         ),
         "articleItems": select(
-            type == 'words' && autoLoad == true => *[_type == 'article'] | order(_updatedAt desc) {
+            type == 'words' && autoLoad == true => *[_type == 'article'] | order(datetime desc) {
                 ...,
                 _id,
                 _type,
@@ -391,6 +399,7 @@ export const MODULE_QUERY = `{
                 textTeaser[] ${RICH_TEXT_QUERY},
                 text[] ${RICH_TEXT_QUERY},
                 _updatedAt,
+                _createdAt,
                 "tags": tags[]->{
                     ...,
                     _id,
@@ -403,10 +412,12 @@ export const MODULE_QUERY = `{
                 _type,
                 title,
                 slug,
+                datetime,
                 useTeaserText,
                 textTeaser[] ${RICH_TEXT_QUERY},
                 text[] ${RICH_TEXT_QUERY},
                 _updatedAt,
+                _createdAt,
                 "tags": tags[]->{
                     ...,
                     _id,
@@ -415,11 +426,14 @@ export const MODULE_QUERY = `{
             }
         ),
         "showItems": select(
-            type == 'shows' && autoLoad == true => *[_type == 'show'] | order(_updatedAt desc) {
+            type == 'shows' && autoLoad == true => *[_type == 'show'] | order(datetime desc) {
                 _id,
                 _type,
                 title,
                 slug,
+                datetime,
+                _updatedAt,
+                _createdAt,
                 "tags": tags[]->{
                     ...,
                     _id,
@@ -432,6 +446,9 @@ export const MODULE_QUERY = `{
                 _type,
                 title,
                 slug,
+                datetime,
+                _updatedAt,
+                _createdAt,
                 image { asset-> },
                 "tags": tags[]->{
                     ...,
@@ -505,6 +522,9 @@ export const MODULE_QUERY = `{
                 _type,
                 title,
                 slug,
+                datetime,
+                _updatedAt,
+                _createdAt,
                 "soundcloud": soundcloud{
                     _type,
                     "tracks": tracks[]{

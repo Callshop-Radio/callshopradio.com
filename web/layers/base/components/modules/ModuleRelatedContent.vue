@@ -619,6 +619,11 @@ onMounted(() => {
         }
       }
 
+      svg {
+        width: var(--base-font-size);
+        height: var(--base-font-size);
+      }
+
       .plus-icon {
         font-size: 1.2rem;
       }

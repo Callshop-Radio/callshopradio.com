@@ -101,7 +101,7 @@
       &.shows,
       &.episodes,
       &.sets {
-        .module-carousel__header__type__pill {
+        .module-teaser__header__type__pill {
           background-color: var(--color-pink);
         }
         .city-tags {
@@ -149,6 +149,7 @@
             font-size: var(--base-font-size);
             padding: var(--small-padding) var(--base-padding);
             min-width: 8.5rem;
+            max-width: max-content;
             text-align: center;
             color: var(--color-white);
           }
@@ -159,6 +160,160 @@
         margin: 0 0 var(--base-margin) 0;
       }
       &__title {
+      }
+    }
+    .module-teaser {
+      &.words {
+        .load-more-button {
+          border: 0.09325rem solid var(--color-green);
+          box-shadow: 0 0 0.5rem 0.09325rem var(--color-green);
+          &:hover {
+            background-color: var(--color-green);
+            svg {
+              path {
+                @media (min-width: 1024px) {
+                  stroke: var(--color-bg);
+                }
+              }
+            }
+          }
+          svg {
+            path {
+              stroke: var(--color-green);
+            }
+          }
+        }
+        .module-teaser__header__type__pill {
+          background-color: var(--color-green);
+        }
+        .city-tags {
+          .tag {
+            background-color: var(--color-green);
+          }
+        }
+        .embla__nav__dots {
+          .embla__dot {
+            &.is-selected {
+              background-color: var(--color-green);
+            }
+
+            &:hover {
+              @media (min-width: 1024px) {
+                background-color: var(--color-green);
+              }
+            }
+          }
+        }
+        .slide-date {
+          display: none;
+        }
+      }
+      &.pool {
+        .load-more-button {
+          border: 0.09325rem solid var(--color-blue);
+          box-shadow: 0 0 0.5rem 0.09325rem var(--color-blue);
+          &:hover {
+            background-color: var(--color-blue);
+            svg {
+              path {
+                @media (min-width: 1024px) {
+                  stroke: var(--color-bg);
+                }
+              }
+            }
+          }
+          svg {
+            path {
+              stroke: var(--color-blue);
+            }
+          }
+        }
+        .module-teaser__header__type__pill {
+          background-color: var(--color-blue);
+        }
+        .city-tags {
+          .tag {
+            background-color: var(--color-blue);
+          }
+        }
+        .embla__nav__dots {
+          .embla__dot {
+            &.is-selected {
+              background-color: var(--color-blue);
+            }
+
+            &:hover {
+              @media (min-width: 1024px) {
+                background-color: var(--color-blue);
+              }
+            }
+          }
+        }
+        .slide-date {
+          display: none;
+        }
+      }
+      &.shows,
+      &.episodes,
+      &.sets {
+        .load-more-button {
+          border: 0.09325rem solid var(--color-pink);
+          box-shadow: 0 0 0.5rem 0.09325rem var(--color-pink);
+          &:hover {
+            background-color: var(--color-pink);
+            svg {
+              path {
+                @media (min-width: 1024px) {
+                  stroke: var(--color-bg);
+                }
+              }
+            }
+          }
+          svg {
+            path {
+              stroke: var(--color-pink);
+            }
+          }
+        }
+        .module-teaser__header__type__pill {
+          background-color: var(--color-pink);
+        }
+        .city-tags {
+          .tag {
+            font-size: var(--mini-font-size);
+          }
+        }
+        .embla__nav__dots {
+          .embla__dot {
+            &.is-selected {
+              background-color: var(--color-pink);
+            }
+
+            &:hover {
+              @media (min-width: 1024px) {
+                background-color: var(--color-pink);
+              }
+            }
+          }
+        }
+      }
+      &__header {
+        &__type {
+          display: flex;
+          flex-flow: row wrap;
+          justify-content: space-between;
+          align-items: center;
+          margin: 0 0 var(--big-margin);
+          &__pill {
+            @apply uppercase rounded-full;
+            font-size: var(--base-font-size);
+            padding: var(--small-padding) var(--base-padding);
+            min-width: 8.5rem;
+            max-width: max-content;
+            text-align: center;
+            color: var(--color-white);
+          }
+        }
       }
     }
   }

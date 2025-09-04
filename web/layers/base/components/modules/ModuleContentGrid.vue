@@ -388,8 +388,8 @@ function handleScroll(event: Event) {
   if (scrollDifference > scrollThreshold && showFilters.value) {
     showFilters.value = false;
   }
-  // Filter nur wieder einblenden, wenn man fast ganz oben ist (weniger als 50px vom Anfang)
-  else if (currentScrollY < 50 && !showFilters.value) {
+  // Wenn nach oben gescrollt wird (wieder aktiviert)
+  else if (scrollDifference < -20 && !showFilters.value) {
     showFilters.value = true;
   }
 
@@ -863,8 +863,8 @@ const filteredItems = computed(() => {
   if (sortMode.value === "new") {
     // Chronologisch sortieren (neuste zuerst)
     return filteredArray.sort((a, b) => {
-      const dateA = new Date(a._updatedAt || a.datetime || a._createdAt || 0);
-      const dateB = new Date(b._updatedAt || b.datetime || b._createdAt || 0);
+      const dateA = new Date(a.datetime || a._updatedAt || a._createdAt || 0);
+      const dateB = new Date(b.datetime || b._updatedAt || b._createdAt || 0);
       return dateB.getTime() - dateA.getTime();
     });
   } else if (sortMode.value === "shuffle") {
