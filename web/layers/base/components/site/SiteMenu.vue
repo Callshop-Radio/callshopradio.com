@@ -31,7 +31,7 @@ const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 
 <style lang="postcss" scoped>
 .menu-fade-enter-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
 .menu-fade-leave-active {
@@ -44,10 +44,9 @@ const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 }
 
 nav {
-  background-color: var(--color-text);
   width: 100%;
   height: auto;
-  padding: var(--base-padding) 0;
+  padding: 0 var(--base-padding) var(--base-padding);
   display: flex;
   flex-flow: row;
   justify-content: center;
@@ -61,7 +60,7 @@ nav {
     flex-flow: row wrap;
     align-items: center;
     justify-content: flex-end;
-    gap: var(--mid-margin);
+    gap: var(--base-padding);
     list-style: none;
     margin: 0;
     padding: 0;
@@ -69,7 +68,7 @@ nav {
 
   a {
     display: inline-block;
-    padding: 0.5rem 1rem;
+    padding: var(--small-padding) var(--big-padding);
     &:hover {
       text-decoration-color: transparent;
       text-decoration: none;
@@ -83,11 +82,11 @@ nav {
       }
 
       &.tag {
-        background-color: var(--color-bg);
-        color: var(--color-text);
-        border: 0.09325rem solid var(--color-bg);
-        padding: calc(var(--small-padding) / 2) var(--small-padding);
-        font-size: var(--base-font-size);
+        background-color: var(--color-text);
+        color: var(--color-bg);
+        border: 0.09325rem solid var(--color-text);
+        padding: calc(var(--small-padding)) var(--base-padding);
+        font-family: var(--font-text-semibold);
 
         &.pool {
           color: var(--color-bg);
@@ -110,11 +109,12 @@ nav {
     }
 
     &.tag {
-      background-color: var(--color-text);
-      color: var(--color-bg);
-      border: 0.09325rem solid var(--color-bg);
-      padding: calc(var(--small-padding) / 2) var(--small-padding);
-      font-size: var(--base-font-size);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+
+      border: 0.09325rem solid var(--color-text);
+      padding: calc(var(--small-padding)) var(--base-padding);
+      font-family: var(--font-text-semibold);
 
       &.pool {
         color: var(--color-blue);

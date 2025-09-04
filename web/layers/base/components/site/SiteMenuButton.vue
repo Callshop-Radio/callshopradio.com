@@ -77,8 +77,8 @@ const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 <style lang="postcss" scoped>
 svg {
   overflow: visible;
-  width: 24px;
-  height: 24px;
+  width: calc(var(--base-font-size) + var(--small-padding) * 2);
+  height: calc(var(--base-font-size) + var(--small-padding) * 2);
   cursor: pointer;
   @media screen and (max-width: 900px) {
     display: none !important;

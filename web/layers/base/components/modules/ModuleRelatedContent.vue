@@ -675,7 +675,7 @@ onMounted(() => {
         height: auto;
         aspect-ratio: 1/1 !important;
         object-fit: cover;
-        transition: transform 0.3s ease;
+        transition: transform 0.2s ease;
       }
 
       &:hover img {
@@ -822,7 +822,7 @@ onMounted(() => {
             height: auto;
             aspect-ratio: 3/4 !important;
             object-fit: cover;
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease;
           }
 
           &:hover img {

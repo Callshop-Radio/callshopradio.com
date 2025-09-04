@@ -2,11 +2,29 @@
 import { ref, computed, onMounted } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
-// Typdefinitionen
+// Composables
+const localePath = useLocalePath();
+const mainStore = useMainStore();
+
+// Type Definitions
 interface Image {
   asset?: {
     url?: string;
   };
+}
+
+interface SoundCloudTrack {
+  id?: string;
+  artwork_url?: string;
+  permalink_url?: string;
+}
+
+interface ParentShow {
+  title?: string;
+  slug?: {
+    current?: string;
+  };
+  image?: Image;
 }
 
 interface ContentReference {
@@ -15,9 +33,7 @@ interface ContentReference {
   title?: string;
   image?: Image;
   mainImage?: Image;
-  parentShow?: {
-    image?: Image;
-  };
+  parentShow?: ParentShow;
   datetime?: string;
   _updatedAt?: string;
   useTeaserText?: boolean;
@@ -26,12 +42,19 @@ interface ContentReference {
   description?: any[];
   bio?: any[];
   tags?: any[];
+  persons?: Array<{
+    _id?: string;
+    title?: string;
+    poolVisibility?: boolean;
+    slug?: {
+      current?: string;
+    };
+  }>;
+  slug?: {
+    current?: string;
+  };
   soundcloud?: {
-    tracks?: Array<{
-      id?: string;
-      artwork_url?: string;
-      permalink_url?: string;
-    }>;
+    tracks?: SoundCloudTrack[];
   };
 }
 
@@ -54,42 +77,63 @@ const props = defineProps<{
   module: Module;
 }>();
 
-// Store
-const mainStore = useMainStore();
+// Route Helper Functions
+function getItemRoute(item: ContentReference): string {
+  if (!item?.slug?.current) return "/";
 
-// Composable für Bild-Management
+  const { _type, slug, parentShow } = item;
+
+  switch (_type) {
+    case "person":
+    case "venue":
+      return localePath(`/pool/${slug.current}`);
+
+    case "set":
+      if (parentShow?.slug?.current) {
+        return localePath(`/shows/${parentShow.slug.current}/${slug.current}`);
+      }
+      return localePath(`/shows/${slug.current}`);
+
+    case "article":
+      return localePath(`/words/${slug.current}`);
+
+    case "show":
+      return localePath(`/shows/${slug.current}`);
+
+    default:
+      return localePath(`/${_type}/${slug.current}`);
+  }
+}
+
+// Image Management Composable
 const useImageManagement = () => {
-  // Helper-Funktion für Bild-Fetching und Fallbacks
   function getItemImage(item?: ContentReference): Image | null {
     if (!item) return null;
 
-    // Bild aus dem Item selbst
+    // Primäres Bild aus dem Item
     if (item.image || item.mainImage) {
-      return item.image || item.mainImage;
+      return (item.image || item.mainImage) ?? null;
     }
 
-    // Fallbacks je nach Content-Typ
-    const itemType = item._type || "";
+    // Fallback-Bilder basierend auf Content-Typ
+    const fallbacks = mainStore?.siteFallbacks as any;
+    if (!fallbacks) return null;
 
-    switch (itemType) {
-      case "person":
-        return mainStore?.siteFallbacks?.fallbackPerson?.image;
-      case "venue":
-        return mainStore?.siteFallbacks?.fallbackVenue?.image;
-      case "show":
-        return mainStore?.siteFallbacks?.fallbackShow?.image;
-      case "set":
-        return mainStore?.siteFallbacks?.fallbackSet?.image;
-      case "word":
-      case "article":
-        return mainStore?.siteFallbacks?.fallbackArticle?.image;
-      default:
-        // Allgemeines Fallback-Bild
-        return mainStore?.siteFallbacks?.fallbackPerson?.image;
-    }
+    const fallbackMap: Record<string, Image | undefined> = {
+      person: fallbacks.fallbackPerson?.image,
+      venue: fallbacks.fallbackVenue?.image,
+      show: fallbacks.fallbackShow?.image,
+      set: fallbacks.fallbackSet?.image,
+      word: fallbacks.fallbackArticle?.image,
+      article: fallbacks.fallbackArticle?.image,
+    };
+
+    return (
+      fallbackMap[item._type || ""] || fallbacks.fallbackPerson?.image || null
+    );
   }
 
-  function checkImage(url: string): Promise<boolean> {
+  function checkImageExists(url: string): Promise<boolean> {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => resolve(true);
@@ -100,74 +144,64 @@ const useImageManagement = () => {
 
   return {
     getItemImage,
-    checkImage,
+    checkImageExists,
   };
 };
 
-// Composable für SoundCloud-Funktionalität
+// SoundCloud Composable
 const useSoundCloud = () => {
-  const artworkUrl = ref("");
-  const { checkImage } = useImageManagement();
+  const artworkUrl = ref<string>("");
+  const { checkImageExists } = useImageManagement();
 
   async function getSoundcloudArtwork(
     item?: ContentReference
   ): Promise<string> {
     if (!item) return "";
 
-    // Definiere die Fallback-URLs explizit
-    const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-    const storeFallbackUrl =
-      mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
-    const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
+    const track = item.soundcloud?.tracks?.[0];
+    const parentShowImageUrl = item.parentShow?.image?.asset?.url;
+    const fallbackUrl = (mainStore?.siteFallbacks as any)?.fallbackSet?.image
+      ?.asset?.url;
 
-    // Versuche zunächst das SoundCloud-Artwork
-    if (artworkUrl) {
-      const originalUrl = artworkUrl.replace("-large", "-original");
+    // Versuche SoundCloud-Artwork (Original-Qualität)
+    if (track?.artwork_url) {
+      const originalUrl = track.artwork_url.replace("-large", "-original");
+
       try {
-        const exists = await checkImage(originalUrl);
-        if (exists) {
-          return originalUrl;
-        }
+        const exists = await checkImageExists(originalUrl);
+        if (exists) return originalUrl;
       } catch (error) {
         console.error("Fehler beim Laden des SoundCloud-Artworks:", error);
       }
     }
 
-    // SoundCloud-Artwork existiert nicht, verwende Fallbacks
-    if (parentShowImageUrl) {
-      return parentShowImageUrl;
-    }
-
-    if (storeFallbackUrl) {
-      return storeFallbackUrl;
-    }
-
-    return "";
+    // Fallback-Hierarchie
+    return parentShowImageUrl || fallbackUrl || "";
   }
 
-  async function loadArtworkUrl() {
-    if (!props.module?.contentReference) return;
+  async function loadArtworkUrl(): Promise<void> {
+    const contentRef = props.module?.contentReference;
+    if (!contentRef) return;
+
     try {
-      const url = await getSoundcloudArtwork(props.module.contentReference);
+      const url = await getSoundcloudArtwork(contentRef);
       artworkUrl.value = url;
     } catch (error) {
       console.error("Fehler beim Laden des Artwork-URLs:", error);
+      artworkUrl.value = "";
     }
   }
 
-  function playTrack() {
-    const item = props.module?.contentReference;
-    if (!item?.soundcloud?.tracks?.[0]) return;
+  function playTrack(): void {
+    const track = props.module?.contentReference?.soundcloud?.tracks?.[0];
+    if (!track) return;
 
-    const track = item.soundcloud.tracks[0];
-
-    // Sicherstellen, dass permalink_url gesetzt ist
+    // Stelle sicher, dass permalink_url gesetzt ist
     if (!track.permalink_url && track.id) {
       track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
     }
 
-    // Track im Store speichern
-    mainStore.currentTrack = track;
+    (mainStore as any).currentTrack = track;
   }
 
   return {
@@ -177,25 +211,33 @@ const useSoundCloud = () => {
   };
 };
 
-// Anwendung der Composables
+// Initialize Composables
 const { getItemImage } = useImageManagement();
 const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
 
 // Computed Properties
 const contentType = computed<string | null>(() => {
-  if (!props.module?.contentReference) return null;
-  return props.module.contentReference._type;
+  return props.module?.contentReference?._type || null;
 });
 
 const layoutClass = computed<string>(() => {
-  return `layout-${props.module?.contentReference?._type || "default"}`;
+  return `layout-${contentType.value || "default"}`;
 });
 
 const isAudioContent = computed<boolean>(() => {
   return contentType.value === "set";
 });
 
-// Lebenszyklus-Hooks
+const contentReference = computed(() => {
+  return props.module?.contentReference;
+});
+
+const hasParentShow = computed(() => {
+  const parentShow = contentReference.value?.parentShow;
+  return parentShow && parentShow.title !== "No Show";
+});
+
+// Lifecycle
 onMounted(() => {
   if (isAudioContent.value) {
     loadArtworkUrl();
@@ -208,28 +250,36 @@ onMounted(() => {
     <div class="hero-entry-container">
       <!-- Bild/Media-Bereich -->
       <div class="hero-entry-media">
-        <MediaImage
-          v-if="getItemImage(module.contentReference) && !isAudioContent"
-          :image="getItemImage(module.contentReference)"
-          class="hero-entry-image"
-        />
-        <img
-          v-else-if="isAudioContent && artworkUrl"
-          :src="artworkUrl"
-          alt="Audio Artwork"
-          class="hero-entry-image track-artwork"
-          loading="lazy"
-        />
-        <div
-          v-else-if="isAudioContent"
-          class="track-artwork-placeholder"
-          @vue:mounted="loadArtworkUrl"
-        ></div>
+        <NuxtLink
+          v-if="contentReference?.slug"
+          :to="getItemRoute(contentReference)"
+          class="slide__link"
+        >
+          <MediaImage
+            v-if="getItemImage(contentReference) && !isAudioContent"
+            :image="getItemImage(contentReference) || undefined"
+            class="hero-entry-image"
+          />
+          <img
+            v-else-if="isAudioContent && artworkUrl"
+            :src="artworkUrl"
+            alt="Audio Artwork"
+            class="hero-entry-image track-artwork"
+            loading="lazy"
+          />
+          <div
+            v-else-if="isAudioContent"
+            class="track-artwork-placeholder"
+            @vue:mounted="loadArtworkUrl"
+          />
+        </NuxtLink>
       </div>
+
       <div class="graphics-behind">
-        <AnimatedGradient class="animated-gradient" />
+        <AnimatedGradient class="animated-gradient" :type="contentType || undefined" />
         <AnimatedLogoBackground class="animated-logo-background" />
       </div>
+
       <!-- Content-Bereich -->
       <div class="hero-entry-content">
         <!-- Play-Button für Audio-Inhalte -->
@@ -254,63 +304,84 @@ onMounted(() => {
             />
           </svg>
         </button>
+
         <div class="hero-entry-content-container">
           <!-- Titel-Bereich -->
           <div class="hero-entry-header">
             <!-- Datum oder Update-Datum -->
             <div class="hero-entry-meta">
-              <h3 class="hero-date" v-if="module.contentReference?.datetime">
-                {{ formatDate(module.contentReference.datetime) }}
+              <h3 class="hero-date" v-if="contentReference?.datetime">
+                {{ formatDate(contentReference.datetime) }}
               </h3>
-              <h3
-                class="hero-date"
-                v-else-if="module.contentReference?._updatedAt"
-              >
-                {{ formatDate(module.contentReference._updatedAt) }}
+              <h3 class="hero-date" v-else-if="contentReference?._updatedAt">
+                {{ formatDate(contentReference._updatedAt) }}
               </h3>
             </div>
+
+            <!-- Set-spezifischer Titel-Bereich -->
             <div
-              class="hero-entry-show-title"
-              v-if="module?.contentReference?._type == 'set'"
+              class="hero-entry-title"
+              v-if="contentReference?._type === 'set'"
             >
-              <h2
-                v-if="module?.contentReference?.parentShow?.title"
-                class="hero-entry-title"
+              <NuxtLink
+                v-if="hasParentShow"
+                :to="
+                  localePath(
+                    `/shows/${contentReference.parentShow?.slug?.current}`
+                  )
+                "
               >
-                {{ module?.contentReference?.parentShow?.title }}
-              </h2>
-              <h3
-                v-for="(artist, index) in module?.contentReference?.persons"
-                :key="artist._key"
-                class="hero-entry-show-artist-artist"
+                <h2 class="hero-entry-title">
+                  {{ contentReference.parentShow?.title }}
+                </h2>
+              </NuxtLink>
+
+              <!-- Künstler (für Sets) -->
+              <div
+                v-if="contentReference.persons?.length"
+                class="hero-entry-show-artists"
               >
-                {{ artist?.title
-                }}{{
-                  index < module?.contentReference?.persons.length - 1
-                    ? ","
-                    : ""
-                }}&nbsp;
-              </h3>
+                <h3
+                  v-for="(artist, index) in contentReference.persons"
+                  :key="artist?._id"
+                  class="hero-entry-show-artists-artist"
+                >
+                  <NuxtLink
+                    v-if="artist?.poolVisibility && artist?.slug?.current"
+                    :to="localePath(`/pool/${artist.slug.current}`)"
+                    class="hero-entry-show-artists-artist"
+                  >
+                    {{ artist.title
+                    }}{{
+                      index < contentReference.persons.length - 1 ? "," : ""
+                    }}&nbsp;
+                  </NuxtLink>
+                  <span v-else class="hero-entry-show-artists-artist">
+                    {{ artist?.title
+                    }}{{
+                      index < contentReference.persons.length - 1 ? "," : ""
+                    }}&nbsp;
+                  </span>
+                </h3>
+              </div>
             </div>
+
+            <!-- Standard-Titel -->
             <h2 v-if="module.title" class="hero-entry-title">
               {{ module.title }}
             </h2>
             <h2
               v-else-if="
-                module.contentReference?.title &&
-                module?.contentReference?._type != 'set'
+                contentReference?.title && contentReference._type !== 'set'
               "
               class="hero-entry-title"
             >
-              {{ module.contentReference.title }}
+              {{ contentReference.title }}
             </h2>
           </div>
 
-          <!-- Text-Bereich -->
-          <div
-            class="hero-entry-text"
-            v-if="module?.contentReference?._type != 'set'"
-          >
+          <!-- Text-Bereich (nicht für Sets) -->
+          <div class="hero-entry-text" v-if="contentReference?._type !== 'set'">
             <!-- Module-Text wenn vorhanden -->
             <RichText
               v-if="module.text && module.text.length > 0"
@@ -320,48 +391,49 @@ onMounted(() => {
 
             <!-- Content-Beschreibung als Fallback -->
             <template v-else>
+              <!-- Für Person und Venue -->
               <RichText
-                v-if="
-                  module.contentReference?.useTeaserText &&
-                  module.contentReference?.textTeaser
+                v-if="contentReference?.description?.length"
+                :blocks="
+                  limitTextBlocks(
+                    parseI18nObj(contentReference.description)?.slice(0, 1)
+                  )
                 "
-                :blocks="parseI18nObj(module.contentReference.textTeaser)"
+              />
+              <!-- Für andere Inhaltstypen, die möglicherweise ein bio-Feld haben -->
+              <RichText
+                v-else-if="contentReference?.bio?.length"
+                :blocks="
+                  limitTextBlocks(parseI18nObj(contentReference.bio)?.slice(0, 1))
+                "
               />
               <RichText
-                v-else-if="
-                  !module.contentReference?.useTeaserText &&
-                  module.contentReference?.text &&
-                  module.contentReference.text.length > 0
+                v-else-if="contentReference?.text?.length"
+                :blocks="
+                  limitTextBlocks(
+                    parseI18nObj(contentReference.text)?.slice(0, 1)
+                  )
                 "
-                :blocks="parseI18nObj(module.contentReference.text)"
               />
               <RichText
-                v-else-if="
-                  module.contentReference?.description &&
-                  module.contentReference.description.length > 0 &&
-                  (module.contentReference.description[0]?.value ||
-                    module.contentReference.description[1]?.value)
+                v-else-if="contentReference?.textTeaser?.length"
+                :blocks="
+                  limitTextBlocks(
+                    parseI18nObj(contentReference.textTeaser)?.slice(0, 1)
+                  )
                 "
-                :blocks="parseI18nObj(module.contentReference.description)"
-              />
-              <RichText
-                v-else-if="
-                  module.contentReference?.bio &&
-                  module.contentReference.bio.length > 0
-                "
-                :blocks="parseI18nObj(module.contentReference.bio)"
               />
             </template>
           </div>
 
           <!-- Tags-Bereich -->
           <div
-            v-if="module.contentReference?.tags?.length"
+            v-if="contentReference?.tags?.length"
             class="hero-entry-tags tags"
           >
             <button
-              v-for="tag in module.contentReference.tags"
-              :key="tag._id || index"
+              v-for="(tag, tagIndex) in contentReference.tags.slice(0, 3)"
+              :key="tag._id || `tag-${tagIndex}`"
               class="tag"
               type="button"
             >
@@ -373,17 +445,8 @@ onMounted(() => {
             </button>
           </div>
         </div>
-        <!-- Link-Bereich -->
-        <!-- <div v-if="module.link" class="hero-entry-actions">
-          <NuxtLink 
-            :link="module.link" 
-            class="hero-entry-link"
-            :aria-label="`Link zu ${module.link.title || 'weiteren Informationen'}`"
-          >
-            {{ module.link.title || 'Mehr erfahren' }}
-          </NuxtLink>
-        </div> -->
       </div>
+
       <div class="graphics-front">
         <AnimatedLogo class="animated-logo" />
       </div>
@@ -400,6 +463,10 @@ onMounted(() => {
   position: relative;
   isolation: isolate;
 
+  @media screen and (min-width: 1800px) {
+    min-height: 43.3625rem;
+  }
+
   .graphics-behind {
     position: absolute;
     top: 0;
@@ -408,6 +475,7 @@ onMounted(() => {
     height: 100%;
     z-index: 2;
     pointer-events: none;
+    
     .animated-logo-background {
       width: 575px;
       height: 415px;
@@ -419,6 +487,7 @@ onMounted(() => {
       transform: translate(33%, -100%);
       z-index: 0;
     }
+    
     .animated-gradient {
       position: absolute;
       top: -33%;
@@ -427,6 +496,7 @@ onMounted(() => {
       height: 110%;
     }
   }
+  
   .graphics-front {
     position: absolute;
     top: 0;
@@ -435,6 +505,7 @@ onMounted(() => {
     height: 100%;
     z-index: 999;
     pointer-events: none;
+    
     .animated-logo {
       width: 575px;
       height: 415px;
@@ -449,143 +520,84 @@ onMounted(() => {
     }
   }
 
-  &.layout-set {
-    .hero-entry-container {
-      width: 100%;
-      display: flex;
-      flex-flow: row wrap;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-      }
-
-      .hero-entry-media {
-        border-radius: 1.5625rem;
-        .track-artwork,
-        .track-artwork-placeholder {
-          width: 100%;
-          aspect-ratio: 1 / 1;
-          object-fit: cover;
-          background-color: var(--color-grey);
-          max-width: 35.3125rem;
-          max-height: 35.3125rem;
-        }
-      }
-    }
-  }
-
-  &.layout-person,
-  &.layout-venue {
-    .hero-entry-container {
-      width: 100%;
-      display: flex;
-      flex-flow: row wrap;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-      }
-      .hero-entry-content-container {
-        max-width: 24.8125rem;
-      }
-
-      .hero-entry-content {
-        top: 0;
-      }
-      .hero-entry-media {
-        border-radius: 1.25rem;
-        .hero-entry-image {
-          width: 100%;
-          aspect-ratio: 3 / 2;
-          object-fit: cover;
-          background-color: var(--color-grey);
-          max-width: 35.3125rem;
-          max-height: 35.3125rem;
-          height: 100%;
-        }
-      }
-      .hero-entry-header {
-        .hero-entry-title {
-          font-size: var(--large-font-size);
-          font-family: var(--font-text-semibold);
-          font-weight: 500;
-        }
-      }
-      .hero-entry-text {
-        .module-text {
-        }
-      }
-    }
-  }
-
-  &.layout-article {
-    .hero-entry-container {
-      width: 100%;
-      display: flex;
-      flex-flow: row wrap;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-      }
-      .hero-entry-content-container {
-        max-width: 24.8125rem;
-      }
-
-      .hero-entry-content {
-        top: 0;
-      }
-      .hero-entry-media {
-        border-radius: 1.25rem;
-        .hero-entry-image {
-          width: 100%;
-          aspect-ratio: 3 / 2;
-          object-fit: cover;
-          background-color: var(--color-grey);
-          max-width: 35.3125rem;
-          max-height: 35.3125rem;
-        }
-      }
-      .hero-entry-header {
-        .hero-entry-title {
-          font-size: var(--large-font-size);
-          font-family: var(--font-text-semibold);
-          font-weight: 500;
-        }
-      }
-      .hero-entry-text {
-        .module-text {
-        }
-      }
-    }
-  }
-
+  /* Einheitliches Layout für alle Content-Typen */
   .hero-entry-container {
     position: relative;
     height: 100%;
     min-height: 35.3125rem;
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+
+    @media screen and (min-width: 1800px) {
+      min-height: 43.3625rem;
+    }
+
+    .hero-entry-content-container {
+      @media screen and (max-width: 900px) {
+        max-width: calc(100% - 2rem - var(--base-padding) * 2);
+      }
+    }
+
+    @media screen and (max-width: 900px) {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: center;
+      align-items: flex-start;
+      position: relative;
+    }
   }
 
   .hero-entry-media {
     overflow: hidden;
+    order: 2;
+    border-radius: 1.5625rem;
     z-index: 500;
+
+    @media screen and (max-width: 900px) {
+      transform: translate(0, 12.5%);
+    }
+
+    /* Einheitliches Bild-Format für alle Content-Typen */
+    .hero-entry-image,
+    .track-artwork,
+    .track-artwork-placeholder {
+      width: 100%;
+      aspect-ratio: 1 / 1; /* Quadratisches Format für alle */
+      object-fit: cover;
+      background-color: var(--color-grey);
+      min-width: 35.3125rem;
+      max-width: 35.3125rem;
+      max-height: 35.3125rem;
+
+      @media screen and (max-width: 900px) {
+        max-width: 100%;
+        min-width: 100%;
+        min-height: 100%;
+        max-height: 100%;
+      }
+      @media screen and (min-width: 1800px) {
+        min-height: 43.3625rem;
+        min-width: 43.3625rem;
+        max-width: 43.3625rem;
+        max-height: 43.3625rem;
+      }
+    }
   }
 
   .hero-entry-content {
     position: absolute;
     left: 0;
     margin: 0;
-    z-index: 999;
     background-color: var(--color-bg);
     display: flex;
     flex-flow: row wrap;
     justify-content: flex-start;
     align-items: center;
     gap: var(--mid-margin);
+    order: 1;
     padding: var(--mid-padding);
     border-radius: 1.25rem;
     border: 0.0625rem solid var(--color-text);
@@ -594,6 +606,13 @@ onMounted(() => {
     min-width: 390px;
     transform: translate(0, 50%);
     z-index: 999;
+
+    @media screen and (max-width: 900px) {
+      min-width: calc(100svw - var(--big-margin) * 4);
+      width: 100%;
+      transform: translate(calc(var(--big-margin) / 4), 0);
+    }
+
     .play-button {
       display: flex;
       flex-flow: column wrap;
@@ -604,33 +623,50 @@ onMounted(() => {
       width: max-content;
       width: 4rem;
       height: 4rem;
+      @media screen and (max-width: 900px) {
+        width: 2rem;
+        height: 2rem;
+      }
       svg {
         width: calc(4rem - var(--base-padding) * 2);
         height: calc(4rem - var(--base-padding) * 2);
         transform: translate(8%, 0);
+        @media screen and (max-width: 900px) {
+          width: calc(2.5rem - var(--base-padding) * 2);
+          height: calc(2.5rem - var(--base-padding) * 2);
+        }
         path {
-          fill: var(--color-bg);
+          fill: var(--color-black);
         }
       }
     }
+    
     &-container {
       display: flex;
       flex-flow: column wrap;
       justify-content: center;
       gap: var(--mid-padding);
     }
+    
     .hero-entry-header {
       display: flex;
       flex-flow: column wrap;
       justify-content: center;
       gap: var(--mid-padding);
 
+      .hero-entry-show-artists {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+      }
+
       .hero-entry-title,
-      .hero-entry-show-artist-artist {
+      .hero-entry-show-artists-artist {
         font-size: var(--base-font-size);
         font-family: var(--font-text-semibold);
         font-weight: 500;
         text-transform: uppercase;
+        width: max-content;
       }
 
       .hero-entry-meta {
@@ -665,6 +701,9 @@ onMounted(() => {
           svg {
             width: 9px;
             height: 12px;
+            path {
+              fill: var(--color-black);
+            }
           }
         }
       }
@@ -681,7 +720,7 @@ onMounted(() => {
     .hero-entry-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 0 var(--small-padding);
+      gap: var(--small-padding);
     }
 
     .hero-entry-actions {

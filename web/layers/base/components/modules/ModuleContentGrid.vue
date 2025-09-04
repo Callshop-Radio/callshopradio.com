@@ -1760,12 +1760,12 @@ onUnmounted(() => {
 
   &__filter-section {
     position: sticky;
-    top: var(--base-margin);
+    top: var(--first-content-distance);
     z-index: 9999;
     &::before {
       content: "";
       position: absolute;
-      top: calc(var(--base-margin) * -1);
+      top: calc(var(--first-content-distance) * -1);
       left: calc(var(--big-margin) * -1);
       height: var(--big-margin);
       background-color: var(--color-bg);
@@ -2044,7 +2044,7 @@ onUnmounted(() => {
       border-bottom-left-radius: 1.56125rem;
       border: 1px solid var(--color-bg);
       z-index: 1;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       opacity: 0;
       &.active {
         opacity: 1;
@@ -2265,7 +2265,7 @@ onUnmounted(() => {
         height: auto;
         aspect-ratio: 1 / 1 !important;
         object-fit: cover;
-        transition: transform 0.3s ease;
+        transition: transform 0.2s ease;
       }
 
       &:hover img {
@@ -2375,7 +2375,7 @@ onUnmounted(() => {
             height: auto;
             aspect-ratio: 1 / 1 !important;
             object-fit: cover;
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease;
           }
 
           &:hover img {
@@ -2431,7 +2431,7 @@ onUnmounted(() => {
             height: auto;
             aspect-ratio: 3 / 4 !important;
             object-fit: cover;
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease;
           }
         }
 
@@ -2481,7 +2481,7 @@ onUnmounted(() => {
           height: auto;
           aspect-ratio: 3 / 2 !important;
           object-fit: cover;
-          transition: transform 0.3s ease;
+          transition: transform 0.2s ease;
         }
 
         &__image {
@@ -2493,7 +2493,7 @@ onUnmounted(() => {
             height: auto;
             aspect-ratio: 3 / 1.5 !important;
             object-fit: cover;
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease;
           }
 
           &:hover img {

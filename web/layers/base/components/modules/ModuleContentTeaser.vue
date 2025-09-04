@@ -61,6 +61,7 @@ import { ref, computed, watch, onMounted, nextTick } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 const { locale } = useI18n();
 const localePath = useLocalePath();
+const router = useRouter();
 
 // Store mit Type Assertion
 const mainStore = useMainStore() as any; // Temporary any fix
@@ -75,6 +76,7 @@ const props = defineProps({
 // State für sichtbare Items
 const itemsPerPage = 3;
 const visibleItemCount = ref(itemsPerPage);
+const loadMoreClickCount = ref(0); // Zähler für Load More Klicks
 
 // Sortierungs-Zustand
 const sortMode = ref("new"); // Standardmäßig "new" (chronologisch)
@@ -89,6 +91,7 @@ function changeSortMode(mode: string) {
   sortMode.value = mode;
   // Nach Sortierung Items zurücksetzen
   visibleItemCount.value = itemsPerPage;
+  loadMoreClickCount.value = 0; // Reset des Zählers bei Sortierung
 }
 
 // Hilfsfunktion zur Formatierung von Datum/Zeit
@@ -108,6 +111,14 @@ const artworkUrls = ref(new Map());
 
 // Funktion zum Laden weiterer Items
 function loadMoreItems() {
+  loadMoreClickCount.value++; // Zähler erhöhen
+  
+  // Nach dem dritten Klick zur Übersichtsseite navigieren
+  if (loadMoreClickCount.value >= 3) {
+    navigateToOverview();
+    return;
+  }
+  
   visibleItemCount.value += itemsPerPage;
 
   // Nach dem Laden neuer Items müssen wir die Artwork-URLs für die neuen Items laden
@@ -127,9 +138,38 @@ function loadMoreItems() {
   });
 }
 
+// Funktion zur Navigation zur Übersichtsseite
+function navigateToOverview() {
+  let route = "/";
+  
+  switch (categoryType.value) {
+    case "Episodes":
+      route = localePath("/shows");
+      break;
+    case "Shows":
+      route = localePath("/shows");
+      break;
+    case "Words":
+      route = localePath("/words");
+      break;
+    case "Pool":
+      route = localePath("/pool");
+      break;
+    default:
+      route = localePath("/");
+  }
+  
+  router.push(route);
+}
+
 // Bestimmen, ob mehr Items zum Laden verfügbar sind
 const hasMoreItems = computed(() => {
   return sortedItems.value && sortedItems.value.length > visibleItemCount.value;
+});
+
+// Bestimmen, ob "Show More" angezeigt werden soll
+const shouldShowMoreButton = computed(() => {
+  return loadMoreClickCount.value >= 2 && hasMoreItems.value;
 });
 
 // Alle verfügbaren Items basierend auf Modultyp
@@ -832,17 +872,22 @@ onMounted(() => {
 
     <!-- Load More Button -->
     <div v-if="hasMoreItems" class="content-teaser__load-more">
-      <button @click="loadMoreItems" class="load-more-button">
-       <svg
-          width="15"
-          height="15"
-          viewBox="0 0 15 15"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M7.67578 0.541016V14.8113" stroke-width="5" />
-          <path d="M14.8105 7.67578L0.540276 7.67578" stroke-width="5" />
-        </svg>
+      <button @click="loadMoreItems" class="load-more-button" :class="{more : shouldShowMoreButton}">
+        <template v-if="!shouldShowMoreButton">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 15 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M7.67578 0.541016V14.8113" stroke-width="5" />
+            <path d="M14.8105 7.67578L0.540276 7.67578" stroke-width="5" />
+          </svg>
+        </template>
+        <template v-else>
+          More
+        </template>
       </button>
     </div>
   </div>
@@ -1013,6 +1058,7 @@ onMounted(() => {
     .load-more-button {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: var(--small-padding);
       padding: var(--small-padding) var(--big-padding);
       background-color: transparent;
@@ -1023,6 +1069,8 @@ onMounted(() => {
       border-radius: 100px;
       border: 0.09325rem solid var(--color-text);
       box-shadow: 0 0 0.5rem 0.09325rem var(--color-text);
+      text-transform: uppercase;
+      font-size: var(--small-font-size);
 
       &:hover {
         @media (min-width: 1024px) {
@@ -1086,7 +1134,7 @@ onMounted(() => {
         width: 100%;
         height: auto;
         object-fit: cover;
-        transition: transform 0.3s ease;
+        transition: transform 0.2s ease;
       }
 
       &:hover img {

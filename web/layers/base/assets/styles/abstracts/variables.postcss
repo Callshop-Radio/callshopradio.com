@@ -52,7 +52,12 @@
       var(--base-font-size)
   );
 
-  --schedule-block-height: calc( (var(--small-padding) * 2) + (var(--base-font-size) * 4 ) + var(--small-font-size) + (var(--small-padding) / 2));
+  --first-content-distance: calc(28px + (var(--base-padding) * 2));
+
+  --schedule-block-height: calc(
+    (var(--small-padding) * 2) + (var(--base-font-size) * 4) +
+      var(--small-font-size) + (var(--small-padding) / 2)
+  );
   --schedule-nav-height: calc(var(--base-font-size) + var(--base-margin) * 2);
 
   /* Sizes */

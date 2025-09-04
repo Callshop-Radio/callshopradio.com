@@ -737,7 +737,7 @@ watch(
     font-weight: 400;
     font-size: var(--small-font-size);
     cursor: pointer;
-    transition: color 0.3s ease;
+    transition: color 0.2s ease;
     user-select: none;
 
     &--active {
@@ -760,7 +760,7 @@ watch(
     height: 100%;
     background-color: var(--color-pink);
     border-radius: 24px;
-    transition: transform 0.3s ease;
+    transition: transform 0.2s ease;
     z-index: 1;
   }
 

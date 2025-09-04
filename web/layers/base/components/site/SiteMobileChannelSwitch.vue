@@ -56,7 +56,7 @@ const isChannelOne = computed(() => {
   border: none;
   font-size: var(--small-font-size);
   cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
   border-radius: 20px;
   position: relative;
   color: var(--color-text);

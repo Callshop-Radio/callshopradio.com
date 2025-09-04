@@ -419,7 +419,7 @@ onBeforeUnmount(() => {
   .iframe-container {
     width: 100%;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.2s ease;
 
     &.is-loaded {
       opacity: 1;

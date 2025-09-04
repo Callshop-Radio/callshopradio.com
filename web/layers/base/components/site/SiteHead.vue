@@ -42,6 +42,19 @@ const togglePlayerVisibility = () => {
       </NuxtLink>
       <div class="header__toggle-section">
         <SiteDarkMode />
+        <nav class="menu-main tags">
+          <ul>
+            <NuxtLink :to="localePath('/shows')" :class="`tag shows`">
+              Shows
+            </NuxtLink>
+            <NuxtLink :to="localePath('/pool')" :class="`tag pool`">
+              Pool
+            </NuxtLink>
+            <!-- <NuxtLink :to="localePath('/words')" :class="`tag words`">
+              Words
+            </NuxtLink> -->
+          </ul>
+        </nav>
         <SiteDiscordButton
           class="mobile-hidden"
           v-if="mainStore?.siteNav?.discordLink"
@@ -89,13 +102,12 @@ const togglePlayerVisibility = () => {
 <style scoped lang="postcss">
 .header {
   position: sticky;
-  top: 0; /* Stellen Sie sicher, dass top einen expliziten Wert hat */
+  top: 0;
   display: flex;
   flex-flow: column wrap;
   justify-content: flex-start;
   align-items: center;
   width: 100%;
-  /* margin: var(--big-margin) auto 0; */
   margin: 0 0;
   padding: 0 0;
   background-color: var(--color-bg);
@@ -109,24 +121,9 @@ const togglePlayerVisibility = () => {
     }
   }
 
-  /* Stellen Sie sicher, dass der Header eine Höhe hat */
   height: auto;
   min-height: max-content;
   z-index: 99999;
-  /* &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform: translate(0, -100%);
-    width: 100%;
-    height: var(--big-margin);
-    background-color: var(--color-bg);
-    z-index: -1;
-    @media screen and (max-width: 1100px) {
-      display: none;
-    }
-  } */
   &__title-section {
     width: 100%;
     max-width: var(--page-max-width);
@@ -171,7 +168,7 @@ const togglePlayerVisibility = () => {
     flex-flow: row wrap;
     justify-content: space-between;
     align-items: center;
-    gap: var(--small-padding);
+    gap: var(--base-padding);
   }
   &__audio-player-section {
     width: 100%;
@@ -286,6 +283,95 @@ const togglePlayerVisibility = () => {
             }
           }
         }
+      }
+    }
+  }
+}
+
+.menu-main {
+  display: flex;
+  flex-flow: row;
+  justify-content: center;
+  align-items: center;
+  @media screen and (max-width: 900px) {
+    display: none;
+  }
+
+  ul {
+    width: 100%;
+    max-width: var(--page-max-width);
+    @apply flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--base-padding);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  a {
+    display: inline-block;
+    padding: var(--small-padding) var(--big-padding);
+    &:hover {
+      text-decoration-color: transparent;
+      text-decoration: none;
+    }
+    &.router-link-active,
+    &.parent-active,
+    &:hover {
+      @media (min-width: 1024px) {
+        background-color: var(--color-bg);
+        color: var(--color-text);
+      }
+
+      &.tag {
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        border: 0.09325rem solid var(--color-bg);
+        padding: calc(var(--small-padding)) var(--base-padding);
+        font-family: var(--font-text-semibold);
+
+        &.pool {
+          color: var(--color-bg);
+          border: 0.09325rem solid var(--color-blue);
+          background-color: var(--color-blue);
+        }
+
+        &.shows {
+          color: var(--color-bg);
+          border: 0.09325rem solid var(--color-pink);
+          background-color: var(--color-pink);
+        }
+
+        &.words {
+          color: var(--color-bg);
+          border: 0.09325rem solid var(--color-green);
+          background-color: var(--color-green);
+        }
+      }
+    }
+
+    &.tag {
+      background-color: var(--color-bg);
+      color: var(--color-bg);
+      border: 0.09325rem solid var(--color-bg);
+      padding: calc(var(--small-padding)) var(--base-padding);
+      font-family: var(--font-text-semibold);
+
+      &.pool {
+        color: var(--color-blue);
+        border: 0.09325rem solid var(--color-blue);
+      }
+
+      &.shows {
+        color: var(--color-pink);
+        border: 0.09325rem solid var(--color-pink);
+      }
+
+      &.words {
+        color: var(--color-green);
+        border: 0.09325rem solid var(--color-green);
       }
     }
   }
