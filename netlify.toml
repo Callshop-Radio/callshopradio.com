@@ -1,4 +1,4 @@
 [build]
   base = "web/"
   publish = "dist"
-  command = "pnpm run build"
+  command = "NODE_OPTIONS='--max-old-space-size=4096' pnpm run build"

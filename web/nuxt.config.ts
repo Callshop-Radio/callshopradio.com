@@ -107,7 +107,9 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: true,
-      // Explizite Routes zum Prerendern
+      // Reduzierte Parallelität um Memory-Verbrauch zu senken
+      concurrency: 1,
+      // Explizite Routes zum Prerenderen
       routes: [
         '/',
         '/pool',
@@ -124,7 +126,10 @@ export default defineNuxtConfig({
     },
     experimental: {
       wasm: true
-    }
+    },
+    // Memory-Optimierungen
+    compressPublicAssets: true,
+    minify: true,
   },
 
   hooks: {
@@ -157,6 +162,22 @@ export default defineNuxtConfig({
 
   build: {
     transpile: ["rxjs"],
+  },
+
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['vue', '@nuxt/kit'],
+            utils: ['axios'],
+          },
+        },
+      },
+    },
+    optimizeDeps: {
+      include: ['vue', '@nuxt/kit'],
+    },
   },
 
   routeRules: {

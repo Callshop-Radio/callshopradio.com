@@ -55,7 +55,7 @@ interface MainStore {
 }
 
 // Vue Composables
-import { ref, computed, watch, onMounted, nextTick } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
 
 // Nuxt Composables
 import { useMainStore } from "~/stores/mainStore";
@@ -726,6 +726,7 @@ onMounted(() => {
             <NuxtLink
               v-if="
                 item?.parentShow?.title !== 'No Show' &&
+                item?.parentShow?.title !== 'no-show' &&
                 item?.parentShow?.slug &&
                 item?.clickableTitle
               "
@@ -736,7 +737,13 @@ onMounted(() => {
                 {{ item?.parentShow?.title }}
               </h3>
             </NuxtLink>
-            <h3 v-else class="teaser-item__title show-title">
+            <h3 
+              v-else-if="
+                item?.parentShow?.title !== 'No Show' &&
+                item?.parentShow?.title !== 'no-show'
+              " 
+              class="teaser-item__title show-title"
+            >
               {{ item?.title || item?.parentShow?.title }}
             </h3>
 
