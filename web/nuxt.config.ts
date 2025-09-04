@@ -106,10 +106,9 @@ export default defineNuxtConfig({
 
   nitro: {
     prerender: {
-      crawlLinks: true,
-      // Reduzierte Parallelität um Memory-Verbrauch zu senken
-      concurrency: 1,
-      // Explizite Routes zum Prerenderen
+      crawlLinks: false, // Verhindert Memory-intensives Crawling
+      concurrency: 4, // Leicht erhöht für bessere Performance
+      // Explizite Routes zum Prerendern
       routes: [
         '/',
         '/pool',
@@ -127,9 +126,14 @@ export default defineNuxtConfig({
     experimental: {
       wasm: true
     },
-    // Memory-Optimierungen
-    compressPublicAssets: true,
-    minify: true,
+    rollupConfig: {
+      external: ['framer-motion'],
+      output: {
+        globals: {
+          'framer-motion': 'FramerMotion'
+        }
+      }
+    }
   },
 
   hooks: {
@@ -164,20 +168,51 @@ export default defineNuxtConfig({
     transpile: ["rxjs"],
   },
 
+  webpack: {
+    optimization: {
+      splitChunks: {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+            maxSize: 244000
+          }
+        }
+      }
+    }
+  },
+
   vite: {
     build: {
+      chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
-          manualChunks: {
-            vendor: ['vue', '@nuxt/kit'],
-            utils: ['axios'],
-          },
+          manualChunks: (id) => {
+            if (id.includes('node_modules')) {
+              return 'vendor'
+            }
+          }
         },
-      },
+        onwarn(warning, warn) {
+          // Suppress "use client" warnings from framer-motion
+          if (warning.code === 'MODULE_LEVEL_DIRECTIVE' && warning.message.includes('use client')) {
+            return
+          }
+          warn(warning)
+        }
+      }
     },
     optimizeDeps: {
-      include: ['vue', '@nuxt/kit'],
+      include: ['vue', 'vue-router']
     },
+    ssr: {
+      noExternal: [
+        // Include framer-motion in SSR bundle to avoid directive warnings
+        'framer-motion'
+      ]
+    }
   },
 
   routeRules: {

@@ -55,7 +55,7 @@ interface MainStore {
 }
 
 // Vue Composables
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, watch, onMounted, nextTick } from "vue";
 
 // Nuxt Composables
 import { useMainStore } from "~/stores/mainStore";
@@ -747,7 +747,6 @@ onMounted(() => {
               {{ item?.title || item?.parentShow?.title }}
             </h3>
 
-            <!-- Künstler (für Sets) -->
             <div
               v-if="item?.persons && item?.persons.length > 0"
               class="show-artists"
