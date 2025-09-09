@@ -1423,7 +1423,7 @@ onUnmounted(() => {
                   v-if="item.parentShow?.title !== 'No Show' && item.parentShow"
                   :to="
                     localePath(
-                      `/shows/no-show/${item.parentShow?.slug.current}`
+                      `/shows/${item.parentShow?.slug.current}`
                     )
                   "
                   class="grid-item__link"
