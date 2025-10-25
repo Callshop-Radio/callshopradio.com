@@ -86,7 +86,10 @@ export const HOMEPAGE_QUERY = `
 export const SLUG_PAGE_QUERY = `
 *[_type == "page" && slug.current == $slug] | order(_updatedAt desc)[0] {
   ...,
-  content[] ${RICH_TEXT_QUERY},
+  content[] {
+    ...,
+    value[] ${RICH_TEXT_QUERY},
+  },
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY}
 }`;

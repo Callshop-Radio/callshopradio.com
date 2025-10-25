@@ -148,13 +148,13 @@ const onClick = (func) => {
 .router-link-exact-active {
 }
 
-a[target="_blank"] {
+/* a[target="_blank"] {
   @apply after:content-['↗'];
 }
 
 a[download] {
   @apply after:content-['↓'];
-}
+} */
 
 /* Navigations-spezifische Styles */
 :where(nav) {

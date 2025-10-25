@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Callshop Radio</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #000;
+            color: #fff;
+        }
+        .loading {
+            text-align: center;
+        }
+        .spinner {
+            border: 2px solid #333;
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading">
+        <div class="spinner"></div>
+        <h2>Loading Callshop Radio...</h2>
+        <p>Please wait while we prepare your content.</p>
+    </div>
+    
+    <script>
+        // Fallback SPA loading logic
+        (function() {
+            // Simple client-side routing fallback
+            const path = window.location.pathname;
+            
+            // Show error message after 10 seconds if page doesn't load
+            setTimeout(function() {
+                document.querySelector('.loading h2').textContent = 'Content Unavailable';
+                document.querySelector('.loading p').innerHTML = 
+                    'This page is temporarily unavailable. <br><a href="/" style="color: #fff;">Return to Homepage</a>';
+                document.querySelector('.spinner').style.display = 'none';
+            }, 10000);
+        })();
+    </script>
+</body>
+</html>

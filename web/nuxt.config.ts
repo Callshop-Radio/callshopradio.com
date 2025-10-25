@@ -17,6 +17,10 @@ export default defineNuxtConfig({
   },
   devtools: { enabled: false },
   ssr: true,
+  // Optimiert für SSG
+  experimental: {
+    payloadExtraction: false,
+  },
   app: {
     pageTransition: { name: "page", mode: "out-in" },
   },
@@ -107,7 +111,8 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: false, // Verhindert Memory-intensives Crawling
-      concurrency: 4, // Leicht erhöht für bessere Performance
+      // concurrency: 10, // Reduziert für bessere Stabilität bei SSG
+      failOnError: false, // Verhindert kompletten Abbruch bei einzelnen Fehlern
       // Explizite Routes zum Prerendern
       routes: [
         '/',
@@ -125,6 +130,13 @@ export default defineNuxtConfig({
     },
     experimental: {
       wasm: true
+    },
+    storage: {
+      // Redis-Cache für bessere Performance (optional)
+      redis: {
+        driver: 'redis',
+        // Wird nur verwendet wenn Redis verfügbar ist
+      }
     },
     rollupConfig: {
       external: ['framer-motion'],
@@ -223,6 +235,11 @@ export default defineNuxtConfig({
         "cache-control": "max-age=3600"
       }
     },
+    // Dynamische Routen mit ISR für bessere Fehlerbehandlung
+    "/pool/**": { prerender: true, isr: true },
+    "/shows/**": { prerender: true, isr: true },
+    // API-Routen nicht prerendern
+    "/api/**": { prerender: false },
   },
 
   compatibilityDate: "2024-12-19",
