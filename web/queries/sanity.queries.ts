@@ -881,7 +881,10 @@ export const ENTRY_QUERY = `
     title,
     slug,
     image ${IMAGE_QUERY},
-    text[] ${RICH_TEXT_QUERY},
+    text[] {
+      ...,
+     value[] ${RICH_TEXT_QUERY},
+    },
     datetime,
     useTeaserText,
     textTeaser[] ${RICH_TEXT_QUERY},

@@ -6,6 +6,7 @@
   width: 100%;
   max-width: var(--page-max-width);
   &__content {
+    width: 100%;
     padding: var(--big-margin) var(--base-padding) var(--content-gap)
       var(--base-padding);
     gap: var(--content-gap) 0;
@@ -416,6 +417,22 @@
                 text-decoration: none;
               }
             }
+          }
+        }
+      }
+    }
+  }
+}
+
+.page {
+  &--article-detail,
+  &--default {
+    .module-section {
+      .module {
+        &:first-of-type {
+          margin-top: 0;
+          @media screen and (max-width: 900px) {
+            margin-top: 0;
           }
         }
       }

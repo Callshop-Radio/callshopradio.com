@@ -178,6 +178,12 @@ export const article = {
       ],
     },
     {
+      title: 'Modules',
+      name: 'modules',
+      type: 'modules',
+      group: 'editorial',
+    },
+    {
       title: 'Auto Load Related Articles',
       name: 'autoRelatedArticles',
       description:

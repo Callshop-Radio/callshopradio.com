@@ -12,9 +12,9 @@ const props = defineProps({
 </script>
 
 <template>
-  <h1 v-if="props.style === 'h1'">
+  <h2 v-if="props.style === 'h1'">
     <slot />
-  </h1>
+  </h2>
   <h2 v-else-if="props.style === 'h2'">
     <slot />
   </h2>
@@ -38,21 +38,9 @@ const props = defineProps({
   </p>
 </template>
 <style lang="postcss" scoped>
-h1,
-h2 {
-  margin-bottom: var(--base-margin);
-}
-
-h3,
-h4,
-h5 {
-  margin: var(--base-margin) 0 var(--small-margin) 0;
-}
 
 p {
   @apply max-w-80ch whitespace-pre-wrap;
-  font-size: var(--base-font-size);
-  line-height: 1.5;
 }
 
 img {

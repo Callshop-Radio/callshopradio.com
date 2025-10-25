@@ -56,9 +56,5 @@ const props = defineProps({
   figure {
 		@apply mb-4 max-w-80ch;
   }
-
-  figcaption {
-    @apply mt-2 text-xs;
-  }
 }
 </style>

@@ -18,7 +18,7 @@ favicon();
 <style lang="postcss" scoped>
 .site {
   @apply min-h-[100svh] flex flex-col items-stretch;
-  max-width: 100vw;
+  max-width: 100svw;
 
   main {
     @apply flex-grow-1;
@@ -48,4 +48,11 @@ favicon();
     padding: 0 var(--mid-padding);
   }
 }
+
+.page--article-detail .site {
+  main {
+    padding: 0;
+  }
+}
+
 </style>

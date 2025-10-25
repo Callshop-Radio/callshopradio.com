@@ -112,13 +112,13 @@ const artworkUrls = ref(new Map());
 // Funktion zum Laden weiterer Items
 function loadMoreItems() {
   loadMoreClickCount.value++; // Zähler erhöhen
-  
+
   // Nach dem dritten Klick zur Übersichtsseite navigieren
   if (loadMoreClickCount.value >= 3) {
     navigateToOverview();
     return;
   }
-  
+
   visibleItemCount.value += itemsPerPage;
 
   // Nach dem Laden neuer Items müssen wir die Artwork-URLs für die neuen Items laden
@@ -141,7 +141,7 @@ function loadMoreItems() {
 // Funktion zur Navigation zur Übersichtsseite
 function navigateToOverview() {
   let route = "/";
-  
+
   switch (categoryType.value) {
     case "Episodes":
       route = localePath("/shows");
@@ -158,7 +158,7 @@ function navigateToOverview() {
     default:
       route = localePath("/");
   }
-  
+
   router.push(route);
 }
 
@@ -552,7 +552,7 @@ onMounted(() => {
       <h3 v-if="props.module?.title" class="content-teaser__title">
         {{ props.module?.title }}
       </h3>
-            <section class="module-teaser__header__type">
+      <section class="module-teaser__header__type">
         <div class="content-teaser__sort">
           <div class="sort-options">
             <button
@@ -578,11 +578,15 @@ onMounted(() => {
             </button>
           </div>
         </div>
-        <NuxtLink 
-          :to="categoryType === 'Episodes' ? localePath('/shows') : localePath(categoryType.toLowerCase())"
+        <NuxtLink
+          :to="
+            categoryType === 'Episodes'
+              ? localePath('/shows')
+              : localePath(categoryType.toLowerCase())
+          "
         >
           <h2 class="module-teaser__header__type__pill">
-            {{ categoryType === 'Episodes' ? 'Shows' : categoryType }}
+            {{ categoryType === "Episodes" ? "Shows" : categoryType }}
           </h2>
         </NuxtLink>
       </section>
@@ -737,11 +741,11 @@ onMounted(() => {
                 {{ item?.parentShow?.title }}
               </h3>
             </NuxtLink>
-            <h3 
+            <h3
               v-else-if="
                 item?.parentShow?.title !== 'No Show' &&
                 item?.parentShow?.title !== 'no-show'
-              " 
+              "
               class="teaser-item__title show-title"
             >
               {{ item?.title || item?.parentShow?.title }}
@@ -878,7 +882,11 @@ onMounted(() => {
 
     <!-- Load More Button -->
     <div v-if="hasMoreItems" class="content-teaser__load-more">
-      <button @click="loadMoreItems" class="load-more-button" :class="{more : shouldShowMoreButton}">
+      <button
+        @click="loadMoreItems"
+        class="load-more-button"
+        :class="{ more: shouldShowMoreButton }"
+      >
         <template v-if="!shouldShowMoreButton">
           <svg
             width="15"
@@ -891,9 +899,7 @@ onMounted(() => {
             <path d="M14.8105 7.67578L0.540276 7.67578" stroke-width="5" />
           </svg>
         </template>
-        <template v-else>
-          More
-        </template>
+        <template v-else> More </template>
       </button>
     </div>
   </div>
@@ -903,7 +909,6 @@ onMounted(() => {
 .content-teaser {
   width: 100%;
   max-width: var(--page-max-width);
-  margin: var(--mid-margin) 0;
 
   &__title {
     font-size: var(--heading-font-size);

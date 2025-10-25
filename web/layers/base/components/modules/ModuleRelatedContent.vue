@@ -575,6 +575,12 @@ onMounted(() => {
   </div>
 </template>
 <style lang="postcss" scoped>
+.page--article-detail {
+  .related-content {
+    margin: var(--mid-margin) 0 0;
+  }
+}
+
 .related-content {
   width: 100%;
   max-width: var(--page-max-width);
