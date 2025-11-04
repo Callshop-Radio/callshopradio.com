@@ -1,11 +1,12 @@
 [build]
   base = "web/"
   publish = ".output/public"
-  command = "NODE_OPTIONS='--max-old-space-size=6144' pnpm run generate:ssg"
+  command = "pnpm install --force --no-frozen-lockfile && NODE_OPTIONS='--max-old-space-size=6144' pnpm run generate:ssg"
 
 [build.environment]
   NODE_VERSION = "18"
-  PNPM_VERSION = "8"
+  PNPM_VERSION = "8.15.9"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 # Optimierungen für SSG
 [[headers]]
