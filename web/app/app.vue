@@ -39,7 +39,6 @@ favicon();
   }
 }
 
-.schedule .site,
 .shows-archive .site,
 .pool-archive .site,
 .words-archive .site {
@@ -51,6 +50,11 @@ favicon();
   }
 }
 
+.schedule .site {
+  main {
+    padding: 0;
+  }
+}
 .page--article-detail .site {
   main {
     padding: 0;

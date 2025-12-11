@@ -55,6 +55,7 @@ const togglePlayerVisibility = () => {
             </NuxtLink> -->
           </ul>
         </nav>
+        <SiteSearchButton class="mobile-hidden" />
         <SiteDiscordButton
           class="mobile-hidden"
           v-if="mainStore?.siteNav?.discordLink"
@@ -123,7 +124,7 @@ const togglePlayerVisibility = () => {
 
   height: auto;
   min-height: max-content;
-  z-index: 99999;
+  z-index: 999999;
   &__title-section {
     width: 100%;
     max-width: var(--page-max-width);

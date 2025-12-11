@@ -1018,6 +1018,32 @@ export const ERROR_PAGE_QUERY = `
   ...,
   content[] ${RICH_TEXT_QUERY},
 }
-
-
 `;
+
+// Search autocomplete query - fetches from person, set, show, venue, article
+export const SEARCH_AUTOCOMPLETE_QUERY = `
+*[
+  _type in ["person", "set", "show", "venue", "article"] &&
+  title match $searchTerm + "*"
+] | order(_updatedAt desc)[0...$limit] {
+  _id,
+  _type,
+  title,
+  "slug": slug,
+  "image": image {
+    asset-> {
+      _id,
+      url
+    }
+  },
+  datetime,
+  additionalTitle,
+  _type == "set" => {
+    "parentShow": *[_type == "show" && references(^._id)][0]{
+      _id,
+      title,
+      "slug": slug.current
+    }
+  }
+}`;
+
