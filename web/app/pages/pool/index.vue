@@ -9,6 +9,12 @@ const query = groq`${POOLARCHIVE_QUERY}`;
 const { data } = await useSanityQuery(query);
 
 usePageSeo(data?.value?.seo);
+
+useHead({
+  bodyAttrs: {
+    class: `pool-archive`,
+  },
+});
 </script>
 
 <template>

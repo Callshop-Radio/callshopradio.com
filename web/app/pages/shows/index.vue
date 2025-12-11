@@ -63,12 +63,8 @@ useHead({
   flex-flow: column wrap;
   justify-content: flex-start;
   align-items: center;
-  max-height: calc(100svh - var(--nav-height));
-  overflow: scroll;
   @media screen and (max-width: 1100px) {
     display: none;
-    max-height: unset;
-    overflow: auto;
   }
 }
 </style>

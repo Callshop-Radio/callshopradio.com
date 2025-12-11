@@ -40,9 +40,11 @@ favicon();
 }
 
 .schedule .site,
-.shows-archive .site {
+.shows-archive .site,
+.pool-archive .site,
+.words-archive .site {
   main {
-    padding: 0;
+    padding: 0 var(--big-margin);
   }
   @media screen and (max-width: 900px) {
     padding: 0 var(--mid-padding);

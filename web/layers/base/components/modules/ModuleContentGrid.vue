@@ -1,430 +1,420 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useMainStore } from "~/stores/mainStore";
-const { locale, setLocale } = useI18n();
-const localePath = useLocalePath();
 
+const { locale } = useI18n();
+const localePath = useLocalePath();
 const mainStore = useMainStore();
 
 const props = defineProps({
-  module: {
-    type: Object,
-    required: true,
-  },
+  module: { type: Object, required: true },
 });
 
-// Filter-Zustand
-const activeFilters = ref(new Set());
-const activeSubFilters = ref(false);
-const mainCities = ["Düsseldorf", "Leipzig", "Vienna"]; // Hauptstädte definieren
-const isOtherCitiesActive = ref(false); // Zustand für "Others"-Filter
-const currentIndex = ref(false);
-const showFilters = ref(true); // Zustand für Filter-Sichtbarkeit
-const lastScrollY = ref(0); // Letzte Scroll-Position
-const scrollThreshold = 30; // Scroll-Schwellenwert in Pixeln (reduziert für früheres Ausblenden)
-const moduleContainer = ref(null); // Template-Referenz für das Modul-Container
+// ==================== CONSTANTS ====================
+const MAIN_CITIES = ["Düsseldorf", "Leipzig", "Vienna"];
+const ITEMS_PER_PAGE = 9;
+const SCROLL_THRESHOLD = 30;
 
-// Genre-Filter-Zustand (separate Logik)
-const activeGenres = ref(new Set()); // Aktuell ausgewählte Genres (kann mehrere sein)
-const activeSubGenres = ref(new Set()); // Ausgewählte SubGenres
+// Color mapping for different content types
+const CONTENT_TYPE_COLORS = {
+  sets: "pink",
+  shows: "pink",
+  words: "green",
+  pool: "blue",
+  persons: "blue",
+  venues: "blue",
+  all: "blue",
+} as const;
 
-const onSelect = (index: number) => {
-  currentIndex.value = index;
-};
+// ==================== STATE ====================
+const activeFilters = ref(new Set<string>());
+const activeGenres = ref(new Set<string>());
+const activeSubGenres = ref(new Set<string>());
+const isOtherCitiesActive = ref(false);
+const activeFilterType = ref<string | null>(null);
+const showFilters = ref(true);
+const lastScrollY = ref(0);
+const sortMode = ref<"new" | "shuffle" | "alpha">("new");
+const shuffleSeed = ref(Date.now());
+const visibleItemCount = ref(ITEMS_PER_PAGE);
+const artworkUrls = ref(new Map<string, string>());
+const moduleContainer = ref<HTMLElement | null>(null);
 
-// Sortierungs-Zustand
-const sortMode = ref("new"); // Standardmäßig "new" (chronologisch)
-const shuffleSeed = ref(Date.now()); // Zufallsseed für Shuffle
-
-// Funktion zum Ändern des Sortiermodus
-function changeSortMode(mode) {
-  if (mode === "shuffle") {
-    // Bei jedem Klick auf Shuffle einen neuen Seed generieren
-    shuffleSeed.value = Date.now();
+// ==================== COMPUTED: Content Type ====================
+const contentType = computed(() => {
+  if (!props.module) return null;
+  const type = props.module.type || null;
+  if (type === "pool" && props.module.poolContentType) {
+    return props.module.poolContentType;
   }
-  sortMode.value = mode;
-}
+  return type;
+});
 
-// Filter nach Kategorien organisieren
-const filterCategories = {
-  city: new Set(),
-  genre: new Set(),
-  subGenre: new Set(),
-  mood: new Set(),
-  global: new Set(),
-};
+const categoryType = computed(() => {
+  const type = contentType.value;
+  if (["persons", "venues", "all"].includes(type)) return "Pool";
+  if (type === "sets") return "sets";
+  if (type === "shows") return "Shows";
+  if (type === "words") return "Words";
+  return "";
+});
 
-// Funktion zum Ermitteln, ob ein City-Tag eine Hauptstadt ist
-function isMainCity(cityTag) {
-  // Sicherheitsabfrage
-  if (!cityTag || !cityTag.title) return false;
+const themeColor = computed(
+  () => CONTENT_TYPE_COLORS[contentType.value] || "pink"
+);
 
-  // Versuche den Titel zu parsen, falls es ein I18N-Objekt ist
-  let cityName = cityTag.title;
-  try {
-    if (typeof parseI18nObj === "function") {
-      cityName = parseI18nObj(cityTag.title);
-    } else if (typeof cityTag.title === "object" && cityTag.title.de) {
-      // Fallback falls parseI18nObj nicht verfügbar ist
-      cityName =
-        cityTag.title.de || cityTag.title.en || Object.values(cityTag.title)[0];
-    }
-  } catch (e) {
-    console.error("Fehler beim Parsen des Stadtnamens:", e);
-  }
+// ==================== COMPUTED: Items ====================
+const allItems = computed(() => {
+  if (!props.module) return [];
+  const {
+    type,
+    poolItems,
+    setItems,
+    showItems,
+    articleItems,
+    poolContentType,
+  } = props.module;
 
-  // Prüfe, ob der Stadtname in der Liste der Hauptstädte enthalten ist
-  return mainCities.includes(cityName);
-}
+  const itemsMap = {
+    pool: () => filterPoolItems(poolItems || [], poolContentType),
+    sets: () => setItems || [],
+    shows: () => showItems || [],
+    words: () => articleItems || [],
+  };
 
-// Funktion zum Ermitteln der Kategorie eines Tags
-function getTagCategory(tagId) {
-  // Spezialfall für "others"
-  if (tagId === "others") {
-    return "city"; // Wichtig: Der "others"-Filter ist ein Stadt-Filter
-  }
+  return itemsMap[type]?.() || [];
+});
 
-  // Prüfen, ob der Tag eine Stadt ist
-  if (categorizedTags.value.cities.some((tag) => tag._id === tagId)) {
-    return "city";
-  }
-
-  // Prüfen, ob der Tag ein Genre ist
-  if (categorizedTags.value.genres.some((tag) => tag._id === tagId)) {
-    return "genre";
-  }
-
-  // Prüfen, ob der Tag ein SubGenre ist
-  for (const genre of categorizedTags.value.genres) {
-    if (genre.subGenres && genre.subGenres.some((tag) => tag._id === tagId)) {
-      return "subGenre";
-    }
-  }
-
-  // Prüfen, ob der Tag ein Mood ist
-  if (
-    categorizedTags.value.mood &&
-    categorizedTags.value.mood.some((tag) => tag._id === tagId)
-  ) {
-    return "mood";
-  }
-
-  // Ansonsten ist es ein globaler Tag
-  return "global";
-}
-
-function getTagNameById(tagId) {
-  // Spezialfall für "others"
-  if (tagId === "others") {
-    return "Elsewhere";
-  }
-
-  // Suche in allen Kategorien nach dem Tag
-  // Städte
-  const cityTag = categorizedTags.value.cities.find((tag) => tag._id === tagId);
-  if (cityTag) return parseI18nObj(cityTag.title);
-
-  // Genres
-  const genreTag = categorizedTags.value.genres.find(
-    (tag) => tag._id === tagId
+function filterPoolItems(items: any[], contentType: string) {
+  if (!items?.length) return [];
+  const typeMap = {
+    persons: "person",
+    venues: "venue",
+    all: ["venue", "person"],
+  };
+  const allowedTypes = typeMap[contentType];
+  if (!allowedTypes) return items;
+  return items.filter((item) =>
+    Array.isArray(allowedTypes)
+      ? allowedTypes.includes(item._type)
+      : item._type === allowedTypes
   );
-  if (genreTag) return genreTag.title;
-
-  // SubGenres
-  for (const genre of categorizedTags.value.genres) {
-    if (genre.subGenres) {
-      const subGenreTag = genre.subGenres.find((tag) => tag._id === tagId);
-      if (subGenreTag) return subGenreTag.title;
-    }
-  }
-
-  // Mood
-  const moodTag = categorizedTags.value.mood?.find((tag) => tag._id === tagId);
-  if (moodTag) return moodTag.title;
-
-  // Global
-  const globalTag = categorizedTags.value.global?.find(
-    (tag) => tag._id === tagId
-  );
-  if (globalTag) return globalTag.title;
-
-  // Suche in allen verfügbaren Tags (für "Pool Tags")
-  const otherTag = availableTags.value.find((tag) => tag._id === tagId);
-  if (otherTag) return otherTag.title;
-
-  // Fallback
-  return "Unbekannter Filter";
 }
 
-// Kategorisierte verfügbare Tags basierend auf den vordefinierten Tags in der Abfrage
+// ==================== COMPUTED: Tags ====================
+const getUsedTagIdsInItems = computed(() => {
+  const usedTagIds = new Set<string>();
+  allItems.value.forEach((item) => {
+    collectTagIds(item.tags, usedTagIds);
+    collectTagIds(item.parentShow?.tags, usedTagIds);
+  });
+  return usedTagIds;
+});
+
+function collectTagIds(tags: any[] | undefined, set: Set<string>) {
+  if (!Array.isArray(tags)) return;
+  tags.forEach((tag) => tag?._id && set.add(tag._id));
+}
+
 const categorizedTags = computed(() => {
-  if (!props.module || !props.module.availableTags) {
-    return { genres: [], cities: [], global: [] };
-  }
+  const availableTags = props.module?.availableTags;
+  if (!availableTags) return { genres: [], cities: [], global: [], mood: [] };
 
   const usedTagIds = getUsedTagIdsInItems.value;
 
-  // Genres mit verwendeten SubGenres filtern
-  const genres = props.module.availableTags.genres
+  const filterByUsed = (tags: any[]) =>
+    tags?.filter((t) => usedTagIds.has(t._id)) || [];
+
+  const genres = (availableTags.genres || [])
     .map((genre) => {
-      // Prüfe, ob Genre direkt verwendet wird
-      const isGenreUsed = usedTagIds.has(genre._id);
-
-      // Filtriere verwendete SubGenres
-      const usedSubGenres = genre.subGenres
-        ? genre.subGenres.filter((subGenre) => usedTagIds.has(subGenre._id))
-        : [];
-
-      // Genre nur einschließen, wenn es verwendet wird oder SubGenres hat
-      if (isGenreUsed || usedSubGenres.length > 0) {
-        return {
-          ...genre,
-          subGenres: usedSubGenres,
-        };
-      }
-
-      return null;
+      const isUsed = usedTagIds.has(genre._id);
+      const usedSubGenres = filterByUsed(genre.subGenres);
+      if (!isUsed && !usedSubGenres.length) return null;
+      return { ...genre, subGenres: usedSubGenres };
     })
-    .filter(Boolean); // Null-Einträge entfernen
-
-  // Verwendete Städte filtern
-  const cities = props.module.availableTags.cities
-    ? props.module.availableTags.cities.filter((city) =>
-        usedTagIds.has(city._id)
-      )
-    : [];
-
-  // Globale Tags filtern
-  const global = props.module.availableTags.global
-    ? props.module.availableTags.global.filter((tag) => usedTagIds.has(tag._id))
-    : [];
-
-  // Weitere Tag-Typen je nach Bedarf filtern
-  const mood = props.module.availableTags.mood
-    ? props.module.availableTags.mood.filter((tag) => usedTagIds.has(tag._id))
-    : [];
+    .filter(Boolean);
 
   return {
     genres,
-    cities,
-    global,
-    mood,
+    cities: filterByUsed(availableTags.cities),
+    global: filterByUsed(availableTags.global),
+    mood: filterByUsed(availableTags.mood),
   };
 });
 
-// Content-Typ-spezifische Tags nach Kategorien (für Nicht-Set-Inhaltstypen)
+const availableTags = computed(() => {
+  if (!props.module?.availableTags) return [];
+  const usedTagIds = getUsedTagIdsInItems.value;
+  return Object.values(props.module.availableTags)
+    .flat()
+    .filter((tag: any) => tag?._id && usedTagIds.has(tag._id));
+});
+
 const poolTags = computed(() => {
-  if (!availableTags.value) return { musicians: [], venues: [], crafts: [] };
-
-  // Sammle die verwendeten Tag-IDs für alle Dokumente nach Typ
-  const musicianTagIds = new Set();
-  const venueTagIds = new Set();
-  const craftsTagIds = new Set();
-
-  // Filtere die Items nach Typ und sammle die Tags
-  allItems.value.forEach((item) => {
-    if (item._type === "person") {
-      // Person-Tags nach Musiker/Handwerker filtern
-      if (item.tags && Array.isArray(item.tags)) {
-        item.tags.forEach((tag) => {
-          if (tag._type === "tag.musician") {
-            musicianTagIds.add(tag._id);
-          } else if (tag._type === "tag.crafts") {
-            craftsTagIds.add(tag._id);
-          }
-        });
-      }
-    } else if (item._type === "venue") {
-      // Venue-Tags sammeln
-      if (item.tags && Array.isArray(item.tags)) {
-        item.tags.forEach((tag) => {
-          if (tag._type === "tag.venue") {
-            venueTagIds.add(tag._id);
-          }
-        });
-      }
-    }
-  });
-
-  // Filtere die verfügbaren Tags nach Typ und ob sie verwendet werden
-  const musicians = availableTags.value.filter(
-    (tag) => tag._type === "tag.musician" && musicianTagIds.has(tag._id)
-  );
-
-  const venues = availableTags.value.filter(
-    (tag) => tag._type === "tag.venue" && venueTagIds.has(tag._id)
-  );
-
-  const crafts = availableTags.value.filter(
-    (tag) => tag._type === "tag.crafts" && craftsTagIds.has(tag._id)
-  );
-
+  const tags = availableTags.value;
+  const byType = (type: string) => tags.filter((t: any) => t._type === type);
   return {
-    musicians,
-    venues,
-    crafts,
+    musicians: byType("tag.musician"),
+    venues: byType("tag.venue"),
+    crafts: byType("tag.crafts"),
+    articles: byType("tag.article"),
   };
 });
 
-// Aktivierter Typ für die Filterung
-const activeFilterType = ref(null);
+const getContentTypeSpecificTags = computed(() =>
+  availableTags.value.filter((tag: any) => tag._type !== "tag.city")
+);
 
-// Toggle für Filtertyp
-function toggleFilterType(type) {
-  activeFilterType.value = activeFilterType.value === type ? null : type;
+// ==================== TAG HELPERS ====================
+function getItemTags(item: any, type?: string): any[] {
+  const tags: any[] = [];
+  const addTags = (source: any[] | undefined) => {
+    if (!Array.isArray(source)) return;
+    source.forEach((tag) => {
+      if (
+        tag &&
+        (!type || tag._type === type) &&
+        !tags.some((t) => t._id === tag._id)
+      ) {
+        tags.push(tag);
+      }
+    });
+  };
+  addTags(item.tags);
+  addTags(item.parentShow?.tags);
+  return tags;
 }
 
-// Alle verfügbaren Tags für andere Content-Typen
-const availableTags = computed(() => {
-  if (!props.module || !props.module.availableTags) return [];
+const getItemCityTags = (item: any) => getItemTags(item, "tag.city");
+const getItemNonCityTags = (item: any) =>
+  (item.tags || []).filter((t: any) => t._type !== "tag.city");
 
-  const usedTagIds = getUsedTagIdsInItems.value;
-  const allAvailableTags = [];
+function getTagTitle(title: any): string {
+  // Handle both string and i18n array formats
+  if (!title) return "";
+  if (typeof title === "string") return title;
+  if (Array.isArray(title)) {
+    return parseI18nObj(title) || title[0]?.value || "";
+  }
+  // Handle object format like { de: "...", en: "..." }
+  if (typeof title === "object") {
+    return title.de || title.en || Object.values(title)[0] || "";
+  }
+  return String(title);
+}
 
-  // Alle Tag-Kategorien durchgehen
-  Object.entries(props.module.availableTags).forEach(([category, tags]) => {
-    if (Array.isArray(tags)) {
-      tags.forEach((tag) => {
-        if (usedTagIds.has(tag._id)) {
-          allAvailableTags.push(tag);
-        }
-      });
-    }
-  });
+function isMainCity(cityTag: any): boolean {
+  if (!cityTag?.title) return false;
+  const cityName = getTagTitle(cityTag.title);
+  return MAIN_CITIES.includes(cityName);
+}
 
-  return allAvailableTags;
-});
+function getTagCategory(tagId: string): string {
+  if (tagId === "others") return "city";
+  const { cities, genres, mood } = categorizedTags.value;
+  if (cities.some((t: any) => t._id === tagId)) return "city";
+  if (genres.some((t: any) => t._id === tagId)) return "genre";
+  for (const genre of genres) {
+    if (genre.subGenres?.some((t: any) => t._id === tagId)) return "subGenre";
+  }
+  if (mood?.some((t: any) => t._id === tagId)) return "mood";
 
-// Modifizierte ToggleFilter-Funktion
-function toggleFilter(tagId) {
-  const category = getTagCategory(tagId);
+  const tag = availableTags.value.find((t: any) => t._id === tagId);
+  const typeMap: Record<string, string> = {
+    "tag.musician": "musician",
+    "tag.venue": "venue",
+    "tag.crafts": "crafts",
+    "tag.article": "article",
+  };
+  return typeMap[tag?._type] || "global";
+}
 
-  // Wenn der Tag bereits aktiv ist, nur diesen entfernen
-  if (activeFilters.value.has(tagId)) {
+function getTagNameById(tagId: string): string {
+  if (tagId === "others") return "Elsewhere";
+
+  const searchSources = [
+    categorizedTags.value.cities,
+    categorizedTags.value.genres,
+    categorizedTags.value.mood,
+    categorizedTags.value.global,
+    ...categorizedTags.value.genres.map((g: any) => g.subGenres || []),
+    availableTags.value,
+  ];
+
+  for (const source of searchSources) {
+    const found = source?.find?.((t: any) => t._id === tagId);
+    if (found) return getTagTitle(found.title);
+  }
+  return "Unknown Filter";
+}
+
+// ==================== FILTER LOGIC ====================
+function toggleFilter(tagId: string) {
+  const isActive = activeFilters.value.has(tagId);
+
+  if (isActive) {
     activeFilters.value.delete(tagId);
-    filterCategories[category].delete(tagId);
-    
-    // Wenn es ein SubGenre ist, auch aus activeSubGenres entfernen
-    if (category === "subGenre") {
+    if (getTagCategory(tagId) === "subGenre")
       activeSubGenres.value.delete(tagId);
-    }
-
-    // "Others"-Filter-Status zurücksetzen
-    if (tagId === "others") {
-      isOtherCitiesActive.value = false;
-    }
+    if (tagId === "others") isOtherCitiesActive.value = false;
   } else {
-    // Bei additiver Filterung: Tag hinzufügen ohne vorherige in derselben Kategorie zu löschen
-    // Zurücksetzen des "Others"-Status wenn ein Stadt-Filter aktiviert wird
-    if (category === "city" && tagId === "others") {
-      isOtherCitiesActive.value = true;
-    }
-
-    // Tag zur Kategorie und aktiven Filtern hinzufügen
-    filterCategories[category].add(tagId);
     activeFilters.value.add(tagId);
+    if (tagId === "others") isOtherCitiesActive.value = true;
   }
 
-  // Aktualisiere gefilterte Items
-  visibleItemCount.value = itemsPerPage; // Zurücksetzen auf Anfangsmenge
+  visibleItemCount.value = ITEMS_PER_PAGE;
 }
 
-//Toggle SubFilter
-function toggleSubFilter(subFilterId) {
-  activeSubFilters.value = subFilterId;
-}
-
-// Genre-Filter-Funktionen
-function toggleGenreFilter(genreId) {
+function toggleGenreFilter(genreId: string) {
   if (activeGenres.value.has(genreId)) {
-    // Genre deaktivieren
     activeGenres.value.delete(genreId);
-    
-    // Entferne alle SubGenres dieses Genres aus den aktiven SubGenres
-    const genreObj = categorizedTags.value.genres.find(g => g._id === genreId);
-    if (genreObj && genreObj.subGenres) {
-      genreObj.subGenres.forEach(subGenre => {
-        activeSubGenres.value.delete(subGenre._id);
-        activeFilters.value.delete(subGenre._id);
-      });
-    }
+    const genre = categorizedTags.value.genres.find((g) => g._id === genreId);
+    genre?.subGenres?.forEach((sg) => {
+      activeSubGenres.value.delete(sg._id);
+      activeFilters.value.delete(sg._id);
+    });
   } else {
-    // Genre aktivieren - nur zur Sichtbarkeit, keine SubGenres automatisch aktivieren
     activeGenres.value.add(genreId);
   }
-  
-  // Aktualisiere gefilterte Items
-  visibleItemCount.value = itemsPerPage;
+  visibleItemCount.value = ITEMS_PER_PAGE;
 }
 
-function toggleSubGenreFilter(subGenreId) {
+function toggleSubGenreFilter(subGenreId: string) {
   if (activeSubGenres.value.has(subGenreId)) {
-    // SubGenre deaktivieren
     activeSubGenres.value.delete(subGenreId);
     activeFilters.value.delete(subGenreId);
   } else {
-    // SubGenre aktivieren
     activeSubGenres.value.add(subGenreId);
     activeFilters.value.add(subGenreId);
   }
-  
-  // Aktualisiere gefilterte Items
-  visibleItemCount.value = itemsPerPage;
+  visibleItemCount.value = ITEMS_PER_PAGE;
 }
 
-// Toggle Filter-Sichtbarkeit
+function toggleFilterType(type: string) {
+  activeFilterType.value = activeFilterType.value === type ? null : type;
+}
+
+function resetFilters() {
+  activeFilters.value.clear();
+  activeGenres.value.clear();
+  activeSubGenres.value.clear();
+  isOtherCitiesActive.value = false;
+}
+
+// ==================== ITEM MATCHING ====================
+function itemHasTag(item: any, tagId: string): boolean {
+  return getItemTags(item).some((t) => t._id === tagId);
+}
+
+function itemMatchesFilters(item: any): boolean {
+  // Genre filter check
+  if (activeGenres.value.size > 0) {
+    if (activeSubGenres.value.size > 0) {
+      // SubGenres selected: item must have ALL selected subgenres
+      for (const subGenreId of activeSubGenres.value) {
+        if (!itemHasTag(item, subGenreId)) return false;
+      }
+    } else {
+      // Only genres selected: item must have at least one genre or its subgenres
+      const allowedIds = new Set<string>();
+      activeGenres.value.forEach((gId) => {
+        allowedIds.add(gId);
+        categorizedTags.value.genres
+          .find((g) => g._id === gId)
+          ?.subGenres?.forEach((sg) => allowedIds.add(sg._id));
+      });
+      if (!getItemTags(item).some((t) => allowedIds.has(t._id))) return false;
+    }
+  }
+
+  // Normal filters check (AND logic)
+  if (activeFilters.value.size === 0) return true;
+
+  for (const filterId of activeFilters.value) {
+    if (filterId === "others") {
+      const cityTags = getItemCityTags(item);
+      if (cityTags.length > 0 && !cityTags.every((t) => !isMainCity(t)))
+        return false;
+    } else if (!itemHasTag(item, filterId)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// ==================== SORTING ====================
+function changeSortMode(mode: "new" | "shuffle" | "alpha") {
+  if (mode === "shuffle") shuffleSeed.value = Date.now();
+  sortMode.value = mode;
+}
+
+function seededRandom(seed: number) {
+  return () => {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+}
+
+function shuffleArray<T>(array: T[], seed: number): T[] {
+  const arr = [...array];
+  const rng = seededRandom(seed);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+const filteredItems = computed(() => {
+  const items = allItems.value.filter(itemMatchesFilters);
+
+  const sortFns = {
+    new: (a, b) =>
+      new Date(b.datetime || b._updatedAt || b._createdAt || 0).getTime() -
+      new Date(a.datetime || a._updatedAt || a._createdAt || 0).getTime(),
+    alpha: (a, b) =>
+      (a.title || a.name || a.parentShow?.title || "")
+        .toLowerCase()
+        .localeCompare(
+          (b.title || b.name || b.parentShow?.title || "").toLowerCase()
+        ),
+    shuffle: null,
+  };
+
+  if (sortMode.value === "shuffle")
+    return shuffleArray(items, shuffleSeed.value);
+  return items.sort(sortFns[sortMode.value]);
+});
+
+const visibleItems = computed(() =>
+  filteredItems.value.slice(0, visibleItemCount.value)
+);
+const hasMoreItems = computed(
+  () => visibleItems.value.length < filteredItems.value.length
+);
+
+function loadMoreItems() {
+  visibleItemCount.value += ITEMS_PER_PAGE;
+}
+
+// ==================== UI HELPERS ====================
 function toggleFiltersVisibility() {
   showFilters.value = !showFilters.value;
 }
 
-// Scroll-Handler für automatisches Ein-/Ausblenden der Filter
-function handleScroll(event: Event) {
-  const scrollContainer = event.target as HTMLElement;
-  const currentScrollY = scrollContainer.scrollTop;
-  const scrollDifference = currentScrollY - lastScrollY.value;
-
-  // Wenn nach unten gescrollt wird und der Schwellenwert überschritten wird
-  if (scrollDifference > scrollThreshold && showFilters.value) {
+function handleScroll() {
+  const scrollY = window.scrollY;
+  const scrollDiff = scrollY - lastScrollY.value;
+  if (scrollDiff > SCROLL_THRESHOLD && showFilters.value)
     showFilters.value = false;
-  }
-  // Wenn nach oben gescrollt wird (wieder aktiviert)
-  else if (scrollDifference < -20 && !showFilters.value) {
-    showFilters.value = true;
-  }
-
-  lastScrollY.value = currentScrollY;
+  else if (scrollDiff < -20 && !showFilters.value) showFilters.value = true;
+  lastScrollY.value = scrollY;
 }
 
-// Zurücksetzen aller Filter
-function resetFilters() {
-  activeFilters.value.clear();
-  Object.values(filterCategories).forEach((categorySet) => categorySet.clear());
-  isOtherCitiesActive.value = false;
-  
-  // Genre-Filter auch zurücksetzen
-  activeGenres.value.clear();
-  activeSubGenres.value.clear();
-}
-
-// Anzahl der anzuzeigenden Items steuern
-const itemsPerPage = 9;
-const visibleItemCount = ref(itemsPerPage);
-
-// Funktion zum Laden weiterer Items
-function loadMoreItems() {
-  visibleItemCount.value += itemsPerPage;
-}
-
-// Hilfsfunktion zur Formatierung von Datum/Zeit
-function formatDate(dateString) {
+function formatDate(dateString: string): string {
   if (!dateString) return "";
-
   const date = new Date(dateString);
-
-  // Überprüfen, ob das Datum gültig ist
   if (isNaN(date.getTime())) return "";
-
-  // Format: DD.MM.YYYY
   return date.toLocaleDateString("de-DE", {
     day: "2-digit",
     month: "2-digit",
@@ -432,53 +422,39 @@ function formatDate(dateString) {
   });
 }
 
-// helper function for image fetching and fallbacks
-function getItemImage(item) {
-  // Fallbacks je nach Content-Typ
-  const itemType = item._type || "";
-  let image = null;
-
-  // Bild aus dem Item selbst
-  if (item.image || item.mainImage) {
-    image = item.image || item.mainImage;
-  } else {
-    // Fallback-Bilder je nach Typ
-    switch (itemType) {
-      case "person":
-        image = mainStore?.siteFallbacks?.fallbackPerson?.image;
-        break;
-      case "venue":
-        image = mainStore?.siteFallbacks?.fallbackVenue?.image;
-        break;
-      case "show":
-        image = mainStore?.siteFallbacks?.fallbackShow?.image;
-        break;
-      case "set":
-        image = mainStore?.siteFallbacks?.fallbackSet?.image;
-        break;
-      case "word":
-      case "article":
-        image = mainStore?.siteFallbacks?.fallbackArticle?.image;
-        break;
-      default:
-        // Allgemeines Fallback-Bild
-        image = mainStore?.siteFallbacks?.fallbackPerson?.image;
-    }
-  }
-
-  return image;
+// ==================== ROUTING ====================
+function getItemRoute(item: any): string {
+  if (!item?.slug) return "/";
+  const slug = item.slug.current;
+  const routes = {
+    person: `/pool/${slug}`,
+    venue: `/pool/${slug}`,
+    set: item.parentShow?.slug?.current
+      ? `/shows/${item.parentShow.slug.current}/${slug}`
+      : `/shows/${slug}`,
+    article: `/words/${slug}`,
+    show: `/shows/${slug}`,
+  };
+  return localePath(routes[item._type] || `/${item._type}/${slug}`);
 }
 
-const artworkUrls = ref(new Map());
+// ==================== IMAGE HANDLING ====================
+function getItemImage(item: any) {
+  if (item.image || item.mainImage) return item.image || item.mainImage;
 
-// Funktion zum Abrufen und Speichern der Artwork-URL
-async function loadArtworkUrl(item) {
-  if (!item) return;
-  const url = await getSoundcloudArtwork(item);
-  artworkUrls.value.set(item._id, url);
+  const fallbacks = mainStore?.siteFallbacks;
+  const fallbackMap = {
+    person: fallbacks?.fallbackPerson?.image,
+    venue: fallbacks?.fallbackVenue?.image,
+    show: fallbacks?.fallbackShow?.image,
+    set: fallbacks?.fallbackSet?.image,
+    word: fallbacks?.fallbackArticle?.image,
+    article: fallbacks?.fallbackArticle?.image,
+  };
+  return fallbackMap[item._type] || fallbacks?.fallbackPerson?.image;
 }
 
-function checkImage(url) {
+async function checkImage(url: string): Promise<boolean> {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => resolve(true);
@@ -487,488 +463,46 @@ function checkImage(url) {
   });
 }
 
-async function getSoundcloudArtwork(item) {
-  // Definiere die Fallback-URLs explizit
-  const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-  const storeFallbackUrl =
-    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
+async function getSoundcloudArtwork(item: any): Promise<string> {
   const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
-
-  // Versuche zunächst das SoundCloud-Artwork
   if (artworkUrl) {
     const originalUrl = artworkUrl.replace("-large", "-original");
-    const exists = await checkImage(originalUrl);
-
-    if (exists) {
-      return originalUrl;
-    }
+    if (await checkImage(originalUrl)) return originalUrl;
   }
-  // SoundCloud-Artwork existiert nicht, verwende Fallbacks
-
-  // Prüfe parentShow Bild als ersten Fallback
-  if (parentShowImageUrl) {
-    return parentShowImageUrl;
-  }
-
-  // Prüfe Store-Fallback als zweiten Fallback
-  if (storeFallbackUrl) {
-    return storeFallbackUrl;
-  }
-
-  return "";
+  return (
+    item?.parentShow?.image?.asset?.url ||
+    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url ||
+    ""
+  );
 }
 
-// Content-Typ des aktuellen Moduls
-const contentType = computed(() => {
-  if (!props.module) return null;
-
-  // Basis-Typ ist der Modultyp
-  let type = props.module.type || null;
-
-  // Bei "pool" verwenden wir den spezifischen Pool-Content-Typ
-  if (type === "pool" && props.module.poolContentType) {
-    return props.module.poolContentType; // "persons", "venues" oder "all"
-  }
-
-  return type; // "sets", "shows", "words" oder null
-});
-
-// Kategorie-Typ für das UI
-const categoryType = ref("");
-
-// Watcher für den Content-Typ
-watch(
-  contentType,
-  (newValue) => {
-    if (["persons", "venues", "all"].includes(newValue)) {
-      categoryType.value = "Pool";
-    } else if (newValue === "sets") {
-      categoryType.value = "sets";
-    } else if (newValue === "shows") {
-      categoryType.value = "Shows";
-    } else if (newValue === "words") {
-      categoryType.value = "Words";
-    } else {
-      categoryType.value = "";
-    }
-  },
-  { immediate: true }
-);
-
-// Content-Typ-spezifische Tags (ohne Cities)
-const getContentTypeSpecificTags = computed(() => {
-  if (!availableTags.value) return [];
-
-  // Filtere Cities aus, da sie bereits separat angezeigt werden
-  return availableTags.value.filter((tag) => tag._type !== "tag.city");
-});
-
-// Hilfsfunktion zum Ermitteln der verwendeten Tag-IDs in den Items
-const getUsedTagIdsInItems = computed(() => {
-  const usedTagIds = new Set();
-
-  allItems.value.forEach((item) => {
-    // Direkte Tags am Item
-    if (item.tags && Array.isArray(item.tags)) {
-      item.tags.forEach((tag) => {
-        if (tag && tag._id) {
-          usedTagIds.add(tag._id);
-        }
-      });
-    }
-
-    // Tags aus parentShow (falls vorhanden)
-    if (
-      item.parentShow &&
-      item.parentShow?.tags &&
-      Array.isArray(item.parentShow?.tags)
-    ) {
-      item.parentShow?.tags.forEach((tag) => {
-        if (tag && tag._id) {
-          usedTagIds.add(tag._id);
-        }
-      });
-    }
-  });
-
-  return usedTagIds;
-});
-
-// Prüft, ob ein Item City-Tags hat (direkt oder über parentShow)
-function itemHasCityTags(item) {
-  // Direkte City-Tags prüfen
-  if (item.tags && Array.isArray(item.tags)) {
-    if (item.tags.some((tag) => tag._type === "tag.city")) {
-      return true;
-    }
-  }
-
-  // Tags aus parentShow prüfen
-  if (
-    item.parentShow &&
-    item.parentShow?.tags &&
-    Array.isArray(item.parentShow?.tags)
-  ) {
-    if (item.parentShow?.tags.some((tag) => tag._type === "tag.city")) {
-      return true;
-    }
-  }
-
-  return false;
+async function loadArtworkUrl(item: any) {
+  if (!item) return;
+  const url = await getSoundcloudArtwork(item);
+  artworkUrls.value.set(item._id, url);
 }
 
-// Gibt alle City-Tags eines Items zurück (direkt + parentShow)
-function getItemCityTags(item) {
-  const cityTags = [];
-
-  // Direkte City-Tags
-  if (item.tags && Array.isArray(item.tags)) {
-    item.tags.forEach((tag) => {
-      if (tag._type === "tag.city") {
-        cityTags.push(tag);
-      }
-    });
+function playTrack(item: any) {
+  const track = item?.soundcloud?.tracks?.[0];
+  if (!track) return;
+  if (!track.permalink_url && track.id) {
+    track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
   }
-
-  // City-Tags aus parentShow
-  if (
-    item.parentShow &&
-    item.parentShow?.tags &&
-    Array.isArray(item.parentShow?.tags)
-  ) {
-    item.parentShow?.tags.forEach((tag) => {
-      if (tag._type === "tag.city") {
-        // Nur hinzufügen, wenn es nicht bereits enthalten ist
-        if (!cityTags.some((existingTag) => existingTag._id === tag._id)) {
-          cityTags.push(tag);
-        }
-      }
-    });
-  }
-
-  return cityTags;
+  mainStore.currentTrack = track;
 }
 
-// Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
-function getItemRoute(item) {
-  if (!item || !item?.slug) return "/";
-
-  switch (item?._type) {
-    case "person":
-    case "venue":
-      return localePath(`/pool/${item?.slug?.current}`);
-
-    case "set":
-      // Prüfe, ob parentShow vorhanden ist
-      if (item?.parentShow?.slug?.current) {
-        return localePath(
-          `/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
-        );
-      }
-      // Fallback falls parentShow nicht verfügbar ist
-      console.log(`No parent show found for item ${item?.slug?.current}`);
-
-      return localePath(`/shows/${item?.slug?.current}`);
-
-    case "article":
-      return localePath(`/words/${item?.slug?.current}`);
-
-    case "show":
-      return localePath(`/shows/${item?.slug?.current}`);
-
-    // Standard-Fallback
-    default:
-      return localePath(`/${item?._type}/${item?.slug?.current}`);
-  }
-}
-
-// Prüft, ob ein Item den aktiven Filtern entspricht
-function itemMatchesFilters(item) {
-  // Genre-Filter prüfen (hat Vorrang vor normalen Filtern)
-  if (activeGenres.value.size > 0) {
-    // Wenn SubGenres ausgewählt sind, nur diese anzeigen (substraktiv)
-    if (activeSubGenres.value.size > 0) {
-      let hasAllSubGenres = true;
-      
-      for (const subGenreId of activeSubGenres.value) {
-        let hasSubGenre = false;
-        
-        // Prüfe direkte Tags
-        if (item.tags && Array.isArray(item.tags)) {
-          if (item.tags.some((tag) => tag._id === subGenreId)) {
-            hasSubGenre = true;
-          }
-        }
-        
-        // Prüfe Tags aus parentShow
-        if (!hasSubGenre && item.parentShow && item.parentShow?.tags && Array.isArray(item.parentShow?.tags)) {
-          if (item.parentShow?.tags.some((tag) => tag._id === subGenreId)) {
-            hasSubGenre = true;
-          }
-        }
-        
-        if (!hasSubGenre) {
-          hasAllSubGenres = false;
-          break;
-        }
-      }
-      
-      if (!hasAllSubGenres) {
-        return false;
-      }
-    } else {
-      // Nur Genres ausgewählt (keine SubGenres aktiv) - zeige alle Items der ausgewählten Genres oder ihrer SubGenres (additiv)
-      let hasAnyGenreOrSubGenre = false;
-      
-      // Sammle alle Genre-IDs und ihre SubGenre-IDs
-      const allAllowedIds = new Set();
-      activeGenres.value.forEach(genreId => {
-        allAllowedIds.add(genreId);
-        const genreObj = categorizedTags.value.genres.find(g => g._id === genreId);
-        if (genreObj && genreObj.subGenres) {
-          genreObj.subGenres.forEach(sg => allAllowedIds.add(sg._id));
-        }
-      });
-      
-      // Prüfe direkte Tags
-      if (item.tags && Array.isArray(item.tags)) {
-        if (item.tags.some((tag) => allAllowedIds.has(tag._id))) {
-          hasAnyGenreOrSubGenre = true;
-        }
-      }
-      
-      // Prüfe Tags aus parentShow
-      if (!hasAnyGenreOrSubGenre && item.parentShow && item.parentShow?.tags && Array.isArray(item.parentShow?.tags)) {
-        if (item.parentShow?.tags.some((tag) => allAllowedIds.has(tag._id))) {
-          hasAnyGenreOrSubGenre = true;
-        }
-      }
-      
-      if (!hasAnyGenreOrSubGenre) {
-        return false;
-      }
-    }
-  }
-  
-  // Normale Filter prüfen (substraktiv wie bisher)
-  if (activeFilters.value.size === 0) {
-    return true; // Keine normalen Filter aktiv
-  }
-
-  // Alle aktiven normalen Filter müssen erfüllt sein (UND-Verknüpfung)
-  for (const filterId of activeFilters.value) {
-    let hasMatchingTag = false;
-
-    // Spezialbehandlung für "Others" Filter
-    if (filterId === "others") {
-      const cityTags = getItemCityTags(item);
-      const isOthersMatch = cityTags.length === 0 || cityTags.every((tag) => !isMainCity(tag));
-      if (isOthersMatch) {
-        hasMatchingTag = true;
-      }
-    } else {
-      // Prüfe direkte Tags
-      if (item.tags && Array.isArray(item.tags)) {
-        if (item.tags.some((tag) => tag._id === filterId)) {
-          hasMatchingTag = true;
-        }
-      }
-
-      // Prüfe Tags aus parentShow (falls noch nicht gefunden)
-      if (
-        !hasMatchingTag &&
-        item.parentShow &&
-        item.parentShow?.tags &&
-        Array.isArray(item.parentShow?.tags)
-      ) {
-        if (item.parentShow?.tags.some((tag) => tag._id === filterId)) {
-          hasMatchingTag = true;
-        }
-      }
-    }
-
-    // Wenn dieser normale Filter nicht erfüllt ist, Item ausschließen
-    if (!hasMatchingTag) {
-      return false;
-    }
-  }
-
-  // Alle Filter sind erfüllt
-  return true;
-}
-// Gibt alle nicht-City-Tags eines Items zurück
-function getItemNonCityTags(item) {
-  if (!item.tags || !Array.isArray(item.tags)) return [];
-
-  return item.tags.filter((tag) => tag._type !== "tag.city");
-}
-
-// Funktion zum Filtern der Items nach Typ
-function filterItems(items, contentType = null) {
-  if (!items || !items.length) return [];
-
-  // Items nach contentType filtern, falls angegeben
-  let filteredItems = items;
-
-  if (contentType) {
-    // Korrigierte Filterlogik basierend auf dem Schema
-    if (contentType === "persons") {
-      filteredItems = items.filter((item) => item._type === "person");
-    } else if (contentType === "venues") {
-      filteredItems = items.filter((item) => item._type === "venue");
-    } else if (contentType === "all") {
-      filteredItems = items.filter(
-        (item) => item._type === "venue" || item._type === "person"
-      );
-    }
-  }
-
-  return filteredItems;
-}
-
-// Berechne alle Items nach Typ und sortiere sie
-const allItems = computed(() => {
-  if (!props.module) return [];
-
-  let items = [];
-
-  switch (props.module.type) {
-    case "pool":
-      items = filterItems(
-        props.module.poolItems || [],
-        props.module.poolContentType
-      );
-      break;
-    case "sets":
-      items = props.module.setItems || [];
-      break;
-    case "shows":
-      items = props.module.showItems || [];
-      break;
-    case "words":
-      items = props.module.articleItems || [];
-      break;
-    default:
-      items = [];
-  }
-
-  return items;
-});
-
-// Berechne die gefilterten und sortierten Items
-const filteredItems = computed(() => {
-  let filteredArray = allItems.value.filter((item) => itemMatchesFilters(item));
-
-  // Sortierung anwenden
-  if (sortMode.value === "new") {
-    // Chronologisch sortieren (neuste zuerst)
-    return filteredArray.sort((a, b) => {
-      const dateA = new Date(a.datetime || a._updatedAt || a._createdAt || 0);
-      const dateB = new Date(b.datetime || b._updatedAt || b._createdAt || 0);
-      return dateB.getTime() - dateA.getTime();
-    });
-  } else if (sortMode.value === "shuffle") {
-    // Shuffle mit stabilem Seed für die aktuelle Sitzung
-    return shuffleArray([...filteredArray], shuffleSeed.value);
-  } else if (sortMode.value === "alpha") {
-    // Alphabetisch nach Titel sortieren
-    return filteredArray.sort((a, b) => {
-      // Bestimme den Titel je nach Content-Typ
-      const titleA = (
-        a.title ||
-        a.name ||
-        (a.parentShow ? a.parentShow?.title : "")
-      ).toLowerCase();
-      const titleB = (
-        b.title ||
-        b.name ||
-        (b.parentShow ? b.parentShow?.title : "")
-      ).toLowerCase();
-      return titleA.localeCompare(titleB);
-    });
-  }
-
-  return filteredArray;
-});
-
-// Fisher-Yates Shuffle-Algorithmus mit Seed
-function shuffleArray(array, seed) {
-  const rng = seededRandom(seed);
-  let currentIndex = array.length;
-
-  // Solange noch Elemente vorhanden sind
-  while (currentIndex > 0) {
-    // Ein verbleibendes Element auswählen
-    const randomIndex = Math.floor(rng() * currentIndex);
-    currentIndex--;
-
-    // Mit dem aktuellen Element tauschen
-    [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex],
-      array[currentIndex],
-    ];
-  }
-
-  return array;
-}
-
-// Einfacher seeded Random-Generator
-function seededRandom(seed) {
-  return function () {
-    seed = (seed * 9301 + 49297) % 233280;
-    return seed / 233280;
-  };
-}
-
-// Berechne die sichtbaren Items (basierend auf den gefilterten Items)
-const visibleItems = computed(() => {
-  return filteredItems.value.slice(0, visibleItemCount.value);
-});
-
-// Prüfen, ob mehr Items geladen werden können
-const hasMoreItems = computed(() => {
-  return visibleItems.value.length < filteredItems.value.length;
-});
-
-function playTrack(item) {
-  if (item?.soundcloud?.tracks?.[0]) {
-    const track = item.soundcloud.tracks[0];
-
-    // Sicherstellen, dass permalink_url gesetzt ist
-    if (!track.permalink_url && track.id) {
-      // Wenn keine permalink_url, aber eine ID vorhanden ist, erstellen wir eine
-      track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
-    }
-
-    // Track im Store speichern
-    mainStore.currentTrack = track;
-  }
-}
-
-// Referenz für das Scroll-Container Element
-const scrollContainer = ref<HTMLElement | null>(null);
-
+// ==================== LIFECYCLE ====================
 onMounted(() => {
   if (contentType.value === "sets") {
-    allItems.value.forEach((item) => {
-      loadArtworkUrl(item);
-    });
+    allItems.value.forEach(loadArtworkUrl);
   }
 
-  // Finde das erste div nach main Element
-  const mainElement = document.querySelector('main');
-  if (mainElement && mainElement.firstElementChild instanceof HTMLElement) {
-    scrollContainer.value = mainElement.firstElementChild;
-    lastScrollY.value = scrollContainer.value.scrollTop;
-    scrollContainer.value.addEventListener("scroll", handleScroll, { passive: true });
-  }
+  lastScrollY.value = window.scrollY;
+  window.addEventListener("scroll", handleScroll, { passive: true });
 });
 
 onUnmounted(() => {
-  // Scroll-Listener entfernen
-  if (scrollContainer.value) {
-    scrollContainer.value.removeEventListener("scroll", handleScroll);
-  }
+  window.removeEventListener("scroll", handleScroll);
 });
 </script>
 <template>
@@ -980,33 +514,17 @@ onUnmounted(() => {
         module.style || 'default'
       } ${categoryType.toLowerCase()}`"
     >
-      <!-- <div class="module-grid__header">
-        <div class="module-grid__header__left">
-          <h3 v-if="module.title" class="module-grid__title">
-            {{ module.title }}
-          </h3>
-          <section
-            v-if="categoryType == 'sets'"
-            class="module-grid__header__type"
-          >
-            <h2 class="module-grid__header__type__pill">Shows</h2>
-          </section>
-          <section v-else class="module-grid__header__type">
-            <h2 class="module-grid__header__type__pill">{{ categoryType }}</h2>
-          </section>
-        </div>
-      </div> -->
-
       <!-- Filter Panel -->
       <div class="content-grid__filter-section">
         <div class="content-grid__filter-bar">
+          <!-- Active Filters -->
           <div class="active-filters">
             <h4
               class="active-filters__title"
               :class="{ active: activeFilters.size > 0 }"
             >
-              <span @click="resetFilters()" class="close-cross"
-                ><svg
+              <span @click="resetFilters()" class="close-cross">
+                <svg
                   width="10"
                   height="10"
                   viewBox="0 0 8 8"
@@ -1028,11 +546,11 @@ onUnmounted(() => {
                   />
                 </svg>
               </span>
-              <span @click="toggleFiltersVisibility">
-                Tags&nbsp;<span class="toggle-arrow">{{
+              <span @click="toggleFiltersVisibility"
+                >Tags&nbsp;<span class="toggle-arrow">{{
                   showFilters ? "↑" : "↓"
-                }}</span>
-              </span>
+                }}</span></span
+              >
             </h4>
             <div class="active-filters__list tags">
               <div
@@ -1044,15 +562,14 @@ onUnmounted(() => {
                   class="active-filter__name"
                   @click="toggleFilter(filterId)"
                 >
-                  {{ getTagNameById(filterId)
-                  }}<span @click="toggleFilter(filterId)" class="close-cross"
-                    ><svg
+                  {{ getTagNameById(filterId) }}
+                  <span class="close-cross">
+                    <svg
                       width="10"
                       height="10"
                       viewBox="0 0 8 8"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      @click="toggleFilter(filterId)"
                     >
                       <circle cx="4" cy="4" r="4" fill="black" />
                       <rect
@@ -1073,49 +590,37 @@ onUnmounted(() => {
               </div>
             </div>
           </div>
-          <!-- Cities-->
+
+          <!-- Cities Filter -->
           <div
-            v-if="categorizedTags.cities && categorizedTags.cities.length > 0"
+            v-if="categorizedTags.cities?.length > 0"
             class="filter-cities tags"
           >
             <h4 class="filter-cities__title">City</h4>
             <div class="filter-tags">
-              <!-- Hauptstädte anzeigen -->
               <button
-                v-for="tag in categorizedTags.cities.filter((tag) =>
-                  isMainCity(tag)
-                )"
+                v-for="tag in categorizedTags.cities.filter(isMainCity)"
                 :key="tag._id"
-                class="tag"
-                :class="[
-                  'filter-tag',
-                  'filter-tag--city',
-                  { 'filter-tag--active': activeFilters.has(tag._id) },
-                ]"
+                class="tag filter-tag filter-tag--city"
+                :class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
                 @click="toggleFilter(tag._id)"
               >
                 {{ parseI18nObj(tag.title) }}
               </button>
-
-              <!-- "Others"-Option anzeigen, wenn es Tags gibt, die keine Hauptstädte sind -->
               <button
                 v-if="categorizedTags.cities.some((tag) => !isMainCity(tag))"
-                class="tag"
-                :class="[
-                  'filter-tag',
-                  'filter-tag--city',
-                  { 'filter-tag--active': isOtherCitiesActive },
-                ]"
+                class="tag filter-tag filter-tag--city"
+                :class="{ 'filter-tag--active': isOtherCitiesActive }"
                 @click="toggleFilter('others')"
               >
                 Elsewhere
               </button>
             </div>
           </div>
-          <!-- Sortierungsoptionen -->
+
+          <!-- Sort Options -->
           <div class="sort-options">
             <h4 class="sort-options__title">Sort</h4>
-
             <button
               :class="['sort-button', { active: sortMode === 'new' }]"
               @click="changeSortMode('new')"
@@ -1139,22 +644,19 @@ onUnmounted(() => {
             </button>
           </div>
         </div>
+
+        <!-- Filter Tags Panel -->
         <div
           v-if="allItems.length > 0 && module.availableTags"
           class="content-grid__filters"
         >
           <div class="filter-container tags">
-            <!-- Filter für Sets mit verschachtelten Genres -->
+            <!-- Sets: Genre Filter -->
             <template v-if="contentType === 'sets'">
-              <!-- Genre mit Subgenres -->
               <div
-                v-if="
-                  categorizedTags.genres && categorizedTags.genres.length > 0
-                "
+                v-if="categorizedTags.genres?.length > 0"
                 class="filter-category tags"
-                :class="{
-                  active: showFilters,
-                }"
+                :class="{ active: showFilters }"
               >
                 <div class="filter-genres">
                   <div
@@ -1163,38 +665,34 @@ onUnmounted(() => {
                     class="filter-genre"
                   >
                     <button
-                      class="tag"
-                      :class="[
-                        'filter-tag',
-                        'filter-tag--genre',
-                        { 'filter-tag--active': activeGenres.has(genre._id) },
-                      ]"
+                      class="tag filter-tag filter-tag--genre"
+                      :class="{
+                        'filter-tag--active': activeGenres.has(genre._id),
+                      }"
                       @click="toggleGenreFilter(genre._id)"
                     >
                       {{ genre.title }}
                     </button>
                   </div>
                 </div>
-
                 <div class="filter-subgenres">
-                  <div
-                    v-if="activeGenres.size > 0"
-                    class="filter-subgenre"
-                  >
-                    <!-- Subgenres für alle aktiven Genres -->
+                  <div v-if="activeGenres.size > 0" class="filter-subgenre">
                     <div class="filter-subgenre__tags">
-                      <template v-for="genre in categorizedTags.genres.filter(g => activeGenres.has(g._id))" :key="genre._id">
+                      <template
+                        v-for="genre in categorizedTags.genres.filter((g) =>
+                          activeGenres.has(g._id)
+                        )"
+                        :key="genre._id"
+                      >
                         <button
                           v-for="subGenre in genre.subGenres || []"
                           :key="subGenre._id"
-                          class="tag"
-                          :class="[
-                            'filter-tag',
-                            'filter-tag--subgenre',
-                            {
-                              'filter-tag--active': activeSubGenres.has(subGenre._id),
-                            },
-                          ]"
+                          class="tag filter-tag filter-tag--subgenre"
+                          :class="{
+                            'filter-tag--active': activeSubGenres.has(
+                              subGenre._id
+                            ),
+                          }"
                           @click="toggleSubGenreFilter(subGenre._id)"
                         >
                           {{ subGenre.title }}
@@ -1206,103 +704,81 @@ onUnmounted(() => {
               </div>
             </template>
 
-            <!-- Filter für Pool -->
+            <!-- Words: Article Tags -->
+            <template v-else-if="contentType === 'words'">
+              <div
+                v-if="poolTags.articles.length > 0"
+                class="filter-category tags"
+                :class="{ active: showFilters }"
+              >
+                <div class="filter-tags tags">
+                  <button
+                    v-for="tag in poolTags.articles"
+                    :key="tag._id"
+                    class="filter-tag tag"
+                    :class="{
+                      'filter-tag--active': activeFilters.has(tag._id),
+                    }"
+                    @click="toggleFilter(tag._id)"
+                  >
+                    {{ tag.title }}
+                  </button>
+                </div>
+              </div>
+            </template>
+
+            <!-- Pool: Type Filters -->
             <template v-else>
               <div
                 v-if="getContentTypeSpecificTags.length > 0"
                 class="filter-category tags"
+                :class="{ active: showFilters }"
               >
-                <!-- Filtertypen (Musician, Venue, Crafts) -->
-                <div class="filter-types tags">
+                <div class="filter-tags tags">
                   <button
                     v-if="poolTags.musicians.length > 0"
-                    :class="[
-                      'filter-type tag',
-                      {
-                        'filter-type--active': activeFilterType === 'musicians',
-                      },
-                    ]"
+                    class="filter-type tag"
+                    :class="{
+                      'filter-type--active': activeFilterType === 'musicians',
+                    }"
                     @click="toggleFilterType('musicians')"
                   >
                     Musicians
                   </button>
                   <button
                     v-if="poolTags.venues.length > 0"
-                    :class="[
-                      'filter-type tag',
-                      { 'filter-type--active': activeFilterType === 'venues' },
-                    ]"
+                    class="filter-type tag"
+                    :class="{
+                      'filter-type--active': activeFilterType === 'venues',
+                    }"
                     @click="toggleFilterType('venues')"
                   >
                     Venues
                   </button>
                   <button
                     v-if="poolTags.crafts.length > 0"
-                    :class="[
-                      'filter-type tag',
-                      { 'filter-type--active': activeFilterType === 'crafts' },
-                    ]"
+                    class="filter-type tag"
+                    :class="{
+                      'filter-type--active': activeFilterType === 'crafts',
+                    }"
                     @click="toggleFilterType('crafts')"
                   >
                     Crafts
                   </button>
                 </div>
-
-                <!-- Musician Tags -->
                 <div
                   v-if="
-                    activeFilterType === 'musicians' &&
-                    poolTags.musicians.length > 0
+                    activeFilterType && poolTags[activeFilterType]?.length > 0
                   "
                   class="filter-tags tags"
                 >
                   <button
-                    v-for="tag in poolTags.musicians"
+                    v-for="tag in poolTags[activeFilterType]"
                     :key="tag._id"
-                    :class="[
-                      'filter-tag tag',
-                      { 'filter-tag--active': activeFilters.has(tag._id) },
-                    ]"
-                    @click="toggleFilter(tag._id)"
-                  >
-                    {{ tag.title }}
-                  </button>
-                </div>
-
-                <!-- Venue Tags -->
-                <div
-                  v-if="
-                    activeFilterType === 'venues' && poolTags.venues.length > 0
-                  "
-                  class="filter-tags tags"
-                >
-                  <button
-                    v-for="tag in poolTags.venues"
-                    :key="tag._id"
-                    :class="[
-                      'filter-tag tag',
-                      { 'filter-tag--active': activeFilters.has(tag._id) },
-                    ]"
-                    @click="toggleFilter(tag._id)"
-                  >
-                    {{ tag.title }}
-                  </button>
-                </div>
-
-                <!-- Crafts Tags -->
-                <div
-                  v-if="
-                    activeFilterType === 'crafts' && poolTags.crafts.length > 0
-                  "
-                  class="filter-tags tags"
-                >
-                  <button
-                    v-for="tag in poolTags.crafts"
-                    :key="tag._id"
-                    :class="[
-                      'filter-tag tag',
-                      { 'filter-tag--active': activeFilters.has(tag._id) },
-                    ]"
+                    class="filter-tag tag"
+                    :class="{
+                      'filter-tag--active': activeFilters.has(tag._id),
+                    }"
                     @click="toggleFilter(tag._id)"
                   >
                     {{ tag.title }}
@@ -1314,6 +790,7 @@ onUnmounted(() => {
         </div>
       </div>
 
+      <!-- Content Grid -->
       <div class="content-grid__container">
         <div v-if="visibleItems.length > 0" class="content-grid__items">
           <div
@@ -1321,82 +798,67 @@ onUnmounted(() => {
             :key="item._id"
             :class="`grid-item grid-item--${module.style || 'default'}`"
           >
-            <!-- Städte Tags wenn vorhanden -->
+            <!-- City Tags -->
             <div class="grid-item__tags city-tags">
               <span
                 v-for="tag in getItemCityTags(item)"
                 :key="tag._id"
                 class="tag city"
+                >{{ parseI18nObj(tag?.short) }}</span
               >
-                {{ parseI18nObj(tag?.short) }}
-              </span>
             </div>
-            <!-- Bild -->
+
+            <!-- Image -->
             <NuxtLink
               v-if="item?.slug"
               :to="getItemRoute(item)"
               class="grid-item__link"
             >
-              <div class="grid-item__image" v-if="contentType == 'sets'">
-                <img
-                  v-if="item.image && item.image.asset"
-                  :src="item.image.asset.url"
-                  :alt="item.title || ''"
-                />
-                <div
-                  v-else-if="contentType === 'sets' && item.soundcloud"
-                  class="track-artwork"
-                  @vue:mounted="loadArtworkUrl(item)"
-                >
+              <div class="grid-item__image">
+                <template v-if="contentType === 'sets'">
                   <img
-                    v-if="artworkUrls.get(item._id)"
-                    :src="artworkUrls.get(item._id)"
-                    alt="Track Artwork"
+                    v-if="item.image?.asset"
+                    :src="item.image.asset.url"
+                    :alt="item.title || ''"
                   />
-                </div>
-              </div>
-              <div class="grid-item__image" v-if="contentType !== 'sets'">
-                <img
-                  v-if="getItemImage(item)"
-                  :src="getItemImage(item).asset?.url"
-                  :alt="item.title || ''"
-                />
-                <img
-                  v-else-if="
-                    contentType === 'sets' && artworkUrls.get(item._id)
-                  "
-                  :src="artworkUrls.get(item._id)"
-                  alt="Track Artwork"
-                  class="track-artwork"
-                />
-                <div
-                  v-else-if="contentType === 'sets'"
-                  class="track-artwork-placeholder"
-                  @vue:mounted="loadArtworkUrl(item)"
-                ></div>
-                <img
-                  v-else
-                  :src="
-                    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
-                  "
-                  alt="Fallback Image"
-                />
+                  <div
+                    v-else-if="item.soundcloud"
+                    class="track-artwork"
+                    @vue:mounted="loadArtworkUrl(item)"
+                  >
+                    <img
+                      v-if="artworkUrls.get(item._id)"
+                      :src="artworkUrls.get(item._id)"
+                      alt="Track Artwork"
+                    />
+                  </div>
+                </template>
+                <template v-else>
+                  <img
+                    v-if="getItemImage(item)"
+                    :src="getItemImage(item).asset?.url"
+                    :alt="item.title || ''"
+                  />
+                  <img
+                    v-else
+                    :src="
+                      mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
+                    "
+                    alt="Fallback"
+                  />
+                </template>
               </div>
             </NuxtLink>
 
-            <!-- Inhalt -->
+            <!-- Content -->
             <div class="grid-item__content">
-              <!-- Interaktiver Bereich mit Datum und Play-Button -->
               <section class="grid-item__content__interactive">
-                <!-- Datum (falls vorhanden) -->
                 <div
                   v-if="item.datetime || item.publishedAt"
                   class="grid-item__date"
                 >
                   {{ formatDate(item.datetime || item.publishedAt) }}
                 </div>
-
-                <!-- Play-Button für Sets -->
                 <button
                   v-if="contentType === 'sets' && item.soundcloud"
                   @click.prevent="playTrack(item)"
@@ -1417,45 +879,22 @@ onUnmounted(() => {
                   </svg>
                 </button>
               </section>
-              <div v-if="item.parentShow && contentType == 'sets'">
-                <!-- Show-Titel (für Sets) -->
+
+              <!-- Set Content -->
+              <div v-if="item.parentShow && contentType === 'sets'">
                 <NuxtLink
-                  v-if="item.parentShow?.title !== 'No Show' && item.parentShow"
-                  :to="
-                    localePath(
-                      `/shows/${item.parentShow?.slug.current}`
-                    )
-                  "
+                  v-if="item.parentShow?.title !== 'No Show'"
+                  :to="localePath(`/shows/${item.parentShow?.slug.current}`)"
                   class="grid-item__link"
                 >
-                  <h3
-                    class="grid-item__title show-title"
-                    v-if="item.parentShow?.title !== 'No Show'"
-                  >
+                  <h3 class="grid-item__title show-title">
                     {{ item.parentShow?.title }}
                   </h3>
                 </NuxtLink>
-                <h3
-                  class="grid-item__title show-title"
-                  v-else-if="item.parentShow?.title !== 'No Show'"
-                >
-                  {{ item.parentShow?.title }}
-                </h3>
-                <h3
-                  class="grid-item__title show-title"
-                  v-else-if="item.parentShow?.title == 'No Show' && item?.title"
-                >
+                <h3 v-else-if="item?.title" class="grid-item__title show-title">
                   {{ item?.title }}
                 </h3>
-                <!-- Künstler (für Sets) -->
-                <div
-                  v-if="
-                    contentType === 'sets' &&
-                    item.persons &&
-                    item.persons.length > 0
-                  "
-                  class="show-artists"
-                >
+                <div v-if="item.persons?.length > 0" class="show-artists">
                   <h3
                     v-for="(artist, index) in item.persons"
                     :key="artist._id"
@@ -1469,44 +908,43 @@ onUnmounted(() => {
                       {{ artist.title
                       }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
                     </NuxtLink>
-                    <span v-else>
-                      {{ artist.title
-                      }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
-                    </span>
+                    <span v-else
+                      >{{ artist.title
+                      }}{{
+                        index < item.persons.length - 1 ? "," : ""
+                      }}&nbsp;</span
+                    >
                   </h3>
                 </div>
               </div>
 
-              <!-- Read more für Words -->
-
-              <div v-if="contentType == 'words'" class="tags read-more">
-                <NuxtLink :to="getItemRoute(item)" class="grid-item__link">
-                  <h3 class="tag">Read More</h3>
-                </NuxtLink>
+              <!-- Words: Read More -->
+              <div v-if="contentType === 'words'" class="tags read-more">
+                <NuxtLink :to="getItemRoute(item)" class="grid-item__link"
+                  ><h3 class="tag">Read More</h3></NuxtLink
+                >
               </div>
-              <!-- Titel für alle anderen Content-Typen -->
+
+              <!-- Title -->
               <NuxtLink :to="getItemRoute(item)" class="grid-item__link">
                 <h3 v-if="contentType !== 'sets'" class="grid-item__title">
                   {{ item.title || item.name }}
                 </h3>
               </NuxtLink>
 
-              <!-- Hier die Teaser-Text Logik einfügen, analog zum ContentSlider -->
+              <!-- Teaser Text -->
               <RichText
                 v-if="item?.useTeaserText && item?.textTeaser"
                 :blocks="parseI18nObj(item?.textTeaser)"
               />
               <RichText
-                v-else-if="
-                  !item?.useTeaserText && item?.text && item.text.length > 0
-                "
+                v-else-if="!item?.useTeaserText && item?.text?.length > 0"
                 :blocks="parseI18nObj(item?.text)?.slice(0, 1)"
               />
               <RichText
                 v-else-if="
                   !item?.text &&
-                  item?.description &&
-                  item.description.length > 0 &&
+                  item?.description?.length > 0 &&
                   (item.description[0]?.value || item.description[1]?.value)
                 "
                 :blocks="
@@ -1519,13 +957,9 @@ onUnmounted(() => {
               <RichText
                 v-else-if="
                   !item?.text &&
-                  module.poolContentType == 'persons' &&
-                  mainStore?.siteFallbacks?.fallbackPerson?.description.length >
-                    0 &&
-                  (mainStore?.siteFallbacks?.fallbackPerson?.description?.[0]
-                    ?.value ||
-                    mainStore?.siteFallbacks?.fallbackPerson?.description?.[1]
-                      ?.value)
+                  module.poolContentType === 'persons' &&
+                  mainStore?.siteFallbacks?.fallbackPerson?.description
+                    ?.length > 0
                 "
                 :blocks="
                   limitTextBlocks(
@@ -1539,13 +973,9 @@ onUnmounted(() => {
               <RichText
                 v-else-if="
                   !item?.text &&
-                  module.poolContentType == 'venues' &&
-                  mainStore?.siteFallbacks?.fallbackVenue?.description.length >
-                    0 &&
-                  (mainStore?.siteFallbacks?.fallbackVenue?.description?.[0]
-                    ?.value ||
-                    mainStore?.siteFallbacks?.fallbackVenue?.description?.[1]
-                      ?.value)
+                  module.poolContentType === 'venues' &&
+                  mainStore?.siteFallbacks?.fallbackVenue?.description?.length >
+                    0
                 "
                 :blocks="
                   limitTextBlocks(
@@ -1557,7 +987,7 @@ onUnmounted(() => {
                 "
               />
 
-              <!-- Nicht-City Tags anzeigen -->
+              <!-- Non-City Tags -->
               <div
                 v-if="getItemNonCityTags(item).length > 0"
                 class="grid-item__tags tags"
@@ -1566,15 +996,15 @@ onUnmounted(() => {
                   v-for="tag in getItemNonCityTags(item)"
                   :key="tag._id"
                   class="tag"
+                  >{{ tag.title }}</span
                 >
-                  {{ tag.title }}
-                </span>
               </div>
             </div>
           </div>
         </div>
         <div v-else class="content-grid__no-results">No matching content.</div>
 
+        <!-- Load More -->
         <div v-if="hasMoreItems" class="content-grid__load-more">
           <button @click="loadMoreItems" class="load-more-button">
             <svg
@@ -1593,164 +1023,48 @@ onUnmounted(() => {
     </div>
   </ClientOnly>
 </template>
+
 <style lang="postcss" scoped>
+/* ==================== BASE STYLES ==================== */
 .content-grid {
   position: relative;
   max-width: clamp(100%, 100%, var(--page-max-width));
   width: 100%;
 
-  &.shows,
-  &.sets {
-    .active-filters {
-      &__title {
-        height: var(--small-font-size);
-        cursor: pointer;
-        &.active {
-          color: var(--color-pink);
-        }
-        .toggle-arrow {
-          position: absolute;
-          font-size: var(--small-font-size);
-          transform: translate(0,-1px);
-        }
-      }
-    }
-    .filter-cities {
-      .filter-tags {
-        .filter-tag {
-          &.filter-tag--active {
-            background-color: var(--color-pink);
-            color: var(--color-bg);
-          }
-          &:hover {
-            @media (min-width: 1024px) {
-              background-color: var(--color-pink);
-              color: var(--color-bg);
-            }
-          }
-        }
-      }
-    }
-    .sort-options {
-      button {
-        &.active {
-          &:hover {
-            @media (min-width: 1024px) {
-              color: var(--color-pink);
-            }
-          }
-          color: var(--color-pink);
-          .dot {
-            background-color: var(--color-pink);
-          }
-        }
-      }
-    }
-    .filter-toggle {
-      &__button:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-pink);
-          color: var(--color-bg);
-        }
-      }
-    }
-  }
+  /* Theme colors via CSS custom properties */
+  --theme-color: var(--color-pink);
 
   &.words {
-    .active-filters {
-      &__title {
-        &.active {
-          color: var(--color-green);
-        }
-      }
-    }
-    .filter-cities {
-      .filter-tags {
-        .filter-tag {
-          &.filter-tag--active {
-            background-color: var(--color-green);
-            color: var(--color-bg);
-          }
-          &:hover {
-            @media (min-width: 1024px) {
-              background-color: var(--color-green);
-              color: var(--color-bg);
-            }
-          }
-        }
-      }
-    }
-    .sort-options {
-      button {
-        &:hover {
-          @media (min-width: 1024px) {
-            color: var(--color-green);
-          }
-        }
-        &.active {
-          color: var(--color-green);
-          .dot {
-            background-color: var(--color-green);
-          }
-        }
-      }
-    }
-    .filter-toggle {
-      &__button:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-green);
-          color: var(--color-bg);
-        }
-      }
+    --theme-color: var(--color-green);
+  }
+  &.pool {
+    --theme-color: var(--color-blue);
+  }
+
+  /* Shared active states using theme color */
+  .active-filters__title.active,
+  .sort-options button.active,
+  .sort-options button:hover {
+    color: var(--theme-color);
+  }
+
+  .sort-options button.active .dot,
+  .sort-options button:hover .dot {
+    background-color: var(--theme-color);
+  }
+
+  .filter-cities .filter-tag.filter-tag--active,
+  .filter-cities .filter-tag:hover {
+    @media (min-width: 1024px) {
+      background-color: var(--theme-color);
+      color: var(--color-bg);
     }
   }
 
-  &.pool {
-    .active-filters {
-      &__title {
-        &.active {
-          color: var(--color-blue);
-        }
-      }
-    }
-    .filter-cities {
-      .filter-tags {
-        .filter-tag {
-          &.filter-tag--active {
-            background-color: var(--color-blue);
-            color: var(--color-bg);
-          }
-          &:hover {
-            @media (min-width: 1024px) {
-              background-color: var(--color-blue);
-              color: var(--color-bg);
-            }
-          }
-        }
-      }
-    }
-    .sort-options {
-      button {
-        &:hover {
-          @media (min-width: 1024px) {
-            color: var(--color-blue);
-          }
-        }
-        &.active {
-          color: var(--color-blue);
-          .dot {
-            background-color: var(--color-blue);
-          }
-        }
-      }
-    }
-    .filter-toggle {
-      &__button:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-blue);
-          color: var(--color-bg);
-        }
-      }
+  .filter-toggle__button:hover {
+    @media (min-width: 1024px) {
+      background-color: var(--theme-color);
+      color: var(--color-bg);
     }
   }
 
@@ -1762,18 +1076,24 @@ onUnmounted(() => {
 
   &__filter-section {
     position: sticky;
-    top: var(--first-content-distance);
+    top: calc(var(--nav-height) + var(--first-content-distance));
     z-index: 9999;
+    padding-bottom: var(--small-padding);
+    margin-left: calc(var(--big-margin) * -1);
+    margin-right: calc(var(--big-margin) * -1);
+    padding-left: var(--big-margin);
+    padding-right: var(--big-margin);
+    border-radius: 100px;
     &::before {
       content: "";
       position: absolute;
-      top: calc(var(--first-content-distance) * -1);
-      left: calc(var(--big-margin) * -1);
-      height: var(--big-margin);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: calc(var(--first-content-distance) + (var(--small-padding) * 2 + var(--small-font-size) / 2));
       background-color: var(--color-bg);
-      backdrop-filter: blur(10px);
       z-index: -1;
-      width: calc(var(--page-max-width) + var(--big-margin) * 2);
+      transform: translateY(calc(-100% + (var(--small-padding) * 2 + var(--small-font-size) / 2)));
     }
   }
 
@@ -1786,16 +1106,9 @@ onUnmounted(() => {
     background-color: var(--color-text);
     border-radius: 100px;
     z-index: 50;
+
     .active-filters {
       width: calc(33% - var(--big-margin) / 2 + (var(--mid-margin) / 2) - 1px);
-    }
-    .sort-options {
-      width: calc(33% - var(--big-margin) / 2 + (var(--mid-margin) / 2));
-    }
-    .filter-cities {
-      width: calc(33% + var(--big-margin) / 2 + (var(--mid-margin) / 2));
-    }
-    .active-filters {
       display: flex;
       flex-flow: row nowrap;
       justify-content: flex-start;
@@ -1804,11 +1117,12 @@ onUnmounted(() => {
       padding: 0 0 0 var(--mid-margin);
       border-right: 1px solid var(--color-grey);
       overflow-x: scroll;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
       &::-webkit-scrollbar {
         display: none;
       }
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+
       &__title {
         display: flex;
         flex-flow: row wrap;
@@ -1818,17 +1132,26 @@ onUnmounted(() => {
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
+        height: var(--small-font-size);
+        cursor: pointer;
+
+        .toggle-arrow {
+          position: absolute;
+          font-size: var(--small-font-size);
+          transform: translate(0, -1px);
+        }
+
         &.active {
           cursor: pointer;
           .close-cross {
             display: block;
           }
         }
+
         .close-cross {
           display: none;
           position: absolute;
           transform: translate(calc(-100% - 12px), -0.5px);
-          margin: 0 0 0 0;
           filter: invert(1);
         }
       }
@@ -1841,11 +1164,11 @@ onUnmounted(() => {
         overflow: scroll;
         gap: 0 var(--small-padding);
         position: relative;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
         &::-webkit-scrollbar {
           display: none;
         }
-        -ms-overflow-style: none;
-        scrollbar-width: none;
       }
 
       .active-filter {
@@ -1854,11 +1177,7 @@ onUnmounted(() => {
         font-size: var(--small-font-size);
         position: relative;
         min-width: max-content;
-        &::-webkit-scrollbar {
-          display: none;
-        }
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+
         .close-cross {
           transform: translate(0, -1px);
           right: 6px;
@@ -1873,7 +1192,9 @@ onUnmounted(() => {
         }
       }
     }
+
     .filter-cities {
+      width: calc(33% + var(--big-margin) / 2 + (var(--mid-margin) / 2));
       display: flex;
       flex-flow: row nowrap;
       justify-content: flex-start;
@@ -1895,6 +1216,7 @@ onUnmounted(() => {
         justify-content: flex-start;
         align-items: center;
         gap: 0 var(--small-padding);
+
         .filter-tag {
           background-color: var(--color-dark-grey);
           color: var(--color-text);
@@ -1903,25 +1225,10 @@ onUnmounted(() => {
           }
         }
       }
-
-      &__toggle {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        text-align: left;
-        background: none;
-        border: none;
-        cursor: pointer;
-
-        &:hover .filter-category__title {
-          @media (min-width: 1024px) {
-            text-decoration: underline;
-          }
-        }
-      }
     }
+
     .sort-options {
+      width: calc(33% - var(--big-margin) / 2 + (var(--mid-margin) / 2));
       display: flex;
       flex-flow: row wrap;
       justify-content: flex-start;
@@ -1929,6 +1236,7 @@ onUnmounted(() => {
       gap: var(--mid-margin);
       padding: 0 var(--mid-margin) 0 calc(var(--mid-margin) / 2);
       border-left: 1px solid var(--color-grey);
+
       &__title {
         display: flex;
         flex-flow: row wrap;
@@ -1955,80 +1263,21 @@ onUnmounted(() => {
         @media (prefers-color-scheme: dark) {
           color: var(--color-bg);
         }
+
         .dot {
           width: 10px;
           height: 10px;
           border-radius: 50%;
           background-color: var(--color-dark-grey);
-          transform: translate(0%, 0%);
           @media (prefers-color-scheme: dark) {
             background-color: var(--color-bg);
           }
-        }
-        &:hover {
-          @media (min-width: 1024px) {
-            color: var(--color-pink);
-          }
-        }
-        &.active {
-          color: var(--color-pink);
-          .dot {
-            background-color: var(--color-pink);
-          }
-        }
-      }
-    }
-  }
-
-  .filter-toggle {
-    position: absolute;
-    top: calc(var(--small-padding) * 1.25);
-    width: max-content;
-    transform: translate(calc(-100% + var(--base-padding)), 0);
-    display: flex;
-    justify-content: center;
-
-    &__button {
-      background-color: var(--color-text);
-      color: var(--color-bg);
-      border: none;
-      padding: var(--small-padding) calc(var(--base-padding) * 2)
-        var(--small-padding) var(--base-padding);
-      border-bottom-left-radius: 100px;
-      border-top-left-radius: 100px;
-
-      cursor: pointer;
-      font-size: var(--small-font-size);
-      font-family: var(--font-text-semibold);
-      text-transform: uppercase;
-      transition: all 0.2s ease;
-
-      &:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-grey);
         }
       }
     }
   }
 
   &__filters {
-    margin-bottom: var(--big-margin);
-
-    .filter-tag--city {
-      background-color: var(--color-pink);
-      color: var(--color-bg);
-
-      &:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-secondary);
-        }
-      }
-
-      &.filter-tag--active {
-        background-color: var(--color-secondary);
-      }
-    }
-
     .filter-container {
       display: flex;
       flex-direction: column;
@@ -2053,14 +1302,8 @@ onUnmounted(() => {
       }
     }
 
+    .filter-genres,
     .filter-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--small-padding);
-      cursor: pointer !important;
-    }
-
-    .filter-genres {
       display: flex;
       flex-flow: row wrap;
       align-items: center;
@@ -2069,10 +1312,21 @@ onUnmounted(() => {
       max-width: 66%;
       width: 66%;
       gap: var(--small-padding);
-      .filter-genre {
-        display: flex;
-        flex-flow: row wrap;
-        gap: calc(var(--small-padding) / 2);
+    }
+
+    .filter-genre,
+    .filter-type {
+      display: flex;
+      flex-flow: row wrap;
+      gap: calc(var(--small-padding) / 2);
+    }
+
+    .filter-type {
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      &--active {
+        background-color: var(--color-text);
+        color: var(--color-bg);
       }
     }
 
@@ -2083,6 +1337,7 @@ onUnmounted(() => {
       justify-content: center;
       align-items: center;
       gap: var(--small-padding);
+
       .filter-subgenre {
         width: 100%;
         display: flex;
@@ -2090,10 +1345,8 @@ onUnmounted(() => {
         justify-content: center;
         align-items: center;
         gap: var(--small-padding);
-        &.hidden {
-          display: none;
-        }
-        .filter-subgenre__tags {
+
+        &__tags {
           display: flex;
           flex-flow: row wrap;
           justify-content: center;
@@ -2103,45 +1356,14 @@ onUnmounted(() => {
       }
     }
 
-    .filter-types {
-      display: flex;
-      flex-flow: row wrap;
-      align-items: center;
-      justify-content: center;
-      margin: var(--base-padding) auto;
-      max-width: 66%;
-      width: 66%;
-      gap: var(--small-padding);
-      .filter-type {
-        display: flex;
-        flex-flow: row wrap;
-        gap: calc(var(--small-padding) / 2);
-        background-color: var(--color-bg);
-        color: var(--color-text);
-        &--active {
-          background-color: var(--color-text);
-          color: var(--color-bg);
-        }
-      }
-    }
-
     .filter-tags {
-      width: 100%;
       display: flex;
-      flex-flow: row wrap;
+      flex-wrap: wrap;
+      gap: var(--small-padding);
+      cursor: pointer;
+      width: 100%;
       justify-content: center;
       align-items: center;
-      gap: var(--small-padding);
-      &.hidden {
-        display: none;
-      }
-      .filter-subgenre__tags {
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: center;
-        align-items: center;
-        gap: var(--small-padding);
-      }
     }
 
     .filter-tag {
@@ -2149,8 +1371,6 @@ onUnmounted(() => {
       cursor: pointer;
       transition: all 0.2s ease;
       background-color: var(--color-bg);
-      /* background-color: var(--color-bg-transparent);
-      backdrop-filter: blur(10px); */
       color: var(--color-text);
 
       &:hover {
@@ -2159,33 +1379,14 @@ onUnmounted(() => {
           color: var(--color-bg);
         }
       }
+
       &--active {
         background-color: var(--color-text);
         color: var(--color-bg);
       }
 
-      &--genre {
-      }
-
       &--subgenre {
-        font-size: calc(var(--small-font-size));
-      }
-    }
-
-    .filter-reset {
-      align-self: flex-start;
-      padding: 2px 8px;
-      background-color: transparent;
-      font-size: var(--small-font-size);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      margin-top: var(--small-padding);
-
-      &:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-text);
-          color: var(--color-bg);
-        }
+        font-size: var(--small-font-size);
       }
     }
   }
@@ -2218,11 +1419,10 @@ onUnmounted(() => {
       gap: var(--small-padding);
       padding: var(--small-padding) var(--big-padding);
       margin: 0 calc(var(--big-margin) / 2 + 0.6rem) 0.6rem 0;
-      background-color: transparent;
+      background-color: var(--color-bg);
       cursor: pointer;
       transition: all 0.2s ease;
       font-family: var(--font-text-semibold);
-      background-color: var(--color-bg);
       border-radius: 100px;
 
       &:hover {
@@ -2230,13 +1430,11 @@ onUnmounted(() => {
           color: var(--color-bg);
         }
       }
-
-      .plus-icon {
-        font-size: 1.2rem;
-      }
     }
   }
 }
+
+/* ==================== GRID ITEM STYLES ==================== */
 .module-grid {
   .grid-item {
     display: flex;
@@ -2265,7 +1463,7 @@ onUnmounted(() => {
       img {
         width: 100%;
         height: auto;
-        aspect-ratio: 1 / 1 !important;
+        aspect-ratio: 1 / 1;
         object-fit: cover;
         transition: transform 0.2s ease;
       }
@@ -2278,8 +1476,7 @@ onUnmounted(() => {
     }
 
     :deep(img) {
-      @apply object-cover;
-      @apply max-w-full w-100;
+      @apply object-cover max-w-full w-100;
     }
 
     &__content {
@@ -2316,7 +1513,6 @@ onUnmounted(() => {
 
         .play-button {
           display: flex;
-          flex-flow: row;
           justify-content: center;
           align-items: center;
           margin: 0 0 0 auto;
@@ -2338,21 +1534,12 @@ onUnmounted(() => {
         }
       }
 
-      .grid-item__title {
-        font-size: var(--base-font-size);
-        text-transform: uppercase;
-        font-family: var(--font-text-semibold);
-        margin: 0;
-      }
-
+      .grid-item__title,
       .grid-item__artist {
         font-size: var(--base-font-size);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
-      }
-
-      .show-title {
       }
 
       .show-artists {
@@ -2364,251 +1551,70 @@ onUnmounted(() => {
       }
     }
   }
-  &.sets {
-    .content-grid__items {
-      .grid-item {
-        /* border-bottom: 0.09325rem solid var(--color-text); */
-        &__image {
-          position: relative;
-          overflow: hidden;
 
-          img {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 1 / 1 !important;
-            object-fit: cover;
-            transition: transform 0.2s ease;
-          }
-
-          &:hover img {
-            @media (min-width: 1024px) {
-              transform: scale(1.05);
-            }
-          }
-        }
-
-        :deep(img) {
-          @apply object-cover;
-          @apply max-w-full w-100;
-        }
-      }
-    }
+  /* Content type specific styles */
+  &.pool .grid-item__image img {
+    aspect-ratio: 3 / 4;
   }
-  &.pool {
-    .content-grid__items {
-      .grid-item {
-        /* border-bottom: 0.09325rem solid var(--color-text); */
-        /* position: relative;
-        overflow: visible;
-        &:nth-child(3n + 1) {
-          &::after {
-            position: absolute;
-            transform: translate(0, 0);
-            right: calc(var(--big-margin) * -1);
-            background-color:var(--color-text);
-            content: '';
-            display: block;
-            width: 0.06125rem;
-            height: 80%;
-          }
-        }
-        &:nth-child(3n + 2) {
-          &::after {
-            position: absolute;
-            transform: translate(0, 0);
-            right: calc(var(--big-margin) * -1);
-            background-color:var(--color-text);
-            content: '';
-            display: block;
-            width: 0.06125rem;
-            height: 80%;
-          }
-        } */
-        &__image {
-          position: relative;
-          overflow: hidden;
 
-          img {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 3 / 4 !important;
-            object-fit: cover;
-            transition: transform 0.2s ease;
-          }
-        }
+  &.words .content-grid__items {
+    gap: calc(var(--big-padding) * 3);
 
-        :deep(img) {
-          @apply object-cover;
-          @apply max-w-full w-100;
-        }
+    .grid-item {
+      flex: 1 1 50%;
+      max-width: calc(50% - var(--big-padding) * 1.5);
+      background-color: var(--color-text);
+      border-radius: 12px;
+      border: 1px solid var(--color-text);
+      overflow: hidden;
+      padding: 0;
+
+      .city-tags,
+      .grid-item__content__interactive {
+        display: none;
       }
-    }
-  }
-  &.words {
-    .content-grid__items {
-      gap: calc(var(--big-padding) * 3);
-      .grid-item {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        justify-content: flex-start;
+
+      img {
         width: 100%;
-        flex: 1 1 50%;
-        max-width: calc(50% - var(--big-padding) * 1.5);
-        background-color: var(--color-text);
-        border-radius: 12px;
-        border: 1px solid var(--color-text);
-        overflow: hidden;
-        padding: 0;
+        height: auto;
+        aspect-ratio: 3 / 2;
+        object-fit: cover;
+      }
 
-        &:last-of-type {
-          justify-self: flex-start;
-          margin: 0 auto 0 0;
+      &__image img {
+        aspect-ratio: 3 / 1.5;
+      }
+
+      &__content {
+        gap: var(--big-padding);
+        margin: 0;
+        padding: var(--base-margin) var(--mid-padding);
+
+        .grid-item__tags {
+          position: absolute;
+          top: var(--base-padding);
+          right: var(--base-padding);
         }
 
-        &__link {
-          display: contents;
-          text-decoration: none;
-          color: inherit;
-        }
-
-        .city-tags,
-        .grid-item__content__interactive {
-          display: none;
-        }
-
-        img {
-          width: 100% !important;
-          height: auto;
-          aspect-ratio: 3 / 2 !important;
-          object-fit: cover;
-          transition: transform 0.2s ease;
-        }
-
-        &__image {
-          position: relative;
-          overflow: hidden;
-
-          img {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 3 / 1.5 !important;
-            object-fit: cover;
-            transition: transform 0.2s ease;
-          }
-
-          &:hover img {
-            @media (min-width: 1024px) {
-              transform: scale(1.05);
-            }
+        .read-more {
+          position: absolute;
+          transform: translate(0, calc(var(--base-margin) * -1 - 50%));
+          .tag {
+            border: 1px solid var(--color-text);
+            background-color: var(--color-bg);
+            color: var(--color-text);
           }
         }
 
-        :deep(img) {
-          @apply object-cover;
-          @apply max-w-full w-100;
+        .grid-item__title {
+          font-size: var(--large-font-size);
+          font-weight: 400;
+          font-family: var(--font-text-regular);
+          color: var(--color-bg);
         }
 
-        &__content {
-          width: 100%;
-          display: flex;
-          flex-flow: column wrap;
-          justify-content: flex-start;
-          align-items: stretch;
-          flex-grow: 1;
-          gap: var(--big-padding);
-          margin: 0;
-          padding: var(--base-margin) var(--mid-padding) var(--base-margin);
-          .grid-item__tags {
-            position: absolute;
-            top: var(--base-padding);
-            right: var(--base-padding);
-            display: flex;
-            flex-flow: row wrap;
-            justify-content: flex-start;
-            align-items: flex-end;
-            align-content: flex-end;
-            gap: var(--small-margin);
-            flex-grow: 1;
-          }
-
-          &__interactive {
-            width: 100%;
-            display: flex;
-            flex-flow: row wrap;
-            justify-content: space-between;
-            align-items: center;
-
-            .grid-item__date {
-              font-size: var(--small-font-size);
-              text-transform: uppercase;
-            }
-
-            .play-button {
-              display: flex;
-              flex-flow: row;
-              justify-content: center;
-              align-items: center;
-              margin: 0 0 0 auto;
-              color: transparent;
-              background-color: var(--color-text);
-              border-radius: 100px;
-              border: none;
-              padding: 4px;
-              width: calc(var(--base-font-size) + 4px);
-              height: calc(var(--base-font-size) + 4px);
-
-              svg {
-                height: var(--base-font-size);
-                transform: translate(1px, 0);
-                path {
-                  fill: var(--color-bg);
-                }
-              }
-            }
-          }
-
-          .read-more {
-            position: absolute;
-            transform: translate(0, calc(var(--base-margin) * -1 - 50%));
-            .tag {
-              border: 1px solid var(--color-text);
-              background-color: var(--color-bg);
-              color: var(--color-text);
-            }
-          }
-
-          .grid-item__title {
-            font-size: var(--large-font-size);
-            font-weight: 400;
-            text-transform: uppercase;
-            font-family: var(--font-text-regular);
-            margin: 0;
-            color: var(--color-bg);
-          }
-
-          .grid-item__artist {
-            font-size: var(--base-font-size);
-            text-transform: uppercase;
-            font-family: var(--font-text-semibold);
-            margin: 0;
-          }
-
-          .rich-text {
-            color: var(--color-bg);
-          }
-
-          .show-title {
-          }
-
-          .show-artists {
-            display: flex;
-            flex-flow: row wrap;
-            justify-content: flex-start;
-            align-items: center;
-            margin-bottom: var(--mid-padding);
-          }
+        .rich-text {
+          color: var(--color-bg);
         }
       }
     }
@@ -2617,7 +1623,6 @@ onUnmounted(() => {
   &__title {
     @apply text-2xl font-bold mb-4;
   }
-
   &__header {
     display: flex;
     justify-content: space-between;
@@ -2626,43 +1631,33 @@ onUnmounted(() => {
   }
 }
 
+/* ==================== RESPONSIVE ==================== */
 @media (max-width: 768px) {
   .content-grid {
     &__items {
       grid-template-columns: repeat(2, 1fr);
     }
-
-    &__filters {
-      .filter-subgenres {
-        margin-left: 0;
-      }
+    &__filters .filter-subgenres {
+      margin-left: 0;
     }
   }
 
-  .module-grid {
-    &--image {
-      .grid-item {
-        flex-direction: column;
-
-        :deep(img),
-        :deep(.video-wrapper) {
-          width: 100%;
-        }
-
-        &__content {
-          width: 100%;
-          padding: var(--mid-padding) 0 0 0;
-        }
-      }
+  .module-grid--image .grid-item {
+    flex-direction: column;
+    :deep(img),
+    :deep(.video-wrapper) {
+      width: 100%;
+    }
+    &__content {
+      width: 100%;
+      padding: var(--mid-padding) 0 0 0;
     }
   }
 }
 
 @media (max-width: 480px) {
-  .content-grid {
-    &__items {
-      grid-template-columns: 1fr;
-    }
+  .content-grid__items {
+    grid-template-columns: 1fr;
   }
 }
 </style>
