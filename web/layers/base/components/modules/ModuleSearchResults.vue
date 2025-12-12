@@ -11,6 +11,7 @@ const props = defineProps({
   searchQuery: { type: String, default: "" },
   isLoading: { type: Boolean, default: false },
   activeContentType: { type: String, default: "all" },
+  availableTags: { type: Object, default: null },
 });
 
 // Compute the category type for CSS class
@@ -26,6 +27,26 @@ const categoryType = computed(() => {
 const MAIN_CITIES = ["Vienna", "Düsseldorf", "Leipzig"];
 const SCROLL_THRESHOLD = 30;
 
+// Tag-Typ zu Farbe Mapping
+const TAG_TYPE_COLORS: Record<string, string> = {
+  'tag.genre': 'pink',
+  'tag.subGenre': 'pink',
+  'tag.mood': 'pink',
+  'tag.musician': 'blue',
+  'tag.venue': 'blue',
+  'tag.crafts': 'blue',
+  'tag.article': 'green',
+  'tag.city': 'neutral',
+  'tag.global': 'neutral',
+};
+
+// Tag-Typ zu Kategorie Mapping
+const TAG_CATEGORIES = {
+  shows: ['tag.genre', 'tag.subGenre', 'tag.mood'],
+  pool: ['tag.musician', 'tag.venue', 'tag.crafts'],
+  words: ['tag.article'],
+};
+
 // ==================== STATE ====================
 const activeFilters = ref(new Set<string>());
 const activeGenres = ref(new Set<string>());
@@ -38,32 +59,59 @@ const sortMode = ref<"new" | "alpha">("new");
 const artworkUrls = ref(new Map<string, string>());
 const moduleContainer = ref<HTMLElement | null>(null);
 
+
 // ==================== COMPUTED: Tags ====================
+
 const getUsedTagIdsInItems = computed(() => {
   const usedTagIds = new Set<string>();
+  const addTags = (tags: any[]) => {
+    if (Array.isArray(tags)) {
+      tags.forEach((tag) => tag?._id && usedTagIds.add(tag._id));
+    }
+  };
   (props.results as any[]).forEach((item) => {
-    collectTagIds(item.tags, usedTagIds);
-    collectTagIds(item.parentShow?.tags, usedTagIds);
+    addTags(item.tags);
+    addTags(item.parentShow?.tags);
   });
   return usedTagIds;
 });
 
-function collectTagIds(tags: any[] | undefined, set: Set<string>) {
-  if (!Array.isArray(tags)) return;
-  tags.forEach((tag) => tag?._id && set.add(tag._id));
-}
-
-// Extract and categorize all tags from search results
 const categorizedTags = computed(() => {
+  const usedTagIds = getUsedTagIdsInItems.value;
+  
+  // Method 1: Use availableTags (Hierarchy) - Preferred
+  if (props.availableTags) {
+    const filterByUsed = (tags: any[]) =>
+      tags?.filter((t) => usedTagIds.has(t._id)) || [];
+
+    const genres = (props.availableTags.genres || [])
+      .map((genre: any) => {
+        const isUsed = usedTagIds.has(genre._id);
+        const usedSubGenres = genre.subGenres?.filter((t: any) => usedTagIds.has(t._id)) || [];
+        // Keep genre if it is used OR has used subgenres
+        if (!isUsed && !usedSubGenres.length) return null;
+        return { ...genre, subGenres: usedSubGenres };
+      })
+      .filter(Boolean);
+
+    return {
+      genres,
+      subGenres: [], // Subgenres are nested in genres
+      cities: filterByUsed(props.availableTags.cities),
+      global: filterByUsed(props.availableTags.global),
+      mood: filterByUsed(props.availableTags.mood),
+    };
+  }
+
+  // Method 2: Extract from results (Fall back)
   const genres: any[] = [];
   const subGenres: any[] = [];
   const cities: any[] = [];
   const global: any[] = [];
   const mood: any[] = [];
-  const usedTagIds = getUsedTagIdsInItems.value;
 
   const addUnique = (arr: any[], tag: any) => {
-    if (usedTagIds.has(tag._id) && !arr.some((t) => t._id === tag._id)) {
+    if (tag?._id && !arr.some((t) => t._id === tag._id)) {
       arr.push(tag);
     }
   };
@@ -71,6 +119,11 @@ const categorizedTags = computed(() => {
   (props.results as any[]).forEach((item: any) => {
     const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])];
     allTags.forEach((tag: any) => {
+      // Check for parentGenre (from modified query)
+      if (tag.parentGenre) {
+        addUnique(genres, tag.parentGenre);
+      }
+
       if (!tag?._type) return;
       switch (tag._type) {
         case "tag.city": addUnique(cities, tag); break;
@@ -91,10 +144,9 @@ const poolTags = computed(() => {
   const venues: any[] = [];
   const crafts: any[] = [];
   const articles: any[] = [];
-  const usedTagIds = getUsedTagIdsInItems.value;
 
   const addUnique = (arr: any[], tag: any) => {
-    if (usedTagIds.has(tag._id) && !arr.some((t) => t._id === tag._id)) {
+    if (tag?._id && !arr.some((t) => t._id === tag._id)) {
       arr.push(tag);
     }
   };
@@ -107,6 +159,7 @@ const poolTags = computed(() => {
         case "tag.musician": addUnique(musicians, tag); break;
         case "tag.venue": addUnique(venues, tag); break;
         case "tag.crafts": addUnique(crafts, tag); break;
+        case "tag.service": addUnique(venues, tag); break; // Service tags also for venues
         case "tag.article": addUnique(articles, tag); break;
       }
     });
@@ -114,6 +167,76 @@ const poolTags = computed(() => {
 
   return { musicians, venues, crafts, articles };
 });
+
+
+
+// Get color for a tag based on its type
+function getTagColor(tag: any): string {
+  if (!tag?._type) return 'neutral';
+  return TAG_TYPE_COLORS[tag._type] || 'neutral';
+}
+
+// Group all tags by content type/color for unified filter display
+const groupedTagsByColor = computed(() => {
+  // Shows/Sets tags (pink)
+  // Handle both hierarchical (from availableTags) and flat (fallback) structures
+  const flattenedSubGenres = categorizedTags.value.subGenres?.length 
+    ? categorizedTags.value.subGenres 
+    : categorizedTags.value.genres.flatMap((g: any) => g.subGenres || []);
+
+  const showsTags = [
+    ...categorizedTags.value.genres,
+    ...flattenedSubGenres,
+    ...categorizedTags.value.mood,
+  ];
+  
+  // Pool tags (blue) - flatten musician, venue, crafts
+  const poolTagsFlat = [
+    ...poolTags.value.musicians,
+    ...poolTags.value.venues,
+    ...poolTags.value.crafts,
+  ];
+  
+  const wordsTags = poolTags.value.articles || [];
+
+  return {
+    shows: { 
+      tags: showsTags, 
+      genres: categorizedTags.value.genres,
+      subGenres: flattenedSubGenres,
+      mood: categorizedTags.value.mood,
+      color: 'pink', 
+      label: 'Shows/Sets',
+      hasContent: showsTags.length > 0,
+    },
+    pool: { 
+      tags: poolTagsFlat, 
+      musicians: poolTags.value.musicians,
+      venues: poolTags.value.venues,
+      crafts: poolTags.value.crafts,
+      color: 'blue', 
+      label: 'Pool',
+      hasContent: poolTagsFlat.length > 0,
+    },
+    words: { 
+      tags: wordsTags, 
+      articles: poolTags.value.articles,
+      color: 'green', 
+      label: 'Words',
+      hasContent: wordsTags.length > 0,
+    },
+  };
+});
+
+// Helper for accessing pool tags by type name (avoids TypeScript casting in template)
+function getPoolTagsByType(typeName: string): any[] {
+  const pool = groupedTagsByColor.value.pool;
+  if (typeName === 'musicians') return pool.musicians;
+  if (typeName === 'venues') return pool.venues;
+  if (typeName === 'crafts') return pool.crafts;
+  return [];
+}
+
 
 // ==================== TAG HELPERS ====================
 function getItemTags(item: any, type?: string): any[] {
@@ -159,8 +282,34 @@ function isMainCity(cityTag: any): boolean {
 
 function getTagNameById(tagId: string): string {
   if (tagId === "others") return "Elsewhere";
+  
+  // Check city tags
   const city = categorizedTags.value.cities.find((t: any) => t._id === tagId);
   if (city) return getTagTitle(city.title);
+  
+  // Check genre tags
+  const genre = categorizedTags.value.genres.find((t: any) => t._id === tagId);
+  if (genre) return genre.title || "Genre";
+  
+  // Check subgenre tags
+  const subGenre = categorizedTags.value.subGenres.find((t: any) => t._id === tagId);
+  if (subGenre) return subGenre.title || "SubGenre";
+  
+  // Check pool tags (musicians, venues, crafts)
+  const poolTagArrays = [
+    poolTags.value.musicians,
+    poolTags.value.venues,
+    poolTags.value.crafts,
+    poolTags.value.articles,
+  ];
+  for (const arr of poolTagArrays) {
+    const found = arr.find((t: any) => t._id === tagId);
+    if (found) return found.title || "Tag";
+  }
+  
+  // Check if it's a main city name (string filter)
+  if (MAIN_CITIES.includes(tagId)) return tagId;
+  
   return "Unknown Filter";
 }
 
@@ -294,7 +443,34 @@ const filteredItems = computed(() => {
   return items.sort(sortFns[sortMode.value]);
 });
 
-// Show all filtered items (no pagination limit)
+// Group filtered items by content type for sectioned display
+const groupedResults = computed(() => {
+  const pool: any[] = [];
+  const shows: any[] = [];
+  const words: any[] = [];
+  
+  filteredItems.value.forEach((item: any) => {
+    switch (item._type) {
+      case 'person':
+      case 'venue':
+        pool.push(item);
+        break;
+      case 'show':
+      case 'set':
+        shows.push(item);
+        break;
+      case 'article':
+        words.push(item);
+        break;
+    }
+  });
+  
+  return { pool, shows, words };
+});
+
+
+
+// Show all filtered items (no pagination limit) - keep for backward compatibility
 const visibleItems = computed(() => filteredItems.value);
 
 // ==================== UI HELPERS ====================
@@ -527,7 +703,6 @@ watch(() => props.results, () => {
             </div>
           </div>
 
-          <!-- Sort Options -->
           <div class="sort-options">
             <h4 class="sort-options__title">Sort</h4>
             <button
@@ -546,185 +721,114 @@ watch(() => props.results, () => {
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- Filter Tags Panel (outside sort bar, like ModuleContentGrid) -->
-      <div v-if="showFilters && filteredItems.length > 0" class="content-grid__filters">
-        <div class="filter-container tags">
-          <!-- For "All" content type: Show flat list of all first-level tags -->
-          <template v-if="activeContentType === 'all'">
-            <!-- Genres (flat) -->
-            <div v-if="categorizedTags.genres?.length > 0" class="filter-category tags" :class="{ active: showFilters }">
-              <div class="filter-tags">
+
+        <!-- Filter Tags Panel -->
+        <div v-if="filteredItems.length > 0" class="content-grid__filters">
+          <div class="filter-container tags">
+            
+            <!-- Single filter-category containing both primary and secondary tags -->
+            <div 
+              v-if="groupedTagsByColor.shows.hasContent || groupedTagsByColor.pool.hasContent || groupedTagsByColor.words.hasContent" 
+              class="filter-category tags" 
+              :class="{ active: showFilters }"
+            >
+              <!-- PRIMARY TAGS: All parent-level tags side by side, color-coded -->
+              <div class="filter-tags filter-tags--primary">
+                <!-- Shows/Sets: Genres (Pink) -->
                 <button
-                  v-for="genre in categorizedTags.genres"
-                  :key="genre._id"
-                  class="tag filter-tag filter-tag--genre"
+                  v-for="genre in groupedTagsByColor.shows.genres"
+                  :key="'genre-' + genre._id"
+                  class="tag filter-tag filter-tag--pink"
                   :class="{ 'filter-tag--active': activeGenres.has(genre._id) }"
                   @click="toggleGenreFilter(genre._id)"
                 >
                   {{ genre.title }}
                 </button>
-              </div>
-              <!-- SubGenres when genres selected -->
-              <div v-if="activeGenres.size > 0 && categorizedTags.subGenres?.length > 0" class="filter-subgenres">
-                <button
-                  v-for="subGenre in categorizedTags.subGenres"
-                  :key="subGenre._id"
-                  class="tag filter-tag filter-tag--subgenre"
-                  :class="{ 'filter-tag--active': activeSubGenres.has(subGenre._id) }"
-                  @click="toggleSubGenreFilter(subGenre._id)"
-                >
-                  {{ subGenre.title }}
-                </button>
-              </div>
-            </div>
 
-            <!-- Pool type labels -->
-            <div v-if="poolTags.musicians?.length > 0 || poolTags.venues?.length > 0 || poolTags.crafts?.length > 0" class="filter-category tags" :class="{ active: showFilters }">
-              <div class="filter-tags">
+                <!-- Shows: Mood (Pink) - Added missing primary filter -->
                 <button
-                  v-if="poolTags.musicians.length > 0"
-                  class="tag filter-type"
+                  v-for="tag in groupedTagsByColor.shows.mood"
+                  :key="'mood-' + tag._id"
+                  class="tag filter-tag filter-tag--pink"
+                  :class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
+                  @click="toggleFilter(tag._id)"
+                >
+                  {{ tag.title }}
+                </button>
+                
+                <!-- Pool: Type toggles (Blue) -->
+                <button
+                  v-if="groupedTagsByColor.pool.musicians.length > 0"
+                  class="tag filter-type filter-type--blue"
                   :class="{ 'filter-type--active': activeFilterType === 'musicians' }"
                   @click="toggleFilterType('musicians')"
                 >
                   Musicians
                 </button>
                 <button
-                  v-if="poolTags.venues.length > 0"
-                  class="tag filter-type"
+                  v-if="groupedTagsByColor.pool.venues.length > 0"
+                  class="tag filter-type filter-type--blue"
                   :class="{ 'filter-type--active': activeFilterType === 'venues' }"
                   @click="toggleFilterType('venues')"
                 >
                   Venues
                 </button>
                 <button
-                  v-if="poolTags.crafts.length > 0"
-                  class="tag filter-type"
+                  v-if="groupedTagsByColor.pool.crafts.length > 0"
+                  class="tag filter-type filter-type--blue"
                   :class="{ 'filter-type--active': activeFilterType === 'crafts' }"
                   @click="toggleFilterType('crafts')"
                 >
                   Crafts
                 </button>
-              </div>
-              <!-- Pool type specific tags -->
-              <div v-if="activeFilterType && poolTags[activeFilterType]?.length > 0" class="filter-tags">
+                
+                <!-- Words: Article tags (Green) -->
                 <button
-                  v-for="tag in poolTags[activeFilterType]"
-                  :key="tag._id"
-                  class="tag filter-tag"
+                  v-for="tag in groupedTagsByColor.words.articles"
+                  :key="'article-' + tag._id"
+                  class="tag filter-tag filter-tag--green"
                   :class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
                   @click="toggleFilter(tag._id)"
                 >
                   {{ tag.title }}
                 </button>
               </div>
+              
+              <!-- SECONDARY TAGS: All sub-level tags below primary tags -->
+              <div 
+                v-if="(activeGenres.size > 0 && groupedTagsByColor.shows.subGenres.length > 0) || (activeFilterType && getPoolTagsByType(activeFilterType).length > 0)" 
+                class="filter-subgenres"
+              >
+                <!-- SubGenres (Pink) - Only show when Genres are active, filtered by parent -->
+                <template v-if="activeGenres.size > 0">
+                  <button
+                    v-for="subGenre in groupedTagsByColor.shows.subGenres.filter(sg => sg.parentGenre && activeGenres.has(sg.parentGenre._id))"
+                    :key="'subgenre-' + subGenre._id"
+                    class="tag filter-tag filter-tag--pink filter-tag--subgenre"
+                    :class="{ 'filter-tag--active': activeSubGenres.has(subGenre._id) }"
+                    @click="toggleSubGenreFilter(subGenre._id)"
+                  >
+                    {{ subGenre.title }}
+                  </button>
+                </template>
+                
+                <!-- Specific Pool tags (Blue) - when a pool type is selected -->
+                <template v-if="activeFilterType">
+                  <button
+                    v-for="tag in getPoolTagsByType(activeFilterType)"
+                    :key="'pool-' + tag._id"
+                    class="tag filter-tag filter-tag--blue"
+                    :class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
+                    @click="toggleFilter(tag._id)"
+                  >
+                    {{ tag.title }}
+                  </button>
+                </template>
+              </div>
             </div>
 
-            <!-- Article tags -->
-            <div v-if="poolTags.articles?.length > 0" class="filter-category tags" :class="{ active: showFilters }">
-              <div class="filter-tags">
-                <button
-                  v-for="tag in poolTags.articles"
-                  :key="tag._id"
-                  class="tag filter-tag"
-                  :class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
-                  @click="toggleFilter(tag._id)"
-                >
-                  {{ tag.title }}
-                </button>
-              </div>
-            </div>
-          </template>
-
-          <!-- For Shows/Sets: Genre → SubGenre hierarchy -->
-          <template v-else-if="activeContentType === 'show' || activeContentType === 'set'">
-            <div v-if="categorizedTags.genres?.length > 0" class="filter-category tags" :class="{ active: showFilters }">
-              <div class="filter-genres">
-                <button
-                  v-for="genre in categorizedTags.genres"
-                  :key="genre._id"
-                  class="tag filter-tag filter-tag--genre"
-                  :class="{ 'filter-tag--active': activeGenres.has(genre._id) }"
-                  @click="toggleGenreFilter(genre._id)"
-                >
-                  {{ genre.title }}
-                </button>
-              </div>
-              <div v-if="activeGenres.size > 0" class="filter-subgenres">
-                <button
-                  v-for="subGenre in categorizedTags.subGenres"
-                  :key="subGenre._id"
-                  class="tag filter-tag filter-tag--subgenre"
-                  :class="{ 'filter-tag--active': activeSubGenres.has(subGenre._id) }"
-                  @click="toggleSubGenreFilter(subGenre._id)"
-                >
-                  {{ subGenre.title }}
-                </button>
-              </div>
-            </div>
-          </template>
-
-          <!-- For Articles: Flat article tags -->
-          <template v-else-if="activeContentType === 'article'">
-            <div v-if="poolTags.articles?.length > 0" class="filter-category tags" :class="{ active: showFilters }">
-              <div class="filter-tags">
-                <button
-                  v-for="tag in poolTags.articles"
-                  :key="tag._id"
-                  class="tag filter-tag"
-                  :class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
-                  @click="toggleFilter(tag._id)"
-                >
-                  {{ tag.title }}
-                </button>
-              </div>
-            </div>
-          </template>
-
-          <!-- For Pool (person/venue): Type → Specific tags -->
-          <template v-else-if="activeContentType === 'person' || activeContentType === 'venue'">
-            <div class="filter-category tags" :class="{ active: showFilters }">
-              <div class="filter-tags">
-                <button
-                  v-if="poolTags.musicians.length > 0"
-                  class="tag filter-type"
-                  :class="{ 'filter-type--active': activeFilterType === 'musicians' }"
-                  @click="toggleFilterType('musicians')"
-                >
-                  Musicians
-                </button>
-                <button
-                  v-if="poolTags.venues.length > 0"
-                  class="tag filter-type"
-                  :class="{ 'filter-type--active': activeFilterType === 'venues' }"
-                  @click="toggleFilterType('venues')"
-                >
-                  Venues
-                </button>
-                <button
-                  v-if="poolTags.crafts.length > 0"
-                  class="tag filter-type"
-                  :class="{ 'filter-type--active': activeFilterType === 'crafts' }"
-                  @click="toggleFilterType('crafts')"
-                >
-                  Crafts
-                </button>
-              </div>
-              <div v-if="activeFilterType && poolTags[activeFilterType]?.length > 0" class="filter-tags">
-                <button
-                  v-for="tag in poolTags[activeFilterType]"
-                  :key="tag._id"
-                  class="tag filter-tag"
-                  :class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
-                  @click="toggleFilter(tag._id)"
-                >
-                  {{ tag.title }}
-                </button>
-              </div>
-            </div>
-          </template>
+          </div>
         </div>
       </div>
 
@@ -734,209 +838,48 @@ watch(() => props.results, () => {
         <span>Searching...</span>
       </div>
 
-      <!-- Content Grid -->
-      <div v-else class="content-grid__container">
-        <div v-if="visibleItems.length > 0" class="content-grid__items">
-          <div
-            v-for="item in visibleItems"
-            :key="item._id"
-            :class="`grid-item grid-item--default`"
-          >
-            <!-- City Tags -->
-            <div class="grid-item__tags city-tags">
-              <span
-                v-for="tag in getItemCityTags(item)"
-                :key="tag._id"
-                class="tag city"
-                >{{ parseI18nObj(tag?.short) }}</span
-              >
-            </div>
-
-            <!-- Image -->
-            <NuxtLink
-              v-if="item?.slug"
-              :to="getItemRoute(item)"
-              class="grid-item__link"
-            >
-              <div class="grid-item__image">
-                <template v-if="item._type === 'set'">
-                  <img
-                    v-if="item.image?.asset"
-                    :src="item.image.asset.url"
-                    :alt="item.title || ''"
-                  />
-                  <div
-                    v-else-if="item.soundcloud"
-                    class="track-artwork"
-                    @vue:mounted="loadArtworkUrl(item)"
-                  >
-                    <img
-                      v-if="artworkUrls.get(item._id)"
-                      :src="artworkUrls.get(item._id)"
-                      alt="Track Artwork"
-                    />
-                  </div>
-                </template>
-                <template v-else>
-                  <img
-                    v-if="getItemImage(item)"
-                    :src="getItemImage(item).asset?.url"
-                    :alt="item.title || ''"
-                  />
-                  <img
-                    v-else
-                    :src="
-                      (mainStore?.siteFallbacks as any)?.fallbackSet?.image?.asset?.url
-                    "
-                    alt="Fallback"
-                  />
-                </template>
-              </div>
-            </NuxtLink>
-
-            <!-- Content -->
-            <div class="grid-item__content">
-              <section class="grid-item__content__interactive">
-                <div
-                  v-if="item.datetime || item.publishedAt"
-                  class="grid-item__date"
-                >
-                  {{ formatDate(item.datetime || item.publishedAt) }}
-                </div>
-                <button
-                  v-if="item._type === 'set' && item.soundcloud"
-                  @click.prevent="playTrack(item)"
-                  class="play-button"
-                >
-                  <span class="sr-only">Play</span>
-                  <svg
-                    width="9"
-                    height="12"
-                    viewBox="0 0 9 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M9 6L0 11.1962L0 0.803847L9 6Z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                </button>
-              </section>
-
-              <!-- Set Content -->
-              <div v-if="item.parentShow && item._type === 'set'">
-                <NuxtLink
-                  v-if="item.parentShow?.title !== 'No Show'"
-                  :to="localePath(`/shows/${item.parentShow?.slug.current}`)"
-                  class="grid-item__link"
-                >
-                  <h3 class="grid-item__title show-title">
-                    {{ item.parentShow?.title }}
-                  </h3>
-                </NuxtLink>
-                <h3 v-else-if="item?.title" class="grid-item__title show-title">
-                  {{ item?.title }}
-                </h3>
-                <div v-if="item.persons?.length > 0" class="show-artists">
-                  <h3
-                    v-for="(artist, index) in item.persons"
-                    :key="artist._id"
-                    class="grid-item__artist"
-                  >
-                    <NuxtLink
-                      v-if="artist?.poolVisibility"
-                      :to="localePath(`/pool/${artist?.slug?.current}`)"
-                      class="grid-item__link"
-                    >
-                      {{ artist.title
-                      }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
-                    </NuxtLink>
-                    <span v-else
-                      >{{ artist.title
-                      }}{{
-                        index < item.persons.length - 1 ? "," : ""
-                      }}&nbsp;</span
-                    >
-                  </h3>
-                </div>
-              </div>
-
-              <!-- Words: Read More -->
-              <div v-if="item._type === 'article'" class="tags read-more">
-                <NuxtLink :to="getItemRoute(item)" class="grid-item__link"
-                  ><h3 class="tag">Read More</h3></NuxtLink
-                >
-              </div>
-
-              <!-- Title -->
-              <NuxtLink :to="getItemRoute(item)" class="grid-item__link">
-                <h3 v-if="item._type !== 'set'" class="grid-item__title">
-                  {{ item.title || item.name }}
-                </h3>
-              </NuxtLink>
-
-              <!-- Teaser Text -->
-              <RichText
-                v-if="item?.useTeaserText && item?.textTeaser"
-                :blocks="parseI18nObj(item?.textTeaser)"
-              />
-              <RichText
-                v-else-if="!item?.useTeaserText && item?.text?.length > 0"
-                :blocks="parseI18nObj(item?.text)?.slice(0, 1)"
-              />
-              <RichText
-                v-else-if="
-                  !item?.text &&
-                  item?.description?.length > 0 &&
-                  (item.description[0]?.value || item.description[1]?.value)
-                "
-                :blocks="
-                  limitTextBlocks(
-                    parseI18nObj(item?.description)?.slice(0, 1),
-                    100
-                  )
-                "
-              />
-
-              <!-- Non-City Tags -->
-              <div
-                v-if="getItemNonCityTags(item).length > 0"
-                class="grid-item__tags tags"
-              >
-                <span
-                  v-for="tag in getItemNonCityTags(item)"
-                  :key="tag._id"
-                  class="tag"
-                  >{{ tag.title }}</span
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-        <div v-else-if="searchQuery && !isLoading" class="content-grid__no-results">
+      <!-- Content Sections using ModuleSearchResultBlock -->
+      <div v-else class="content-grid__container content-grid__container--sectioned">
+        
+        <!-- Shows/Sets Section -->
+        <ModuleSearchResultBlock
+          v-if="groupedResults.shows.length > 0"
+          :items="groupedResults.shows"
+          type="shows"
+        />
+        
+        <!-- Pool Section -->
+        <ModuleSearchResultBlock
+          v-if="groupedResults.pool.length > 0"
+          :items="groupedResults.pool"
+          type="pool"
+        />
+        
+        <!-- Words Section -->
+        <ModuleSearchResultBlock
+          v-if="groupedResults.words.length > 0"
+          :items="groupedResults.words"
+          type="words"
+        />
+        
+        <!-- No Results -->
+        <div 
+          v-if="groupedResults.shows.length === 0 && groupedResults.pool.length === 0 && groupedResults.words.length === 0 && searchQuery && !isLoading" 
+          class="content-grid__no-results"
+        >
           No matching content for "{{ searchQuery }}".
         </div>
       </div>
     </div>
 
-    <!-- No Results / Empty State -->
-    <div v-else-if="searchQuery && !isLoading" class="search-empty-state">
-      <div class="empty-icon">🔍</div>
-      <h3>No results found</h3>
-      <p>
-        We couldn't find anything matching "{{ searchQuery }}". Try different
-        keywords or browse our content.
-      </p>
-    </div>
   </ClientOnly>
 </template>
 
 <style lang="postcss" scoped>
-/* ==================== BASE STYLES ==================== */
 .content-grid {
   position: relative;
   margin-top: var(--first-content-distance);
+  margin-bottom: var(--first-content-distance);
   max-width: clamp(100%, 100%, var(--page-max-width));
   width: 100%;
 
@@ -1192,6 +1135,192 @@ watch(() => props.results, () => {
           @media (prefers-color-scheme: dark) {
             background-color: var(--color-bg);
           }
+        }
+      }
+    }
+  }
+
+  &__filters {
+    .filter-container {
+      display: flex;
+      flex-direction: column;
+      gap: var(--mid-padding);
+    }
+
+    .filter-category {
+      width: var(--page-max-width);
+      position: absolute;
+      background-color: var(--color-bg-transparent);
+      transform: translate(0, calc(var(--mid-padding) * -1.75));
+      padding: calc(var(--mid-padding) * 1.75) 0 var(--mid-padding);
+      backdrop-filter: blur(10px);
+      border-bottom-right-radius: 1.56125rem;
+      border-bottom-left-radius: 1.56125rem;
+      border: 1px solid var(--color-bg);
+      z-index: 1;
+      transition: all 0.2s ease;
+      opacity: 0;
+      &.active {
+        opacity: 1;
+      }
+    }
+
+    .filter-genres,
+    .filter-tags {
+      display: flex;
+      flex-flow: row wrap;
+      align-items: center;
+      justify-content: center;
+      margin: var(--base-padding) auto var(--mid-padding);
+      max-width: 66%;
+      width: 66%;
+      gap: var(--small-padding);
+    }
+
+    .filter-genre,
+    .filter-type {
+      display: flex;
+      flex-flow: row wrap;
+      gap: calc(var(--small-padding) / 2);
+    }
+
+    .filter-type {
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      &--active {
+        background-color: var(--color-text);
+        color: var(--color-bg);
+      }
+    }
+
+    .filter-subgenres {
+      margin-left: var(--mid-padding);
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: center;
+      align-items: center;
+      gap: var(--small-padding);
+
+      .filter-subgenre {
+        width: 100%;
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        align-items: center;
+        gap: var(--small-padding);
+
+        &__tags {
+          display: flex;
+          flex-flow: row wrap;
+          justify-content: center;
+          align-items: center;
+          gap: var(--small-padding);
+        }
+      }
+    }
+
+    .filter-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--small-padding);
+      cursor: pointer;
+      width: 100%;
+      justify-content: center;
+      align-items: center;
+      
+      &--secondary {
+        margin-top: var(--small-padding);
+      }
+    }
+
+    .filter-category {
+      &__label {
+        display: block;
+        font-size: var(--small-font-size);
+        font-family: var(--font-text-semibold);
+        text-transform: uppercase;
+        color: var(--color-text);
+        margin-bottom: var(--small-padding);
+        text-align: center;
+        opacity: 0.6;
+      }
+    }
+
+    .filter-tag {
+      font-size: var(--small-font-size);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background-color: var(--color-bg);
+      color: var(--color-text);
+
+      &:hover {
+        @media (min-width: 1024px) {
+          background-color: var(--color-text);
+          color: var(--color-bg);
+        }
+      }
+
+      &--active {
+        background-color: var(--color-text);
+        color: var(--color-bg);
+      }
+
+      &--subgenre {
+        font-size: var(--small-font-size);
+      }
+      
+      /* Color-specific styles */
+      &--pink {
+        &:hover {
+          @media (min-width: 1024px) {
+            background-color: var(--color-pink);
+            color: var(--color-bg);
+          }
+        }
+        &.filter-tag--active {
+          background-color: var(--color-pink);
+          color: var(--color-bg);
+        }
+      }
+      
+      &--blue {
+        &:hover {
+          @media (min-width: 1024px) {
+            background-color: var(--color-blue);
+            color: var(--color-bg);
+          }
+        }
+        &.filter-tag--active {
+          background-color: var(--color-blue);
+          color: var(--color-bg);
+        }
+      }
+      
+      &--green {
+        &:hover {
+          @media (min-width: 1024px) {
+            background-color: var(--color-green);
+            color: var(--color-bg);
+          }
+        }
+        &.filter-tag--active {
+          background-color: var(--color-green);
+          color: var(--color-bg);
+        }
+      }
+    }
+    
+    .filter-type {
+      &--blue {
+        &:hover {
+          @media (min-width: 1024px) {
+            background-color: var(--color-blue);
+            color: var(--color-bg);
+          }
+        }
+        &.filter-type--active {
+          background-color: var(--color-blue);
+          color: var(--color-bg);
         }
       }
     }

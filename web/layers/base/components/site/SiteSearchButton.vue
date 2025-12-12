@@ -1,7 +1,20 @@
 <script setup>
+const route = useRoute();
 const isSearchOpen = ref(false);
 
+// Check if we are on the search page
+const isOnSearchPage = computed(() => {
+  return route.path.includes('/search');
+});
+
+// Button is active when modal is open or on search page
+const isActive = computed(() => {
+  return isSearchOpen.value || isOnSearchPage.value;
+});
+
 const openSearch = () => {
+  // Don't open modal if already on search page
+  if (isOnSearchPage.value) return;
   isSearchOpen.value = true;
 };
 
@@ -9,7 +22,10 @@ const openSearch = () => {
 const handleKeydown = (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key === "k") {
     event.preventDefault();
-    openSearch();
+    // Don't open modal if already on search page
+    if (!isOnSearchPage.value) {
+      openSearch();
+    }
   }
 };
 
@@ -23,30 +39,33 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="site-search-button-wrapper">
+  <div class="site-search-button-wrapper tags">
     <button
-      class="search-button"
+      class="search-button tag"
+      :class="{ 'is-active': isActive, 'is-disabled': isOnSearchPage }"
+      :disabled="isOnSearchPage"
       @click="openSearch"
       aria-label="Open search"
     >
       <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
+        width="10"
+        height="10"
+        viewBox="0 0 10 10"
         fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        xmlns="http://www.w3.org/2000/svg"
       >
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
+        <circle
+          cx="5.33765"
+          cy="4.59622"
+          r="2.75002"
+          transform="rotate(45 5.33765 4.59622)"
+        />
+        <path
+          d="M0.159881 8.71358C-0.0425288 8.90142 -0.0543383 9.21779 0.133504 9.4202C0.321346 9.62261 0.637709 9.63442 0.840119 9.44657L0.159881 8.71358ZM3.08151 7.3665L3.44801 7.02638L2.76777 6.29339L2.40128 6.6335L3.08151 7.3665ZM0.840119 9.44657L3.08151 7.3665L2.40128 6.6335L0.159881 8.71358L0.840119 9.44657Z"
+        />
       </svg>
+
       <span class="button-text">Search</span>
-      <span class="keyboard-shortcut">
-        <kbd>⌘</kbd><kbd>K</kbd>
-      </span>
     </button>
 
     <SiteSearchModal v-model="isSearchOpen" />
@@ -64,19 +83,35 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: transparent;
-  border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.2));
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-text, rgba(0, 0, 0, 0.2));
   border-radius: 100px;
   font-size: 0.875rem;
-  font-family: var(--font-text);
-  color: var(--color-text-light, #888);
+  font-family: var(--font-text-semibold);
+  padding: calc(var(--small-padding)) var(--base-padding);
+  font-size: var(--small-font-size);
+  color: var(--color-text);
   cursor: pointer;
   transition: all 0.15s ease;
 
-  &:hover {
+  &:hover:not(.is-disabled),
+  &.is-active {
     border-color: var(--color-text);
-    color: var(--color-text);
-    background: rgba(0, 0, 0, 0.02);
+    color: var(--color-bg);
+    background-color: var(--color-text);
+    svg {
+      path {
+        fill: var(--color-bg);
+      }
+      circle {
+        stroke: var(--color-bg);
+      }
+    }
+  }
+
+  &.is-disabled {
+    cursor: default;
+    opacity: 1;
   }
 
   .button-text {
@@ -85,37 +120,14 @@ onUnmounted(() => {
     }
   }
 
-  .keyboard-shortcut {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    margin-left: 4px;
-
-    @media (max-width: 900px) {
-      display: none;
+  svg {
+    path {
+      fill: var(--color-text);
     }
-
-    kbd {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 18px;
-      height: 18px;
-      padding: 0 4px;
-      background: var(--color-bg);
-      border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.15));
-      border-radius: 4px;
-      font-size: 0.625rem;
-      font-family: var(--font-text);
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    circle {
+      stroke: var(--color-text);
     }
-  }
-}
-
-/* Dark mode adjustments */
-@media (prefers-color-scheme: dark) {
-  .search-button:hover {
-    background: rgba(255, 255, 255, 0.05);
   }
 }
 </style>
+

@@ -28,7 +28,7 @@ const {
   getTypeLabel,
   getTypeColor,
   clearSearch,
-} = useSearch({ maxResults: 5, debounceMs: 300 });
+} = useSearch({ maxResults: 20, debounceMs: 150 });
 
 const inputRef = ref(null);
 const activeIndex = ref(-1);
@@ -94,6 +94,13 @@ const handleClose = () => {
   emit("close");
 };
 
+// Navigate to detailed search page
+const goToDetailedSearch = () => {
+  const query = searchQuery.value.trim();
+  handleClose();
+  navigateTo(localePath(`/search${query ? `?q=${encodeURIComponent(query)}` : ''}`));
+};
+
 // Reset active index when results change
 watch(results, () => {
   activeIndex.value = -1;
@@ -155,42 +162,42 @@ watch(results, () => {
 
     <!-- Search Results -->
     <div v-if="hasQuery" class="search-results">
+      <!-- Detailed Search Link -->
+      <button class="detailed-search-link" @click="goToDetailedSearch">
+        <span class="link-text">Detailed search for "{{ searchQuery }}"</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
+      </button>
+
       <div v-if="hasResults" class="results-list">
         <button
           v-for="(result, index) in results"
           :key="result._id"
-          class="result-item"
+          class="autocomplete-item"
           :class="{
-            'is-active': index === activeIndex,
-            [getTypeColor(result._type)]: true,
+            'is-selected': index === activeIndex
           }"
           @click="navigateToResult(result)"
           @mouseenter="activeIndex = index"
         >
-          <div class="result-content">
-            <span class="result-type-badge" :class="getTypeColor(result._type)">
-              {{ getTypeLabel(result._type) }}
-            </span>
-            <span class="result-title">{{ result.title }}</span>
-            <span v-if="result.additionalTitle" class="result-subtitle">
-              {{ result.additionalTitle }}
-            </span>
-          </div>
-          <svg
-            class="result-arrow"
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+          <span class="autocomplete-title">{{ result.title }}</span>
+          <span
+            class="autocomplete-type"
+            :class="getTypeColor(result._type)"
+            >{{ getTypeLabel(result._type) }}</span
           >
-            <path d="M5 12h14" />
-            <path d="m12 5 7 7-7 7" />
-          </svg>
         </button>
       </div>
 
@@ -290,114 +297,133 @@ watch(results, () => {
 }
 
 .search-results {
-  max-height: 400px;
+  max-height: 450px;
   overflow-y: auto;
 }
 
-.results-list {
-  padding: var(--small-padding);
-}
-
-.result-item {
+.detailed-search-link {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: var(--base-padding);
+  padding: var(--base-padding) calc(var(--base-padding) + var(--big-padding));
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+  border: none;
+  border-bottom: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.1));
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--font-text-semibold);
+  
+  .link-text {
+    font-size: var(--small-font-size);
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+  }
+  
+  svg {
+    color: var(--color-text-light, #888);
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+  }
+  
+  &:hover {
+    background: color-mix(in srgb, var(--color-text) 10%, transparent);
+    
+    svg {
+      color: var(--color-text);
+      transform: translateX(4px);
+    }
+  }
+}
+
+.results-list {
+  padding: var(--small-padding);
+  max-height: 350px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-text-light, rgba(0, 0, 0, 0.2)) transparent;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--color-text-light, rgba(0, 0, 0, 0.2));
+    border-radius: 3px;
+    
+    &:hover {
+      background-color: var(--color-text-light, rgba(0, 0, 0, 0.3));
+    }
+  }
+}
+
+.autocomplete-item {
+  display: flex;
+  align-items: center;
+  gap: var(--small-padding);
+  width: 100%;
+  padding: var(--small-padding) var(--big-padding);
   background: transparent;
   border: none;
-  border-radius: 8px;
-  cursor: pointer;
   text-align: left;
-  transition: all 0.15s ease;
-  font-family: var(--font-text);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-radius: 8px; /* Added for better hover look in list */
 
   &:hover,
-  &.is-active {
-    background: rgba(0, 0, 0, 0.04);
+  &.is-selected {
+    background: color-mix(in srgb, var(--color-text) 8%, transparent);
   }
 
-  &.type-pool.is-active,
-  &.type-pool:hover {
-    background: color-mix(in srgb, var(--color-blue) 10%, transparent);
-  }
-
-  &.type-shows.is-active,
-  &.type-shows:hover {
-    background: color-mix(in srgb, var(--color-pink) 10%, transparent);
-  }
-
-  &.type-words.is-active,
-  &.type-words:hover {
-    background: color-mix(in srgb, var(--color-green) 10%, transparent);
-  }
-
-  .result-content {
-    display: flex;
-    align-items: center;
-    gap: var(--small-padding);
+  .autocomplete-title {
     flex: 1;
-    overflow: hidden;
-  }
-
-  .result-type-badge {
-    font-size: 0.625rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 4px 8px;
-    border-radius: 4px;
-    flex-shrink: 0;
-    background: var(--color-text);
-    color: var(--color-bg);
-
-    &.type-pool {
-      background: var(--color-blue);
-    }
-
-    &.type-shows {
-      background: var(--color-pink);
-    }
-
-    &.type-words {
-      background: var(--color-green);
-    }
-  }
-
-  .result-title {
-    font-size: 0.9375rem;
-    font-weight: 500;
+    font-size: 0.9375rem; /* Matched from previous result-title */
+    font-family: var(--font-text-semibold);
     color: var(--color-text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .result-subtitle {
-    font-size: 0.8125rem;
+  .autocomplete-type {
+    font-size: var(--small-font-size);
+    font-family: var(--font-text-semibold);
     color: var(--color-text-light, #888);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    text-transform: uppercase;
+    letter-spacing: var(--button-letter-spacing);
+    padding: var(--small-padding) var(--base-padding);
+    background-color: var(--color-bg);
+    border-radius: 100px;
+    border: 0.09325rem solid var(--color-text);
+    white-space: nowrap; /* Prevent wrapping */
 
-    &::before {
-      content: "·";
-      margin-right: var(--small-padding);
+    &.type-shows {
+      border-color: var(--color-pink);
+      color: var(--color-pink);
+      /* Removed hover effect as it is inside a button */
     }
-  }
 
-  .result-arrow {
-    color: var(--color-text-light, #888);
-    flex-shrink: 0;
-    opacity: 0;
-    transform: translateX(-4px);
-    transition: all 0.15s ease;
-  }
+    &.type-pool {
+      border-color: var(--color-blue);
+      color: var(--color-blue);
+    }
 
-  &:hover .result-arrow,
-  &.is-active .result-arrow {
-    opacity: 1;
-    transform: translateX(0);
+    &.type-words {
+      border-color: var(--color-green);
+      color: var(--color-green);
+    }
+
+    &.type-tag {
+      border-color: var(--color-text);
+      color: var(--color-text);
+    }
   }
 }
 
@@ -462,9 +488,9 @@ watch(results, () => {
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   }
 
-  .result-item {
+  .autocomplete-item {
     &:hover,
-    &.is-active {
+    &.is-selected {
       background: rgba(255, 255, 255, 0.05);
     }
   }

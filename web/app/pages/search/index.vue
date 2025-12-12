@@ -1,6 +1,5 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-
 // Page SEO
 useHead({
   title: "Search | Callshop Radio",
@@ -34,6 +33,7 @@ const suggestionsHidden = ref(false);
 // Tag filter state
 const activeTagFilters = ref(new Set());
 const expandedTagCategory = ref(null);
+const availableTags = ref(null);
 
 const inputRef = ref(null);
 let autocompleteTimeout = null;
@@ -42,12 +42,10 @@ let hideTimeout = null;
 
 // Content type options
 const contentTypeOptions = [
-  { value: "all", label: "All", icon: "🔍" },
-  { value: "show", label: "Shows", icon: "📻" },
-  { value: "set", label: "Sets", icon: "🎵" },
-  { value: "person", label: "People", icon: "👤" },
-  { value: "venue", label: "Venues", icon: "📍" },
-  { value: "article", label: "Articles", icon: "📝" },
+  { value: "all", label: "All" },
+  { value: "shows", label: "Shows" },
+  { value: "pool", label: "Pool" },
+  { value: "article", label: "Words" },
 ];
 
 // ==================== INPUT VALIDATION ====================
@@ -65,9 +63,20 @@ const hasResults = computed(() => results.value.length > 0);
 // Filter results by active content types (tag filtering moved to ModuleSearchResults)
 const filteredResults = computed(() => {
   if (activeContentTypes.value.size === 0) return results.value;
-  return results.value.filter((item) =>
-    activeContentTypes.value.has(item._type)
-  );
+  return results.value.filter((item) => {
+    if (activeContentTypes.value.has(item._type)) return true;
+    if (
+      activeContentTypes.value.has("pool") &&
+      ["person", "venue"].includes(item._type)
+    )
+      return true;
+    if (
+      activeContentTypes.value.has("shows") &&
+      ["show", "set"].includes(item._type)
+    )
+      return true;
+    return false;
+  });
 });
 
 // Determine the primary active content type for visual styling
@@ -76,11 +85,16 @@ const activeContentType = computed(() => {
   if (types.length === 0) return "all";
   if (types.length === 1) return types[0];
   // If multiple types selected, determine the category
-  const hasPool = types.some((t) => t === "person" || t === "venue");
-  const hasShows = types.some((t) => t === "show" || t === "set");
+  const hasPool = types.some(
+    (t) => t === "pool" || t === "person" || t === "venue"
+  );
+  const hasShows = types.some(
+    (t) => t === "shows" || t === "show" || t === "set"
+  );
   const hasWords = types.some((t) => t === "article");
   if (hasWords && !hasPool && !hasShows) return "article";
-  if (hasPool && !hasShows && !hasWords) return "person";
+  if (hasPool && !hasShows && !hasWords) return "pool";
+  if (hasShows && !hasPool && !hasWords) return "shows";
   return "all"; // Mixed types, use default shows style
 });
 
@@ -91,15 +105,25 @@ const categorizedTagsFromResults = computed(() => {
   const articleTags = new Map();
 
   results.value.forEach((item) => {
-    (item.tags || []).forEach((tag) => {
+    // Combine tags from item and parentShow (for sets)
+    const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])];
+    allTags.forEach((tag) => {
       if (!tag || !tag._id) return;
-      
+
       // Show tags: genres, subGenres, global, mood
-      if (["tag.genre", "tag.subGenre", "tag.global", "tag.mood"].includes(tag._type)) {
+      if (
+        ["tag.genre", "tag.subGenre", "tag.global", "tag.mood"].includes(
+          tag._type
+        )
+      ) {
         showTags.set(tag._id, tag);
       }
       // Pool tags: musician, venue, crafts, service
-      else if (["tag.musician", "tag.venue", "tag.crafts", "tag.service"].includes(tag._type)) {
+      else if (
+        ["tag.musician", "tag.venue", "tag.crafts", "tag.service"].includes(
+          tag._type
+        )
+      ) {
         poolTags.set(tag._id, tag);
       }
       // Article tags
@@ -118,27 +142,36 @@ const categorizedTagsFromResults = computed(() => {
 
 const hasTagsToShow = computed(() => {
   const cats = categorizedTagsFromResults.value;
-  return cats.showTags.length > 0 || cats.poolTags.length > 0 || cats.articleTags.length > 0;
+  return (
+    cats.showTags.length > 0 ||
+    cats.poolTags.length > 0 ||
+    cats.articleTags.length > 0
+  );
 });
 
 // ==================== SEARCH QUERIES ====================
 // Autocomplete query (quick, limited results)
 const AUTOCOMPLETE_QUERY = `
 *[
-  _type in ["person", "set", "show", "venue", "article"] &&
+  _type in ["person", "set", "show", "venue", "article", "tag.genre", "tag.subGenre", "tag.global", "tag.mood", "tag.musician", "tag.venue", "tag.crafts", "tag.service", "tag.article"] &&
   title match "*" + $searchTerm + "*"
 ] | order(_updatedAt desc)[0...20] {
   _id,
   _type,
   title,
-  "slug": slug
+  "slug": slug,
+  _type == "set" => {
+    "parentShow": *[_type == "show" && references(^._id)][0]{
+      "slug": slug
+    }
+  }
 }`;
 
 // Full search query with substring matching
 const FULL_SEARCH_QUERY = `
 *[
   _type in ["person", "set", "show", "venue", "article"] &&
-  title match "*" + $searchTerm + "*"
+  (title match "*" + $searchTerm + "*" || $searchTerm in tags[]->title)
 ] | order(_updatedAt desc)[0...200] {
   _id,
   _type,
@@ -162,7 +195,10 @@ const FULL_SEARCH_QUERY = `
     _id,
     _type,
     title,
-    short
+    short,
+    "parentGenre": *[_type == 'tag.genre' && references(^._id)][0] {
+        _id, _type, title
+    }
   },
   "soundcloud": soundcloud {
     _type,
@@ -186,7 +222,17 @@ const FULL_SEARCH_QUERY = `
     "parentShow": *[_type == "show" && references(^._id)][0]{
       _id,
       title,
-      "slug": slug
+      "slug": slug,
+      image { asset-> },
+      "tags": tags[]-> {
+        _id,
+        _type,
+        title,
+        short,
+        "parentGenre": *[_type == 'tag.genre' && references(^._id)][0] {
+            _id, _type, title
+        }
+      }
     }
   }
 }`;
@@ -233,7 +279,7 @@ const performAutocomplete = async (query) => {
     autocompleteResults.value = suggestions || [];
     showAutocomplete.value = suggestions && suggestions.length > 0;
     selectedAutocompleteIndex.value = -1;
-    
+
     // Auto-hide after 10 seconds
     if (hideTimeout) clearTimeout(hideTimeout);
     if (showAutocomplete.value) {
@@ -252,7 +298,7 @@ watch(searchQuery, (newQuery) => {
   // Clear previous timeouts
   if (autocompleteTimeout) clearTimeout(autocompleteTimeout);
   if (searchTimeout) clearTimeout(searchTimeout);
-  
+
   // Reset hidden state when typing new input
   suggestionsHidden.value = false;
 
@@ -316,7 +362,8 @@ const toggleTagFilter = (tagId) => {
 const isTagActive = (tagId) => activeTagFilters.value.has(tagId);
 
 const toggleTagCategory = (category) => {
-  expandedTagCategory.value = expandedTagCategory.value === category ? null : category;
+  expandedTagCategory.value =
+    expandedTagCategory.value === category ? null : category;
 };
 
 const resetTagFilters = () => {
@@ -356,7 +403,9 @@ const handleKeydown = (event) => {
     case "Enter":
       event.preventDefault();
       if (selectedAutocompleteIndex.value >= 0) {
-        selectAutocompleteItem(autocompleteResults.value[selectedAutocompleteIndex.value]);
+        selectAutocompleteItem(
+          autocompleteResults.value[selectedAutocompleteIndex.value]
+        );
       } else {
         showAutocomplete.value = false;
         performSearch(searchQuery.value);
@@ -370,31 +419,47 @@ const handleKeydown = (event) => {
 
 const selectAutocompleteItem = (item) => {
   showAutocomplete.value = false;
+  
+  if (item._type.startsWith("tag.")) {
+    searchQuery.value = item.title;
+    performSearch(item.title);
+    return;
+  }
+
   const path = getResultPath(item);
   if (path) {
-    window.open(path, '_blank');
+    // Check if we should use navigateTo (SPA) or open in new tab
+    if (path.startsWith('http')) {
+        window.open(path, "_blank");
+    } else {
+        navigateTo(path);
+    }
   }
 };
 
 // Get the URL path for a search result
 const getResultPath = (item) => {
+  if (item._type.startsWith("tag.")) {
+      return localePath(`/search?q=${encodeURIComponent(item.title)}`);
+  }
   const slug = item.slug?.current || item.slug;
   if (!slug) return null;
-  
+
   switch (item._type) {
-    case 'show':
+    case "show":
       return localePath(`/shows/${slug}`);
-    case 'set':
+    case "set":
       // Sets need parent show slug
-      const parentSlug = item.parentShow?.slug?.current || item.parentShow?.slug;
-      return parentSlug 
+      const parentSlug =
+        item.parentShow?.slug?.current || item.parentShow?.slug;
+      return parentSlug
         ? localePath(`/shows/${parentSlug}/${slug}`)
         : localePath(`/shows/${slug}`);
-    case 'person':
+    case "person":
       return localePath(`/pool/${slug}`);
-    case 'venue':
+    case "venue":
       return localePath(`/pool/${slug}`);
-    case 'article':
+    case "article":
       return localePath(`/words/${slug}`);
     default:
       return null;
@@ -412,6 +477,22 @@ const getTypeIcon = (type) => {
   return icons[type] || "📄";
 };
 
+const getCategoryLabel = (type) => {
+  if (type.startsWith("tag.")) return "Tag";
+  if (["show", "set"].includes(type)) return "Shows";
+  if (["person", "venue"].includes(type)) return "Pool";
+  if (type === "article") return "Words";
+  return type;
+};
+
+const getCategoryClass = (type) => {
+  if (type.startsWith("tag.")) return "type-tag";
+  if (["show", "set"].includes(type)) return "type-shows";
+  if (["person", "venue"].includes(type)) return "type-pool";
+  if (type === "article") return "type-article";
+  return "";
+};
+
 // Hide autocomplete on scroll
 const hideAutocompleteOnScroll = () => {
   if (showAutocomplete.value) {
@@ -421,6 +502,25 @@ const hideAutocompleteOnScroll = () => {
 
 // Focus input on mount and add scroll listener
 onMounted(() => {
+  // Check for query parameters from URL
+  const route = useRoute();
+  const queryParam = route.query.q;
+  const typeParam = route.query.type;
+
+  // Handle type filter
+  if (typeParam && typeof typeParam === "string") {
+    if (["shows", "pool", "article"].includes(typeParam)) {
+      activeContentTypes.value.add(typeParam);
+    }
+  }
+
+  // Handle search query
+  if (queryParam && typeof queryParam === "string") {
+    searchQuery.value = queryParam;
+    // Trigger search immediately for URL query
+    performSearch(queryParam);
+  }
+
   nextTick(() => {
     inputRef.value?.focus();
   });
@@ -451,9 +551,7 @@ onUnmounted(() => {
     <section class="search-hero">
       <div class="hero-content">
         <h1 class="hero-title">Search</h1>
-        <p class="hero-subtitle">
-          Find shows, artists, venues, and articles
-        </p>
+        <p class="hero-subtitle">Find shows, artists, venues, and articles</p>
       </div>
     </section>
 
@@ -464,18 +562,21 @@ onUnmounted(() => {
         <div class="search-input-wrapper">
           <div class="search-icon">
             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
+              width="10"
+              height="10"
+              viewBox="0 0 10 10"
               fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
+              <circle
+                cx="5.33765"
+                cy="4.59622"
+                r="2.75002"
+                transform="rotate(45 5.33765 4.59622)"
+              />
+              <path
+                d="M0.159881 8.71358C-0.0425288 8.90142 -0.0543383 9.21779 0.133504 9.4202C0.321346 9.62261 0.637709 9.63442 0.840119 9.44657L0.159881 8.71358ZM3.08151 7.3665L3.44801 7.02638L2.76777 6.29339L2.40128 6.6335L3.08151 7.3665ZM0.840119 9.44657L3.08151 7.3665L2.40128 6.6335L0.159881 8.71358L0.840119 9.44657Z"
+              />
             </svg>
           </div>
           <input
@@ -486,7 +587,7 @@ onUnmounted(() => {
             placeholder="Start typing to search..."
             autocomplete="off"
             @keydown="handleKeydown"
-            @blur="() => setTimeout(() => showAutocomplete = false, 200)"
+            @blur="() => setTimeout(() => (showAutocomplete = false), 200)"
           />
           <button
             v-if="hasQuery"
@@ -512,8 +613,12 @@ onUnmounted(() => {
           <div v-if="isLoading" class="loading-spinner" />
 
           <!-- Autocomplete Dropdown -->
-          <div 
-            v-if="showAutocomplete && autocompleteResults.length > 0 && !suggestionsHidden" 
+          <div
+            v-if="
+              showAutocomplete &&
+              autocompleteResults.length > 0 &&
+              !suggestionsHidden
+            "
             class="autocomplete-dropdown"
           >
             <button
@@ -523,9 +628,12 @@ onUnmounted(() => {
               :class="{ 'is-selected': index === selectedAutocompleteIndex }"
               @mousedown.prevent="selectAutocompleteItem(item)"
             >
-              <span class="autocomplete-icon">{{ getTypeIcon(item._type) }}</span>
               <span class="autocomplete-title">{{ item.title }}</span>
-              <span class="autocomplete-type">{{ item._type }}</span>
+              <span
+                class="autocomplete-type"
+                :class="getCategoryClass(item._type)"
+                >{{ getCategoryLabel(item._type) }}</span
+              >
             </button>
           </div>
         </div>
@@ -536,13 +644,12 @@ onUnmounted(() => {
             v-for="type in contentTypeOptions"
             :key="type.value"
             class="type-filter-btn"
-            :class="{ 
+            :class="{
               'is-active': isContentTypeActive(type.value),
-              [`type-${type.value}`]: true
+              [`type-${type.value}`]: true,
             }"
             @click="toggleContentType(type.value)"
           >
-            <span class="type-icon">{{ type.icon }}</span>
             <span class="type-label">{{ type.label }}</span>
           </button>
         </div>
@@ -557,6 +664,7 @@ onUnmounted(() => {
           :search-query="searchQuery"
           :is-loading="isLoading"
           :active-content-type="activeContentType"
+          :available-tags="availableTags"
         />
       </template>
 
@@ -647,28 +755,41 @@ onUnmounted(() => {
   gap: var(--base-padding);
   padding: var(--base-padding) var(--big-padding);
   background: var(--color-bg);
-  border: 2px solid var(--color-text);
+  border: 1px solid var(--color-text);
   border-radius: 100px;
   transition: all 0.2s ease;
+  height: calc(var(--base-font-size) + var(--base-padding) * 2 + 2px);
 
   &:focus-within {
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-text) 10%, transparent);
   }
 
   .search-icon {
-    color: var(--color-text);
     display: flex;
     align-items: center;
+    svg {
+      width: var(--base-font-size);
+      height: var(--base-font-size);
+      path {
+        fill: var(--color-text);
+      }
+      circle {
+        stroke: var(--color-text);
+      }
+    }
   }
 
   .search-input {
     flex: 1;
     border: none;
     background: transparent;
-    font-size: 1.25rem;
+    font-size: var(--base-font-size);
+    height: calc(var(--base-font-size) + var(--base-padding) * 2);
     color: var(--color-text);
     outline: none;
     font-family: var(--font-text);
+    text-overflow: ellipsis;
+    overflow-y: visible;
+    white-space: nowrap;
 
     &::placeholder {
       color: var(--color-text-light, #888);
@@ -713,22 +834,44 @@ onUnmounted(() => {
 }
 
 .type-filter-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: transparent;
-  border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.15));
+  color: var(--color-text);
+  font-size: var(--small-font-size);
+  font-family: var(--font-text-semibold);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: var(--button-letter-spacing);
+  padding: var(--small-padding) var(--base-padding);
+  background-color: var(--color-bg);
   border-radius: 100px;
-  font-size: 0.875rem;
-  font-family: var(--font-text);
-  color: var(--color-text-light, #888);
-  cursor: pointer;
-  transition: all 0.15s ease;
+  border: 0.09325rem solid var(--color-text);
+  &.type-shows {
+    border-color: var(--color-pink);
+    color: var(--color-pink);
+    &:hover {
+      border-color: var(--color-pink);
+      color: var(--color-white);
+      background: var(--color-pink);
+    }
+  }
 
-  &:hover {
-    border-color: var(--color-text);
-    color: var(--color-text);
+  &.type-pool {
+    border-color: var(--color-blue);
+    color: var(--color-blue);
+    &:hover {
+      border-color: var(--color-blue);
+      color: var(--color-white);
+      background: var(--color-blue);
+    }
+  }
+
+  &.type-article {
+    border-color: var(--color-green);
+    color: var(--color-green);
+    &:hover {
+      border-color: var(--color-green);
+      color: var(--color-white);
+      background: var(--color-green);
+    }
   }
 
   &.is-active {
@@ -736,14 +879,12 @@ onUnmounted(() => {
     color: var(--color-bg);
     border-color: var(--color-text);
 
-    &.type-show,
-    &.type-set {
+    &.type-shows {
       background: var(--color-pink);
       border-color: var(--color-pink);
     }
 
-    &.type-person,
-    &.type-venue {
+    &.type-pool {
       background: var(--color-blue);
       border-color: var(--color-blue);
     }
@@ -803,9 +944,9 @@ onUnmounted(() => {
 .autocomplete-item {
   display: flex;
   align-items: center;
-  gap: var(--base-padding);
+  gap: var(--small-padding);
   width: 100%;
-  padding: var(--base-padding) var(--big-padding);
+  padding: var(--small-padding) var(--big-padding);
   background: transparent;
   border: none;
   text-align: left;
@@ -823,15 +964,61 @@ onUnmounted(() => {
 
   .autocomplete-title {
     flex: 1;
-    font-size: 1rem;
+    font-size: var(--base-font-size);
+    font-family: var(--font-text-semibold);
     color: var(--color-text);
-    font-family: var(--font-text);
   }
 
   .autocomplete-type {
-    font-size: 0.75rem;
+    font-size: var(--small-font-size);
+    font-family: var(--font-text-semibold);
     color: var(--color-text-light, #888);
-    text-transform: capitalize;
+    text-transform: uppercase;
+    letter-spacing: var(--button-letter-spacing);
+    padding: var(--small-padding) var(--base-padding);
+    background-color: var(--color-bg);
+    border-radius: 100px;
+    border: 0.09325rem solid var(--color-text);
+
+    &.type-shows {
+      border-color: var(--color-pink);
+      color: var(--color-pink);
+      &:hover {
+        border-color: var(--color-pink);
+        color: var(--color-white);
+        background: var(--color-pink);
+      }
+    }
+
+    &.type-pool {
+      border-color: var(--color-blue);
+      color: var(--color-blue);
+      &:hover {
+        border-color: var(--color-blue);
+        color: var(--color-white);
+        background: var(--color-blue);
+      }
+    }
+
+    &.type-article {
+      border-color: var(--color-green);
+      color: var(--color-green);
+      &:hover {
+        border-color: var(--color-green);
+        color: var(--color-white);
+        background: var(--color-green);
+      }
+    }
+
+    &.type-tag {
+      border-color: var(--color-text);
+      color: var(--color-text);
+      &:hover {
+        border-color: var(--color-text);
+        color: var(--color-bg);
+        background: var(--color-text);
+      }
+    }
   }
 }
 
@@ -957,7 +1144,6 @@ onUnmounted(() => {
 .results-section {
   width: 100%;
   max-width: var(--page-max-width);
-  padding: var(--base-padding);
 }
 
 .empty-state {
