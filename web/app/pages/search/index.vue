@@ -29,6 +29,7 @@ const autocompleteResults = ref([]);
 const showAutocomplete = ref(false);
 const selectedAutocompleteIndex = ref(-1);
 const suggestionsHidden = ref(false);
+const skipAutocompleteReset = ref(false);
 
 // Tag filter state
 const activeTagFilters = ref(new Set());
@@ -299,8 +300,14 @@ watch(searchQuery, (newQuery) => {
   if (autocompleteTimeout) clearTimeout(autocompleteTimeout);
   if (searchTimeout) clearTimeout(searchTimeout);
 
-  // Reset hidden state when typing new input
-  suggestionsHidden.value = false;
+  // Check if we should skip resetting the hidden state (e.g. on initial load from URL)
+  if (skipAutocompleteReset.value) {
+    suggestionsHidden.value = true;
+    skipAutocompleteReset.value = false;
+  } else {
+    // Reset hidden state when typing new input
+    suggestionsHidden.value = false;
+  }
 
   if (!isValidSearchQuery(newQuery)) {
     results.value = [];
@@ -516,6 +523,7 @@ onMounted(() => {
 
   // Handle search query
   if (queryParam && typeof queryParam === "string") {
+    skipAutocompleteReset.value = true;
     searchQuery.value = queryParam;
     // Trigger search immediately for URL query
     performSearch(queryParam);
@@ -547,13 +555,6 @@ onUnmounted(() => {
 
 <template>
   <div class="search-page">
-    <!-- Hero Section -->
-    <section class="search-hero">
-      <div class="hero-content">
-        <h1 class="hero-title">Search</h1>
-        <p class="hero-subtitle">Find shows, artists, venues, and articles</p>
-      </div>
-    </section>
 
     <!-- Search Section -->
     <section class="search-section">
@@ -786,7 +787,7 @@ onUnmounted(() => {
     height: calc(var(--base-font-size) + var(--base-padding) * 2);
     color: var(--color-text);
     outline: none;
-    font-family: var(--font-text);
+    font-family: var(--font-text-semibold);
     text-overflow: ellipsis;
     overflow-y: visible;
     white-space: nowrap;
@@ -1158,7 +1159,8 @@ onUnmounted(() => {
 
 .empty-state-text {
   color: var(--color-text-light, #888);
-  font-size: 1rem;
+  font-size: var(--base-font-size);
+  font-family: var(--font-text);
   margin-bottom: var(--big-padding);
 }
 
