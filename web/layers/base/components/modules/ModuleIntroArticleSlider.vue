@@ -128,7 +128,7 @@ const { isSwiping, direction } = useSwipe(sliderRef, {
   @apply overflow-visible;
   max-width: clamp(100%, 100%, var(--page-max-width));
   position: relative;
-  padding: var(--mid-margin) 0 var(--base-margin) 0;
+  
 
   &__header {
     padding: 0 calc(var(--big-margin) / 2);

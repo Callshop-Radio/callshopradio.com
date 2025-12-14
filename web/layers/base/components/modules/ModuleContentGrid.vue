@@ -39,6 +39,7 @@ const shuffleSeed = ref(Date.now());
 const visibleItemCount = ref(ITEMS_PER_PAGE);
 const artworkUrls = ref(new Map<string, string>());
 const moduleContainer = ref<HTMLElement | null>(null);
+const filterSection = ref<HTMLElement | null>(null);
 
 // ==================== COMPUTED: Content Type ====================
 const contentType = computed(() => {
@@ -405,9 +406,30 @@ function toggleFiltersVisibility() {
 function handleScroll() {
   const scrollY = window.scrollY;
   const scrollDiff = scrollY - lastScrollY.value;
-  if (scrollDiff > SCROLL_THRESHOLD && showFilters.value)
-    showFilters.value = false;
-  else if (scrollDiff < -20 && !showFilters.value) showFilters.value = true;
+
+  let isStuck = false;
+  if (filterSection.value) {
+    const rect = filterSection.value.getBoundingClientRect();
+    const style = window.getComputedStyle(filterSection.value);
+    const stickyTop = parseInt(style.top);
+
+    // Check if the element is currently stuck (top position matches sticky offset)
+    if (!isNaN(stickyTop) && Math.abs(rect.top - stickyTop) <= 2) {
+      isStuck = true;
+    }
+  }
+
+  if (isStuck) {
+    if (scrollDiff > SCROLL_THRESHOLD && showFilters.value) {
+      showFilters.value = false;
+    } else if (scrollDiff < -20 && !showFilters.value) {
+      showFilters.value = true;
+    }
+  } else {
+    // If not stuck (e.g. at/near top of page), ensure filters are visible
+    if (!showFilters.value) showFilters.value = true;
+  }
+
   lastScrollY.value = scrollY;
 }
 
@@ -515,7 +537,7 @@ onUnmounted(() => {
       } ${categoryType.toLowerCase()}`"
     >
       <!-- Filter Panel -->
-      <div class="content-grid__filter-section">
+      <div class="content-grid__filter-section" ref="filterSection">
         <div class="content-grid__filter-bar">
           <!-- Active Filters -->
           <div class="active-filters">
