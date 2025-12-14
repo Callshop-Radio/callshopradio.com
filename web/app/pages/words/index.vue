@@ -6,7 +6,7 @@ import { useMainStore } from "~/stores/mainStore";
 const mainStore = useMainStore();
 
 const query = groq`${WORDS_QUERY}`;
-const { data } = await useSanityQuery(query);
+const { data } = await useCachedSanityQuery(query);
 
 usePageSeo(data?.value?.seo);
 console.log(data?.value?.slider?.articles);

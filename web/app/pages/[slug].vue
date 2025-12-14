@@ -5,7 +5,7 @@ import { SLUG_PAGE_QUERY } from "~~/queries/sanity.queries";
 const query = groq`${SLUG_PAGE_QUERY}`;
 
 const route = useRoute();
-const { data } = await useSanityQuery(query, { slug: route?.params?.slug });
+const { data } = await useCachedSanityQuery(query, { slug: route?.params?.slug });
 
 if (!data?.value) {
   throw createError({

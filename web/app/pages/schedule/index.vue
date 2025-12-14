@@ -4,7 +4,7 @@ import { SCHEDULE_QUERY } from "~~/queries/sanity.queries.ts";
 import { useMainStore } from "~/stores/mainStore";
 
 const query = groq`${SCHEDULE_QUERY}`;
-const { data } = await useSanityQuery(query);
+const { data } = await useCachedSanityQuery(query);
 
 // Store einbinden
 const mainStore = useMainStore();

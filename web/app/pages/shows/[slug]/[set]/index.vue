@@ -7,7 +7,7 @@ const mainStore = useMainStore();
 const route = useRoute();
 
 const query = groq`${SET_QUERY}`;
-const { data } = await useSanityQuery(query, {
+const { data } = await useCachedSanityQuery(query, {
   slug: route.params.set,
 });
 
