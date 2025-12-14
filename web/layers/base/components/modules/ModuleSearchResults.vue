@@ -539,11 +539,11 @@ async function checkImage(url: string): Promise<boolean> {
   });
 }
 
-async function getSoundcloudArtwork(item: any): Promise<string> {
+// Non-blocking artwork URL resolution
+function getSoundcloudArtwork(item: any): string {
   const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
   if (artworkUrl) {
-    const originalUrl = artworkUrl.replace("-large", "-original");
-    if (await checkImage(originalUrl)) return originalUrl;
+    return artworkUrl.replace("-large", "-t500x500");
   }
   const fallbacks = mainStore?.siteFallbacks as any;
   return (
@@ -553,9 +553,9 @@ async function getSoundcloudArtwork(item: any): Promise<string> {
   );
 }
 
-async function loadArtworkUrl(item: any) {
+function loadArtworkUrl(item: any) {
   if (!item) return;
-  const url = await getSoundcloudArtwork(item);
+  const url = getSoundcloudArtwork(item);
   artworkUrls.value.set(item._id, url);
 }
 

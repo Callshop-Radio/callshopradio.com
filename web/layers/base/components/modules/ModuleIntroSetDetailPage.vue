@@ -141,48 +141,24 @@ const useSoundCloud = () => {
   const artworkUrl = ref("");
   const { checkImage } = useImageManagement();
 
-  async function getSoundcloudArtwork(item?: Set): Promise<string> {
+  // Non-blocking - returns URL directly
+  function getSoundcloudArtwork(item?: Set): string {
     if (!item) return "";
-
-    // Definiere die Fallback-URLs explizit
-    const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-    const storeFallbackUrl =
-      mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
+    // Try SoundCloud artwork first
     const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
-
-    // Versuche zunächst das SoundCloud-Artwork
     if (artworkUrl) {
-      const originalUrl = artworkUrl.replace("-large", "-original");
-      try {
-        const exists = await checkImage(originalUrl);
-        if (exists) {
-          return originalUrl;
-        }
-      } catch (error) {
-        console.error("Fehler beim Laden des SoundCloud-Artworks:", error);
-      }
+      return artworkUrl.replace("-large", "-t500x500");
     }
-
-    // SoundCloud-Artwork existiert nicht, verwende Fallbacks
-    if (parentShowImageUrl) {
-      return parentShowImageUrl;
-    }
-
-    if (storeFallbackUrl) {
-      return storeFallbackUrl;
-    }
-
-    return "";
+    // Fallback chain
+    const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
+    const storeFallbackUrl = mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
+    return parentShowImageUrl || storeFallbackUrl || "";
   }
 
-  async function loadArtworkUrl() {
+  function loadArtworkUrl() {
     if (!props.set) return;
-    try {
-      const url = await getSoundcloudArtwork(props.set);
-      artworkUrl.value = url;
-    } catch (error) {
-      console.error("Fehler beim Laden des Artwork-URLs:", error);
-    }
+    const url = getSoundcloudArtwork(props.set);
+    artworkUrl.value = url;
   }
 
   function playTrack() {
@@ -276,9 +252,9 @@ function getItemNonCityTags(item: Set): Tag[] {
 }
 
 // Lebenszyklus-Hooks
-onMounted(async () => {
-  await loadArtworkUrl();
-  await nextTick();
+onMounted(() => {
+  loadArtworkUrl();
+  nextTick();
 
   // Initiale Messungen
   updateSetMainHeight();

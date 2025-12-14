@@ -485,12 +485,15 @@ async function checkImage(url: string): Promise<boolean> {
   });
 }
 
-async function getSoundcloudArtwork(item: any): Promise<string> {
+// Non-blocking artwork URL resolution - returns URL directly, browser handles 404s
+function getSoundcloudArtwork(item: any): string {
+  // Try SoundCloud artwork first (use -t500x500 for better quality without -original issues)
   const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
   if (artworkUrl) {
-    const originalUrl = artworkUrl.replace("-large", "-original");
-    if (await checkImage(originalUrl)) return originalUrl;
+    // Use t500x500 instead of original - more reliable
+    return artworkUrl.replace("-large", "-t500x500");
   }
+  // Fallback chain
   return (
     item?.parentShow?.image?.asset?.url ||
     mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url ||
@@ -498,9 +501,9 @@ async function getSoundcloudArtwork(item: any): Promise<string> {
   );
 }
 
-async function loadArtworkUrl(item: any) {
+function loadArtworkUrl(item: any) {
   if (!item) return;
-  const url = await getSoundcloudArtwork(item);
+  const url = getSoundcloudArtwork(item);
   artworkUrls.value.set(item._id, url);
 }
 

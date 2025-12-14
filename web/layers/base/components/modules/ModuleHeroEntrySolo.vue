@@ -154,43 +154,28 @@ const useSoundCloud = () => {
   const artworkUrl = ref<string>("");
   const { checkImageExists } = useImageManagement();
 
-  async function getSoundcloudArtwork(
-    item?: ContentReference
-  ): Promise<string> {
+  // Non-blocking artwork URL resolution
+  function getSoundcloudArtwork(item?: ContentReference): string {
     if (!item) return "";
 
     const track = item.soundcloud?.tracks?.[0];
     const parentShowImageUrl = item.parentShow?.image?.asset?.url;
-    const fallbackUrl = (mainStore?.siteFallbacks as any)?.fallbackSet?.image
-      ?.asset?.url;
+    const fallbackUrl = (mainStore?.siteFallbacks as any)?.fallbackSet?.image?.asset?.url;
 
-    // Versuche SoundCloud-Artwork (Original-Qualität)
+    // Try SoundCloud artwork (use -t500x500 for reliability)
     if (track?.artwork_url) {
-      const originalUrl = track.artwork_url.replace("-large", "-original");
-
-      try {
-        const exists = await checkImageExists(originalUrl);
-        if (exists) return originalUrl;
-      } catch (error) {
-        console.error("Fehler beim Laden des SoundCloud-Artworks:", error);
-      }
+      return track.artwork_url.replace("-large", "-t500x500");
     }
 
-    // Fallback-Hierarchie
+    // Fallback chain
     return parentShowImageUrl || fallbackUrl || "";
   }
 
-  async function loadArtworkUrl(): Promise<void> {
+  function loadArtworkUrl(): void {
     const contentRef = props.module?.contentReference;
     if (!contentRef) return;
-
-    try {
-      const url = await getSoundcloudArtwork(contentRef);
-      artworkUrl.value = url;
-    } catch (error) {
-      console.error("Fehler beim Laden des Artwork-URLs:", error);
-      artworkUrl.value = "";
-    }
+    const url = getSoundcloudArtwork(contentRef);
+    artworkUrl.value = url;
   }
 
   function playTrack(): void {

@@ -366,9 +366,9 @@ function getItemRoute(item: any) {
 }
 
 // Funktion zum Abrufen und Speichern der Artwork-URL
-async function loadArtworkUrl(item: any) {
+function loadArtworkUrl(item: any) {
   if (!item) return;
-  const url = await getSoundcloudArtwork(item);
+  const url = getSoundcloudArtwork(item);
   artworkUrls.value.set(item._id, url);
 }
 
@@ -381,35 +381,17 @@ function checkImage(url: string) {
   });
 }
 
-async function getSoundcloudArtwork(item: any) {
-  // Definiere die Fallback-URLs explizit
-  const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-  const storeFallbackUrl = (mainStore?.siteFallbacks as any)?.fallbackSet?.image
-    ?.asset?.url;
+// Non-blocking artwork URL resolution - returns URL directly, browser handles 404s
+function getSoundcloudArtwork(item: any): string {
+  // Try SoundCloud artwork first (use -t500x500 for better quality without -original issues)
   const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
-
-  // Versuche zunächst das SoundCloud-Artwork
   if (artworkUrl) {
-    const originalUrl = artworkUrl.replace("-large", "-original");
-    const exists = await checkImage(originalUrl);
-
-    if (exists) {
-      return originalUrl;
-    }
+    return artworkUrl.replace("-large", "-t500x500");
   }
-  // SoundCloud-Artwork existiert nicht, verwende Fallbacks
-
-  // Prüfe parentShow Bild als ersten Fallback
-  if (parentShowImageUrl) {
-    return parentShowImageUrl;
-  }
-
-  // Prüfe Store-Fallback als zweiten Fallback
-  if (storeFallbackUrl) {
-    return storeFallbackUrl;
-  }
-
-  return "";
+  // Fallback chain
+  const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
+  const storeFallbackUrl = (mainStore?.siteFallbacks as any)?.fallbackSet?.image?.asset?.url;
+  return parentShowImageUrl || storeFallbackUrl || "";
 }
 
 function playTrack(item: any) {

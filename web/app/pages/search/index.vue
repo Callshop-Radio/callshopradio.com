@@ -383,6 +383,13 @@ const hideSuggestions = () => {
   showAutocomplete.value = false;
 };
 
+// Handle input blur - hide autocomplete after delay
+const handleInputBlur = () => {
+  setTimeout(() => {
+    showAutocomplete.value = false;
+  }, 200);
+};
+
 // Autocomplete keyboard navigation
 const handleKeydown = (event) => {
   if (!showAutocomplete.value || autocompleteResults.value.length === 0) {
@@ -588,7 +595,7 @@ onUnmounted(() => {
             placeholder="Start typing to search..."
             autocomplete="off"
             @keydown="handleKeydown"
-            @blur="() => setTimeout(() => (showAutocomplete = false), 200)"
+            @blur="handleInputBlur"
           />
           <button
             v-if="hasQuery"

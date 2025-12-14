@@ -184,27 +184,20 @@ function checkImage(url: string): Promise<boolean> {
   });
 }
 
-async function getSoundcloudArtwork(item: any) {
-  const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-  const storeFallbackUrl =
-    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
+// Non-blocking artwork URL resolution
+function getSoundcloudArtwork(item: any): string {
   const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
-
   if (artworkUrl) {
-    const originalUrl = artworkUrl.replace("-large", "-original");
-    const exists = await checkImage(originalUrl);
-    if (exists) return originalUrl;
+    return artworkUrl.replace("-large", "-t500x500");
   }
-
-  if (parentShowImageUrl) return parentShowImageUrl;
-  if (storeFallbackUrl) return storeFallbackUrl;
-
-  return "";
+  const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
+  const storeFallbackUrl = mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
+  return parentShowImageUrl || storeFallbackUrl || "";
 }
 
-async function loadArtworkUrl(item: any) {
+function loadArtworkUrl(item: any) {
   if (!item) return;
-  const url = await getSoundcloudArtwork(item);
+  const url = getSoundcloudArtwork(item);
   artworkUrls.value.set(item._id, url);
 }
 

@@ -177,28 +177,13 @@ function getItemImage(item) {
   return image;
 }
 
-// SoundCloud-Artwork laden
-async function loadArtworkUrl(item) {
+// SoundCloud-Artwork laden (synchron ohne checkImage)
+function loadArtworkUrl(item) {
   if (!item) return;
-
   // Prüfen, ob die URL bereits im Cache ist
   if (artworkUrls.value.has(item?._id)) return;
-
-  try {
-    const url = await getSoundcloudArtwork(item);
-    artworkUrls.value.set(item?._id, url);
-  } catch (error) {
-    console.error("Fehler beim Laden des Artworks:", error);
-    // Bei Fehler ein Fallback setzen
-    if (item?.parentShow?.image?.asset?.url) {
-      artworkUrls.value.set(item?._id, item?.parentShow?.image.asset.url);
-    } else if (mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url) {
-      artworkUrls.value.set(
-        item?._id,
-        mainStore.siteFallbacks.fallbackSet.image.asset.url
-      );
-    }
-  }
+  const url = getSoundcloudArtwork(item);
+  artworkUrls.value.set(item?._id, url);
 }
 
 function checkImage(url) {
@@ -210,28 +195,17 @@ function checkImage(url) {
   });
 }
 
-async function getSoundcloudArtwork(item) {
-  // Definiere die Fallback-URLs explizit
-  const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-  const storeFallbackUrl =
-    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
+// Non-blocking artwork URL resolution - returns URL directly, browser handles 404s
+function getSoundcloudArtwork(item) {
+  // Try SoundCloud artwork first (use -t500x500 for better quality)
   const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
-
-  // Versuche zunächst das SoundCloud-Artwork
   if (artworkUrl) {
-    const originalUrl = artworkUrl.replace("-large", "-original");
-    const exists = await checkImage(originalUrl);
-
-    if (exists) {
-      return originalUrl;
-    }
+    return artworkUrl.replace("-large", "-t500x500");
   }
-
-  // Fallbacks
-  if (parentShowImageUrl) return parentShowImageUrl;
-  if (storeFallbackUrl) return storeFallbackUrl;
-
-  return "";
+  // Fallback chain
+  const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
+  const storeFallbackUrl = mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
+  return parentShowImageUrl || storeFallbackUrl || "";
 }
 
 // Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
