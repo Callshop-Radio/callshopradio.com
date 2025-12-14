@@ -326,19 +326,13 @@ watch(
 
 // Lifecycle Hooks
 onMounted(() => {
-  // Beim ersten Laden die Artworks für alle sichtbaren Items laden
+  // Beim ersten Laden die Artworks für sichtbare Items laden
   if (props.type === "sets") {
     visibleItems.value.forEach((item) => {
       loadArtworkUrl(item);
     });
   }
-
-  // Vorgängig auch alle Items laden, um die Bilder vorzubereiten
-  if (props.type === "sets" && props.items && Array.isArray(props.items)) {
-    props.items.forEach((item) => {
-      loadArtworkUrl(item);
-    });
-  }
+  // Note: Watcher handles additional items when loadMore is called
 });
 
 function navigateToTagSearch(tag: any, item: any, isGenre = false) {
@@ -417,6 +411,7 @@ function navigateToTagSearch(tag: any, item: any, isGenre = false) {
               v-if="item?.image && item?.image.asset && item?.image.asset.url"
               :src="item?.image.asset.url"
               :alt="item?.title || ''"
+              loading="lazy"
             />
             <div v-else-if="item?.soundcloud" class="track-artwork">
               <img

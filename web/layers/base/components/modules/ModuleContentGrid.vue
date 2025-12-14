@@ -515,12 +515,24 @@ function playTrack(item: any) {
 
 // ==================== LIFECYCLE ====================
 onMounted(() => {
+  // Only load artwork URLs for initially visible items
   if (contentType.value === "sets") {
-    allItems.value.forEach(loadArtworkUrl);
+    visibleItems.value.forEach(loadArtworkUrl);
   }
 
   lastScrollY.value = window.scrollY;
   window.addEventListener("scroll", handleScroll, { passive: true });
+});
+
+// Load artwork URLs when more items become visible
+watch(visibleItemCount, () => {
+  if (contentType.value === "sets") {
+    visibleItems.value.forEach((item: any) => {
+      if (!artworkUrls.value.has(item._id)) {
+        loadArtworkUrl(item);
+      }
+    });
+  }
 });
 
 onUnmounted(() => {
@@ -842,6 +854,7 @@ onUnmounted(() => {
                     v-if="item.image?.asset"
                     :src="item.image.asset.url"
                     :alt="item.title || ''"
+                    loading="lazy"
                   />
                   <div
                     v-else-if="item.soundcloud"
@@ -852,6 +865,7 @@ onUnmounted(() => {
                       v-if="artworkUrls.get(item._id)"
                       :src="artworkUrls.get(item._id)"
                       alt="Track Artwork"
+                      loading="lazy"
                     />
                   </div>
                 </template>
@@ -860,6 +874,7 @@ onUnmounted(() => {
                     v-if="getItemImage(item)"
                     :src="getItemImage(item).asset?.url"
                     :alt="item.title || ''"
+                    loading="lazy"
                   />
                   <img
                     v-else
@@ -867,6 +882,7 @@ onUnmounted(() => {
                       mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
                     "
                     alt="Fallback"
+                    loading="lazy"
                   />
                 </template>
               </div>
