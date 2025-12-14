@@ -227,8 +227,8 @@ useHead({
       />
     </div>
     <div v-if="loading" class="schedule__loading">
-      <div class="loading-spinner"></div>
-      <div class="loading-text">Loading</div>
+      <!-- <div class="loading-spinner"></div> -->
+      <!-- <div class="loading-text">Loading</div> -->
     </div>
 
     <div v-else-if="error" class="schedule__error">

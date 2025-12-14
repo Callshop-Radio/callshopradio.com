@@ -28,6 +28,7 @@ interface Article {
   image?: Image;
   mainImage?: Image;
   content?: Object;
+  text?: any[];
   slug?: {
     current?: string;
   };
@@ -51,7 +52,7 @@ const useImageManagement = () => {
 
     // Bild aus dem Item selbst
     if (item.image || item.mainImage) {
-      return item.image || item.mainImage;
+      return item.image || item.mainImage || null;
     }
 
     // Fallback für Articles
@@ -74,7 +75,7 @@ const useImageManagement = () => {
 };
 
 // Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
-function getItemRoute(item) {
+function getItemRoute(item: any) {
   if (!item || !item?.slug) return "/";
 
   switch (item?._type) {
@@ -159,9 +160,43 @@ const { getItemImage } = useImageManagement();
 const { articleImageUrl, loadArticleImageUrl, navigateToArticle } =
   useArticle();
 
+function getInstagramHandle(url?: string): string {
+  if (!url) return "";
+  return url
+    .replace(/^(?:https?:\/\/)?(?:www\.)?instagram\.com\//, "")
+    .replace(/\/$/, "");
+}
+
 // Lebenszyklus-Hooks
 onMounted(() => {
   loadArticleImageUrl();
+});
+
+const cityTags = computed(() => {
+  return props.article?.tags?.filter((tag: any) => tag._type === "tag.city") || [];
+});
+
+const otherTags = computed(() => {
+  return props.article?.tags?.filter((tag: any) => tag._type !== "tag.city") || [];
+});
+
+// Article Language Switcher
+const articleLocale = ref(locale.value);
+
+watch(locale, (newVal: string) => {
+  articleLocale.value = newVal;
+});
+
+const availableLocales = computed(() => {
+  if (Array.isArray(props.article?.text)) {
+    return props.article.text.map((t: any) => t._key);
+  }
+  return [];
+});
+
+const currentArticleText = computed(() => {
+  if (!props.article?.text || !Array.isArray(props.article.text)) return null;
+  return props.article.text.find((t: any) => t._key === articleLocale.value)?.value;
 });
 </script>
 
@@ -175,9 +210,9 @@ onMounted(() => {
       loading="lazy"
     />
     <!-- Tags -->
-    <div v-if="article?.tags?.length" class="article-category tags">
+    <div v-if="cityTags.length" class="article-category tags">
       <button
-        v-for="tag in article?.tags"
+        v-for="(tag, index) in cityTags"
         :key="tag._id || index"
         class="tag"
         type="button"
@@ -202,7 +237,8 @@ onMounted(() => {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Instagram"
-          ><svg
+        >
+          <svg
             width="22"
             height="22"
             viewBox="0 0 22 22"
@@ -291,6 +327,20 @@ onMounted(() => {
           </svg>
         </a>
       </div>
+      <div v-if="otherTags.length" class="tags article-content-tags">
+        <button
+          v-for="(tag, index) in otherTags"
+          :key="tag._id || index"
+          class="tag"
+          type="button"
+        >
+          {{
+            tag?.title?.[1]?.value
+              ? parseI18nObj(tag?.title)
+              : tag?.title[0]?.value ?? tag.title
+          }}
+        </button>
+      </div>
     </div>
   </div>
   <div v-if="article" class="article-content">
@@ -334,10 +384,19 @@ onMounted(() => {
             </div>
           </div>
           <div v-if="article?.text" class="article-text-container">
-            <RichText
-              class="article-text"
-              :blocks="parseI18nObj(article?.text)"
-            />
+            <RichText class="article-text" :blocks="currentArticleText" />
+            <div class="article-language-switcher">
+              <button
+                v-for="loc in ['en', 'de']"
+                :key="loc"
+                class="lang-btn"
+                :class="{ 'lang-btn--active': articleLocale === loc }"
+                :disabled="!availableLocales.includes(loc)"
+                @click="articleLocale = loc"
+              >
+                {{ loc.toUpperCase() }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -413,6 +472,17 @@ onMounted(() => {
       align-items: flex-end;
       gap: var(--small-padding);
     }
+    .article-content-tags {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: flex-end;
+      align-items: flex-end;
+      gap: var(--small-padding);
+      .tag {
+        background-color: var(--color-green);
+        border-color: var(--color-green);
+      }
+    }
   }
 }
 
@@ -437,7 +507,73 @@ onMounted(() => {
   max-width: var(--page-max-width);
   margin: 0 auto;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: flex-start;
+  position: relative;
+
+  .article-language-switcher {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 70px;
+    height: calc(var(--base-font-size) + var(--small-padding));
+    padding: 4px;
+    background: var(--color-text);
+    backdrop-filter: blur(5px);
+    border-radius: 30px;
+    max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
+    margin: 0 var(--base-margin);
+
+    .lang-btn {
+      flex: 1;
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      border: none;
+      border-radius: 24px;
+      background: transparent;
+      color: var(--color-bg);
+      font-weight: 400;
+      font-size: var(--small-font-size);
+      font-family: var(--font-text-medium);
+      cursor: pointer;
+      transition: color 0.2s ease;
+      user-select: none;
+      text-transform: uppercase;
+      padding: 0;
+
+      &--active {
+        color: black;
+        background-color: var(--color-green);
+      }
+
+      &:disabled {
+        cursor: no-drop;
+      }
+
+      &:hover:not(&--active):not(:disabled) {
+        cursor: pointer;
+      }
+    }
+
+    /* Der Gleiter */
+    &::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      width: calc(50% - 4px);
+      max-height: calc(var(--base-font-size) - var(--small-padding) * 2);
+      height: 100%;
+      background-color: var(--color-green);
+      border-radius: 24px;
+      transition: transform 0.2s ease;
+      z-index: 1;
+    }
+
+    /* Position des Gleiters wenn der zweite Button aktiv ist */
+    &:has(.lang-btn:nth-child(2).lang-btn--active)::after {
+      transform: translateX(100%);
+    }
+  }
 }
 </style>

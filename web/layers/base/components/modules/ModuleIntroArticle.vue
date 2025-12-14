@@ -213,6 +213,7 @@ const articleImage = computed(() => {
         height: auto;
         aspect-ratio: 3 / 1 !important;
         object-fit: cover;
+        object-position: top;
         transition: transform 0.2s ease;
         max-width: none;
         max-height: none;

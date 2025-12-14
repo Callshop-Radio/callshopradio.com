@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import emblaCarouselVue from "embla-carousel-vue";
-import { useThrottleFn } from "@vueuse/core";
-import { ref, onMounted, computed } from "vue";
+import { ref, computed } from "vue";
+import { useSwipe } from "@vueuse/core";
 import { useMainStore } from "~/stores/mainStore";
 
 const mainStore = useMainStore();
@@ -13,109 +12,49 @@ const props = defineProps({
   },
 });
 
-// Init Embla Carousel
-const [emblaNode, emblaApi] = emblaCarouselVue({
-  align: "start",
-  loop: true,
+// State
+const currentIndex = ref(0);
+const sliderRef = ref<HTMLElement | null>(null);
+
+// Slides
+const slides = computed(() => {
+  // Jeder Artikel bekommt sein eigenes Slide
+  return props.articles.map((article) => [article]);
 });
 
-// Dots nav
-const selectedIndex = ref(0);
-// Aktuelle Slide-Position
-const currentIndex = ref(0);
-const scrollSnaps = ref<number[]>([]);
-
-// Save position for smooth transitions
-const saveTranslatePositions = useThrottleFn(() => {
-  if (!emblaContainer.value) return;
-  containerStyle = emblaContainer.value.style.transform;
-}, 100);
-
-const emblaContainer = ref<HTMLElement>();
-let containerStyle: string = "";
-
-async function restoreTranslatePositions() {
-  if (!emblaContainer.value) return;
-  emblaContainer.value.style.transform = containerStyle;
-}
-
-// Dots functions
-const onSelect = () => {
-  if (!emblaApi.value) return;
-  selectedIndex.value = emblaApi.value.selectedScrollSnap();
-  currentIndex.value = selectedIndex.value; // Aktualisiere currentIndex, wenn sich der Slide ändert
-};
-
-const scrollTo = (index: number) => {
-  if (!emblaApi.value) return;
-  emblaApi.value.scrollTo(index);
-  currentIndex.value = index; // Aktualisiere currentIndex beim manuellen Scrollen
+// Navigation
+const scrollNext = () => {
+  currentIndex.value = (currentIndex.value + 1) % slides.value.length;
 };
 
 const scrollPrev = () => {
-  if (!emblaApi.value) return;
-  emblaApi.value.scrollPrev();
+  currentIndex.value =
+    (currentIndex.value - 1 + slides.value.length) % slides.value.length;
 };
 
-const scrollNext = () => {
-  if (!emblaApi.value) return;
-  emblaApi.value.scrollNext();
+const scrollTo = (index: number) => {
+  currentIndex.value = index;
 };
 
-const setupDots = () => {
-  if (!emblaApi.value) return;
-
-  // Scroll snaps für Navigation
-  scrollSnaps.value = emblaApi.value.scrollSnapList();
-
-  // Set current index
-  selectedIndex.value = emblaApi.value.selectedScrollSnap();
-  currentIndex.value = selectedIndex.value; // Initialisiere currentIndex
-
-  // Event-Listener für Aktualisierung des ausgewählten Index
-  emblaApi.value.on("select", onSelect);
-};
-
-// Event-Listener nach dem Mounting
-onMounted(() => {
-  if (emblaApi.value) {
-    emblaApi.value.on("scroll", saveTranslatePositions);
-    emblaApi.value.on("destroy", restoreTranslatePositions);
-
-    setupDots();
-  }
+// Swipe Support
+const { isSwiping, direction } = useSwipe(sliderRef, {
+  onSwipeEnd(e, direction) {
+    if (direction === "left") scrollNext();
+    if (direction === "right") scrollPrev();
+  },
 });
-
-const slides = computed(() => {
-  // Jeder Artikel bekommt sein eigenes Slide
-  return props.articles.map(article => [article]);
-});
-
-
-// Gruppiere Artikel in Paare (2 pro Slide)
-// const slides = computed(() => {
-//   const result = [];
-//   for (let i = 0; i < props.articles.length; i += 2) {
-//     const pair = [props.articles[i]];
-//     // Füge den zweiten Artikel hinzu, wenn verfügbar
-//     if (i + 1 < props.articles.length) {
-//       pair.push(props.articles[i + 1]);
-//     }
-//     result.push(pair);
-//   }
-//   return result;
-// });
 </script>
 
 <template>
   <div
     v-if="slides.length > 0"
-    :class="`embla intro-article-slider intro-article-slider--default`"
+    :class="`intro-article-slider intro-article-slider--default`"
   >
-    <div class="embla__nav__container">
-      <nav class="embla__nav" v-if="scrollSnaps.length > 1">
+    <!-- Navigation Overlay -->
+    <div class="slider__nav__container">
+      <nav class="slider__nav" v-if="slides.length > 1">
         <button
-          class="embla__arrow embla__arrow--prev"
+          class="slider__arrow slider__arrow--prev"
           @click="scrollPrev"
           aria-label="Vorheriger Slide"
         >
@@ -133,17 +72,17 @@ const slides = computed(() => {
           </svg>
         </button>
 
-        <div class="embla__nav__dots">
+        <div class="slider__nav__dots">
           <button
-            v-for="(_, index) in scrollSnaps"
+            v-for="(_, index) in slides"
             :key="index"
-            :class="['embla__dot', { 'is-selected': index === selectedIndex }]"
+            :class="['slider__dot', { 'is-selected': index === currentIndex }]"
             @click="scrollTo(index)"
           ></button>
         </div>
         <!-- Arrow Navigation -->
         <button
-          class="embla__arrow embla__arrow--next"
+          class="slider__arrow slider__arrow--next"
           @click="scrollNext"
           aria-label="Nächster Slide"
         >
@@ -162,22 +101,22 @@ const slides = computed(() => {
         </button>
       </nav>
     </div>
-    <div ref="emblaNode" class="embla">
-      <div ref="emblaContainer" class="embla__container">
-        <div
-          v-for="(articleGroup, index) in slides"
-          :key="index"
-          class="embla__slide"
-          :class="{ active: index === currentIndex }"
-        >
-          <div class="article-group">
-            <ModuleIntroArticle
-              v-for="(article, articleIndex) in articleGroup"
-              :key="article._key || articleIndex"
-              :article="article"
-              :class="`slider-item slider-item--default`"
-            />
-          </div>
+
+    <!-- Slides -->
+    <div ref="sliderRef" class="slider-content">
+      <div
+        v-for="(articleGroup, index) in slides"
+        :key="index"
+        class="slide"
+        :class="{ active: index === currentIndex }"
+      >
+        <div class="article-group">
+          <ModuleIntroArticle
+            v-for="(article, articleIndex) in articleGroup"
+            :key="article._key || articleIndex"
+            :article="article"
+            :class="`slider-item slider-item--default`"
+          />
         </div>
       </div>
     </div>
@@ -199,10 +138,10 @@ const slides = computed(() => {
     align-items: center;
   }
 
-  .embla__nav__container {
+  .slider__nav__container {
     width: 100%;
     height: 100%;
-    .embla__nav {
+    .slider__nav {
       width: 100%;
       height: 100%;
       position: absolute;
@@ -216,7 +155,7 @@ const slides = computed(() => {
       z-index: 10;
       pointer-events: none;
 
-      .embla__arrow {
+      .slider__arrow {
         background-color: transparent;
         transform: translate(0, calc(var(--base-margin) * -1));
         pointer-events: all;
@@ -240,7 +179,7 @@ const slides = computed(() => {
         }
       }
 
-      .embla__nav__dots {
+      .slider__nav__dots {
         position: absolute;
         @apply flex row items-center justify-start flex-grow-1;
         gap: 0 var(--small-padding);
@@ -248,8 +187,7 @@ const slides = computed(() => {
         top: var(--big-padding);
         left: var(--big-padding);
 
-
-        .embla__dot {
+        .slider__dot {
           @apply rounded-full transition-colors;
           width: 7px;
           height: 7px;
@@ -270,45 +208,49 @@ const slides = computed(() => {
     }
   }
 
-  /* Basis-Styles für den Embla Carousel */
-  .embla {
-    @apply overflow-hidden;
-    max-width: calc(var(--page-max-width));
-    width: calc(var(--page-max-width));
+  /* Slider Logic (Grid Overlay) */
+  .slider-content {
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr;
+    /* max-width: calc(var(--page-max-width)); */
+    width: 100%;
     position: relative;
+    /* overflow: hidden; Not strictly needed if grid handles content */
+  }
 
-    &__container {
-      @apply flex backface-hidden touch-pan-y;
+  .slide {
+    @apply flex flex-row w-full;
+    grid-area: 1 / 1 / 2 / 2;
+    width: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease; /* Gentle transition */
+    z-index: 1;
+
+    &.active {
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 2;
     }
 
-    &__slide {
-      @apply flex flex-grow-0 flex-shrink-0 flex-basis-auto min-w-0 relative;
-      width: 100%; /* Jeder Slide nimmt volle Breite ein */
-      /* padding: 0 calc(var(--big-margin) / 2); */
-      opacity: 0;
-      transition: opacity 0.15s ease !important;
-
-      .article-group {
-        @apply flex flex-row w-full;
-        flex-flow: row wrap;
-        justify-content: space-around;
-        justify-self: center;
-        align-items: flex-end;
-        gap: var(--big-margin);
-        @media (min-width: 1800px){
-          gap: 0;
-        }
+    .article-group {
+      @apply flex flex-row w-full;
+      flex-flow: row wrap;
+      justify-content: space-around;
+      justify-self: center;
+      align-items: flex-end;
+      gap: var(--big-margin);
+      height: 100%;
+      @media (min-width: 1800px) {
+        gap: 0;
       }
+    }
 
-      .article-group .slider-item {
-        @apply flex-1;
-        min-width: 0;
-      }
-
-      &.active {
-        opacity: 1;
-        transition: opacity 1.5s ease !important;
-      }
+    .article-group .slider-item {
+      @apply flex-1;
+      min-width: 0;
+      height: 100%;
     }
   }
 }
