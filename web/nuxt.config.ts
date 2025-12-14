@@ -9,11 +9,7 @@ export default defineNuxtConfig({
   },
 
   sitemap: {
-    hostname: process.env.NUXT_PUBLIC_SITE_URL || 'https://callshopradio.com',
-    gzip: true,
-    sources: [
-      '/api/sitemap'
-    ]
+    sources: ['/api/sitemap']
   },
   devtools: { enabled: false },
   ssr: true,
@@ -110,32 +106,27 @@ export default defineNuxtConfig({
 
   nitro: {
     prerender: {
-      crawlLinks: false, // Verhindert Memory-intensives Crawling
-      // concurrency: 10, // Reduziert für bessere Stabilität bei SSG
-      failOnError: false, // Verhindert kompletten Abbruch bei einzelnen Fehlern
-      // Explizite Routes zum Prerendern
-      routes: [
-        '/',
-        '/pool',
-        '/schedule',
-        '/shows',
-        '/words',
-        '/sitemap.xml',
-        // Dynamische Routen werden durch hooks erfasst
-      ],
-      // Ignoriere bestimmte Routen falls nötig
-      ignore: [
-        '/api/**'
-      ]
+      crawlLinks: false,
+      failOnError: false,
+      // Nur Homepage und Sitemap beim Build prerendern
+      routes: ['/', '/sitemap.xml'],
+      ignore: ['/api/**']
     },
     experimental: {
       wasm: true
     },
+    // Cache-Storage Konfiguration
     storage: {
-      // Redis-Cache für bessere Performance (optional)
-      redis: {
-        driver: 'redis',
-        // Wird nur verwendet wenn Redis verfügbar ist
+      cache: {
+        driver: 'lru-cache',
+        max: 1000
+      }
+    },
+    // Entwicklungs-Storage (Filesystem-basiert)
+    devStorage: {
+      cache: {
+        driver: 'fs',
+        base: '.cache/nitro'
       }
     },
     rollupConfig: {
@@ -148,33 +139,20 @@ export default defineNuxtConfig({
     }
   },
 
-  hooks: {
-    async 'nitro:config'(nitroConfig) {
-      try {
-        const { getAllRoutes } = await import('./scripts/prerender-routes.js')
-        const allRoutes = await getAllRoutes()
-        if (nitroConfig.prerender?.routes) {
-          nitroConfig.prerender.routes = [
-            ...nitroConfig.prerender.routes,
-            ...allRoutes
-          ]
-          // kill duplicate routes
-          nitroConfig.prerender.routes = [...new Set(nitroConfig.prerender.routes)]
-          console.log(`🎯 Total routes to prerender: ${nitroConfig.prerender.routes.length}`)
-        }
-      } catch (error) {
-        console.error('❌ Error loading dynamic routes:', error)
-      }
-    }
-  },
+  // Prerender-Hook deaktiviert - Hybrid Rendering mit ISR/SWR
+  // hooks: {
+  //   async 'nitro:config'(nitroConfig) { ... }
+  // },
 
   runtimeConfig: {
+    // Server-only secrets
+    sanityWebhookSecret: process.env.SANITY_WEBHOOK_SECRET,
     public: {
       baseUrl: process.env.NUXT_PUBLIC_SITE_URL,
     },
   },
 
-  buildModules: ["vue-ssr-carousel/nuxt"],
+  // Note: vue-ssr-carousel should be added to modules array if still needed
 
   build: {
     transpile: ["rxjs"],
@@ -228,18 +206,35 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    "/**": { prerender: true },
+    // === Statische Seiten (bei Build generiert) ===
+    "/": { prerender: true },
     "/sitemap.xml": { 
+      prerender: true,
       headers: { 
         "content-type": "application/xml; charset=utf-8",
         "cache-control": "max-age=3600"
       }
     },
-    // Dynamische Routen mit ISR für bessere Fehlerbehandlung
-    "/pool/**": { prerender: true, isr: true },
-    "/shows/**": { prerender: true, isr: true },
-    // API-Routen nicht prerendern
-    "/api/**": { prerender: false },
+    
+    // === Übersichtsseiten mit SWR (Stale-While-Revalidate) ===
+    // Cached Version wird sofort geliefert, im Hintergrund aktualisiert
+    "/pool": { swr: 3600 },      // 1 Stunde Cache
+    "/shows": { swr: 3600 },     // 1 Stunde Cache
+    "/words": { swr: 3600 },     // 1 Stunde Cache
+    "/schedule": { swr: 300 },   // 5 Minuten Cache (live content)
+    
+    // === Detailseiten mit ISR (Incremental Static Regeneration) ===
+    // Cached bis TTL abläuft oder via Webhook invalidiert
+    "/pool/**": { isr: 86400 },  // 24h Cache
+    "/shows/**": { isr: 86400 }, // 24h Cache
+    "/words/**": { isr: 86400 }, // 24h Cache
+    
+    // === Dynamische Seiten (immer frisch) ===
+    "/search": { ssr: true },
+    "/de/search": { ssr: true },
+    
+    // === API-Routen ===
+    "/api/**": { cors: true },
   },
 
   compatibilityDate: "2024-12-19",
