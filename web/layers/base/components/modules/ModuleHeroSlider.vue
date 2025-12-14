@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import emblaCarouselVue from "embla-carousel-vue";
-import { useThrottleFn } from "@vueuse/core";
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
+import { useSwipe } from "@vueuse/core";
 import { useMainStore } from "~/stores/mainStore";
 
 const mainStore = useMainStore();
@@ -13,71 +12,38 @@ const props = defineProps({
   },
 });
 
-// Init Embla Carousel
-const [emblaNode, emblaApi] = emblaCarouselVue({
-  align: "start",
-  loop: true
+// State
+const currentIndex = ref(0);
+const sliderRef = ref<HTMLElement | null>(null);
+
+// Slides
+const slides = computed(() => {
+  return props.module?.slides || [];
 });
 
-// Dots nav
-const selectedIndex = ref(0);
-// Aktuelle Slide-Position
-const currentIndex = ref(0);
-const scrollSnaps = ref<number[]>([]);
-
-// Save position for smooth transitions
-const saveTranslatePositions = useThrottleFn(() => {
-  if (!emblaContainer.value) return;
-  containerStyle = emblaContainer.value.style.transform;
-}, 100);
-
-const emblaContainer = ref<HTMLElement>();
-let containerStyle: string = "";
-
-async function restoreTranslatePositions() {
-  if (!emblaContainer.value) return;
-  emblaContainer.value.style.transform = containerStyle;
-}
-
-// Dots functions
-const onSelect = () => {
-  if (!emblaApi.value) return;
-  selectedIndex.value = emblaApi.value.selectedScrollSnap();
-  currentIndex.value = selectedIndex.value; // Aktualisiere currentIndex, wenn sich der Slide ändert
-
-  // Aktualisiere den Content-Typ im Store
-  updateCurrentContentType();
-};
-
-const scrollTo = (index: number) => {
-  if (!emblaApi.value) return;
-  emblaApi.value.scrollTo(index);
-  currentIndex.value = index; // Aktualisiere currentIndex beim manuellen Scrollen
+// Navigation
+const scrollNext = () => {
+  if (slides.value.length === 0) return;
+  currentIndex.value = (currentIndex.value + 1) % slides.value.length;
 };
 
 const scrollPrev = () => {
-  if (!emblaApi.value) return;
-  emblaApi.value.scrollPrev();
+  if (slides.value.length === 0) return;
+  currentIndex.value =
+    (currentIndex.value - 1 + slides.value.length) % slides.value.length;
 };
 
-const scrollNext = () => {
-  if (!emblaApi.value) return;
-  emblaApi.value.scrollNext();
+const scrollTo = (index: number) => {
+  currentIndex.value = index;
 };
 
-const setupDots = () => {
-  if (!emblaApi.value) return;
-
-  // Scroll snaps für Navigation
-  scrollSnaps.value = emblaApi.value.scrollSnapList();
-
-  // Set current index
-  selectedIndex.value = emblaApi.value.selectedScrollSnap();
-  currentIndex.value = selectedIndex.value; // Initialisiere currentIndex
-
-  // Event-Listener für Aktualisierung des ausgewählten Index
-  emblaApi.value.on("select", onSelect);
-};
+// Swipe Support
+const { isSwiping, direction } = useSwipe(sliderRef, {
+  onSwipeEnd(e, direction) {
+    if (direction === "left") scrollNext();
+    if (direction === "right") scrollPrev();
+  },
+});
 
 // Funktion zum Aktualisieren des aktuellen Content-Typs im Store
 const updateCurrentContentType = () => {
@@ -95,26 +61,13 @@ const updateCurrentContentType = () => {
   mainStore.setCurrentHeroContentType(contentType);
 };
 
-// Event-Listener nach dem Mounting
-onMounted(() => {
-  if (emblaApi.value) {
-    emblaApi.value.on("scroll", saveTranslatePositions);
-    emblaApi.value.on("destroy", restoreTranslatePositions);
-
-    setupDots();
-
-    // Initialer Content-Typ
-    updateCurrentContentType();
-  }
-});
-
-// Verwende direkt die Slides aus dem Modul
-const slides = computed(() => {
-  return props.module?.slides || [];
-});
-
 // Überwache Änderungen des currentIndex und aktualisiere den Content-Typ
 watch(currentIndex, () => {
+  updateCurrentContentType();
+});
+
+// Initial update
+onMounted(() => {
   updateCurrentContentType();
 });
 </script>
@@ -122,7 +75,7 @@ watch(currentIndex, () => {
 <template>
   <div
     v-if="module && slides.length > 0"
-    :class="`embla module-hero module-hero--${module.style || 'default'} ${
+    :class="`module-hero module-hero--${module.style || 'default'} ${
       mainStore.currentHeroContentType
     }`"
   >
@@ -131,12 +84,13 @@ watch(currentIndex, () => {
         {{ module.title }}
       </h3>
     </div>
-    <div class="embla__nav__container">
-      <nav class="embla__nav">
+    
+    <div class="slider__nav__container">
+      <nav class="slider__nav">
         <!-- Arrow Navigation -->
-        <div class="embla__nav__arrows" v-if="scrollSnaps.length > 1">
+        <div class="slider__nav__arrows" v-if="slides.length > 1">
           <button
-            class="embla__arrow embla__arrow--prev"
+            class="slider__arrow slider__arrow--prev"
             @click="scrollPrev"
             aria-label="Vorheriger Slide"
           >
@@ -153,20 +107,19 @@ watch(currentIndex, () => {
               />
             </svg>
           </button>
-          <!-- Dot Navigation -->
-          <div class="embla__nav__dots" v-if="scrollSnaps.length > 1">
+          
+           <!-- Dot Navigation -->
+          <div class="slider__nav__dots">
             <button
-              v-for="(_, index) in scrollSnaps"
+              v-for="(_, index) in slides"
               :key="index"
-              :class="[
-                'embla__dot',
-                { 'is-selected': index === selectedIndex },
-              ]"
+              :class="['slider__dot', { 'is-selected': index === currentIndex }]"
               @click="scrollTo(index)"
             ></button>
           </div>
+
           <button
-            class="embla__arrow embla__arrow--next"
+            class="slider__arrow slider__arrow--next"
             @click="scrollNext"
             aria-label="Nächster Slide"
           >
@@ -186,6 +139,7 @@ watch(currentIndex, () => {
         </div>
       </nav>
     </div>
+
     <div class="graphics-behind" :class="mainStore?.currentHeroContentType">
       <AnimatedGradient
         class="animated-gradient"
@@ -193,12 +147,13 @@ watch(currentIndex, () => {
       />
       <AnimatedLogoBackground class="animated-logo-background" />
     </div>
-    <div ref="emblaNode" class="embla">
-      <div ref="emblaContainer" class="embla__container">
-        <div
+
+    <!-- Slider Content -->
+    <div ref="sliderRef" class="slider-content">
+      <div
           v-for="(slide, index) in slides"
           :key="slide._key || index"
-          class="embla__slide"
+          class="slide"
           :class="{ active: index === currentIndex }"
         >
           <!-- Verwende die ModuleHeroEntry-Komponente für jeden Slide -->
@@ -209,8 +164,8 @@ watch(currentIndex, () => {
             }`"
           />
         </div>
-      </div>
     </div>
+    
     <div class="graphics-front">
       <AnimatedLogo class="animated-logo" />
     </div>
@@ -325,11 +280,11 @@ watch(currentIndex, () => {
     }
   }
 
-  .embla__nav__container {
+  .slider__nav__container {
     width: 100%;
     height: 100%;
     position: relative;
-    .embla__nav {
+    .slider__nav {
       @apply flex row items-center justify-space-between;
       position: absolute;
       top: calc(80svw + var(--big-margin) * 2);
@@ -353,7 +308,7 @@ watch(currentIndex, () => {
         z-index: 10;
       }
 
-      .embla__nav__arrows {
+      .slider__nav__arrows {
         @apply flex;
         gap: 0 var(--mid-margin);
         margin: 0;
@@ -362,7 +317,7 @@ watch(currentIndex, () => {
           width: 100%;
         }
 
-        .embla__arrow {
+        .slider__arrow {
           @apply flex items-center justify-center rounded-full transition-colors;
           background-color: transparent;
 
@@ -379,11 +334,11 @@ watch(currentIndex, () => {
         }
       }
 
-      .embla__nav__dots {
+      .slider__nav__dots {
         @apply flex row items-center justify-center flex-grow-1;
         gap: 0 var(--small-padding);
 
-        .embla__dot {
+        .slider__dot {
           @apply rounded-full transition-colors;
           width: 7px;
           height: 7px;
@@ -403,33 +358,36 @@ watch(currentIndex, () => {
     }
   }
 
-  /* Basis-Styles für den Embla Carousel */
-  .embla {
-    @apply overflow-hidden;
-    max-width: calc(var(--page-max-width));
-    width: calc(var(--page-max-width));
+  /* Slider Logic (Grid Overlay) */
+  .slider-content {
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr;
+    width: 100%;
     position: relative;
+    /* max-width: calc(var(--page-max-width)); */
+  }
 
-    &__container {
-      @apply flex backface-hidden touch-pan-y;
+  .slide {
+    @apply flex flex-row w-full;
+    grid-area: 1 / 1 / 2 / 2;
+    width: 100%;
+    padding: 0 calc(var(--big-margin) / 2);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease; /* Gentle transition */
+    z-index: 1;
+
+    &.active {
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 2;
     }
 
-    &__slide {
-      @apply flex flex-grow-0 flex-shrink-0 flex-basis-auto min-w-0 relative;
-      width: 100%; /* Jeder Slide nimmt volle Breite ein */
-      padding: 0 calc(var(--big-margin) / 2);
-      opacity: 0;
-      transition: opacity 0.15s ease !important;
-      @media screen and (max-width: 900px) {
+    @media screen and (max-width: 900px) {
         flex-flow: column wrap;
         align-items: center;
         justify-content: flex-start;
-      }
-
-      &.active {
-        opacity: 1;
-        transition: opacity 1.5s ease !important;
-      }
     }
   }
 }

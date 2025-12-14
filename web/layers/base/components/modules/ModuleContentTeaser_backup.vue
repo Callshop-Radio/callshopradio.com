@@ -74,8 +74,8 @@ const props = defineProps({
 });
 
 // State für sichtbare Items
-const itemsPerPage = computed(() => (props.module.type === "words" ? 2 : 3));
-const visibleItemCount = ref(itemsPerPage.value);
+const itemsPerPage = 3;
+const visibleItemCount = ref(itemsPerPage);
 const loadMoreClickCount = ref(0); // Zähler für Load More Klicks
 
 // Sortierungs-Zustand
@@ -90,7 +90,7 @@ function changeSortMode(mode: string) {
   }
   sortMode.value = mode;
   // Nach Sortierung Items zurücksetzen
-  visibleItemCount.value = itemsPerPage.value;
+  visibleItemCount.value = itemsPerPage;
   loadMoreClickCount.value = 0; // Reset des Zählers bei Sortierung
 }
 
@@ -119,14 +119,14 @@ function loadMoreItems() {
     return;
   }
 
-  visibleItemCount.value += itemsPerPage.value;
+  visibleItemCount.value += itemsPerPage;
 
   // Nach dem Laden neuer Items müssen wir die Artwork-URLs für die neuen Items laden
   nextTick(() => {
     if (props.module.type === "sets") {
       // Lade alle neu hinzugekommenen Items
       const newItems = allItems.value.slice(
-        visibleItemCount.value - itemsPerPage.value,
+        visibleItemCount.value - itemsPerPage,
         visibleItemCount.value
       );
       newItems.forEach((item: any) => {
@@ -543,7 +543,7 @@ onMounted(() => {
 function navigateToTagSearch(tag: any, item: any, isGenre = false) {
   // Determine search term
   let tagName = "";
-
+  
   if (isGenre) {
     tagName = tag.name || tag.title;
   } else {
@@ -552,37 +552,38 @@ function navigateToTagSearch(tag: any, item: any, isGenre = false) {
     // Since we don't have easy access to parseI18nObj in script scope without import,
     // we try to extract the first value or use the raw string
     const titleVal = tag.title || tag.name;
-
+    
     if (Array.isArray(titleVal)) {
-      // Assume portable text / i18n array, take first element value
-      tagName = titleVal[0]?.value || "";
-    } else if (typeof titleVal === "object") {
-      // Fallback for object without array
-      tagName = "";
+        // Assume portable text / i18n array, take first element value
+        tagName = titleVal[0]?.value || "";
+    } else if (typeof titleVal === 'object') {
+        // Fallback for object without array
+        tagName = ""; 
     } else {
-      tagName = titleVal || "";
+        tagName = titleVal || "";
     }
   }
 
   if (!tagName) return;
 
   // Determine Category
-  let category = "all";
+  let category = 'all';
   const itemType = item._type;
 
-  if (["show", "set"].includes(itemType)) category = "shows";
-  else if (["person", "venue"].includes(itemType)) category = "pool";
-  else if (["article"].includes(itemType)) category = "article";
+  if (['show', 'set'].includes(itemType)) category = 'shows';
+  else if (['person', 'venue'].includes(itemType)) category = 'pool';
+  else if (['article'].includes(itemType)) category = 'article';
 
   // Navigate
   router.push({
-    path: localePath("/search"),
+    path: localePath('/search'),
     query: {
       q: tagName,
-      type: category,
-    },
+      type: category
+    }
   });
 }
+
 </script>
 
 <template>
@@ -821,12 +822,6 @@ function navigateToTagSearch(tag: any, item: any, isGenre = false) {
             </div>
           </div>
 
-          <div v-if="props.module.type === 'words'" class="tags read-more">
-            <NuxtLink :to="getItemRoute(item)" class="grid-item__link"
-              ><h3 class="tag">Read More</h3></NuxtLink
-            >
-          </div>
-
           <!-- Titel für alle anderen Content-Typen -->
           <NuxtLink
             v-if="props.module.type !== 'sets'"
@@ -840,25 +835,14 @@ function navigateToTagSearch(tag: any, item: any, isGenre = false) {
 
           <!-- RichText Content -->
           <RichText
-            v-if="
-              item?.useTeaserText &&
-              item?.textTeaser &&
-              props.module.type !== 'words'
-            "
+            v-if="item?.useTeaserText && item?.textTeaser"
             :blocks="getRichTextBlocks(item?.textTeaser)"
           />
           <RichText
             v-else-if="
-              !item?.useTeaserText &&
-              item?.text &&
-              item?.text.length > 0 &&
-              props.module.type !== 'words'
+              !item?.useTeaserText && item?.text && item?.text.length > 0
             "
             :blocks="getRichTextBlocksSliced(item?.text, 1)"
-          />
-          <RichText
-            v-else-if="props.module.type === 'words'"
-            :blocks="parseI18nObj(item?.textTeaser)"
           />
           <RichText
             v-else-if="
@@ -1238,16 +1222,6 @@ function navigateToTagSearch(tag: any, item: any, isGenre = false) {
       flex-grow: 1;
       margin: var(--mid-padding) 0 0 0;
       gap: var(--mid-padding);
-      
-      .read-more {
-        position: absolute;
-        transform: translate(0, calc(var(--base-margin) * -1 - 50%));
-        .tag {
-          border: 1px solid var(--color-text);
-          background-color: var(--color-bg);
-          color: var(--color-text);
-        }
-      }
 
       &__interactive {
         width: 100%;
@@ -1419,73 +1393,10 @@ function navigateToTagSearch(tag: any, item: any, isGenre = false) {
   }
 
   &.words {
-    .content-teaser__grid {
-      gap: calc(var(--big-padding) * 3);
-    }
-
     .tag {
       &.city {
         background-color: var(--color-green);
         color: var(--color-white);
-      }
-    }
-
-    .teaser-item {
-      flex: 1 1 50%;
-      max-width: calc(50% - var(--big-padding) * 1.5);
-      background-color: var(--color-text);
-      border-radius: 12px;
-      border: 1px solid var(--color-text);
-      overflow: hidden;
-      padding: 0;
-      margin-right: 0;
-
-      .teaser-item__content__interactive,
-      .city-tags {
-        display: none;
-      }
-
-      &__link {
-        color: var(--color-bg);
-      }
-
-      &__image {
-        width: 100%;
-        img {
-          aspect-ratio: 3 / 1.5 !important;
-          width: 100%;
-        }
-      }
-
-      &__content {
-        gap: var(--big-padding);
-        margin: 0;
-        padding: var(--base-margin) var(--mid-padding);
-        color: var(--color-bg);
-
-        .teaser-item__title {
-          color: var(--color-bg);
-        }
-
-        .teaser-item__tags {
-          position: absolute;
-          top: var(--base-padding);
-          right: var(--base-padding);
-          color: var(--color-bg);
-
-          .tag {
-            background-color: transparent;
-            color: var(--color-bg);
-            padding: 0;
-            border: 1px solid var(--color-bg);
-            padding: 2px 8px;
-
-            &:hover {
-              background-color: var(--color-bg);
-              color: var(--color-text);
-            }
-          }
-        }
       }
     }
   }
@@ -1578,7 +1489,7 @@ button.genre {
     transform: translateY(-1px);
     opacity: 0.9;
   }
-
+  
   &:active {
     transform: translateY(0);
   }

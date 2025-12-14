@@ -50,9 +50,9 @@ const togglePlayerVisibility = () => {
             <NuxtLink :to="localePath('/pool')" :class="`tag pool`">
               Pool
             </NuxtLink>
-            <!-- <NuxtLink :to="localePath('/words')" :class="`tag words`">
+            <NuxtLink :to="localePath('/words')" :class="`tag words`">
               Words
-            </NuxtLink> -->
+            </NuxtLink>
           </ul>
         </nav>
         <SiteSearchButton class="mobile-hidden" />

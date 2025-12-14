@@ -395,15 +395,18 @@ export const MODULE_QUERY = `{
                 title,
                 datetime,
                 slug,
+                image ${IMAGE_QUERY},
                 useTeaserText,
                 textTeaser[] ${RICH_TEXT_QUERY},
                 text[] ${RICH_TEXT_QUERY},
+                description[] ${RICH_TEXT_QUERY},
                 _updatedAt,
                 _createdAt,
                 "tags": tags[]->{
                     ...,
                     _id,
-                    title
+                    title,
+                    short
                 }| order(lower(title)),
             },
             articles[]->{
@@ -413,15 +416,18 @@ export const MODULE_QUERY = `{
                 title,
                 slug,
                 datetime,
+                image ${IMAGE_QUERY},
                 useTeaserText,
                 textTeaser[] ${RICH_TEXT_QUERY},
                 text[] ${RICH_TEXT_QUERY},
+                description[] ${RICH_TEXT_QUERY},
                 _updatedAt,
                 _createdAt,
                 "tags": tags[]->{
                     ...,
                     _id,
-                    title
+                    title,
+                    short
                 }
             }
         ),
