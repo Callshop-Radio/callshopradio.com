@@ -114,7 +114,7 @@ export const POOLARCHIVE_QUERY = `
     ...,
     count,
     "pool": select(
-      autoLoad == true => *[_type in ['person', 'venue'] && poolVisibility == true] | order(_updatedAt desc) {
+      autoLoad == true => *[_type in ['person', 'venue'] && poolVisibility == true] | order(_updatedAt desc)[0...20] {
           ...,
           _id,
           _type,
@@ -402,7 +402,7 @@ export const SHOWSARCHIVE_QUERY = `
     ...,
     count,
     "sets": select(
-            autoLoad == true => *[_type == 'set' && datetime != null] | order(datetime desc) {
+            autoLoad == true => *[_type == 'set' && datetime != null] | order(datetime desc)[0...20] {
                 ...,
                 _id,
                 _type,

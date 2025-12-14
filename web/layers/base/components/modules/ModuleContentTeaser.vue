@@ -1015,7 +1015,7 @@ function navigateToTagSearch(tag: any, item: any, isGenre = false) {
         transition: color 0.2s ease;
 
         @media (prefers-color-scheme: dark) {
-          color: var(--color-bg);
+          color: var(--color-text);
         }
 
         .dot {

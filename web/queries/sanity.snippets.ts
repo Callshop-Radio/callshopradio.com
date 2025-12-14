@@ -350,7 +350,7 @@ export const MODULE_QUERY = `{
             slug,
         },
         "poolItems": select(
-            type == 'pool' && autoLoad == true => *[_type in ['person', 'venue'] && poolVisibility == true] | order(_updatedAt desc) {
+            type == 'pool' && autoLoad == true => *[_type in ['person', 'venue'] && poolVisibility == true] | order(_updatedAt desc)[0...50] {
                 ...,
                 _id,
                 _type,
@@ -388,7 +388,7 @@ export const MODULE_QUERY = `{
             }
         ),
         "articleItems": select(
-            type == 'words' && autoLoad == true => *[_type == 'article'] | order(datetime desc) {
+            type == 'words' && autoLoad == true => *[_type == 'article'] | order(datetime desc)[0...50] {
                 ...,
                 _id,
                 _type,
@@ -432,7 +432,7 @@ export const MODULE_QUERY = `{
             }
         ),
         "showItems": select(
-            type == 'shows' && autoLoad == true => *[_type == 'show'] | order(datetime desc) {
+            type == 'shows' && autoLoad == true => *[_type == 'show'] | order(datetime desc)[0...50] {
                 _id,
                 _type,
                 title,
@@ -464,7 +464,7 @@ export const MODULE_QUERY = `{
             }
         ),
         "setItems": select(
-            type == 'sets' && autoLoad == true => *[_type == 'set' && datetime != null] | order(datetime desc) {
+            type == 'sets' && autoLoad == true => *[_type == 'set' && datetime != null] | order(datetime desc)[0...50] {
                 ...,
                 _id,
                 _type,
@@ -590,7 +590,7 @@ export const MODULE_QUERY = `{
         showTags,
         autoLoad,
         ${TAG_QUERY},
-        "poolItems": *[_type in ['person', 'venue'] && poolVisibility == true] | order(_updatedAt desc) {
+        "poolItems": *[_type in ['person', 'venue'] && poolVisibility == true] | order(_updatedAt desc)[0...100] {
             ...,
             _id,
             _type,
@@ -606,7 +606,7 @@ export const MODULE_QUERY = `{
             }| order(lower(title)),
             location
         },
-        "articleItems": *[_type == 'article'] | order(_updatedAt desc){
+        "articleItems": *[_type == 'article'] | order(_updatedAt desc)[0...100]{
             ...,
             _id,
             _type,
@@ -625,7 +625,7 @@ export const MODULE_QUERY = `{
                 short
             }| order(lower(title)),
         },
-        "showItems": *[_type == 'show'] | order(datetime desc) {
+        "showItems": *[_type == 'show'] | order(datetime desc)[0...100] {
             ...,
             _id,
             _type,
@@ -640,7 +640,7 @@ export const MODULE_QUERY = `{
                 short
             }| order(lower(title)),
         },
-        "setItems": *[_type == 'set'] | order(datetime desc){
+        "setItems": *[_type == 'set'] | order(datetime desc)[0...100]{
             ...,
             _id,
             _type,
