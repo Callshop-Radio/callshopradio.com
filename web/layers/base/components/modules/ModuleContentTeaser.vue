@@ -59,6 +59,17 @@ import { ref, computed, watch, onMounted, nextTick } from "vue";
 
 // Nuxt Composables
 import { useMainStore } from "~/stores/mainStore";
+import {
+  SET_LIST_QUERY,
+  SET_COUNT_QUERY,
+  POOL_LIST_QUERY,
+  POOL_COUNT_QUERY,
+  ARTICLE_LIST_QUERY,
+  ARTICLE_COUNT_QUERY,
+  SHOW_LIST_QUERY,
+  SHOW_COUNT_QUERY,
+} from "~~/queries/module.queries";
+
 const { locale } = useI18n();
 const localePath = useLocalePath();
 const router = useRouter();
@@ -72,6 +83,106 @@ const props = defineProps({
     required: true,
   },
 });
+
+// ==================== HYBRID DATA LOADING ====================
+// Determine if we need to load data ourselves (no pre-loaded items in props)
+const needsSelfLoad = computed(() => {
+  if (!props.module) return false;
+  const { type, poolItems, setItems, showItems, articleItems } = props.module;
+  
+  const hasItems: Record<string, boolean> = {
+    pool: poolItems?.length > 0,
+    sets: setItems?.length > 0,
+    shows: showItems?.length > 0,
+    words: articleItems?.length > 0,
+  };
+  
+  return !hasItems[type];
+});
+
+// Self-loaded items (only used when needsSelfLoad is true)
+const selfLoadedItems = ref<ContentItem[]>([]);
+const selfLoadedCount = ref(0);
+const isLoadingSelf = ref(false);
+const selfLoadPage = ref(1);
+const SELF_LOAD_PER_PAGE = 50;
+
+// Map module type to query type
+const getModuleQueryType = computed(() => {
+  if (!props.module) return null;
+  const type = props.module.type;
+  if (type === 'pool') return 'pool';
+  if (type === 'sets') return 'sets';
+  if (type === 'shows') return 'shows';
+  if (type === 'words') return 'words';
+  return null;
+});
+
+// Function to load content from Sanity if needed
+async function loadContentIfNeeded() {
+  if (!needsSelfLoad.value || !getModuleQueryType.value) return;
+  
+  isLoadingSelf.value = true;
+  
+  try {
+    const sanity = useSanity();
+    const type = getModuleQueryType.value;
+    const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
+    const end = selfLoadPage.value * SELF_LOAD_PER_PAGE;
+    
+    let query: string;
+    let countQuery: string;
+    let params: Record<string, any> = { start, end };
+    
+    switch (type) {
+      case 'sets':
+        query = SET_LIST_QUERY;
+        countQuery = SET_COUNT_QUERY;
+        break;
+      case 'pool':
+        query = POOL_LIST_QUERY;
+        countQuery = POOL_COUNT_QUERY;
+        const poolType = props.module.poolContentType;
+        params.types = poolType === 'all' 
+          ? ['person', 'venue'] 
+          : poolType === 'persons' 
+            ? ['person'] 
+            : poolType === 'venues' 
+              ? ['venue'] 
+              : ['person', 'venue'];
+        break;
+      case 'shows':
+        query = SHOW_LIST_QUERY;
+        countQuery = SHOW_COUNT_QUERY;
+        break;
+      case 'words':
+        query = ARTICLE_LIST_QUERY;
+        countQuery = ARTICLE_COUNT_QUERY;
+        break;
+      default:
+        return;
+    }
+    
+    const [items, count] = await Promise.all([
+      sanity.fetch(query, params),
+      selfLoadedCount.value === 0 ? sanity.fetch(countQuery, params) : Promise.resolve(selfLoadedCount.value)
+    ]);
+    
+    if (typeof count === 'number') {
+      selfLoadedCount.value = count;
+    }
+    
+    if (selfLoadPage.value === 1) {
+      selfLoadedItems.value = items;
+    } else {
+      selfLoadedItems.value = [...selfLoadedItems.value, ...items];
+    }
+  } catch (error) {
+    console.error('[ModuleContentTeaser] Error loading content:', error);
+  } finally {
+    isLoadingSelf.value = false;
+  }
+}
 
 // State für sichtbare Items
 const itemsPerPage = computed(() => (props.module.type === "words" ? 2 : 3));
@@ -175,7 +286,13 @@ const shouldShowMoreButton = computed(() => {
 // Alle verfügbaren Items basierend auf Modultyp
 const allItems = computed(() => {
   if (!props.module) return [];
+  
+  // If we're self-loading, return self-loaded items
+  if (needsSelfLoad.value) {
+    return selfLoadedItems.value;
+  }
 
+  // Otherwise use props data (existing behavior)
   switch (props.module.type) {
     case "pool":
       let poolItems = props.module.poolItems || [];
@@ -502,7 +619,12 @@ watch(
 );
 
 // Lifecycle Hooks
-onMounted(() => {
+onMounted(async () => {
+  // Load content if this module needs self-loading
+  if (needsSelfLoad.value && selfLoadedItems.value.length === 0) {
+    await loadContentIfNeeded();
+  }
+  
   // Beim ersten Laden die Artworks für sichtbare Items laden
   if (props.module.type === "sets") {
     visibleItems.value.forEach((item: any) => {

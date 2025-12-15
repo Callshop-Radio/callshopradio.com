@@ -3,6 +3,17 @@ import emblaCarouselVue from "embla-carousel-vue";
 import { useThrottleFn } from "@vueuse/core";
 import { ref, onMounted, computed } from "vue";
 import { useMainStore } from "~/stores/mainStore";
+import {
+  SET_LIST_QUERY,
+  SET_COUNT_QUERY,
+  POOL_LIST_QUERY,
+  POOL_COUNT_QUERY,
+  ARTICLE_LIST_QUERY,
+  ARTICLE_COUNT_QUERY,
+  SHOW_LIST_QUERY,
+  SHOW_COUNT_QUERY,
+} from "~~/queries/module.queries";
+
 const { locale, setLocale } = useI18n();
 const localePath = useLocalePath();
 
@@ -14,6 +25,72 @@ const props = defineProps({
     required: true,
   },
 });
+
+// ==================== HYBRID DATA LOADING ====================
+const needsSelfLoad = computed(() => {
+  if (!props.module) return false;
+  const { type, poolItems, setItems, showItems, articleItems } = props.module;
+  
+  const hasItems: Record<string, boolean> = {
+    pool: poolItems?.length > 0,
+    sets: setItems?.length > 0,
+    shows: showItems?.length > 0,
+    words: articleItems?.length > 0,
+  };
+  
+  return !hasItems[type];
+});
+
+const selfLoadedItems = ref<any[]>([]);
+const isLoadingSelf = ref(false);
+const SELF_LOAD_LIMIT = 24; // Sliders don't need pagination
+
+async function loadContentIfNeeded() {
+  if (!needsSelfLoad.value) return;
+  
+  const type = props.module?.type;
+  if (!type) return;
+  
+  isLoadingSelf.value = true;
+  
+  try {
+    const sanity = useSanity();
+    
+    let query: string;
+    let params: Record<string, any> = { start: 0, end: SELF_LOAD_LIMIT };
+    
+    switch (type) {
+      case 'sets':
+        query = SET_LIST_QUERY;
+        break;
+      case 'pool':
+        query = POOL_LIST_QUERY;
+        const poolType = props.module.poolContentType;
+        params.types = poolType === 'all' 
+          ? ['person', 'venue'] 
+          : poolType === 'persons' 
+            ? ['person'] 
+            : poolType === 'venues' 
+              ? ['venue'] 
+              : ['person', 'venue'];
+        break;
+      case 'shows':
+        query = SHOW_LIST_QUERY;
+        break;
+      case 'words':
+        query = ARTICLE_LIST_QUERY;
+        break;
+      default:
+        return;
+    }
+    
+    selfLoadedItems.value = await sanity.fetch(query, params);
+  } catch (error) {
+    console.error('[ModuleContentSlider] Error loading content:', error);
+  } finally {
+    isLoadingSelf.value = false;
+  }
+}
 
 const currentIndex = ref(0);
 
@@ -95,7 +172,12 @@ const setupDots = () => {
 };
 
 // Event-Listener after mounting
-onMounted(() => {
+onMounted(async () => {
+  // Load content if this module needs self-loading
+  if (needsSelfLoad.value && selfLoadedItems.value.length === 0) {
+    await loadContentIfNeeded();
+  }
+  
   if (emblaApi.value) {
     emblaApi.value.on("scroll", saveTranslatePositions);
     emblaApi.value.on("destroy", restoreTranslatePositions);
@@ -345,6 +427,11 @@ async function mobileRestoreTranslatePositions() {
 const mobileGroupedItems = computed(() => {
   if (!props.module) return [];
 
+  // If we're self-loading, use self-loaded items
+  if (needsSelfLoad.value) {
+    return groupMobileItems(selfLoadedItems.value, props.module.poolContentType);
+  }
+
   switch (props.module.type) {
     case "pool":
       return groupMobileItems(
@@ -408,7 +495,12 @@ watch(
 const groupedItems = computed(() => {
   if (!props.module) return [];
 
-  // Hole die bereits sortierten Items aus dem Modul entsprechend dem Typ
+  // If we're self-loading, use self-loaded items
+  if (needsSelfLoad.value) {
+    return groupItems(selfLoadedItems.value, props.module.poolContentType);
+  }
+
+  // Otherwise use props data (existing behavior)
   switch (props.module.type) {
     case "pool":
       return groupItems(
