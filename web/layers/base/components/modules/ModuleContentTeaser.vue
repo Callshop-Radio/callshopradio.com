@@ -100,8 +100,7 @@ const needsSelfLoad = computed(() => {
   return !hasItems[type];
 });
 
-// Self-loaded items (only used when needsSelfLoad is true)
-const selfLoadedItems = ref<ContentItem[]>([]);
+// Self-loaded items state
 const selfLoadedCount = ref(0);
 const isLoadingSelf = ref(false);
 const selfLoadPage = ref(1);
@@ -118,67 +117,94 @@ const getModuleQueryType = computed(() => {
   return null;
 });
 
-// Function to load content from Sanity if needed
-async function loadContentIfNeeded() {
-  if (!needsSelfLoad.value || !getModuleQueryType.value) return;
+// Build query config for SSR
+const buildQueryConfig = () => {
+  const type = getModuleQueryType.value;
+  if (!type) return null;
+  
+  const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
+  const end = selfLoadPage.value * SELF_LOAD_PER_PAGE;
+  let params: Record<string, any> = { start, end };
+  
+  switch (type) {
+    case 'sets':
+      return { query: SET_LIST_QUERY, countQuery: SET_COUNT_QUERY, params };
+    case 'pool':
+      const poolType = props.module.poolContentType;
+      params.types = poolType === 'all' 
+        ? ['person', 'venue'] 
+        : poolType === 'persons' 
+          ? ['person'] 
+          : poolType === 'venues' 
+            ? ['venue'] 
+            : ['person', 'venue'];
+      return { query: POOL_LIST_QUERY, countQuery: POOL_COUNT_QUERY, params };
+    case 'shows':
+      return { query: SHOW_LIST_QUERY, countQuery: SHOW_COUNT_QUERY, params };
+    case 'words':
+      return { query: ARTICLE_LIST_QUERY, countQuery: ARTICLE_COUNT_QUERY, params };
+    default:
+      return null;
+  }
+};
+
+// SSR-compatible data loading
+const { data: selfLoadedItems, pending: isLoadingInitial } = await useAsyncData(
+  `module-content-teaser-${props.module?._key || props.module?.type}-${props.module?.poolContentType || 'default'}`,
+  async () => {
+    if (!needsSelfLoad.value) return [];
+    
+    const config = buildQueryConfig();
+    if (!config) return [];
+    
+    try {
+      const sanity = useSanity();
+      const [items, count] = await Promise.all([
+        sanity.fetch(config.query, config.params),
+        sanity.fetch(config.countQuery, config.params)
+      ]);
+      
+      if (typeof count === 'number') {
+        selfLoadedCount.value = count;
+      }
+      
+      return items || [];
+    } catch (error) {
+      console.error('[ModuleContentTeaser] SSR Data Fetch Error:', error);
+      return [];
+    }
+  },
+  {
+    default: () => [],
+    lazy: false
+  }
+);
+
+// Load more content (client-side)
+async function loadMoreSelfContent() {
+  if (isLoadingSelf.value) return;
+  
+  const config = buildQueryConfig();
+  if (!config) return;
   
   isLoadingSelf.value = true;
   
   try {
     const sanity = useSanity();
-    const type = getModuleQueryType.value;
-    const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
-    const end = selfLoadPage.value * SELF_LOAD_PER_PAGE;
+    selfLoadPage.value++;
     
-    let query: string;
-    let countQuery: string;
-    let params: Record<string, any> = { start, end };
+    const newStart = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
+    const newEnd = selfLoadPage.value * SELF_LOAD_PER_PAGE;
+    config.params.start = newStart;
+    config.params.end = newEnd;
     
-    switch (type) {
-      case 'sets':
-        query = SET_LIST_QUERY;
-        countQuery = SET_COUNT_QUERY;
-        break;
-      case 'pool':
-        query = POOL_LIST_QUERY;
-        countQuery = POOL_COUNT_QUERY;
-        const poolType = props.module.poolContentType;
-        params.types = poolType === 'all' 
-          ? ['person', 'venue'] 
-          : poolType === 'persons' 
-            ? ['person'] 
-            : poolType === 'venues' 
-              ? ['venue'] 
-              : ['person', 'venue'];
-        break;
-      case 'shows':
-        query = SHOW_LIST_QUERY;
-        countQuery = SHOW_COUNT_QUERY;
-        break;
-      case 'words':
-        query = ARTICLE_LIST_QUERY;
-        countQuery = ARTICLE_COUNT_QUERY;
-        break;
-      default:
-        return;
-    }
+    const items = await sanity.fetch(config.query, config.params);
     
-    const [items, count] = await Promise.all([
-      sanity.fetch(query, params),
-      selfLoadedCount.value === 0 ? sanity.fetch(countQuery, params) : Promise.resolve(selfLoadedCount.value)
-    ]);
-    
-    if (typeof count === 'number') {
-      selfLoadedCount.value = count;
-    }
-    
-    if (selfLoadPage.value === 1) {
-      selfLoadedItems.value = items;
-    } else {
+    if (selfLoadedItems.value) {
       selfLoadedItems.value = [...selfLoadedItems.value, ...items];
     }
   } catch (error) {
-    console.error('[ModuleContentTeaser] Error loading content:', error);
+    console.error('[ModuleContentTeaser] Error loading more content:', error);
   } finally {
     isLoadingSelf.value = false;
   }
@@ -221,32 +247,19 @@ function formatDate(dateString: string) {
 const artworkUrls = ref(new Map());
 
 // Funktion zum Laden weiterer Items
-function loadMoreItems() {
-  loadMoreClickCount.value++; // Zähler erhöhen
-
-  // Nach dem dritten Klick zur Übersichtsseite navigieren
-  if (loadMoreClickCount.value >= 3) {
-    navigateToOverview();
-    return;
-  }
-
-  visibleItemCount.value += itemsPerPage.value;
-
-  // Nach dem Laden neuer Items müssen wir die Artwork-URLs für die neuen Items laden
-  nextTick(() => {
-    if (props.module.type === "sets") {
-      // Lade alle neu hinzugekommenen Items
-      const newItems = allItems.value.slice(
-        visibleItemCount.value - itemsPerPage.value,
-        visibleItemCount.value
-      );
-      newItems.forEach((item: any) => {
-        if (!artworkUrls.value.has(item?._id)) {
-          loadArtworkUrl(item);
-        }
-      });
+async function loadMoreItems() {
+  if (itemsPerPage.value === 3) {
+    // For other types, simple pagination
+    visibleItemCount.value += itemsPerPage.value;
+    loadMoreClickCount.value++;
+    
+    // Check if we need to load more from server
+    const currentItems = selfLoadedItems.value || [];
+    if (needsSelfLoad.value && visibleItemCount.value >= currentItems.length && currentItems.length < selfLoadedCount.value) {
+      await loadMoreSelfContent();
     }
-  });
+  } else {
+  }
 }
 
 // Funktion zur Navigation zur Übersichtsseite
@@ -619,11 +632,10 @@ watch(
 );
 
 // Lifecycle Hooks
-onMounted(async () => {
-  // Load content if this module needs self-loading
-  if (needsSelfLoad.value && selfLoadedItems.value.length === 0) {
-    await loadContentIfNeeded();
-  }
+// Lifecycle Hooks
+onMounted(() => {
+  // SSR data loading handles content fetching now
+
   
   // Beim ersten Laden die Artworks für sichtbare Items laden
   if (props.module.type === "sets") {

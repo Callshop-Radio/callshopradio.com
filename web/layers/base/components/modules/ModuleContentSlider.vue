@@ -41,52 +41,111 @@ const needsSelfLoad = computed(() => {
   return !hasItems[type];
 });
 
-const selfLoadedItems = ref<any[]>([]);
+// Self-loaded items state
+const selfLoadedCount = ref(0);
 const isLoadingSelf = ref(false);
-const SELF_LOAD_LIMIT = 24; // Sliders don't need pagination
+const selfLoadPage = ref(1);
+const SELF_LOAD_PER_PAGE = 50;
 
-async function loadContentIfNeeded() {
-  if (!needsSelfLoad.value) return;
+// Map module type to query type
+const getModuleQueryType = computed(() => {
+  if (!props.module) return null;
+  const type = props.module.type;
+  if (type === 'pool') return 'pool';
+  if (type === 'sets') return 'sets';
+  if (type === 'shows') return 'shows';
+  if (type === 'words') return 'words';
+  return null;
+});
+
+// Build query config for SSR
+const buildQueryConfig = () => {
+  const type = getModuleQueryType.value;
+  if (!type) return null;
   
-  const type = props.module?.type;
-  if (!type) return;
+  const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
+  const end = selfLoadPage.value * SELF_LOAD_PER_PAGE;
+  let params: Record<string, any> = { start, end };
+  
+  switch (type) {
+    case 'sets':
+      return { query: SET_LIST_QUERY, countQuery: SET_COUNT_QUERY, params };
+    case 'pool':
+      const poolType = props.module.poolContentType;
+      params.types = poolType === 'all' 
+        ? ['person', 'venue'] 
+        : poolType === 'persons' 
+          ? ['person'] 
+          : poolType === 'venues' 
+            ? ['venue'] 
+            : ['person', 'venue'];
+      return { query: POOL_LIST_QUERY, countQuery: POOL_COUNT_QUERY, params };
+    case 'shows':
+      return { query: SHOW_LIST_QUERY, countQuery: SHOW_COUNT_QUERY, params };
+    case 'words':
+      return { query: ARTICLE_LIST_QUERY, countQuery: ARTICLE_COUNT_QUERY, params };
+    default:
+      return null;
+  }
+};
+
+// SSR-compatible data loading
+const { data: selfLoadedItems, pending: isLoadingInitial } = await useAsyncData(
+  `module-content-slider-${props.module?._key || props.module?.type}-${props.module?.poolContentType || 'default'}`,
+  async () => {
+    if (!needsSelfLoad.value) return [];
+    
+    const config = buildQueryConfig();
+    if (!config) return [];
+    
+    try {
+      const sanity = useSanity();
+      const [items, count] = await Promise.all([
+        sanity.fetch(config.query, config.params),
+        sanity.fetch(config.countQuery, config.params)
+      ]);
+      
+      if (typeof count === 'number') {
+        selfLoadedCount.value = count;
+      }
+      
+      return items || [];
+    } catch (error) {
+      console.error('[ModuleContentSlider] SSR Data Fetch Error:', error);
+      return [];
+    }
+  },
+  {
+    default: () => [],
+    lazy: false
+  }
+);
+
+// Load more content (client-side)
+async function loadMoreSelfContent() {
+  if (isLoadingSelf.value) return;
+  
+  const config = buildQueryConfig();
+  if (!config) return;
   
   isLoadingSelf.value = true;
   
   try {
     const sanity = useSanity();
+    selfLoadPage.value++;
     
-    let query: string;
-    let params: Record<string, any> = { start: 0, end: SELF_LOAD_LIMIT };
+    const newStart = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
+    const newEnd = selfLoadPage.value * SELF_LOAD_PER_PAGE;
+    config.params.start = newStart;
+    config.params.end = newEnd;
     
-    switch (type) {
-      case 'sets':
-        query = SET_LIST_QUERY;
-        break;
-      case 'pool':
-        query = POOL_LIST_QUERY;
-        const poolType = props.module.poolContentType;
-        params.types = poolType === 'all' 
-          ? ['person', 'venue'] 
-          : poolType === 'persons' 
-            ? ['person'] 
-            : poolType === 'venues' 
-              ? ['venue'] 
-              : ['person', 'venue'];
-        break;
-      case 'shows':
-        query = SHOW_LIST_QUERY;
-        break;
-      case 'words':
-        query = ARTICLE_LIST_QUERY;
-        break;
-      default:
-        return;
+    const items = await sanity.fetch(config.query, config.params);
+    
+    if (selfLoadedItems.value) {
+      selfLoadedItems.value = [...selfLoadedItems.value, ...items];
     }
-    
-    selfLoadedItems.value = await sanity.fetch(query, params);
   } catch (error) {
-    console.error('[ModuleContentSlider] Error loading content:', error);
+    console.error('[ModuleContentSlider] Error loading more content:', error);
   } finally {
     isLoadingSelf.value = false;
   }
@@ -172,11 +231,10 @@ const setupDots = () => {
 };
 
 // Event-Listener after mounting
-onMounted(async () => {
-  // Load content if this module needs self-loading
-  if (needsSelfLoad.value && selfLoadedItems.value.length === 0) {
-    await loadContentIfNeeded();
-  }
+// Event-Listener after mounting (updated for SSR)
+onMounted(() => {
+  // Data loading handled by useAsyncData now
+
   
   if (emblaApi.value) {
     emblaApi.value.on("scroll", saveTranslatePositions);

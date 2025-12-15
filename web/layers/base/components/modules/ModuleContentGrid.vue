@@ -90,8 +90,7 @@ const needsSelfLoad = computed(() => {
   return !hasItems[type];
 });
 
-// Self-loaded items (only used when needsSelfLoad is true)
-const selfLoadedItems = ref<any[]>([]);
+// Self-loaded items state
 const selfLoadedCount = ref(0);
 const isLoadingSelf = ref(false);
 const selfLoadPage = ref(1);
@@ -108,78 +107,110 @@ const getModuleQueryType = computed(() => {
   return null;
 });
 
-// Function to load content from Sanity if needed
-async function loadContentIfNeeded() {
-  if (!needsSelfLoad.value || !getModuleQueryType.value) return;
+// Build query config for SSR-compatible data fetching
+const buildQueryConfig = () => {
+  const type = getModuleQueryType.value;
+  if (!type) return null;
+  
+  const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
+  const end = selfLoadPage.value * SELF_LOAD_PER_PAGE;
+  let params: Record<string, any> = { start, end };
+  
+  switch (type) {
+    case 'sets':
+      return { query: SET_LIST_QUERY, countQuery: SET_COUNT_QUERY, params };
+    case 'pool':
+      const poolType = props.module.poolContentType;
+      params.types = poolType === 'all' 
+        ? ['person', 'venue'] 
+        : poolType === 'persons' 
+          ? ['person'] 
+          : poolType === 'venues' 
+            ? ['venue'] 
+            : ['person', 'venue'];
+      return { query: POOL_LIST_QUERY, countQuery: POOL_COUNT_QUERY, params };
+    case 'shows':
+      return { query: SHOW_LIST_QUERY, countQuery: SHOW_COUNT_QUERY, params };
+    case 'words':
+      return { query: ARTICLE_LIST_QUERY, countQuery: ARTICLE_COUNT_QUERY, params };
+    default:
+      return null;
+  }
+};
+
+// SSR-compatible data loading with useAsyncData
+const { data: selfLoadedItems, pending: isLoadingInitial } = await useAsyncData(
+  `module-content-grid-${props.module?._key || props.module?.type}-${props.module?.poolContentType || 'default'}`,
+  async () => {
+    if (!needsSelfLoad.value) return [];
+    
+    // Safety check for query config
+    const config = buildQueryConfig();
+    if (!config) return [];
+    
+    try {
+      const sanity = useSanity();
+      // Increase timeout or handle slow connections if needed, but default fetch should be okay.
+      // We wrap in try/catch to ensure page doesn't crash on one module failure.
+      const [items, count] = await Promise.all([
+        sanity.fetch(config.query, config.params),
+        sanity.fetch(config.countQuery, config.params)
+      ]);
+      
+      if (typeof count === 'number') {
+        selfLoadedCount.value = count;
+      }
+      
+      return items || [];
+    } catch (error) {
+      console.error('[ModuleContentGrid] SSR Data Fetch Error:', error);
+      // Return empty array on error so page can still render other parts
+      return [];
+    }
+  },
+  {
+    default: () => [],
+    lazy: false, // Load immediately for SSR
+    // server: true // explicit
+  }
+);
+
+// Function to load more content (client-side only for pagination)
+async function loadMoreSelfContent() {
+  if (isLoadingSelf.value) return;
+  
+  const config = buildQueryConfig();
+  if (!config) return;
   
   isLoadingSelf.value = true;
   
   try {
     const sanity = useSanity();
-    const type = getModuleQueryType.value;
-    const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
-    const end = selfLoadPage.value * SELF_LOAD_PER_PAGE;
+    selfLoadPage.value++;
     
-    let query: string;
-    let countQuery: string;
-    let params: Record<string, any> = { start, end };
+    const newStart = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
+    const newEnd = selfLoadPage.value * SELF_LOAD_PER_PAGE;
+    config.params.start = newStart;
+    config.params.end = newEnd;
     
-    switch (type) {
-      case 'sets':
-        query = SET_LIST_QUERY;
-        countQuery = SET_COUNT_QUERY;
-        break;
-      case 'pool':
-        query = POOL_LIST_QUERY;
-        countQuery = POOL_COUNT_QUERY;
-        const poolType = props.module.poolContentType;
-        params.types = poolType === 'all' 
-          ? ['person', 'venue'] 
-          : poolType === 'persons' 
-            ? ['person'] 
-            : poolType === 'venues' 
-              ? ['venue'] 
-              : ['person', 'venue'];
-        break;
-      case 'shows':
-        query = SHOW_LIST_QUERY;
-        countQuery = SHOW_COUNT_QUERY;
-        break;
-      case 'words':
-        query = ARTICLE_LIST_QUERY;
-        countQuery = ARTICLE_COUNT_QUERY;
-        break;
-      default:
-        return;
-    }
+    const items = await sanity.fetch(config.query, config.params);
     
-    const [items, count] = await Promise.all([
-      sanity.fetch(query, params),
-      selfLoadedCount.value === 0 ? sanity.fetch(countQuery, params) : Promise.resolve(selfLoadedCount.value)
-    ]);
-    
-    if (typeof count === 'number') {
-      selfLoadedCount.value = count;
-    }
-    
-    if (selfLoadPage.value === 1) {
-      selfLoadedItems.value = items;
-    } else {
+    if (selfLoadedItems.value) {
       selfLoadedItems.value = [...selfLoadedItems.value, ...items];
     }
   } catch (error) {
-    console.error('[ModuleContentGrid] Error loading content:', error);
+    console.error('[ModuleContentGrid] Error loading more content:', error);
   } finally {
     isLoadingSelf.value = false;
   }
 }
 
-// Load more self-loaded items
+// Load more self-loaded items (renamed for clarity)
 async function loadMoreSelfItems() {
   if (isLoadingSelf.value) return;
-  if (selfLoadedItems.value.length >= selfLoadedCount.value) return;
-  selfLoadPage.value++;
-  await loadContentIfNeeded();
+  const currentItems = selfLoadedItems.value || [];
+  if (currentItems.length >= selfLoadedCount.value) return;
+  await loadMoreSelfContent();
 }
 
 // ==================== COMPUTED: Items ====================
@@ -642,13 +673,9 @@ function playTrack(item: any) {
 }
 
 // ==================== LIFECYCLE ====================
-onMounted(async () => {
-  // Load content if this module needs self-loading
-  if (needsSelfLoad.value && selfLoadedItems.value.length === 0) {
-    await loadContentIfNeeded();
-  }
-  
-  // Only load artwork URLs for initially visible items
+// Client-side only setup (scroll handling, artwork loading)
+onMounted(() => {
+  // Load artwork URLs for initially visible items (client-only)
   if (contentType.value === "sets") {
     visibleItems.value.forEach(loadArtworkUrl);
   }
@@ -673,7 +700,14 @@ onUnmounted(() => {
 });
 </script>
 <template>
-  <ClientOnly>
+  <div v-if="isLoadingInitial && needsSelfLoad" class="module-loading">
+    <div class="loading-skeleton">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-grid">
+        <div class="skeleton-item" v-for="i in 9" :key="i"></div>
+      </div>
+    </div>
+  </div>
     <div
       v-if="module"
       ref="moduleContainer"
@@ -1192,10 +1226,45 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
-  </ClientOnly>
 </template>
 
 <style lang="postcss" scoped>
+/* ==================== LOADING SKELETON ==================== */
+.module-loading {
+  width: 100%;
+  max-width: var(--page-max-width);
+  padding: var(--mid-padding);
+}
+
+.loading-skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-header {
+  width: 200px;
+  height: 24px;
+  background: var(--color-fg-muted, #e0e0e0);
+  border-radius: 4px;
+  margin-bottom: var(--mid-margin, 1rem);
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--mid-gap, 1rem);
+}
+
+.skeleton-item {
+  aspect-ratio: 1 / 1;
+  background: var(--color-fg-muted, #e0e0e0);
+  border-radius: 4px;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 /* ==================== BASE STYLES ==================== */
 .content-grid {
   position: relative;

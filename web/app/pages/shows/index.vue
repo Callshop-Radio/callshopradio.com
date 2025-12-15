@@ -63,9 +63,6 @@ useHead({
   flex-flow: column wrap;
   justify-content: flex-start;
   align-items: center;
-  @media screen and (max-width: 1100px) {
-    display: none;
-  }
 }
 </style>
 
