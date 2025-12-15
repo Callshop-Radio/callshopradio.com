@@ -12,9 +12,10 @@ import { IMAGE_QUERY, RICH_TEXT_QUERY } from './sanity.snippets';
 /**
  * Query for set listings - matches original MODULE_QUERY structure
  */
-export const SET_LIST_QUERY = `
-*[_type == 'set' && datetime != null] 
-| order(datetime desc)[$start...$end] {
+// Breakdown for dynamic composition
+export const SET_BASE_FILTER = "_type == 'set' && datetime != null";
+
+export const SET_PROJECTION = `{
   ...,
   _id,
   _type,
@@ -80,8 +81,12 @@ export const SET_LIST_QUERY = `
       short
     } | order(lower(title)),
   }
-}
-`;
+}`;
+
+/**
+ * Query for set listings - matches original MODULE_QUERY structure
+ */
+export const SET_LIST_QUERY = `*[${SET_BASE_FILTER}] | order(datetime desc)[$start...$end] ${SET_PROJECTION}`;
 
 /**
  * Count query for sets pagination
@@ -95,9 +100,9 @@ count(*[_type == 'set' && datetime != null])
 /**
  * Query for pool items (persons and venues) - matches original MODULE_QUERY
  */
-export const POOL_LIST_QUERY = `
-*[_type in $types && poolVisibility == true] 
-| order(_updatedAt desc)[$start...$end] {
+export const POOL_BASE_FILTER = "_type in $types && poolVisibility == true";
+
+export const POOL_PROJECTION = `{
   ...,
   _id,
   _type,
@@ -114,8 +119,9 @@ export const POOL_LIST_QUERY = `
     title
   } | order(lower(title)),
   location
-}
-`;
+}`;
+
+export const POOL_LIST_QUERY = `*[${POOL_BASE_FILTER}] | order(_updatedAt desc)[$start...$end] ${POOL_PROJECTION}`;
 
 /**
  * Count query for pool pagination
@@ -129,9 +135,9 @@ count(*[_type in $types && poolVisibility == true])
 /**
  * Query for article listings - matches original MODULE_QUERY
  */
-export const ARTICLE_LIST_QUERY = `
-*[_type == 'article'] 
-| order(datetime desc)[$start...$end] {
+export const ARTICLE_BASE_FILTER = "_type == 'article'";
+
+export const ARTICLE_PROJECTION = `{
   ...,
   _id,
   _type,
@@ -151,8 +157,9 @@ export const ARTICLE_LIST_QUERY = `
     title,
     short
   } | order(lower(title))
-}
-`;
+}`;
+
+export const ARTICLE_LIST_QUERY = `*[${ARTICLE_BASE_FILTER}] | order(datetime desc)[$start...$end] ${ARTICLE_PROJECTION}`;
 
 /**
  * Count query for articles pagination
@@ -166,9 +173,9 @@ count(*[_type == 'article'])
 /**
  * Query for show listings - matches original MODULE_QUERY
  */
-export const SHOW_LIST_QUERY = `
-*[_type == 'show'] 
-| order(datetime desc)[$start...$end] {
+export const SHOW_BASE_FILTER = "_type == 'show'";
+
+export const SHOW_PROJECTION = `{
   ...,
   _id,
   _type,
@@ -185,8 +192,9 @@ export const SHOW_LIST_QUERY = `
     title,
     short
   } | order(lower(title))
-}
-`;
+}`;
+
+export const SHOW_LIST_QUERY = `*[${SHOW_BASE_FILTER}] | order(datetime desc)[$start...$end] ${SHOW_PROJECTION}`;
 
 /**
  * Count query for shows pagination
@@ -268,37 +276,63 @@ export const buildModuleQuery = (
     start?: number;
     end?: number;
     contentType?: string | string[];
+    filterTags?: string[];
+    filterOrTags?: string[][]; // Array of OR groups (e.g. [[GenreA, GenreB], [CityX, CityY]])
   } = {}
 ) => {
-  const { start = 0, end = 24 } = options;
+  const { start = 0, end = 24, filterTags = [], filterOrTags = [] } = options;
   
+  // Build dynamic filters
+  let filterString = "";
+  
+  // AND logic: Match specific tags
+  if (filterTags.length > 0) {
+    filterTags.forEach(tagId => {
+       // Using references() to match if the document references the tag
+       filterString += ` && references("${tagId}")`;
+    });
+  }
+  
+  // OR logic: Process each group
+  if (filterOrTags.length > 0) {
+    filterOrTags.forEach(group => {
+      if (group.length > 0) {
+        const quotedIds = group.map(id => `"${id}"`).join(", ");
+        filterString += ` && references(${quotedIds})`;
+      }
+    });
+  }
+
+  const buildParams = { start, end };
+  const getQuery = (baseFilter: string, projection: string, orderBy: string = "order(datetime desc)") => ({
+    query: `*[${baseFilter}${filterString}] | ${orderBy}[$start...$end] ${projection}`,
+    countQuery: `count(*[${baseFilter}${filterString}])`,
+    params: buildParams
+  });
+
   switch (type) {
     case 'sets':
-      return {
-        query: SET_LIST_QUERY,
-        params: { start, end }
-      };
+      return getQuery(SET_BASE_FILTER, SET_PROJECTION);
+      
     case 'pool':
-      return {
-        query: POOL_LIST_QUERY,
-        params: { 
-          start, 
-          end,
-          types: options.contentType 
-            ? [options.contentType] 
-            : ['person', 'venue']
-        }
+      const poolParams = { 
+        ...buildParams, 
+        types: options.contentType 
+          ? (Array.isArray(options.contentType) ? options.contentType : [options.contentType]) 
+          : ['person', 'venue'] 
       };
+      return {
+        query: `*[${POOL_BASE_FILTER}${filterString}] | order(_updatedAt desc)[$start...$end] ${POOL_PROJECTION}`,
+        countQuery: `count(*[${POOL_BASE_FILTER}${filterString}])`,
+        params: poolParams
+      };
+      
     case 'shows':
-      return {
-        query: SHOW_LIST_QUERY,
-        params: { start, end }
-      };
+      return getQuery(SHOW_BASE_FILTER, SHOW_PROJECTION);
+      
     case 'words':
-      return {
-        query: ARTICLE_LIST_QUERY,
-        params: { start, end }
-      };
+      return getQuery(ARTICLE_BASE_FILTER, ARTICLE_PROJECTION);
+      
     default:
       throw new Error(`Unknown content type: ${type}`);
   }

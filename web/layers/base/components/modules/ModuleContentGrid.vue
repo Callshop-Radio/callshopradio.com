@@ -10,6 +10,7 @@ import {
   ARTICLE_COUNT_QUERY,
   SHOW_LIST_QUERY,
   SHOW_COUNT_QUERY,
+  buildModuleQuery,
 } from "~~/queries/module.queries";
 
 const { locale } = useI18n();
@@ -76,7 +77,11 @@ const themeColor = computed(
 
 // ==================== HYBRID DATA LOADING ====================
 // Determine if we need to load data ourselves (no pre-loaded items in props)
+// Determine if we need to load data ourselves (no pre-loaded items in props OR filtering active)
+const forceSelfLoad = ref(false);
+
 const needsSelfLoad = computed(() => {
+  if (forceSelfLoad.value) return true;
   if (!props.module) return false;
   const { type, poolItems, setItems, showItems, articleItems } = props.module;
   
@@ -108,13 +113,59 @@ const getModuleQueryType = computed(() => {
 });
 
 // Build query config for SSR-compatible data fetching
+// Build query config for SSR-compatible data fetching
 const buildQueryConfig = () => {
   const type = getModuleQueryType.value;
   if (!type) return null;
   
   const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
   const end = selfLoadPage.value * SELF_LOAD_PER_PAGE;
-  let params: Record<string, any> = { start, end };
+  
+  // Prepare filters
+  const filterTags: string[] = [];
+  const filterOrTags: string[][] = [];
+
+  // 1. Handle Active Filters (AND logic, but "others" is special)
+  if (activeFilters.value.size > 0) {
+    activeFilters.value.forEach(tagId => {
+      if (tagId === 'others') {
+        // Special "Others" logic: OR of all non-main cities
+        // Find all city tags that are NOT main cities
+        const otherCityIds = categorizedTags.value.cities
+          .filter((c: any) => !isMainCity({ title: c.title }))
+          .map((c: any) => c._id);
+        
+        if (otherCityIds.length > 0) {
+          filterOrTags.push(otherCityIds);
+        }
+      } else {
+        filterTags.push(tagId);
+      }
+    });
+  }
+
+  // 2. Handle Genres/Subgenres
+  // If subgenres are active, they are already in activeFilters (handled above).
+  // If only top-level genres are active, we need OR logic for them and their subgenres.
+  if (activeGenres.value.size > 0 && activeSubGenres.value.size === 0) {
+     const genreOrGroup: string[] = [];
+     activeGenres.value.forEach(genreId => {
+        genreOrGroup.push(genreId);
+        // Add subgenres of this genre
+        const genre = categorizedTags.value.genres.find((g: any) => g._id === genreId);
+        genre?.subGenres?.forEach((sg: any) => genreOrGroup.push(sg._id));
+     });
+     if (genreOrGroup.length > 0) {
+       filterOrTags.push(genreOrGroup);
+     }
+  }
+
+  let params: Record<string, any> = { 
+    start, 
+    end, 
+    filterTags, 
+    filterOrTags 
+  };
   
   switch (type) {
     case 'sets':
@@ -176,34 +227,77 @@ const { data: selfLoadedItems, pending: isLoadingInitial } = await useAsyncData(
 );
 
 // Function to load more content (client-side only for pagination)
-async function loadMoreSelfContent() {
-  if (isLoadingSelf.value) return;
-  
+// Function to load content based on current filters/page
+async function fetchActiveContent(reset = false) {
   const config = buildQueryConfig();
   if (!config) return;
-  
+
   isLoadingSelf.value = true;
-  
+  if (reset) {
+    selfLoadPage.value = 1;
+    config.params.start = 0;
+    config.params.end = SELF_LOAD_PER_PAGE;
+    // We are entering filtered mode
+    forceSelfLoad.value = true;
+  }
+
   try {
     const sanity = useSanity();
-    selfLoadPage.value++;
+    // Use the dynamic buildModuleQuery from queries file to construct the final query
+    // Note: We need to import buildModuleQuery logic or use the strings provided.
+    // However, buildQueryConfig currently returns static strings. 
+    // We updated module.queries.ts to export buildModuleQuery which returns the object.
+    // Let's use buildModuleQuery directly instead of local switch if possible,
+    // OR update buildQueryConfig to call buildModuleQuery?
+    // Let's use the local switch result and inject logic here?
+    // NO, the updated module queries rely on `buildModuleQuery` to assemble the GROQ.
     
-    const newStart = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
-    const newEnd = selfLoadPage.value * SELF_LOAD_PER_PAGE;
-    config.params.start = newStart;
-    config.params.end = newEnd;
+    // RE-IMPORT from module.queries.ts
+    const { buildModuleQuery } = await import('~~/queries/module.queries');
     
-    const items = await sanity.fetch(config.query, config.params);
-    
-    if (selfLoadedItems.value) {
-      selfLoadedItems.value = [...selfLoadedItems.value, ...items];
+    const queryData = buildModuleQuery(getModuleQueryType.value as any, {
+       start: config.params.start,
+       end: config.params.end,
+       contentType: config.params.types, 
+       filterTags: config.params.filterTags,
+       filterOrTags: config.params.filterOrTags
+    });
+
+    const [items, count] = await Promise.all([
+      sanity.fetch(queryData.query, queryData.params),
+      sanity.fetch(queryData.countQuery, queryData.params)
+    ]);
+
+    if (typeof count === 'number') {
+      selfLoadedCount.value = count;
+    }
+
+    if (reset) {
+      selfLoadedItems.value = items || [];
+    } else {
+      if (selfLoadedItems.value) {
+        selfLoadedItems.value = [...selfLoadedItems.value, ...(items || [])];
+      }
     }
   } catch (error) {
-    console.error('[ModuleContentGrid] Error loading more content:', error);
+    console.error('[ModuleContentGrid] Error fetching content:', error);
   } finally {
     isLoadingSelf.value = false;
   }
 }
+
+// Function to load more content (client-side only for pagination)
+async function loadMoreSelfContent() {
+  if (isLoadingSelf.value) return;
+  selfLoadPage.value++;
+  await fetchActiveContent(false);
+}
+
+// Watchers for filtering
+watch([activeFilters, activeGenres, activeSubGenres], () => {
+   // Debounce could be added here if needed
+   fetchActiveContent(true);
+}, { deep: true });
 
 // Load more self-loaded items (renamed for clarity)
 async function loadMoreSelfItems() {
@@ -214,10 +308,11 @@ async function loadMoreSelfItems() {
 }
 
 // ==================== COMPUTED: Items ====================
+// ==================== COMPUTED: Items ====================
 const allItems = computed(() => {
   if (!props.module) return [];
   
-  // If we're self-loading, return self-loaded items
+  // If we're self-loading (either initial empty or filtered), return self-loaded items
   if (needsSelfLoad.value) {
     return selfLoadedItems.value;
   }
@@ -259,13 +354,12 @@ function filterPoolItems(items: any[], contentType: string) {
 }
 
 // ==================== COMPUTED: Tags ====================
+// ==================== COMPUTED: Tags ====================
 const getUsedTagIdsInItems = computed(() => {
-  const usedTagIds = new Set<string>();
-  allItems.value.forEach((item) => {
-    collectTagIds(item.tags, usedTagIds);
-    collectTagIds(item.parentShow?.tags, usedTagIds);
-  });
-  return usedTagIds;
+  // DEPRECATED: We now show all available tags regardless of content
+  // Keeping this function only if other logic needed it, but clearing it out
+  // to avoid confusion.
+  return new Set<string>();
 });
 
 function collectTagIds(tags: any[] | undefined, set: Set<string>) {
@@ -277,34 +371,27 @@ const categorizedTags = computed(() => {
   const availableTags = props.module?.availableTags;
   if (!availableTags) return { genres: [], cities: [], global: [], mood: [] };
 
-  const usedTagIds = getUsedTagIdsInItems.value;
-
-  const filterByUsed = (tags: any[]) =>
-    tags?.filter((t) => usedTagIds.has(t._id)) || [];
-
+  // Return full available tags without filtering
   const genres = (availableTags.genres || [])
-    .map((genre) => {
-      const isUsed = usedTagIds.has(genre._id);
-      const usedSubGenres = filterByUsed(genre.subGenres);
-      if (!isUsed && !usedSubGenres.length) return null;
-      return { ...genre, subGenres: usedSubGenres };
-    })
-    .filter(Boolean);
+    .map((genre: any) => {
+      // Always include subgenres
+      return { ...genre, subGenres: genre.subGenres || [] };
+    });
 
   return {
     genres,
-    cities: filterByUsed(availableTags.cities),
-    global: filterByUsed(availableTags.global),
-    mood: filterByUsed(availableTags.mood),
+    cities: availableTags.cities || [],
+    global: availableTags.global || [],
+    mood: availableTags.mood || [],
   };
 });
 
 const availableTags = computed(() => {
   if (!props.module?.availableTags) return [];
-  const usedTagIds = getUsedTagIdsInItems.value;
+  // Return all tags flattened
   return Object.values(props.module.availableTags)
     .flat()
-    .filter((tag: any) => tag?._id && usedTagIds.has(tag._id));
+    .filter((tag: any) => tag?._id);
 });
 
 const poolTags = computed(() => {
@@ -485,6 +572,17 @@ function itemMatchesFilters(item: any): boolean {
   }
 
   // Normal filters check (AND logic)
+  // Normal filters check (AND logic)
+  // When using server-side filtering, 'itemMatchesFilters' mainly serves to double-check
+  // or handle "Others" if not fully handled server-side?
+  // However, since we now fetch EXACT data, this check might filter out things we just fetched?
+  // Example: If I implemented "Others" as "OR", but client side checks "!isMainCity".
+  // It should be consistent.
+  // BUT: if we are in server-side mode (forceSelfLoad), we should TRUST the server result?
+  // If we run 'itemMatchesFilters' on server-fetched data, we might accidentally hide items
+  // if our client-side logic is stricter or different.
+  if (forceSelfLoad.value) return true;
+
   if (activeFilters.value.size === 0) return true;
 
   for (const filterId of activeFilters.value) {
@@ -543,9 +641,15 @@ const filteredItems = computed(() => {
   return items.sort(sortFns[sortMode.value]);
 });
 
-const visibleItems = computed(() =>
-  filteredItems.value.slice(0, visibleItemCount.value)
-);
+const visibleItems = computed(() => {
+  // If we are filtering/server-loading, we show all loaded items
+  // But we still respect the 'visibleItemCount' limit for initial "Show More" functionality?
+  // User said: "sobald auf ein tag geklickt wird, sollen dann alle inhalte... nach und nach geladen werden"
+  // If we fetch 50 items server side, we can just show them all, 
+  // or implement client-side pagination on top of server-side chunks?
+  // Let's rely on slice.
+  return filteredItems.value.slice(0, visibleItemCount.value);
+});
 const hasMoreItems = computed(
   () => visibleItems.value.length < filteredItems.value.length
 );
