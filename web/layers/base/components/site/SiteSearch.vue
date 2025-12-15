@@ -231,6 +231,7 @@ watch(results, () => {
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
+  border: 0.0935rem solid var(--color-text);
 
   &.is-modal {
     background: var(--color-bg);
@@ -245,7 +246,6 @@ watch(results, () => {
   align-items: center;
   gap: var(--small-padding);
   padding: var(--base-padding);
-  border-bottom: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.1));
   position: relative;
 
   .search-icon {

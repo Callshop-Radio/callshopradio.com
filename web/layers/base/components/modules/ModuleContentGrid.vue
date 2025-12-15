@@ -84,14 +84,14 @@ const needsSelfLoad = computed(() => {
   if (forceSelfLoad.value) return true;
   if (!props.module) return false;
   const { type, poolItems, setItems, showItems, articleItems } = props.module;
-  
+
   const hasItems = {
     pool: poolItems?.length > 0,
     sets: setItems?.length > 0,
     shows: showItems?.length > 0,
     words: articleItems?.length > 0,
   };
-  
+
   return !hasItems[type];
 });
 
@@ -105,10 +105,10 @@ const SELF_LOAD_PER_PAGE = 50;
 const getModuleQueryType = computed(() => {
   if (!props.module) return null;
   const type = props.module.type;
-  if (type === 'pool') return 'pool';
-  if (type === 'sets') return 'sets';
-  if (type === 'shows') return 'shows';
-  if (type === 'words') return 'words';
+  if (type === "pool") return "pool";
+  if (type === "sets") return "sets";
+  if (type === "shows") return "shows";
+  if (type === "words") return "words";
   return null;
 });
 
@@ -117,24 +117,24 @@ const getModuleQueryType = computed(() => {
 const buildQueryConfig = () => {
   const type = getModuleQueryType.value;
   if (!type) return null;
-  
+
   const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
   const end = selfLoadPage.value * SELF_LOAD_PER_PAGE;
-  
+
   // Prepare filters
   const filterTags: string[] = [];
   const filterOrTags: string[][] = [];
 
   // 1. Handle Active Filters (AND logic, but "others" is special)
   if (activeFilters.value.size > 0) {
-    activeFilters.value.forEach(tagId => {
-      if (tagId === 'others') {
+    activeFilters.value.forEach((tagId) => {
+      if (tagId === "others") {
         // Special "Others" logic: OR of all non-main cities
         // Find all city tags that are NOT main cities
         const otherCityIds = categorizedTags.value.cities
           .filter((c: any) => !isMainCity({ title: c.title }))
           .map((c: any) => c._id);
-        
+
         if (otherCityIds.length > 0) {
           filterOrTags.push(otherCityIds);
         }
@@ -148,42 +148,49 @@ const buildQueryConfig = () => {
   // If subgenres are active, they are already in activeFilters (handled above).
   // If only top-level genres are active, we need OR logic for them and their subgenres.
   if (activeGenres.value.size > 0 && activeSubGenres.value.size === 0) {
-     const genreOrGroup: string[] = [];
-     activeGenres.value.forEach(genreId => {
-        genreOrGroup.push(genreId);
-        // Add subgenres of this genre
-        const genre = categorizedTags.value.genres.find((g: any) => g._id === genreId);
-        genre?.subGenres?.forEach((sg: any) => genreOrGroup.push(sg._id));
-     });
-     if (genreOrGroup.length > 0) {
-       filterOrTags.push(genreOrGroup);
-     }
+    const genreOrGroup: string[] = [];
+    activeGenres.value.forEach((genreId) => {
+      genreOrGroup.push(genreId);
+      // Add subgenres of this genre
+      const genre = categorizedTags.value.genres.find(
+        (g: any) => g._id === genreId
+      );
+      genre?.subGenres?.forEach((sg: any) => genreOrGroup.push(sg._id));
+    });
+    if (genreOrGroup.length > 0) {
+      filterOrTags.push(genreOrGroup);
+    }
   }
 
-  let params: Record<string, any> = { 
-    start, 
-    end, 
-    filterTags, 
-    filterOrTags 
+  let params: Record<string, any> = {
+    start,
+    end,
+    filterTags,
+    filterOrTags,
   };
-  
+
   switch (type) {
-    case 'sets':
+    case "sets":
       return { query: SET_LIST_QUERY, countQuery: SET_COUNT_QUERY, params };
-    case 'pool':
+    case "pool":
       const poolType = props.module.poolContentType;
-      params.types = poolType === 'all' 
-        ? ['person', 'venue'] 
-        : poolType === 'persons' 
-          ? ['person'] 
-          : poolType === 'venues' 
-            ? ['venue'] 
-            : ['person', 'venue'];
+      params.types =
+        poolType === "all"
+          ? ["person", "venue"]
+          : poolType === "persons"
+          ? ["person"]
+          : poolType === "venues"
+          ? ["venue"]
+          : ["person", "venue"];
       return { query: POOL_LIST_QUERY, countQuery: POOL_COUNT_QUERY, params };
-    case 'shows':
+    case "shows":
       return { query: SHOW_LIST_QUERY, countQuery: SHOW_COUNT_QUERY, params };
-    case 'words':
-      return { query: ARTICLE_LIST_QUERY, countQuery: ARTICLE_COUNT_QUERY, params };
+    case "words":
+      return {
+        query: ARTICLE_LIST_QUERY,
+        countQuery: ARTICLE_COUNT_QUERY,
+        params,
+      };
     default:
       return null;
   }
@@ -191,30 +198,32 @@ const buildQueryConfig = () => {
 
 // SSR-compatible data loading with useAsyncData
 const { data: selfLoadedItems, pending: isLoadingInitial } = await useAsyncData(
-  `module-content-grid-${props.module?._key || props.module?.type}-${props.module?.poolContentType || 'default'}`,
+  `module-content-grid-${props.module?._key || props.module?.type}-${
+    props.module?.poolContentType || "default"
+  }`,
   async () => {
     if (!needsSelfLoad.value) return [];
-    
+
     // Safety check for query config
     const config = buildQueryConfig();
     if (!config) return [];
-    
+
     try {
       const sanity = useSanity();
       // Increase timeout or handle slow connections if needed, but default fetch should be okay.
       // We wrap in try/catch to ensure page doesn't crash on one module failure.
       const [items, count] = await Promise.all([
         sanity.fetch(config.query, config.params),
-        sanity.fetch(config.countQuery, config.params)
+        sanity.fetch(config.countQuery, config.params),
       ]);
-      
-      if (typeof count === 'number') {
+
+      if (typeof count === "number") {
         selfLoadedCount.value = count;
       }
-      
+
       return items || [];
     } catch (error) {
-      console.error('[ModuleContentGrid] SSR Data Fetch Error:', error);
+      console.error("[ModuleContentGrid] SSR Data Fetch Error:", error);
       // Return empty array on error so page can still render other parts
       return [];
     }
@@ -245,30 +254,30 @@ async function fetchActiveContent(reset = false) {
     const sanity = useSanity();
     // Use the dynamic buildModuleQuery from queries file to construct the final query
     // Note: We need to import buildModuleQuery logic or use the strings provided.
-    // However, buildQueryConfig currently returns static strings. 
+    // However, buildQueryConfig currently returns static strings.
     // We updated module.queries.ts to export buildModuleQuery which returns the object.
     // Let's use buildModuleQuery directly instead of local switch if possible,
     // OR update buildQueryConfig to call buildModuleQuery?
     // Let's use the local switch result and inject logic here?
     // NO, the updated module queries rely on `buildModuleQuery` to assemble the GROQ.
-    
+
     // RE-IMPORT from module.queries.ts
-    const { buildModuleQuery } = await import('~~/queries/module.queries');
-    
+    const { buildModuleQuery } = await import("~~/queries/module.queries");
+
     const queryData = buildModuleQuery(getModuleQueryType.value as any, {
-       start: config.params.start,
-       end: config.params.end,
-       contentType: config.params.types, 
-       filterTags: config.params.filterTags,
-       filterOrTags: config.params.filterOrTags
+      start: config.params.start,
+      end: config.params.end,
+      contentType: config.params.types,
+      filterTags: config.params.filterTags,
+      filterOrTags: config.params.filterOrTags,
     });
 
     const [items, count] = await Promise.all([
       sanity.fetch(queryData.query, queryData.params),
-      sanity.fetch(queryData.countQuery, queryData.params)
+      sanity.fetch(queryData.countQuery, queryData.params),
     ]);
 
-    if (typeof count === 'number') {
+    if (typeof count === "number") {
       selfLoadedCount.value = count;
     }
 
@@ -280,7 +289,7 @@ async function fetchActiveContent(reset = false) {
       }
     }
   } catch (error) {
-    console.error('[ModuleContentGrid] Error fetching content:', error);
+    console.error("[ModuleContentGrid] Error fetching content:", error);
   } finally {
     isLoadingSelf.value = false;
   }
@@ -294,10 +303,14 @@ async function loadMoreSelfContent() {
 }
 
 // Watchers for filtering
-watch([activeFilters, activeGenres, activeSubGenres], () => {
-   // Debounce could be added here if needed
-   fetchActiveContent(true);
-}, { deep: true });
+watch(
+  [activeFilters, activeGenres, activeSubGenres],
+  () => {
+    // Debounce could be added here if needed
+    fetchActiveContent(true);
+  },
+  { deep: true }
+);
 
 // Load more self-loaded items (renamed for clarity)
 async function loadMoreSelfItems() {
@@ -311,12 +324,12 @@ async function loadMoreSelfItems() {
 // ==================== COMPUTED: Items ====================
 const allItems = computed(() => {
   if (!props.module) return [];
-  
+
   // If we're self-loading (either initial empty or filtered), return self-loaded items
   if (needsSelfLoad.value) {
     return selfLoadedItems.value;
   }
-  
+
   // Otherwise use props data (existing behavior)
   const {
     type,
@@ -372,11 +385,10 @@ const categorizedTags = computed(() => {
   if (!availableTags) return { genres: [], cities: [], global: [], mood: [] };
 
   // Return full available tags without filtering
-  const genres = (availableTags.genres || [])
-    .map((genre: any) => {
-      // Always include subgenres
-      return { ...genre, subGenres: genre.subGenres || [] };
-    });
+  const genres = (availableTags.genres || []).map((genre: any) => {
+    // Always include subgenres
+    return { ...genre, subGenres: genre.subGenres || [] };
+  });
 
   return {
     genres,
@@ -493,16 +505,70 @@ function getTagNameById(tagId: string): string {
 }
 
 // ==================== FILTER LOGIC ====================
+// History to track the order of applied filters for "Remove last filter" functionality
+type FilterAction = { type: "filter" | "genre" | "subGenre"; id: string };
+const filterHistory = ref<FilterAction[]>([]);
+
+function addToHistory(type: "filter" | "genre" | "subGenre", id: string) {
+  // Remove if exists to ensure unique and move to end (though usually we toggle off before re-adding)
+  const index = filterHistory.value.findIndex(
+    (f) => f.type === type && f.id === id
+  );
+  if (index > -1) filterHistory.value.splice(index, 1);
+  filterHistory.value.push({ type, id });
+}
+
+function removeFromHistory(type: "filter" | "genre" | "subGenre", id: string) {
+  const index = filterHistory.value.findIndex(
+    (f) => f.type === type && f.id === id
+  );
+  if (index > -1) filterHistory.value.splice(index, 1);
+}
+
+function removeLastFilter() {
+  // Try to remove from activeFilters (Tags) first
+  if (activeFilters.value.size > 0) {
+    const lastFilter = [...activeFilters.value].pop();
+    if (lastFilter) toggleFilter(lastFilter);
+    return;
+  }
+
+  // Then SubGenres
+  if (activeSubGenres.value.size > 0) {
+    const lastSub = [...activeSubGenres.value].pop();
+    if (lastSub) toggleSubGenreFilter(lastSub);
+    return;
+  }
+
+  // Then Genres
+  if (activeGenres.value.size > 0) {
+    const lastGenre = [...activeGenres.value].pop();
+    if (lastGenre) toggleGenreFilter(lastGenre);
+    return;
+  }
+
+  // Fallback cleanup
+  if (filterHistory.value.length > 0) {
+    filterHistory.value = [];
+  }
+}
+
 function toggleFilter(tagId: string) {
   const isActive = activeFilters.value.has(tagId);
 
   if (isActive) {
     activeFilters.value.delete(tagId);
-    if (getTagCategory(tagId) === "subGenre")
+    removeFromHistory("filter", tagId);
+
+    if (getTagCategory(tagId) === "subGenre") {
       activeSubGenres.value.delete(tagId);
+      removeFromHistory("subGenre", tagId);
+    }
     if (tagId === "others") isOtherCitiesActive.value = false;
   } else {
     activeFilters.value.add(tagId);
+    addToHistory("filter", tagId);
+
     if (tagId === "others") isOtherCitiesActive.value = true;
   }
 
@@ -512,13 +578,20 @@ function toggleFilter(tagId: string) {
 function toggleGenreFilter(genreId: string) {
   if (activeGenres.value.has(genreId)) {
     activeGenres.value.delete(genreId);
-    const genre = categorizedTags.value.genres.find((g) => g._id === genreId);
-    genre?.subGenres?.forEach((sg) => {
+    removeFromHistory("genre", genreId);
+
+    const genre = categorizedTags.value.genres.find(
+      (g: any) => g._id === genreId
+    );
+    genre?.subGenres?.forEach((sg: any) => {
       activeSubGenres.value.delete(sg._id);
       activeFilters.value.delete(sg._id);
+      removeFromHistory("subGenre", sg._id);
+      removeFromHistory("filter", sg._id);
     });
   } else {
     activeGenres.value.add(genreId);
+    addToHistory("genre", genreId);
   }
   visibleItemCount.value = ITEMS_PER_PAGE;
 }
@@ -526,10 +599,14 @@ function toggleGenreFilter(genreId: string) {
 function toggleSubGenreFilter(subGenreId: string) {
   if (activeSubGenres.value.has(subGenreId)) {
     activeSubGenres.value.delete(subGenreId);
+    removeFromHistory("subGenre", subGenreId);
     activeFilters.value.delete(subGenreId);
+    removeFromHistory("filter", subGenreId);
   } else {
     activeSubGenres.value.add(subGenreId);
+    addToHistory("subGenre", subGenreId);
     activeFilters.value.add(subGenreId);
+    addToHistory("filter", subGenreId);
   }
   visibleItemCount.value = ITEMS_PER_PAGE;
 }
@@ -542,6 +619,7 @@ function resetFilters() {
   activeFilters.value.clear();
   activeGenres.value.clear();
   activeSubGenres.value.clear();
+  filterHistory.value = [];
   isOtherCitiesActive.value = false;
 }
 
@@ -645,7 +723,7 @@ const visibleItems = computed(() => {
   // If we are filtering/server-loading, we show all loaded items
   // But we still respect the 'visibleItemCount' limit for initial "Show More" functionality?
   // User said: "sobald auf ein tag geklickt wird, sollen dann alle inhalte... nach und nach geladen werden"
-  // If we fetch 50 items server side, we can just show them all, 
+  // If we fetch 50 items server side, we can just show them all,
   // or implement client-side pagination on top of server-side chunks?
   // Let's rely on slice.
   return filteredItems.value.slice(0, visibleItemCount.value);
@@ -812,524 +890,535 @@ onUnmounted(() => {
       </div>
     </div>
   </div>
-    <div
-      v-if="module"
-      ref="moduleContainer"
-      :class="`content-grid module-grid module-grid--${
-        module.style || 'default'
-      } ${categoryType.toLowerCase()}`"
-    >
-      <!-- Filter Panel -->
-      <div class="content-grid__filter-section" ref="filterSection">
-        <div class="content-grid__filter-bar">
-          <!-- Active Filters -->
-          <div class="active-filters">
-            <h4
-              class="active-filters__title"
-              :class="{ active: activeFilters.size > 0 }"
-            >
-              <span @click="resetFilters()" class="close-cross">
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 8 8"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle cx="4" cy="4" r="4" fill="black" />
-                  <rect
-                    x="1.77783"
-                    y="2.4082"
-                    width="0.888889"
-                    height="5.33333"
-                    transform="rotate(-45 1.77783 2.4082)"
-                    fill="#E8E8E8"
-                  />
-                  <path
-                    d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
-                    fill="#E8E8E8"
-                  />
-                </svg>
-              </span>
-              <span @click="toggleFiltersVisibility"
-                >Tags&nbsp;<span class="toggle-arrow">{{
-                  showFilters ? "↑" : "↓"
-                }}</span></span
-              >
-            </h4>
-            <div class="active-filters__list tags">
-              <div
-                v-for="filterId in activeFilters"
-                :key="filterId"
-                class="active-filter tag"
-              >
-                <span
-                  class="active-filter__name"
-                  @click="toggleFilter(filterId)"
-                >
-                  {{ getTagNameById(filterId) }}
-                  <span class="close-cross">
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 8 8"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle cx="4" cy="4" r="4" fill="black" />
-                      <rect
-                        x="1.77783"
-                        y="2.4082"
-                        width="0.888889"
-                        height="5.33333"
-                        transform="rotate(-45 1.77783 2.4082)"
-                        fill="#E8E8E8"
-                      />
-                      <path
-                        d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
-                        fill="#E8E8E8"
-                      />
-                    </svg>
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cities Filter -->
-          <div
-            v-if="categorizedTags.cities?.length > 0"
-            class="filter-cities tags"
+  <div
+    v-if="module"
+    ref="moduleContainer"
+    :class="`content-grid module-grid module-grid--${
+      module.style || 'default'
+    } ${categoryType.toLowerCase()}`"
+  >
+    <!-- Filter Panel -->
+    <div class="content-grid__filter-section" ref="filterSection">
+      <div class="content-grid__filter-bar">
+        <!-- Active Filters -->
+        <div class="active-filters">
+          <h4
+            class="active-filters__title"
+            :class="{ active: activeFilters.size > 0 }"
           >
-            <h4 class="filter-cities__title">City</h4>
-            <div class="filter-tags">
-              <button
-                v-for="tag in categorizedTags.cities.filter(isMainCity)"
-                :key="tag._id"
-                class="tag filter-tag filter-tag--city"
-                :class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
-                @click="toggleFilter(tag._id)"
+            <span @click="removeLastFilter()" class="close-cross">
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 8 8"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                {{ parseI18nObj(tag.title) }}
-              </button>
-              <button
-                v-if="categorizedTags.cities.some((tag) => !isMainCity(tag))"
-                class="tag filter-tag filter-tag--city"
-                :class="{ 'filter-tag--active': isOtherCitiesActive }"
-                @click="toggleFilter('others')"
-              >
-                Elsewhere
-              </button>
-            </div>
-          </div>
-
-          <!-- Sort Options -->
-          <div class="sort-options">
-            <h4 class="sort-options__title">Sort</h4>
-            <button
-              :class="['sort-button', { active: sortMode === 'new' }]"
-              @click="changeSortMode('new')"
+                <circle cx="4" cy="4" r="4" fill="black" />
+                <rect
+                  x="1.77783"
+                  y="2.4082"
+                  width="0.888889"
+                  height="5.33333"
+                  transform="rotate(-45 1.77783 2.4082)"
+                  fill="#E8E8E8"
+                />
+                <path
+                  d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
+                  fill="#E8E8E8"
+                />
+              </svg>
+            </span>
+            <span @click="toggleFiltersVisibility"
+              >Tags&nbsp;<span class="toggle-arrow">{{
+                showFilters ? "↑" : "↓"
+              }}</span></span
             >
-              <div class="dot"></div>
-              New
-            </button>
-            <button
-              :class="['sort-button', { active: sortMode === 'alpha' }]"
-              @click="changeSortMode('alpha')"
+          </h4>
+          <div class="active-filters__list tags">
+            <div
+              v-for="filterId in activeFilters"
+              :key="filterId"
+              class="active-filter tag"
             >
-              <div class="dot"></div>
-              A–Z
-            </button>
-            <button
-              :class="['sort-button', { active: sortMode === 'shuffle' }]"
-              @click="changeSortMode('shuffle')"
-            >
-              <div class="dot"></div>
-              Shuffle
-            </button>
-          </div>
-        </div>
-
-        <!-- Filter Tags Panel -->
-        <div
-          v-if="allItems.length > 0 && module.availableTags"
-          class="content-grid__filters"
-        >
-          <div class="filter-container tags">
-            <!-- Sets: Genre Filter -->
-            <template v-if="contentType === 'sets'">
-              <div
-                v-if="categorizedTags.genres?.length > 0"
-                class="filter-category tags"
-                :class="{ active: showFilters }"
-              >
-                <div class="filter-genres">
-                  <div
-                    v-for="genre in categorizedTags.genres"
-                    :key="genre._id"
-                    class="filter-genre"
-                  >
-                    <button
-                      class="tag filter-tag filter-tag--genre"
-                      :class="{
-                        'filter-tag--active': activeGenres.has(genre._id),
-                      }"
-                      @click="toggleGenreFilter(genre._id)"
-                    >
-                      {{ genre.title }}
-                    </button>
-                  </div>
-                </div>
-                <div class="filter-subgenres">
-                  <div v-if="activeGenres.size > 0" class="filter-subgenre">
-                    <div class="filter-subgenre__tags">
-                      <template
-                        v-for="genre in categorizedTags.genres.filter((g) =>
-                          activeGenres.has(g._id)
-                        )"
-                        :key="genre._id"
-                      >
-                        <button
-                          v-for="subGenre in genre.subGenres || []"
-                          :key="subGenre._id"
-                          class="tag filter-tag filter-tag--subgenre"
-                          :class="{
-                            'filter-tag--active': activeSubGenres.has(
-                              subGenre._id
-                            ),
-                          }"
-                          @click="toggleSubGenreFilter(subGenre._id)"
-                        >
-                          {{ subGenre.title }}
-                        </button>
-                      </template>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </template>
-
-            <!-- Words: Article Tags -->
-            <template v-else-if="contentType === 'words'">
-              <div
-                v-if="poolTags.articles.length > 0"
-                class="filter-category tags"
-                :class="{ active: showFilters }"
-              >
-                <div class="filter-tags tags">
-                  <button
-                    v-for="tag in poolTags.articles"
-                    :key="tag._id"
-                    class="filter-tag tag"
-                    :class="{
-                      'filter-tag--active': activeFilters.has(tag._id),
-                    }"
-                    @click="toggleFilter(tag._id)"
-                  >
-                    {{ tag.title }}
-                  </button>
-                </div>
-              </div>
-            </template>
-
-            <!-- Pool: Type Filters -->
-            <template v-else>
-              <div
-                v-if="getContentTypeSpecificTags.length > 0"
-                class="filter-category tags"
-                :class="{ active: showFilters }"
-              >
-                <div class="filter-tags tags">
-                  <button
-                    v-if="poolTags.musicians.length > 0"
-                    class="filter-type tag"
-                    :class="{
-                      'filter-type--active': activeFilterType === 'musicians',
-                    }"
-                    @click="toggleFilterType('musicians')"
-                  >
-                    Musicians
-                  </button>
-                  <button
-                    v-if="poolTags.venues.length > 0"
-                    class="filter-type tag"
-                    :class="{
-                      'filter-type--active': activeFilterType === 'venues',
-                    }"
-                    @click="toggleFilterType('venues')"
-                  >
-                    Venues
-                  </button>
-                  <button
-                    v-if="poolTags.crafts.length > 0"
-                    class="filter-type tag"
-                    :class="{
-                      'filter-type--active': activeFilterType === 'crafts',
-                    }"
-                    @click="toggleFilterType('crafts')"
-                  >
-                    Crafts
-                  </button>
-                </div>
-                <div
-                  v-if="
-                    activeFilterType && poolTags[activeFilterType]?.length > 0
-                  "
-                  class="filter-tags tags"
-                >
-                  <button
-                    v-for="tag in poolTags[activeFilterType]"
-                    :key="tag._id"
-                    class="filter-tag tag"
-                    :class="{
-                      'filter-tag--active': activeFilters.has(tag._id),
-                    }"
-                    @click="toggleFilter(tag._id)"
-                  >
-                    {{ tag.title }}
-                  </button>
-                </div>
-              </div>
-            </template>
-          </div>
-        </div>
-      </div>
-
-      <!-- Content Grid -->
-      <div class="content-grid__container">
-        <div v-if="visibleItems.length > 0" class="content-grid__items">
-          <div
-            v-for="item in visibleItems"
-            :key="item._id"
-            :class="`grid-item grid-item--${module.style || 'default'}`"
-          >
-            <!-- City Tags -->
-            <div class="grid-item__tags city-tags">
-              <span
-                v-for="tag in getItemCityTags(item)"
-                :key="tag._id"
-                class="tag city"
-                >{{ parseI18nObj(tag?.short) }}</span
-              >
-            </div>
-
-            <!-- Image -->
-            <NuxtLink
-              v-if="item?.slug"
-              :to="getItemRoute(item)"
-              class="grid-item__link"
-            >
-              <div class="grid-item__image">
-                <template v-if="contentType === 'sets'">
-                  <img
-                    v-if="item.image?.asset"
-                    :src="item.image.asset.url"
-                    :alt="item.title || ''"
-                    loading="lazy"
-                  />
-                  <div
-                    v-else-if="item.soundcloud"
-                    class="track-artwork"
-                    @vue:mounted="loadArtworkUrl(item)"
-                  >
-                    <img
-                      v-if="artworkUrls.get(item._id)"
-                      :src="artworkUrls.get(item._id)"
-                      alt="Track Artwork"
-                      loading="lazy"
-                    />
-                  </div>
-                </template>
-                <template v-else>
-                  <img
-                    v-if="getItemImage(item)"
-                    :src="getItemImage(item).asset?.url"
-                    :alt="item.title || ''"
-                    loading="lazy"
-                  />
-                  <img
-                    v-else
-                    :src="
-                      mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
-                    "
-                    alt="Fallback"
-                    loading="lazy"
-                  />
-                </template>
-              </div>
-            </NuxtLink>
-
-            <!-- Content -->
-            <div class="grid-item__content">
-              <section class="grid-item__content__interactive">
-                <div
-                  v-if="item.datetime || item.publishedAt"
-                  class="grid-item__date"
-                >
-                  {{ formatDate(item.datetime || item.publishedAt) }}
-                </div>
-                <button
-                  v-if="contentType === 'sets' && item.soundcloud"
-                  @click.prevent="playTrack(item)"
-                  class="play-button"
-                >
-                  <span class="sr-only">Play</span>
+              <span class="active-filter__name" @click="toggleFilter(filterId)">
+                {{ getTagNameById(filterId) }}
+                <span class="close-cross">
                   <svg
-                    width="9"
-                    height="12"
-                    viewBox="0 0 9 12"
+                    width="10"
+                    height="10"
+                    viewBox="0 0 8 8"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
+                    <circle cx="4" cy="4" r="4" fill="black" />
+                    <rect
+                      x="1.77783"
+                      y="2.4082"
+                      width="0.888889"
+                      height="5.33333"
+                      transform="rotate(-45 1.77783 2.4082)"
+                      fill="#E8E8E8"
+                    />
                     <path
-                      d="M9 6L0 11.1962L0 0.803847L9 6Z"
-                      fill="currentColor"
+                      d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
+                      fill="#E8E8E8"
                     />
                   </svg>
-                </button>
-              </section>
-
-              <!-- Set Content -->
-              <div v-if="item.parentShow && contentType === 'sets'">
-                <NuxtLink
-                  v-if="item.parentShow?.title !== 'No Show'"
-                  :to="localePath(`/shows/${item.parentShow?.slug.current}`)"
-                  class="grid-item__link"
-                >
-                  <h3 class="grid-item__title show-title">
-                    {{ item.parentShow?.title }}
-                  </h3>
-                </NuxtLink>
-                <h3 v-else-if="item?.title" class="grid-item__title show-title">
-                  {{ item?.title }}
-                </h3>
-                <div v-if="item.persons?.length > 0" class="show-artists">
-                  <h3
-                    v-for="(artist, index) in item.persons"
-                    :key="artist._id"
-                    class="grid-item__artist"
-                  >
-                    <NuxtLink
-                      v-if="artist?.poolVisibility"
-                      :to="localePath(`/pool/${artist?.slug?.current}`)"
-                      class="grid-item__link"
-                    >
-                      {{ artist.title
-                      }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
-                    </NuxtLink>
-                    <span v-else
-                      >{{ artist.title
-                      }}{{
-                        index < item.persons.length - 1 ? "," : ""
-                      }}&nbsp;</span
-                    >
-                  </h3>
-                </div>
-              </div>
-
-              <!-- Words: Read More -->
-              <div v-if="contentType === 'words'" class="tags read-more">
-                <NuxtLink :to="getItemRoute(item)" class="grid-item__link"
-                  ><h3 class="tag">Read More</h3></NuxtLink
-                >
-              </div>
-
-              <!-- Title -->
-              <NuxtLink :to="getItemRoute(item)" class="grid-item__link">
-                <h3 v-if="contentType !== 'sets'" class="grid-item__title">
-                  {{ item.title || item.name }}
-                </h3>
-              </NuxtLink>
-
-              <!-- Teaser Text -->
-              <RichText
-                v-if="item?.useTeaserText && item?.textTeaser"
-                :blocks="parseI18nObj(item?.textTeaser)"
-              />
-              <RichText
-                v-else-if="!item?.useTeaserText && item?.text?.length > 0"
-                :blocks="parseI18nObj(item?.text)?.slice(0, 1)"
-              />
-              <RichText
-                v-else-if="
-                  !item?.text &&
-                  item?.description?.length > 0 &&
-                  (item.description[0]?.value || item.description[1]?.value)
-                "
-                :blocks="
-                  limitTextBlocks(
-                    parseI18nObj(item?.description)?.slice(0, 1),
-                    100
-                  )
-                "
-              />
-              <RichText
-                v-else-if="
-                  !item?.text &&
-                  module.poolContentType === 'persons' &&
-                  mainStore?.siteFallbacks?.fallbackPerson?.description
-                    ?.length > 0
-                "
-                :blocks="
-                  limitTextBlocks(
-                    parseI18nObj(
-                      mainStore?.siteFallbacks?.fallbackPerson?.description
-                    )?.slice(0, 1),
-                    100
-                  )
-                "
-              />
-              <RichText
-                v-else-if="
-                  !item?.text &&
-                  module.poolContentType === 'venues' &&
-                  mainStore?.siteFallbacks?.fallbackVenue?.description?.length >
-                    0
-                "
-                :blocks="
-                  limitTextBlocks(
-                    parseI18nObj(
-                      mainStore?.siteFallbacks?.fallbackVenue?.description
-                    )?.slice(0, 1),
-                    100
-                  )
-                "
-              />
-
-              <!-- Non-City Tags -->
-              <div
-                v-if="getItemNonCityTags(item).length > 0"
-                class="grid-item__tags tags"
-              >
-                <span
-                  v-for="tag in getItemNonCityTags(item)"
-                  :key="tag._id"
-                  class="tag"
-                  >{{ tag.title }}</span
-                >
-              </div>
+                </span>
+              </span>
             </div>
           </div>
         </div>
-        <div v-else class="content-grid__no-results">No matching content.</div>
 
-        <!-- Load More -->
-        <div v-if="hasMoreItems" class="content-grid__load-more">
-          <button @click="loadMoreItems" class="load-more-button">
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 15 15"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+        <!-- Cities Filter -->
+        <div
+          v-if="categorizedTags.cities?.length > 0"
+          class="filter-cities tags"
+        >
+          <h4 class="filter-cities__title">City</h4>
+          <div class="filter-tags">
+            <button
+              v-for="tag in categorizedTags.cities.filter(isMainCity)"
+              :key="tag._id"
+              class="tag filter-tag filter-tag--city"
+              :class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
+              @click="toggleFilter(tag._id)"
             >
-              <path d="M7.67578 0.541016V14.8113" stroke-width="5" />
-              <path d="M14.8105 7.67578L0.540276 7.67578" stroke-width="5" />
-            </svg>
+              {{ parseI18nObj(tag.title) }}
+            </button>
+            <button
+              v-if="categorizedTags.cities.some((tag) => !isMainCity(tag))"
+              class="tag filter-tag filter-tag--city"
+              :class="{ 'filter-tag--active': isOtherCitiesActive }"
+              @click="toggleFilter('others')"
+            >
+              Elsewhere
+            </button>
+          </div>
+        </div>
+
+        <!-- Sort Options -->
+        <div class="sort-options">
+          <h4 class="sort-options__title">Sort</h4>
+          <button
+            :class="['sort-button', { active: sortMode === 'new' }]"
+            @click="changeSortMode('new')"
+          >
+            <div class="dot"></div>
+            New
+          </button>
+          <button
+            :class="['sort-button', { active: sortMode === 'alpha' }]"
+            @click="changeSortMode('alpha')"
+          >
+            <div class="dot"></div>
+            A–Z
+          </button>
+          <button
+            :class="['sort-button', { active: sortMode === 'shuffle' }]"
+            @click="changeSortMode('shuffle')"
+          >
+            <div class="dot"></div>
+            Shuffle
           </button>
         </div>
       </div>
+
+      <!-- Filter Tags Panel -->
+      <div v-if="module.availableTags" class="content-grid__filters">
+        <div class="filter-container tags">
+          <!-- Sets: Genre Filter -->
+          <template v-if="contentType === 'sets'">
+            <div
+              v-if="categorizedTags.genres?.length > 0"
+              class="filter-category tags"
+              :class="{ active: showFilters }"
+            >
+              <div class="filter-genres">
+                <div
+                  v-for="genre in categorizedTags.genres"
+                  :key="genre._id"
+                  class="filter-genre"
+                >
+                  <button
+                    class="tag filter-tag filter-tag--genre"
+                    :class="{
+                      'filter-tag--active': activeGenres.has(genre._id),
+                    }"
+                    @click="toggleGenreFilter(genre._id)"
+                  >
+                    {{ genre.title }}
+                  </button>
+                </div>
+              </div>
+              <div class="filter-subgenres">
+                <div v-if="activeGenres.size > 0" class="filter-subgenre">
+                  <div class="filter-subgenre__tags">
+                    <template
+                      v-for="genre in categorizedTags.genres.filter((g) =>
+                        activeGenres.has(g._id)
+                      )"
+                      :key="genre._id"
+                    >
+                      <button
+                        v-for="subGenre in genre.subGenres || []"
+                        :key="subGenre._id"
+                        class="tag filter-tag filter-tag--subgenre"
+                        :class="{
+                          'filter-tag--active': activeSubGenres.has(
+                            subGenre._id
+                          ),
+                        }"
+                        @click="toggleSubGenreFilter(subGenre._id)"
+                      >
+                        {{ subGenre.title }}
+                      </button>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- Words: Article Tags -->
+          <template v-else-if="contentType === 'words'">
+            <div
+              v-if="poolTags.articles.length > 0"
+              class="filter-category tags"
+              :class="{ active: showFilters }"
+            >
+              <div class="filter-tags tags">
+                <button
+                  v-for="tag in poolTags.articles"
+                  :key="tag._id"
+                  class="filter-tag tag"
+                  :class="{
+                    'filter-tag--active': activeFilters.has(tag._id),
+                  }"
+                  @click="toggleFilter(tag._id)"
+                >
+                  {{ tag.title }}
+                </button>
+              </div>
+            </div>
+          </template>
+
+          <!-- Pool: Type Filters -->
+          <template v-else>
+            <div
+              v-if="getContentTypeSpecificTags.length > 0"
+              class="filter-category tags"
+              :class="{ active: showFilters }"
+            >
+              <div class="filter-tags tags">
+                <button
+                  v-if="poolTags.musicians.length > 0"
+                  class="filter-type tag"
+                  :class="{
+                    'filter-type--active': activeFilterType === 'musicians',
+                  }"
+                  @click="toggleFilterType('musicians')"
+                >
+                  Musicians
+                </button>
+                <button
+                  v-if="poolTags.venues.length > 0"
+                  class="filter-type tag"
+                  :class="{
+                    'filter-type--active': activeFilterType === 'venues',
+                  }"
+                  @click="toggleFilterType('venues')"
+                >
+                  Venues
+                </button>
+                <button
+                  v-if="poolTags.crafts.length > 0"
+                  class="filter-type tag"
+                  :class="{
+                    'filter-type--active': activeFilterType === 'crafts',
+                  }"
+                  @click="toggleFilterType('crafts')"
+                >
+                  Crafts
+                </button>
+              </div>
+              <div
+                v-if="
+                  activeFilterType && poolTags[activeFilterType]?.length > 0
+                "
+                class="filter-tags tags"
+              >
+                <button
+                  v-for="tag in poolTags[activeFilterType]"
+                  :key="tag._id"
+                  class="filter-tag tag"
+                  :class="{
+                    'filter-tag--active': activeFilters.has(tag._id),
+                  }"
+                  @click="toggleFilter(tag._id)"
+                >
+                  {{ tag.title }}
+                </button>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
     </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid__container">
+      <div v-if="visibleItems.length > 0" class="content-grid__items">
+        <div
+          v-for="item in visibleItems"
+          :key="item._id"
+          :class="`grid-item grid-item--${module.style || 'default'}`"
+        >
+          <!-- City Tags -->
+          <div class="grid-item__tags city-tags">
+            <span
+              v-for="tag in getItemCityTags(item)"
+              :key="tag._id"
+              class="tag city"
+              >{{ parseI18nObj(tag?.short) }}</span
+            >
+          </div>
+
+          <!-- Image -->
+          <NuxtLink
+            v-if="item?.slug"
+            :to="getItemRoute(item)"
+            class="grid-item__link"
+          >
+            <div class="grid-item__image">
+              <template v-if="contentType === 'sets'">
+                <img
+                  v-if="item.image?.asset"
+                  :src="item.image.asset.url"
+                  :alt="item.title || ''"
+                  loading="lazy"
+                />
+                <div
+                  v-else-if="item.soundcloud"
+                  class="track-artwork"
+                  @vue:mounted="loadArtworkUrl(item)"
+                >
+                  <img
+                    v-if="artworkUrls.get(item._id)"
+                    :src="artworkUrls.get(item._id)"
+                    alt="Track Artwork"
+                    loading="lazy"
+                  />
+                </div>
+              </template>
+              <template v-else>
+                <img
+                  v-if="getItemImage(item)"
+                  :src="getItemImage(item).asset?.url"
+                  :alt="item.title || ''"
+                  loading="lazy"
+                />
+                <img
+                  v-else
+                  :src="
+                    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
+                  "
+                  alt="Fallback"
+                  loading="lazy"
+                />
+              </template>
+            </div>
+          </NuxtLink>
+
+          <!-- Content -->
+          <div class="grid-item__content">
+            <section class="grid-item__content__interactive">
+              <div
+                v-if="item.datetime || item.publishedAt"
+                class="grid-item__date"
+              >
+                {{ formatDate(item.datetime || item.publishedAt) }}
+              </div>
+              <button
+                v-if="contentType === 'sets' && item.soundcloud"
+                @click.prevent="playTrack(item)"
+                class="play-button"
+              >
+                <span class="sr-only">Play</span>
+                <svg
+                  width="9"
+                  height="12"
+                  viewBox="0 0 9 12"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M9 6L0 11.1962L0 0.803847L9 6Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+            </section>
+
+            <!-- Set Content -->
+            <div v-if="item.parentShow && contentType === 'sets'">
+              <NuxtLink
+                v-if="item.parentShow?.title !== 'No Show'"
+                :to="localePath(`/shows/${item.parentShow?.slug.current}`)"
+                class="grid-item__link"
+              >
+                <h3 class="grid-item__title show-title">
+                  {{ item.parentShow?.title }}
+                </h3>
+              </NuxtLink>
+              <h3 v-else-if="item?.title" class="grid-item__title show-title">
+                {{ item?.title }}
+              </h3>
+              <div v-if="item.persons?.length > 0" class="show-artists">
+                <h3
+                  v-for="(artist, index) in item.persons"
+                  :key="artist._id"
+                  class="grid-item__artist"
+                >
+                  <NuxtLink
+                    v-if="artist?.poolVisibility"
+                    :to="localePath(`/pool/${artist?.slug?.current}`)"
+                    class="grid-item__link"
+                  >
+                    {{ artist.title
+                    }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+                  </NuxtLink>
+                  <span v-else
+                    >{{ artist.title
+                    }}{{
+                      index < item.persons.length - 1 ? "," : ""
+                    }}&nbsp;</span
+                  >
+                </h3>
+              </div>
+            </div>
+
+            <!-- Words: Read More -->
+            <div v-if="contentType === 'words'" class="tags read-more">
+              <NuxtLink :to="getItemRoute(item)" class="grid-item__link"
+                ><h3 class="tag">Read More</h3></NuxtLink
+              >
+            </div>
+
+            <!-- Title -->
+            <NuxtLink :to="getItemRoute(item)" class="grid-item__link">
+              <h3 v-if="contentType !== 'sets'" class="grid-item__title">
+                {{ item.title || item.name }}
+              </h3>
+            </NuxtLink>
+
+            <!-- Teaser Text -->
+            <RichText
+              v-if="item?.useTeaserText && item?.textTeaser"
+              :blocks="parseI18nObj(item?.textTeaser)"
+            />
+            <RichText
+              v-else-if="!item?.useTeaserText && item?.text?.length > 0"
+              :blocks="parseI18nObj(item?.text)?.slice(0, 1)"
+            />
+            <RichText
+              v-else-if="
+                !item?.text &&
+                item?.description?.length > 0 &&
+                (item.description[0]?.value || item.description[1]?.value)
+              "
+              :blocks="
+                limitTextBlocks(
+                  parseI18nObj(item?.description)?.slice(0, 1),
+                  100
+                )
+              "
+            />
+            <RichText
+              v-else-if="
+                !item?.text &&
+                module.poolContentType === 'persons' &&
+                mainStore?.siteFallbacks?.fallbackPerson?.description?.length >
+                  0
+              "
+              :blocks="
+                limitTextBlocks(
+                  parseI18nObj(
+                    mainStore?.siteFallbacks?.fallbackPerson?.description
+                  )?.slice(0, 1),
+                  100
+                )
+              "
+            />
+            <RichText
+              v-else-if="
+                !item?.text &&
+                module.poolContentType === 'venues' &&
+                mainStore?.siteFallbacks?.fallbackVenue?.description?.length > 0
+              "
+              :blocks="
+                limitTextBlocks(
+                  parseI18nObj(
+                    mainStore?.siteFallbacks?.fallbackVenue?.description
+                  )?.slice(0, 1),
+                  100
+                )
+              "
+            />
+
+            <!-- Non-City Tags -->
+            <div
+              v-if="getItemNonCityTags(item).length > 0"
+              class="grid-item__tags tags"
+            >
+              <span
+                v-for="tag in getItemNonCityTags(item)"
+                :key="tag._id"
+                class="tag"
+                >{{ tag.title }}</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-else class="content-grid__no-results">
+        <p>No matching content.</p>
+        <div class="no-results-buttons">
+          <button
+            v-if="filterHistory.length > 0"
+            class="action-btn"
+            @click="removeLastFilter"
+          >
+            Remove last filter
+          </button>
+          <button
+            v-if="activeFilters.size > 0 || activeGenres.size > 0"
+            class="action-btn"
+            @click="resetFilters"
+          >
+            Clear all filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Load More -->
+      <div v-if="hasMoreItems" class="content-grid__load-more">
+        <button @click="loadMoreItems" class="load-more-button">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 15 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M7.67578 0.541016V14.8113" stroke-width="5" />
+            <path d="M14.8105 7.67578L0.540276 7.67578" stroke-width="5" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style lang="postcss" scoped>
@@ -1365,8 +1454,13 @@ onUnmounted(() => {
 }
 
 @keyframes skeleton-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* ==================== BASE STYLES ==================== */
@@ -1383,6 +1477,9 @@ onUnmounted(() => {
   }
   &.pool {
     --theme-color: var(--color-blue);
+  }
+  &.shows {
+    --theme-color: var(--color-pink);
   }
 
   /* Shared active states using theme color */
@@ -1413,9 +1510,38 @@ onUnmounted(() => {
   }
 
   &__no-results {
-    padding: var(--mid-padding);
+    padding: 30svh var(--mid-padding);
     text-align: center;
     margin-bottom: var(--mid-margin);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--small-padding);
+
+    .no-results-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--small-padding);
+      margin-top: var(--small-margin);
+    }
+
+    .action-btn {
+      padding: var(--small-padding) var(--mid-padding);
+      border: 1px solid var(--color-text);
+      border-radius: 100px;
+      background: transparent;
+      cursor: pointer;
+      font-family: var(--font-text);
+      font-size: var(--small-font-size);
+      text-transform: uppercase;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: var(--color-text);
+        color: var(--color-bg);
+      }
+    }
   }
 
   &__filter-section {
@@ -1434,10 +1560,15 @@ onUnmounted(() => {
       top: 0;
       left: 0;
       width: 100%;
-      height: calc(var(--first-content-distance) + (var(--small-padding) * 2 + var(--small-font-size) / 2));
+      height: calc(
+        var(--first-content-distance) +
+          (var(--small-padding) * 2 + var(--small-font-size) / 2)
+      );
       background-color: var(--color-bg);
       z-index: -1;
-      transform: translateY(calc(-100% + (var(--small-padding) * 2 + var(--small-font-size) / 2)));
+      transform: translateY(
+        calc(-100% + (var(--small-padding) * 2 + var(--small-font-size) / 2))
+      );
     }
   }
 
@@ -1516,9 +1647,11 @@ onUnmounted(() => {
       }
 
       .active-filter {
-        background-color: var(--color-grey);
-        color: var(--color-dark-grey);
+        background-color: var(--theme-color);
+        color: white;
         font-size: var(--small-font-size);
+        letter-spacing: var(--button-letter-spacing);
+        font-family: var(--font-text);
         position: relative;
         min-width: max-content;
 
@@ -1532,6 +1665,8 @@ onUnmounted(() => {
           min-width: max-content;
           cursor: pointer;
           font-size: var(--small-font-size);
+          letter-spacing: var(--button-letter-spacing);
+          font-family: var(--font-text);
           padding: 0 8px 0 0;
         }
       }
