@@ -155,7 +155,11 @@ const hasTagsToShow = computed(() => {
 const AUTOCOMPLETE_QUERY = `
 *[
   _type in ["person", "set", "show", "venue", "article", "tag.genre", "tag.subGenre", "tag.global", "tag.mood", "tag.musician", "tag.venue", "tag.crafts", "tag.service", "tag.article"] &&
-  title match "*" + $searchTerm + "*"
+  title match "*" + $searchTerm + "*" &&
+  // Hide venues and persons with poolVisibility:false
+  !(_type in ["person", "venue"] && poolVisibility != true) &&
+  // Hide shows with title "no-show"
+  !(_type == "show" && title == "no-show")
 ] | order(_updatedAt desc)[0...20] {
   _id,
   _type,
@@ -172,7 +176,11 @@ const AUTOCOMPLETE_QUERY = `
 const FULL_SEARCH_QUERY = `
 *[
   _type in ["person", "set", "show", "venue", "article"] &&
-  (title match "*" + $searchTerm + "*" || $searchTerm in tags[]->title)
+  (title match "*" + $searchTerm + "*" || $searchTerm in tags[]->title) &&
+  // Hide venues and persons with poolVisibility:false
+  !(_type in ["person", "venue"] && poolVisibility != true) &&
+  // Hide shows with title "no-show"
+  !(_type == "show" && title == "no-show")
 ] | order(_updatedAt desc)[0...200] {
   _id,
   _type,
@@ -433,7 +441,7 @@ const handleKeydown = (event) => {
 
 const selectAutocompleteItem = (item) => {
   showAutocomplete.value = false;
-  
+
   if (item._type.startsWith("tag.")) {
     searchQuery.value = item.title;
     performSearch(item.title);
@@ -443,10 +451,10 @@ const selectAutocompleteItem = (item) => {
   const path = getResultPath(item);
   if (path) {
     // Check if we should use navigateTo (SPA) or open in new tab
-    if (path.startsWith('http')) {
-        window.open(path, "_blank");
+    if (path.startsWith("http")) {
+      window.open(path, "_blank");
     } else {
-        navigateTo(path);
+      navigateTo(path);
     }
   }
 };
@@ -454,7 +462,7 @@ const selectAutocompleteItem = (item) => {
 // Get the URL path for a search result
 const getResultPath = (item) => {
   if (item._type.startsWith("tag.")) {
-      return localePath(`/search?q=${encodeURIComponent(item.title)}`);
+    return localePath(`/search?q=${encodeURIComponent(item.title)}`);
   }
   const slug = item.slug?.current || item.slug;
   if (!slug) return null;
@@ -562,7 +570,6 @@ onUnmounted(() => {
 
 <template>
   <div class="search-page">
-
     <!-- Search Section -->
     <section class="search-section">
       <div class="search-container">

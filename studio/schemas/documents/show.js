@@ -19,7 +19,7 @@ export const show = {
     {
       title: 'Editorial',
       name: 'editorial',
-      icon: TextIcon
+      icon: TextIcon,
     },
     {
       title: 'Sets, Persons & Venues',

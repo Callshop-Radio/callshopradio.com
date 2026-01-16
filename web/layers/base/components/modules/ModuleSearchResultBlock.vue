@@ -159,10 +159,7 @@ function getItemNonCityTags(item: any) {
   const addTags = (sourceTags: any[]) => {
     if (Array.isArray(sourceTags)) {
       sourceTags.forEach((tag: any) => {
-        if (
-          tag._type !== "tag.city" &&
-          !tags.some((t) => t._id === tag._id)
-        ) {
+        if (tag._type !== "tag.city" && !tags.some((t) => t._id === tag._id)) {
           tags.push(tag);
         }
       });
@@ -191,7 +188,8 @@ function getSoundcloudArtwork(item: any): string {
     return artworkUrl.replace("-large", "-t500x500");
   }
   const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-  const storeFallbackUrl = mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
+  const storeFallbackUrl =
+    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
   return parentShowImageUrl || storeFallbackUrl || "";
 }
 
@@ -353,8 +351,12 @@ watch(
             v-if="item?.parentShow && item._type === 'set'"
             class="teaser-item__content__show"
           >
+            <!-- Only show parent show link if NOT no-show -->
             <NuxtLink
-              v-if="item.parentShow?.slug"
+              v-if="
+                item.parentShow?.title?.toLowerCase() !== 'no-show' &&
+                item.parentShow?.slug
+              "
               :to="localePath(`/shows/${item.parentShow.slug.current}`)"
               class="teaser-item__link"
             >
@@ -362,6 +364,16 @@ watch(
                 {{ item.parentShow.title }}
               </h3>
             </NuxtLink>
+            <!-- If no-show: show only set title -->
+            <h3
+              v-else-if="
+                item.parentShow?.title?.toLowerCase() === 'no-show' &&
+                item?.title
+              "
+              class="teaser-item__title show-title"
+            >
+              {{ item.title }}
+            </h3>
 
             <!-- Artists -->
             <div v-if="item.persons?.length > 0" class="show-artists">
@@ -458,7 +470,6 @@ watch(
   margin: 0 0 var(--large-margin) calc(var(--big-margin) * -0.5);
   margin-bottom: var(--first-content-distance);
 
-
   &__header {
     display: flex;
     align-items: center;
@@ -518,7 +529,7 @@ watch(
     gap: calc(var(--big-margin) / 2) calc(var(--big-margin) * 1.9875);
   }
 
-    &__load-more {
+  &__load-more {
     display: flex;
     justify-content: flex-end;
     margin-top: var(--mid-margin);
@@ -766,7 +777,6 @@ watch(
       display: flex;
       flex-wrap: wrap;
       gap: calc(var(--small-padding) / 2);
-
     }
   }
 }

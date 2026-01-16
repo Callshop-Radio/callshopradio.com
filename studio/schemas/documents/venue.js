@@ -80,7 +80,13 @@ export const venue = {
           name: 'tag',
           type: 'reference',
           title: 'Tag',
-          to: [{type: 'tag.global'}, {type: 'tag.subGenre'}, {type: 'tag.city'}, {type: 'tag.service'}, {type: 'tag.venue'}],
+          to: [
+            {type: 'tag.global'},
+            {type: 'tag.subGenre'},
+            {type: 'tag.city'},
+            {type: 'tag.service'},
+            {type: 'tag.venue'},
+          ],
         },
       ],
     },
@@ -161,7 +167,8 @@ export const venue = {
     },
     {
       title: 'Modules',
-      description: 'Modules for additional content, will appear between local bio and related content',
+      description:
+        'Modules for additional content, will appear between local bio and related content',
       name: 'modules',
       type: 'modules',
       group: 'editorial',

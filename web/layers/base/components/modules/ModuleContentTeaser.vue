@@ -886,11 +886,10 @@ function navigateToTagSearch(tag: any, item: any, isGenre = false) {
             v-if="item?.parentShow && props.module.type === 'sets'"
             class="teaser-item__content__show"
           >
-            <!-- Show-Titel -->
+            <!-- Show-Titel (nur anzeigen wenn NICHT no-show) -->
             <NuxtLink
               v-if="
-                item?.parentShow?.title !== 'No Show' &&
-                item?.parentShow?.title !== 'no-show' &&
+                item?.parentShow?.title?.toLowerCase() !== 'no-show' &&
                 item?.parentShow?.slug &&
                 item?.clickableTitle
               "
@@ -901,11 +900,19 @@ function navigateToTagSearch(tag: any, item: any, isGenre = false) {
                 {{ item?.parentShow?.title }}
               </h3>
             </NuxtLink>
+            <!-- Wenn no-show: nur Set-Titel anzeigen -->
             <h3
               v-else-if="
-                item?.parentShow?.title !== 'No Show' &&
-                item?.parentShow?.title !== 'no-show'
+                item?.parentShow?.title?.toLowerCase() === 'no-show' &&
+                item?.title
               "
+              class="teaser-item__title show-title"
+            >
+              {{ item?.title }}
+            </h3>
+            <!-- Fallback für andere Fälle ohne clickableTitle -->
+            <h3
+              v-else-if="item?.parentShow?.title?.toLowerCase() !== 'no-show'"
               class="teaser-item__title show-title"
             >
               {{ item?.title || item?.parentShow?.title }}

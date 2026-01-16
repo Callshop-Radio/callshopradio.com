@@ -204,7 +204,8 @@ function getSoundcloudArtwork(item) {
   }
   // Fallback chain
   const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-  const storeFallbackUrl = mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
+  const storeFallbackUrl =
+    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
   return parentShowImageUrl || storeFallbackUrl || "";
 }
 
@@ -478,10 +479,11 @@ function navigateToTagSearch(tag: any, item: any, isGenre = false) {
             v-if="item?.parentShow && type === 'sets'"
             class="related-item__content__show"
           >
-            <!-- Show-Titel -->
+            <!-- Show-Titel (nur anzeigen wenn NICHT no-show) -->
             <NuxtLink
               v-if="
-                item?.parentShow?.title !== 'No Show' && item?.parentShow?.slug
+                item?.parentShow?.title?.toLowerCase() !== 'no-show' &&
+                item?.parentShow?.slug
               "
               :to="localePath(`/shows/${item?.parentShow?.slug.current}`)"
               class="related-item__link"
@@ -490,8 +492,19 @@ function navigateToTagSearch(tag: any, item: any, isGenre = false) {
                 {{ item?.parentShow?.title }}
               </h3>
             </NuxtLink>
-            <h3 v-else class="related-item__title show-title">
-              {{ item?.title || item?.parentShow?.title }}
+            <!-- Wenn no-show: nur Set-Titel anzeigen -->
+            <h3
+              v-else-if="
+                item?.parentShow?.title?.toLowerCase() === 'no-show' &&
+                item?.title
+              "
+              class="related-item__title show-title"
+            >
+              {{ item?.title }}
+            </h3>
+            <!-- Fallback für andere Fälle -->
+            <h3 v-else-if="item?.title" class="related-item__title show-title">
+              {{ item?.title }}
             </h3>
 
             <!-- Künstler (für Sets) -->
@@ -650,7 +663,9 @@ function navigateToTagSearch(tag: any, item: any, isGenre = false) {
   }
 
   .related-item__content__show {
-    min-height: calc(var(--base-font-size) * 1.15 + var(--base-font-size) + var(--mid-padding));
+    min-height: calc(
+      var(--base-font-size) * 1.15 + var(--base-font-size) + var(--mid-padding)
+    );
   }
 
   .related-item {

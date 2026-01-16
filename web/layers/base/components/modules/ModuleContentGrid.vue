@@ -1263,8 +1263,12 @@ onUnmounted(() => {
 
             <!-- Set Content -->
             <div v-if="item.parentShow && contentType === 'sets'">
+              <!-- Only show parent show link if NOT no-show -->
               <NuxtLink
-                v-if="item.parentShow?.title !== 'No Show'"
+                v-if="
+                  item.parentShow?.title?.toLowerCase() !== 'no-show' &&
+                  item.parentShow?.slug
+                "
                 :to="localePath(`/shows/${item.parentShow?.slug.current}`)"
                 class="grid-item__link"
               >
@@ -1272,6 +1276,7 @@ onUnmounted(() => {
                   {{ item.parentShow?.title }}
                 </h3>
               </NuxtLink>
+              <!-- If no-show: show only set title -->
               <h3 v-else-if="item?.title" class="grid-item__title show-title">
                 {{ item?.title }}
               </h3>
