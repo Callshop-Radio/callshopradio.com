@@ -8,13 +8,21 @@ const route = useRoute();
 
 // Den "set"-Parameter aus der URL-Route extrahieren
 const query = groq`${SHOW_QUERY}`;
+console.log("Fetching show:", route.params.slug);
+
 const { data } = await useCachedSanityQuery(query, {
   slug: route.params.slug,
 });
 
+console.log("Show data:", data.value);
+
 // Fehlerbehandlung hinzufügen
 if (!data.value) {
   console.error("Set nicht gefunden:", route.params.slug);
+  throw createError({
+    statusCode: 404,
+    statusMessage: "Page Not Found",
+  });
 }
 
 usePageSeo(data?.value?.seo);
@@ -58,7 +66,12 @@ usePageSeo(data?.value?.seo);
         <h3 v-else>
           More Episodes of <span>{{ data?.title }}</span>
         </h3>
-        <ModuleRelatedContent :items="data?.sets" :limit="9" type="sets" title="" />
+        <ModuleRelatedContent
+          :items="data?.sets"
+          :limit="9"
+          type="sets"
+          title=""
+        />
       </div>
     </section>
   </div>

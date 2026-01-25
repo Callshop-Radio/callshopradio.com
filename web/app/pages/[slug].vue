@@ -5,7 +5,11 @@ import { SLUG_PAGE_QUERY } from "~~/queries/sanity.queries";
 const query = groq`${SLUG_PAGE_QUERY}`;
 
 const route = useRoute();
-const { data } = await useCachedSanityQuery(query, { slug: route?.params?.slug });
+console.log("Catch-all [slug] hit:", route.params.slug);
+const { data } = await useCachedSanityQuery(query, {
+  slug: route?.params?.slug,
+});
+console.log("Catch-all data:", data.value);
 
 if (!data?.value) {
   throw createError({
@@ -17,10 +21,10 @@ if (!data?.value) {
 usePageSeo(data?.value?.seo);
 
 useHead({
-    bodyAttrs: {
-        class: `page--default`,
-    }
-})
+  bodyAttrs: {
+    class: `page--default`,
+  },
+});
 </script>
 
 <template>

@@ -8,13 +8,21 @@ const route = useRoute();
 
 // Den "set"-Parameter aus der URL-Route extrahieren
 const query = groq`${POOL_PROFILE_QUERY}`;
+console.log("Fetching pool item:", route.params.slug);
+
 const { data } = await useCachedSanityQuery(query, {
   slug: route.params.slug, // Statt person oder venue den generischen slug parameter verwenden
 });
 
+console.log("Pool item data:", data.value);
+
 // Fehlerbehandlung hinzufügen
 if (!data.value) {
   console.error("Set nicht gefunden:", route.params.slug);
+  throw createError({
+    statusCode: 404,
+    statusMessage: "Page Not Found",
+  });
 }
 
 usePageSeo(data?.value?.seo);
@@ -58,10 +66,7 @@ usePageSeo(data?.value?.seo);
     >
       <div class="inner">
         <h3>Related</h3>
-        <ModuleRelatedContent
-          :items="data?.relatedContent"
-          type="pool"
-        />
+        <ModuleRelatedContent :items="data?.relatedContent" type="pool" />
       </div>
     </section>
     <section
@@ -70,10 +75,7 @@ usePageSeo(data?.value?.seo);
     >
       <div class="inner">
         <h3>More</h3>
-        <ModuleRelatedContent
-          :items="data?.moreContent"
-          type="pool"
-        />
+        <ModuleRelatedContent :items="data?.moreContent" type="pool" />
       </div>
     </section>
     <!-- <section v-if="data?.relatedContent?.length > 0" class="pool-detail__more-content">
@@ -118,9 +120,9 @@ section {
       padding: 0 var(--big-margin);
     } */
     h3 {
-        font-size: var(--h3-size);
-        text-transform: uppercase;
-        @media screen and (max-width: 900px) {
+      font-size: var(--h3-size);
+      text-transform: uppercase;
+      @media screen and (max-width: 900px) {
         padding: 0 0 var(--mid-margin) 0;
       }
     }
