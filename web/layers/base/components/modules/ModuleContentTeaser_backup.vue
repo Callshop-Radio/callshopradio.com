@@ -349,9 +349,6 @@ function getItemRoute(item: any) {
           `/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
         );
       }
-      // Fallback falls parentShow nicht verfügbar ist
-      console.log(`No parent show found for item ${item?.slug?.current}`);
-      return localePath(`/shows/${item?.slug?.current}`);
 
     case "article":
       return localePath(`/words/${item?.slug?.current}`);
@@ -423,11 +420,7 @@ function playTrack(item: any) {
     }
 
     // Track im Store speichern
-    mainStore.currentTrack = track;
-  } else {
-    console.log("No soundcloud track found for item", item);
-  }
-}
+
 
 // Stadt-Tags abrufen
 function getItemCityTags(item: any) {
@@ -543,7 +536,7 @@ onMounted(() => {
 function navigateToTagSearch(tag: any, item: any, isGenre = false) {
   // Determine search term
   let tagName = "";
-  
+
   if (isGenre) {
     tagName = tag.name || tag.title;
   } else {
@@ -552,38 +545,37 @@ function navigateToTagSearch(tag: any, item: any, isGenre = false) {
     // Since we don't have easy access to parseI18nObj in script scope without import,
     // we try to extract the first value or use the raw string
     const titleVal = tag.title || tag.name;
-    
+
     if (Array.isArray(titleVal)) {
-        // Assume portable text / i18n array, take first element value
-        tagName = titleVal[0]?.value || "";
-    } else if (typeof titleVal === 'object') {
-        // Fallback for object without array
-        tagName = ""; 
+      // Assume portable text / i18n array, take first element value
+      tagName = titleVal[0]?.value || "";
+    } else if (typeof titleVal === "object") {
+      // Fallback for object without array
+      tagName = "";
     } else {
-        tagName = titleVal || "";
+      tagName = titleVal || "";
     }
   }
 
   if (!tagName) return;
 
   // Determine Category
-  let category = 'all';
+  let category = "all";
   const itemType = item._type;
 
-  if (['show', 'set'].includes(itemType)) category = 'shows';
-  else if (['person', 'venue'].includes(itemType)) category = 'pool';
-  else if (['article'].includes(itemType)) category = 'article';
+  if (["show", "set"].includes(itemType)) category = "shows";
+  else if (["person", "venue"].includes(itemType)) category = "pool";
+  else if (["article"].includes(itemType)) category = "article";
 
   // Navigate
   router.push({
-    path: localePath('/search'),
+    path: localePath("/search"),
     query: {
       q: tagName,
-      type: category
-    }
+      type: category,
+    },
   });
 }
-
 </script>
 
 <template>
@@ -1489,7 +1481,7 @@ button.genre {
     transform: translateY(-1px);
     opacity: 0.9;
   }
-  
+
   &:active {
     transform: translateY(0);
   }

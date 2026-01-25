@@ -6,8 +6,6 @@ const localePath = useLocalePath();
 const mainStore = useMainStore();
 const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 
-// console.log(mainStore?.siteNav);
-
 // Computed-Properties für den Track
 const currentTrack = computed(() => mainStore.currentTrack);
 const trackTitle = computed(() => currentTrack.value?.title || "");

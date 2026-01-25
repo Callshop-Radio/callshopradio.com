@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch, onMounted, shallowRef } from "vue";
+import { useDocumentVisibility } from "@vueuse/core";
 import { useAsyncData } from "#imports";
 import { useMainStore } from "~/stores/mainStore";
 
@@ -421,7 +422,9 @@ const setupAudioElement = (audioElement, num) => {
 // Regularly update live status (separate timer)
 let statusUpdateInterval = null;
 
-// Set up audio event handlers after mounting
+// React to visibility changes
+const visibility = useDocumentVisibility();
+
 onMounted(() => {
   // Get audio elements after mounting
   audioEl1 = document.getElementById("audioPlayer1");
@@ -457,16 +460,30 @@ onMounted(() => {
   updateLiveStatus();
 
   // Set up status update timer
-  statusUpdateInterval = setInterval(() => {
-    // Only update if no audio playback is running
-    // or if metadata should be updated
-    updateLiveStatus();
+  const startInterval = () => {
+    if (statusUpdateInterval) clearInterval(statusUpdateInterval);
+    statusUpdateInterval = setInterval(() => {
+      // Only update if visible
+      if (visibility.value === "visible") {
+        updateLiveStatus();
 
-    // Update MediaSession metadata
-    if ("mediaSession" in navigator) {
-      updateMediaSessionMetadata();
+        // Update MediaSession metadata
+        if ("mediaSession" in navigator) {
+          updateMediaSessionMetadata();
+        }
+      }
+    }, 20000); // Update every 20 seconds (increased from 10s)
+  };
+
+  startInterval();
+
+  // Watch visibility to pause/resume strict polling (optional, relying on the check inside interval is safer for simple implementation,
+  // but restarting interval on show ensures immediate update)
+  watch(visibility, (current, previous) => {
+    if (current === "visible" && previous === "hidden") {
+      updateLiveStatus(); // Immediate update when coming back
     }
-  }, 10000); // Update every 10 seconds
+  });
 });
 
 // Update MediaSession metadata based on current stream

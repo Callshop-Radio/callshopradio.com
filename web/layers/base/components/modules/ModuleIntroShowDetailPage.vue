@@ -40,8 +40,6 @@ const props = defineProps<{
   showItem: ShowItem;
 }>();
 
-// console.log(props.showItem);
-
 // Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
 function getItemRoute(item) {
   if (!item || !item?.slug) return "/";

@@ -487,8 +487,7 @@ function getItemRoute(item: any) {
           `/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
         );
       }
-      // Fallback falls parentShow nicht verfügbar ist
-      console.log(`No parent show found for item ${item?.slug?.current}`);
+
       return localePath(`/shows/${item?.slug?.current}`);
 
     case "article":
@@ -546,7 +545,6 @@ function playTrack(item: any) {
     // Track im Store speichern
     mainStore.currentTrack = track;
   } else {
-    console.log("No soundcloud track found for item", item);
   }
 }
 

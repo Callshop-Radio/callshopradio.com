@@ -8,13 +8,10 @@ const route = useRoute();
 
 // Den "set"-Parameter aus der URL-Route extrahieren
 const query = groq`${POOL_PROFILE_QUERY}`;
-console.log("Fetching pool item:", route.params.slug);
 
 const { data } = await useCachedSanityQuery(query, {
   slug: route.params.slug, // Statt person oder venue den generischen slug parameter verwenden
 });
-
-console.log("Pool item data:", data.value);
 
 // Fehlerbehandlung hinzufügen
 if (!data.value) {

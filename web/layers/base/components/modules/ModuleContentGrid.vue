@@ -230,7 +230,7 @@ const { data: selfLoadedItems, pending: isLoadingInitial } = await useAsyncData(
   },
   {
     default: () => [],
-    lazy: false, // Load immediately for SSR
+    lazy: true, // Enable lazy loading to unblock navigation
     // server: true // explicit
   }
 );

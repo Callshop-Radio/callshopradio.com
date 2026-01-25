@@ -30,14 +30,14 @@ const props = defineProps({
 const needsSelfLoad = computed(() => {
   if (!props.module) return false;
   const { type, poolItems, setItems, showItems, articleItems } = props.module;
-  
+
   const hasItems: Record<string, boolean> = {
     pool: poolItems?.length > 0,
     sets: setItems?.length > 0,
     shows: showItems?.length > 0,
     words: articleItems?.length > 0,
   };
-  
+
   return !hasItems[type];
 });
 
@@ -51,10 +51,10 @@ const SELF_LOAD_PER_PAGE = 50;
 const getModuleQueryType = computed(() => {
   if (!props.module) return null;
   const type = props.module.type;
-  if (type === 'pool') return 'pool';
-  if (type === 'sets') return 'sets';
-  if (type === 'shows') return 'shows';
-  if (type === 'words') return 'words';
+  if (type === "pool") return "pool";
+  if (type === "sets") return "sets";
+  if (type === "shows") return "shows";
+  if (type === "words") return "words";
   return null;
 });
 
@@ -62,28 +62,33 @@ const getModuleQueryType = computed(() => {
 const buildQueryConfig = () => {
   const type = getModuleQueryType.value;
   if (!type) return null;
-  
+
   const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
   const end = selfLoadPage.value * SELF_LOAD_PER_PAGE;
   let params: Record<string, any> = { start, end };
-  
+
   switch (type) {
-    case 'sets':
+    case "sets":
       return { query: SET_LIST_QUERY, countQuery: SET_COUNT_QUERY, params };
-    case 'pool':
+    case "pool":
       const poolType = props.module.poolContentType;
-      params.types = poolType === 'all' 
-        ? ['person', 'venue'] 
-        : poolType === 'persons' 
-          ? ['person'] 
-          : poolType === 'venues' 
-            ? ['venue'] 
-            : ['person', 'venue'];
+      params.types =
+        poolType === "all"
+          ? ["person", "venue"]
+          : poolType === "persons"
+          ? ["person"]
+          : poolType === "venues"
+          ? ["venue"]
+          : ["person", "venue"];
       return { query: POOL_LIST_QUERY, countQuery: POOL_COUNT_QUERY, params };
-    case 'shows':
+    case "shows":
       return { query: SHOW_LIST_QUERY, countQuery: SHOW_COUNT_QUERY, params };
-    case 'words':
-      return { query: ARTICLE_LIST_QUERY, countQuery: ARTICLE_COUNT_QUERY, params };
+    case "words":
+      return {
+        query: ARTICLE_LIST_QUERY,
+        countQuery: ARTICLE_COUNT_QUERY,
+        params,
+      };
     default:
       return null;
   }
@@ -91,61 +96,63 @@ const buildQueryConfig = () => {
 
 // SSR-compatible data loading
 const { data: selfLoadedItems, pending: isLoadingInitial } = await useAsyncData(
-  `module-content-slider-${props.module?._key || props.module?.type}-${props.module?.poolContentType || 'default'}`,
+  `module-content-slider-${props.module?._key || props.module?.type}-${
+    props.module?.poolContentType || "default"
+  }`,
   async () => {
     if (!needsSelfLoad.value) return [];
-    
+
     const config = buildQueryConfig();
     if (!config) return [];
-    
+
     try {
       const sanity = useSanity();
       const [items, count] = await Promise.all([
         sanity.fetch(config.query, config.params),
-        sanity.fetch(config.countQuery, config.params)
+        sanity.fetch(config.countQuery, config.params),
       ]);
-      
-      if (typeof count === 'number') {
+
+      if (typeof count === "number") {
         selfLoadedCount.value = count;
       }
-      
+
       return items || [];
     } catch (error) {
-      console.error('[ModuleContentSlider] SSR Data Fetch Error:', error);
+      console.error("[ModuleContentSlider] SSR Data Fetch Error:", error);
       return [];
     }
   },
   {
     default: () => [],
-    lazy: false
+    lazy: false,
   }
 );
 
 // Load more content (client-side)
 async function loadMoreSelfContent() {
   if (isLoadingSelf.value) return;
-  
+
   const config = buildQueryConfig();
   if (!config) return;
-  
+
   isLoadingSelf.value = true;
-  
+
   try {
     const sanity = useSanity();
     selfLoadPage.value++;
-    
+
     const newStart = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
     const newEnd = selfLoadPage.value * SELF_LOAD_PER_PAGE;
     config.params.start = newStart;
     config.params.end = newEnd;
-    
+
     const items = await sanity.fetch(config.query, config.params);
-    
+
     if (selfLoadedItems.value) {
       selfLoadedItems.value = [...selfLoadedItems.value, ...items];
     }
   } catch (error) {
-    console.error('[ModuleContentSlider] Error loading more content:', error);
+    console.error("[ModuleContentSlider] Error loading more content:", error);
   } finally {
     isLoadingSelf.value = false;
   }
@@ -235,7 +242,6 @@ const setupDots = () => {
 onMounted(() => {
   // Data loading handled by useAsyncData now
 
-  
   if (emblaApi.value) {
     emblaApi.value.on("scroll", saveTranslatePositions);
     emblaApi.value.on("destroy", restoreTranslatePositions);
@@ -302,8 +308,7 @@ function getItemRoute(item) {
           `/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
         );
       }
-      // Fallback falls parentShow nicht verfügbar ist
-      console.log(`No parent show found for item ${item?.slug?.current}`);
+
       return localePath(`/shows/${item?.slug?.current}`);
 
     case "article":
@@ -345,7 +350,8 @@ function getSoundcloudArtwork(item) {
   }
   // Fallback chain
   const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-  const storeFallbackUrl = mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
+  const storeFallbackUrl =
+    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
   return parentShowImageUrl || storeFallbackUrl || "";
 }
 
@@ -487,7 +493,10 @@ const mobileGroupedItems = computed(() => {
 
   // If we're self-loading, use self-loaded items
   if (needsSelfLoad.value) {
-    return groupMobileItems(selfLoadedItems.value, props.module.poolContentType);
+    return groupMobileItems(
+      selfLoadedItems.value,
+      props.module.poolContentType
+    );
   }
 
   switch (props.module.type) {
@@ -509,7 +518,15 @@ const mobileGroupedItems = computed(() => {
 
 // Prüfen der Bildschirmgröße
 function checkScreenSize() {
-  isDesktop.value = window.innerWidth >= 900;
+  const newIsDesktop = window.innerWidth >= 900;
+  if (isDesktop.value !== newIsDesktop) {
+    isDesktop.value = newIsDesktop;
+    // Re-init current carousel on next tick ensures correct sizing
+    setTimeout(() => {
+      if (newIsDesktop && emblaApi.value) emblaApi.value.reInit();
+      if (!newIsDesktop && mobileEmblaApi.value) mobileEmblaApi.value.reInit();
+    }, 50);
+  }
 }
 
 // Content-Typ des aktuellen Moduls
@@ -621,8 +638,8 @@ function playTrack(item) {
       </section>
     </div>
 
-    <!-- Desktop Version (v-show wenn >= 900px) -->
-    <div v-show="isDesktop">
+    <!-- Desktop Version (v-if wenn >= 900px) -->
+    <div v-if="isDesktop">
       <nav class="embla__nav">
         <!-- Dot Navigation -->
         <div class="embla__nav__dots" v-if="scrollSnaps.length > 1">
@@ -773,7 +790,9 @@ function playTrack(item) {
                       item?.parentShow?.title !== 'No Show'
                     "
                     :to="
-                      localePath(`/shows/no-show/${item?.parentShow?.slug?.current}`)
+                      localePath(
+                        `/shows/no-show/${item?.parentShow?.slug?.current}`
+                      )
                     "
                     class="slide__link"
                   >
@@ -928,8 +947,8 @@ function playTrack(item) {
         </div>
       </div>
     </div>
-    <!-- Mobile Version (v-show wenn < 900px) -->
-    <div v-show="!isDesktop" class="mobile-slider">
+    <!-- Mobile Version (v-if wenn < 900px) -->
+    <div v-if="!isDesktop" class="mobile-slider">
       <nav class="embla__nav">
         <!-- Mobile Dot Navigation -->
         <div class="embla__nav__dots" v-if="mobileScrollSnaps.length > 1">
@@ -1080,7 +1099,11 @@ function playTrack(item) {
                     </button>
                   </section>
                   <NuxtLink
-                    v-if="item?.parentShow?.slug && item?.clickableTitle && item?.parentShow?.title !== 'No Show'"
+                    v-if="
+                      item?.parentShow?.slug &&
+                      item?.clickableTitle &&
+                      item?.parentShow?.title !== 'No Show'
+                    "
                     :to="localePath(`/shows/${item?.parentShow?.slug.current}`)"
                     class="slide__link"
                   >

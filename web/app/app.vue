@@ -3,14 +3,7 @@ favicon();
 // creditLog()
 
 const route = useRoute();
-watch(() => route.path, (newPath) => {
-  console.log('App Navigation:', {
-    path: newPath,
-    name: route.name,
-    params: route.params,
-    matched: route.matched.map(m => m.path)
-  });
-}, { immediate: true });
+
 
 
 <template>
@@ -69,5 +62,4 @@ watch(() => route.path, (newPath) => {
     padding: 0;
   }
 }
-
 </style>

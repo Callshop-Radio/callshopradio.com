@@ -43,8 +43,6 @@ const props = defineProps<{
   poolItem: PoolItem;
 }>();
 
-// console.log(props.poolItem);
-
 // Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
 function getItemRoute(item) {
   if (!item || !item?.slug) return "/";

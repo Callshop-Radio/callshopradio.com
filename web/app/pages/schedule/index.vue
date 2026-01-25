@@ -127,16 +127,6 @@ const fetchTracksForInstance = async (instanceId) => {
 
     // Log cue points for all tracks in this instance
     if (data && Array.isArray(data) && data.length > 0) {
-      console.log(`🎵 Instance ${instanceId} - Cue Points:`);
-      data.forEach((track, index) => {
-        console.log(
-          `  ${index + 1}. ${track.title || "No title"} | Start: ${
-            track.starts
-          } | Cue In: ${track.cue_in || "null"} | Cue Out: ${
-            track.cue_out || "null"
-          }`
-        );
-      });
     }
 
     return data;

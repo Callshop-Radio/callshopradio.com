@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import emblaCarouselVue from "embla-carousel-vue";
-import { useThrottleFn } from "@vueuse/core";
+import { useThrottleFn, useDocumentVisibility } from "@vueuse/core";
 import { useMainStore } from "~/stores/mainStore";
 
 const mainStore = useMainStore();
@@ -52,6 +52,7 @@ const canScrollNext = ref(true);
 // Time management
 const currentTime = ref(new Date());
 const timeUpdateInterval = ref<NodeJS.Timeout | null>(null);
+const visibility = useDocumentVisibility();
 
 // Current time formatting and positioning
 const currentTimeFormatted = computed(() => {
@@ -73,10 +74,10 @@ const currentTimeIndicatorStyle = computed(() => {
   // Use the same calculation as timeToGridSegment for consistency
   const decimalHours = hours - GRID_START_HOUR + minutes / 60;
   const segments = decimalHours * GRID_SEGMENTS_PER_HOUR;
-  
+
   // Calculate grid row position (1-indexed for CSS Grid)
   const gridRow = Math.floor(segments) + 1;
-  
+
   // Calculate offset within the current grid cell
   const segmentFraction = segments - Math.floor(segments);
   const offsetPercentage = segmentFraction * 100;
@@ -242,19 +243,6 @@ const calculateShowDurationInSegments = (
   // Calculate exact duration in segments
   const durationSegments = clampedEndSegment - startSegment;
 
-  // Debug logging
-  console.log(`🧮 Duration Calculation:`, {
-    startTime: startTime.toLocaleTimeString(),
-    originalEndTime: endTime.toLocaleTimeString(),
-    calculatedEndHours: endHours,
-    endDecimalHours,
-    startSegment,
-    endSegment,
-    clampedEndSegment,
-    durationSegments,
-    endTimeWasMidnight: endTime.getHours() === 0 && endTime.getMinutes() === 0,
-  });
-
   // Ensure minimum 1 segment duration
   return Math.max(1, durationSegments);
 };
@@ -295,37 +283,12 @@ const processedItems = computed(() => {
 
       // Log show processing
       if (show.tracks?.length > 0) {
-        // console.log(`🎵 Processing show with tracks:`, {
-        //   showTitle: props.getShowTitle(show),
-        //   showStart: props.getShowStart(show),
-        //   showEnd: props.getShowEnd(show),
-        //   tracksCount: show.tracks.length,
-        //   firstTrack: show.tracks[0] ? {
-        //     title: show.tracks[0].title,
-        //     starts: show.tracks[0].starts,
-        //     length: show.tracks[0].length,
-        //     artist: show.tracks[0].artist || show.tracks[0].creator || show.tracks[0].performer
-        //   } : null
-        // });
       }
 
       // Only add live shows
       if (description?.toLowerCase() === "live") {
         const showStartTime = new Date(props.getShowStart(show));
         const showEndTime = new Date(props.getShowEnd(show));
-
-        // Log show duration calculation
-        console.log(`📺 Live Show Duration:`, {
-          title: props.getShowTitle(show),
-          start: showStartTime,
-          end: showEndTime,
-          startFormatted: showStartTime.toLocaleTimeString(),
-          endFormatted: showEndTime.toLocaleTimeString(),
-          durationHours:
-            (showEndTime.getTime() - showStartTime.getTime()) /
-            (1000 * 60 * 60),
-          crossesMidnight: showEndTime.getTime() < showStartTime.getTime(),
-        });
 
         items.push({
           type: "show",
@@ -350,20 +313,6 @@ const processedItems = computed(() => {
 
           const startTime = track.starts ? new Date(track.starts) : null;
           const endTime = calculateTrackEndTime(track);
-
-          // Log track processing
-          if (startTime) {
-            console.log(`🎵 Processing track:`, {
-              title: track.title,
-              startTime,
-              endTime,
-              rawStarts: track.starts,
-              rawLength: track.length,
-              calculatedDuration: endTime
-                ? (endTime.getTime() - startTime.getTime()) / 1000 / 60
-                : null,
-            });
-          }
 
           if (startTime) {
             items.push({
@@ -418,19 +367,6 @@ const getItemGridPosition = (item: ProcessedItem) => {
     gridColumn: 1,
   };
 
-  // Debug logging for shows
-  if (item.type === "show") {
-    console.log(`📍 Grid Position for Show:`, {
-      title: item.title,
-      startTime: item.startTime.toLocaleTimeString(),
-      endTime: item.endTime.toLocaleTimeString(),
-      startSegment,
-      durationSegments,
-      gridRowStart: gridPosition.gridRowStart,
-      gridRowEnd: gridPosition.gridRowEnd,
-    });
-  }
-
   return gridPosition;
 };
 
@@ -459,7 +395,20 @@ onMounted(() => {
   }
 
   updateCurrentTime();
-  timeUpdateInterval.value = setInterval(updateCurrentTime, 30000);
+
+  // Only update time if visible to save resources
+  timeUpdateInterval.value = setInterval(() => {
+    if (visibility.value === "visible") {
+      updateCurrentTime();
+    }
+  }, 30000);
+});
+
+// Update immediately when becoming visible
+watch(visibility, (curr, prev) => {
+  if (curr === "visible" && prev === "hidden") {
+    updateCurrentTime();
+  }
 });
 
 onUnmounted(() => {
@@ -683,7 +632,6 @@ watch(
   position: relative;
   padding: 0 0 0 calc((100svw - var(--page-max-width)) / 2);
 
-
   &__container {
     @apply flex backface-hidden touch-pan-y;
     height: 100%;
@@ -708,8 +656,8 @@ watch(
   gap: 0 var(--mid-padding);
   height: calc(var(--base-font-size) + var(--small-padding) * 2);
   z-index: 999;
-  margin: var(--base-margin) 0 var(--base-margin) calc((100svw - var(--page-max-width)) / 2);
-
+  margin: var(--base-margin) 0 var(--base-margin)
+    calc((100svw - var(--page-max-width)) / 2);
 }
 
 .location-switch {
@@ -1004,7 +952,6 @@ watch(
       animation: pulseOpacity 2s ease-in-out infinite;
       filter: blur(2px);
     }
-
   }
 
   &__time {

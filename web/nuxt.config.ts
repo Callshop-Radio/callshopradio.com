@@ -114,7 +114,8 @@ export default defineNuxtConfig({
       crawlLinks: true,
       failOnError: false,
       // Nur Homepage und Sitemap beim Build prerendern
-      routes: ["/", "/sitemap.xml"],
+      // Start crawling from homepage
+      routes: ["/"],
       ignore: ["/api/**"],
     },
     experimental: {
