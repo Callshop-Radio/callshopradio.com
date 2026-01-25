@@ -5,11 +5,11 @@ export default defineNuxtConfig({
   },
   site: {
     debug: false,
-    url: process.env.NUXT_PUBLIC_SITE_URL || 'https://callshopradio.com',
+    url: process.env.NUXT_PUBLIC_SITE_URL || "https://callshopradio.com",
   },
 
   sitemap: {
-    sources: ['/api/sitemap']
+    sources: ["/api/sitemap"],
   },
   devtools: { enabled: false },
   ssr: true,
@@ -20,6 +20,11 @@ export default defineNuxtConfig({
   app: {
     pageTransition: { name: "page", mode: "out-in" },
   },
+
+  sourcemap: {
+    server: false,
+    client: false,
+  },
   modules: [
     "@unocss/nuxt",
     "@unlazy/nuxt",
@@ -29,7 +34,7 @@ export default defineNuxtConfig({
     "nuxt-gtag",
     "@nuxt/eslint",
     "@nuxtjs/i18n",
-    "@nuxtjs/sitemap"
+    "@nuxtjs/sitemap",
   ],
 
   gtag: {
@@ -109,34 +114,34 @@ export default defineNuxtConfig({
       crawlLinks: false,
       failOnError: false,
       // Nur Homepage und Sitemap beim Build prerendern
-      routes: ['/', '/sitemap.xml'],
-      ignore: ['/api/**']
+      routes: ["/", "/sitemap.xml"],
+      ignore: ["/api/**"],
     },
     experimental: {
-      wasm: true
+      wasm: true,
     },
     // Cache-Storage Konfiguration
     storage: {
       cache: {
-        driver: 'lru-cache',
-        max: 1000
-      }
+        driver: "lru-cache",
+        max: 1000,
+      },
     },
     // Entwicklungs-Storage (Filesystem-basiert)
     devStorage: {
       cache: {
-        driver: 'fs',
-        base: '.cache/nitro'
-      }
+        driver: "fs",
+        base: ".cache/nitro",
+      },
     },
     rollupConfig: {
-      external: ['framer-motion'],
+      external: ["framer-motion"],
       output: {
         globals: {
-          'framer-motion': 'FramerMotion'
-        }
-      }
-    }
+          "framer-motion": "FramerMotion",
+        },
+      },
+    },
   },
 
   // Prerender-Hook deaktiviert - Hybrid Rendering mit ISR/SWR
@@ -161,17 +166,17 @@ export default defineNuxtConfig({
   webpack: {
     optimization: {
       splitChunks: {
-        chunks: 'all',
+        chunks: "all",
         cacheGroups: {
           vendor: {
             test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-            maxSize: 244000
-          }
-        }
-      }
-    }
+            name: "vendors",
+            chunks: "all",
+            maxSize: 244000,
+          },
+        },
+      },
+    },
   },
 
   vite: {
@@ -180,59 +185,62 @@ export default defineNuxtConfig({
       rollupOptions: {
         output: {
           manualChunks: (id) => {
-            if (id.includes('node_modules')) {
-              return 'vendor'
+            if (id.includes("node_modules")) {
+              return "vendor";
             }
-          }
+          },
         },
         onwarn(warning, warn) {
           // Suppress "use client" warnings from framer-motion
-          if (warning.code === 'MODULE_LEVEL_DIRECTIVE' && warning.message.includes('use client')) {
-            return
+          if (
+            warning.code === "MODULE_LEVEL_DIRECTIVE" &&
+            warning.message.includes("use client")
+          ) {
+            return;
           }
-          warn(warning)
-        }
-      }
+          warn(warning);
+        },
+      },
     },
     optimizeDeps: {
-      include: ['vue', 'vue-router']
+      include: ["vue", "vue-router"],
     },
     ssr: {
       noExternal: [
         // Include framer-motion in SSR bundle to avoid directive warnings
-        'framer-motion'
-      ]
-    }
+        "framer-motion",
+      ],
+    },
   },
 
   routeRules: {
     // === Statische Seiten (bei Build generiert) ===
     "/": { prerender: true },
-    "/sitemap.xml": { 
+    "/sitemap.xml": {
       prerender: true,
-      headers: { 
+      headers: {
         "content-type": "application/xml; charset=utf-8",
-        "cache-control": "max-age=3600"
-      }
+        "cache-control": "max-age=3600",
+      },
     },
-    
+
     // === Übersichtsseiten mit SWR (Stale-While-Revalidate) ===
     // Cached Version wird sofort geliefert, im Hintergrund aktualisiert
-    "/pool": { swr: 3600 },      // 1 Stunde Cache
-    "/shows": { swr: 3600 },     // 1 Stunde Cache
-    "/words": { swr: 3600 },     // 1 Stunde Cache
-    "/schedule": { swr: 300 },   // 5 Minuten Cache (live content)
-    
+    "/pool": { swr: 3600 }, // 1 Stunde Cache
+    "/shows": { swr: 3600 }, // 1 Stunde Cache
+    "/words": { swr: 3600 }, // 1 Stunde Cache
+    "/schedule": { swr: 300 }, // 5 Minuten Cache (live content)
+
     // === Detailseiten mit ISR (Incremental Static Regeneration) ===
     // Cached bis TTL abläuft oder via Webhook invalidiert
-    "/pool/**": { isr: 86400 },  // 24h Cache
+    "/pool/**": { isr: 86400 }, // 24h Cache
     "/shows/**": { isr: 86400 }, // 24h Cache
     "/words/**": { isr: 86400 }, // 24h Cache
-    
+
     // === Dynamische Seiten (immer frisch) ===
     "/search": { ssr: true },
     "/de/search": { ssr: true },
-    
+
     // === API-Routen ===
     "/api/**": { cors: true },
   },

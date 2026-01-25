@@ -1,10 +1,11 @@
 [build]
   base = "web/"
   publish = ".output/public"
-  command = "NODE_OPTIONS='--max-old-space-size=3072' pnpm run build"
-
-[build.environment]
-  NPM_FLAGS = "--legacy-peer-deps"
+  command = "pnpm run build"
+ 
+ [build.environment]
+   NODE_OPTIONS = "--max-old-space-size=3072"
+   NPM_FLAGS = "--legacy-peer-deps"
   NITRO_PRESET = "netlify"
 
 # Netlify Functions für SSR
