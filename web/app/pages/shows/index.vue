@@ -8,7 +8,7 @@ const mainStore = useMainStore();
 const query = groq`${SHOWSARCHIVE_QUERY}`;
 const { data } = await useCachedSanityQuery(query);
 
-
+useHead({
   bodyAttrs: {
     class: `shows-archive`,
   },
