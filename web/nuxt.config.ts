@@ -111,7 +111,7 @@ export default defineNuxtConfig({
 
   nitro: {
     prerender: {
-      crawlLinks: false,
+      crawlLinks: true,
       failOnError: false,
       // Nur Homepage und Sitemap beim Build prerendern
       routes: ["/", "/sitemap.xml"],
