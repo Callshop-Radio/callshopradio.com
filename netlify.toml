@@ -1,6 +1,6 @@
 [build]
   base = "web/"
-  publish = ".output/public"
+  publish = "dist"
   command = "pnpm run build"
  
  [build.environment]
@@ -10,9 +10,9 @@
 
 # Netlify Functions für SSR
 [functions]
-  directory = ".output/server"
+  directory = ".netlify/functions-internal"
   node_bundler = "esbuild"
-  included_files = [".output/server/**"]
+  included_files = [".netlify/functions-internal/**"]
 
 # Security Headers
 [[headers]]
