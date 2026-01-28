@@ -6,8 +6,19 @@ import { useMainStore } from "~/stores/mainStore";
 const mainStore = useMainStore();
 const route = useRoute();
 
-// Den "set"-Parameter aus der URL-Route extrahieren
 const query = groq`${SHOW_QUERY}`;
+const { data } = await useCachedSanityQuery(query, {
+  slug: route.params.slug,
+});
+
+// Fehlerbehandlung hinzufügen
+if (!data.value) {
+  console.error("Show nicht gefunden:", route.params.slug);
+  throw createError({
+    statusCode: 404,
+    statusMessage: "Page Not Found",
+  });
+}
 
 usePageSeo(data?.value?.seo);
 </script>
