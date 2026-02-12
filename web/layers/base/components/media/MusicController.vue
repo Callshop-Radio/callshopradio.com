@@ -6,7 +6,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 const mainStore = useMainStore()
 
 // API key from environment variables
-const apiKey = process.env.NUXT_LIBRETIME_API_KEY ?? 'DMGSLT4FB25H33034RG4'
+const apiKey = process.env.NUXT_LIBRETIME_API_KEY;
 
 // Define stream URLs
 const streamUrl1 = 'https://icecast.callshopradio.com/callshopradio'

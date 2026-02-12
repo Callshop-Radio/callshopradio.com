@@ -11931,7 +11931,7 @@ const _sfc_main$d = {
   __ssrInlineRender: true,
   setup(__props) {
     const mainStore = useMainStore();
-    const apiKey = process.env.NUXT_LIBRETIME_API_KEY ?? "DMGSLT4FB25H33034RG4";
+    const apiKey = process.env.NUXT_LIBRETIME_API_KEY;
     const isPlaying1 = ref(false);
     const isPlaying2 = ref(false);
     const isLoading1 = ref(false);
