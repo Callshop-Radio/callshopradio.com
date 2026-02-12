@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import emblaCarouselVue from "embla-carousel-vue";
-import { useThrottleFn, useDocumentVisibility } from "@vueuse/core";
-import { useMainStore } from "~/stores/mainStore";
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useDocumentVisibility, useThrottleFn } from '@vueuse/core'
+import emblaCarouselVue from 'embla-carousel-vue'
+import { useMainStore } from '~/stores/mainStore'
 
-const mainStore = useMainStore();
+const mainStore = useMainStore()
 
 interface Group {
   date: string | Date;
@@ -13,7 +13,7 @@ interface Group {
 }
 
 interface ProcessedItem {
-  type: "show" | "track";
+  type: 'show' | 'track';
   id: string;
   title: string;
   artist?: string;
@@ -37,564 +37,573 @@ const props = defineProps<{
   ) => string;
   getShowDescription: (show: any) => string;
   isLiveShow: (show: any) => boolean;
-}>();
+}>()
 
 // Carousel setup
 const [emblaNode, emblaApi] = emblaCarouselVue({
-  align: "start",
-  containScroll: false,
-});
+	align: 'start',
+	containScroll: false
+})
 
-const currentSlideIndex = ref(0);
-const canScrollPrev = ref(false);
-const canScrollNext = ref(true);
+const currentSlideIndex = ref(0)
+const canScrollPrev = ref(false)
+const canScrollNext = ref(true)
 
 // Time management
-const currentTime = ref(new Date());
-const timeUpdateInterval = ref<NodeJS.Timeout | null>(null);
-const visibility = useDocumentVisibility();
+const currentTime = ref(new Date())
+const timeUpdateInterval = ref<NodeJS.Timeout | null>(null)
+const visibility = useDocumentVisibility()
 
 // Current time formatting and positioning
-const currentTimeFormatted = computed(() => {
-  const hours = currentTime.value.getHours().toString().padStart(2, "0");
-  const minutes = currentTime.value.getMinutes().toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
-});
+const _currentTimeFormatted = computed(() => {
+	const hours = currentTime.value.getHours().toString().padStart(2, '0')
+	const minutes = currentTime.value.getMinutes().toString().padStart(2, '0')
+	return `${hours}:${minutes}`
+})
 
 const currentTimeIndicatorStyle = computed(() => {
-  const now = currentTime.value;
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
+	const now = currentTime.value
+	const hours = now.getHours()
+	const minutes = now.getMinutes()
 
-  // Check if current time is within our grid range (7-24h)
-  if (hours < GRID_START_HOUR || hours >= GRID_END_HOUR) {
-    return { display: "none" };
-  }
+	// Check if current time is within our grid range (7-24h)
+	if (hours < GRID_START_HOUR || hours >= GRID_END_HOUR) {
+		return { display: 'none' }
+	}
 
-  // Use the same calculation as timeToGridSegment for consistency
-  const decimalHours = hours - GRID_START_HOUR + minutes / 60;
-  const segments = decimalHours * GRID_SEGMENTS_PER_HOUR;
+	// Use the same calculation as timeToGridSegment for consistency
+	const decimalHours = hours - GRID_START_HOUR + minutes / 60
+	const segments = decimalHours * GRID_SEGMENTS_PER_HOUR
 
-  // Calculate grid row position (1-indexed for CSS Grid)
-  const gridRow = Math.floor(segments) + 1;
+	// Calculate grid row position (1-indexed for CSS Grid)
+	const gridRow = Math.floor(segments) + 1
 
-  // Calculate offset within the current grid cell
-  const segmentFraction = segments - Math.floor(segments);
-  const offsetPercentage = segmentFraction * 100;
+	// Calculate offset within the current grid cell
+	const segmentFraction = segments - Math.floor(segments)
+	const offsetPercentage = segmentFraction * 100
 
-  return {
-    gridRow: `${gridRow}`,
-    gridColumn: "1",
-    position: "relative" as const,
-    top: `${offsetPercentage}%`,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    width: "100%",
-    zIndex: 20,
-    pointerEvents: "none" as const,
-    marginLeft: "var(--small-padding)",
-  };
-});
+	return {
+		gridRow: `${gridRow}`,
+		gridColumn: '1',
+		position: 'relative' as const,
+		top: `${offsetPercentage}%`,
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'flex-start',
+		width: '100%',
+		zIndex: 20,
+		pointerEvents: 'none' as const,
+		marginLeft: 'var(--small-padding)'
+	}
+})
 
 // Check if current time marker should be shown for a specific date
 const shouldShowTimeMarkerForDate = (date: string | Date): boolean => {
-  const now = currentTime.value;
-  const targetDate = new Date(date);
+	const now = currentTime.value
+	const targetDate = new Date(date)
 
-  // Check if it's the same day
-  return (
-    now.getDate() === targetDate.getDate() &&
+	// Check if it's the same day
+	return (
+		now.getDate() === targetDate.getDate() &&
     now.getMonth() === targetDate.getMonth() &&
     now.getFullYear() === targetDate.getFullYear()
-  );
-};
+	)
+}
 
 // Constants
-const GRID_START_HOUR = 7;
-const GRID_END_HOUR = 24;
-const GRID_TOTAL_HOURS = GRID_END_HOUR - GRID_START_HOUR;
-const GRID_SEGMENTS_PER_HOUR = 2; // 30-Minuten-Segmente
+const GRID_START_HOUR = 7
+const GRID_END_HOUR = 24
+const GRID_TOTAL_HOURS = GRID_END_HOUR - GRID_START_HOUR
+const GRID_SEGMENTS_PER_HOUR = 2 // 30-Minuten-Segmente
 const GRID_TOTAL_SEGMENTS = Math.min(
-  GRID_TOTAL_HOURS * GRID_SEGMENTS_PER_HOUR,
-  35
-); // Maximal 35 Segmente
+	GRID_TOTAL_HOURS * GRID_SEGMENTS_PER_HOUR,
+	35
+) // Maximal 35 Segmente
 
 // Utility functions (memoized)
 const parseTrackLength = (
-  length: string
+	length: string
 ): { hours: number; minutes: number; seconds: number } => {
-  const parts = length.split(":");
-  if (parts.length === 3) {
-    return {
-      hours: parseInt(parts[0] || "0", 10) || 0,
-      minutes: parseInt(parts[1] || "0", 10) || 0,
-      seconds: parseFloat(parts[2] || "0") || 0,
-    };
-  } else if (parts.length === 2) {
-    return {
-      hours: 0,
-      minutes: parseInt(parts[0] || "0", 10) || 0,
-      seconds: parseFloat(parts[1] || "0") || 0,
-    };
-  }
-  return { hours: 0, minutes: 0, seconds: 0 };
-};
+	const parts = length.split(':')
+	if (parts.length === 3) {
+		return {
+			hours: parseInt(parts[0] || '0', 10) || 0,
+			minutes: parseInt(parts[1] || '0', 10) || 0,
+			seconds: parseFloat(parts[2] || '0') || 0
+		}
+	} else if (parts.length === 2) {
+		return {
+			hours: 0,
+			minutes: parseInt(parts[0] || '0', 10) || 0,
+			seconds: parseFloat(parts[1] || '0') || 0
+		}
+	}
+	return { hours: 0, minutes: 0, seconds: 0 }
+}
 
 const calculateTrackEndTime = (track: any): Date | null => {
-  if (!track.starts) return null;
+	if (!track.starts) return null
 
-  const startTime = new Date(track.starts);
+	const startTime = new Date(track.starts)
 
-  // For tracks: calculate end time using cue_out (duration format HH:MM:SS)
-  if (track.cue_out) {
-    const { hours, minutes, seconds } = parseTrackLength(track.cue_out);
-    if (hours > 0 || minutes > 0 || seconds > 0) {
-      const endTime = new Date(startTime.getTime());
-      endTime.setHours(endTime.getHours() + hours);
-      endTime.setMinutes(endTime.getMinutes() + minutes);
-      endTime.setSeconds(endTime.getSeconds() + Math.floor(seconds));
-      return endTime;
-    }
-  }
+	// For tracks: calculate end time using cue_out (duration format HH:MM:SS)
+	if (track.cue_out) {
+		const { hours, minutes, seconds } = parseTrackLength(track.cue_out)
+		if (hours > 0 || minutes > 0 || seconds > 0) {
+			const endTime = new Date(startTime.getTime())
+			endTime.setHours(endTime.getHours() + hours)
+			endTime.setMinutes(endTime.getMinutes() + minutes)
+			endTime.setSeconds(endTime.getSeconds() + Math.floor(seconds))
+			return endTime
+		}
+	}
 
-  // Fallback: Use length field if cue_out is not available
-  if (track.length) {
-    const { hours, minutes, seconds } = parseTrackLength(track.length);
-    const endTime = new Date(startTime.getTime());
-    endTime.setHours(endTime.getHours() + hours);
-    endTime.setMinutes(endTime.getMinutes() + minutes);
-    endTime.setSeconds(endTime.getSeconds() + Math.floor(seconds));
-    return endTime;
-  }
+	// Fallback: Use length field if cue_out is not available
+	if (track.length) {
+		const { hours, minutes, seconds } = parseTrackLength(track.length)
+		const endTime = new Date(startTime.getTime())
+		endTime.setHours(endTime.getHours() + hours)
+		endTime.setMinutes(endTime.getMinutes() + minutes)
+		endTime.setSeconds(endTime.getSeconds() + Math.floor(seconds))
+		return endTime
+	}
 
-  // If no duration info available, return startTime (0 duration)
-  return startTime;
-};
+	// If no duration info available, return startTime (0 duration)
+	return startTime
+}
 
 const formatTrackTime = (dateTime: Date | null): string => {
-  if (!dateTime || isNaN(dateTime.getTime())) return "";
+	if (!dateTime || isNaN(dateTime.getTime())) return ''
 
-  // No rounding - use exact time
-  const hours = dateTime.getHours().toString().padStart(2, "0");
-  const minutes = dateTime.getMinutes().toString().padStart(2, "0");
+	// No rounding - use exact time
+	const hours = dateTime.getHours().toString().padStart(2, '0')
+	const minutes = dateTime.getMinutes().toString().padStart(2, '0')
 
-  return `${hours}:${minutes}`;
-};
+	return `${hours}:${minutes}`
+}
 
 const getTrackTimeRange = (track: any): string => {
-  if (!track.starts) return "";
+	if (!track.starts) return ''
 
-  const startTime = new Date(track.starts);
-  const endTime = calculateTrackEndTime(track);
-  const startFormatted = formatTrackTime(startTime);
+	const startTime = new Date(track.starts)
+	const endTime = calculateTrackEndTime(track)
+	const startFormatted = formatTrackTime(startTime)
 
-  if (!endTime) return startFormatted;
+	if (!endTime) return startFormatted
 
-  const endFormatted = formatTrackTime(endTime);
-  return `${startFormatted} – ${endFormatted}`;
-};
+	const endFormatted = formatTrackTime(endTime)
+	return `${startFormatted} – ${endFormatted}`
+}
 
 // Helper function to convert time to grid segment
 const timeToGridSegment = (date: Date): number => {
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
+	const hours = date.getHours()
+	const minutes = date.getMinutes()
 
-  // Convert to decimal hours from GRID_START_HOUR
-  const decimalHours = hours - GRID_START_HOUR + minutes / 60;
+	// Convert to decimal hours from GRID_START_HOUR
+	const decimalHours = hours - GRID_START_HOUR + minutes / 60
 
-  // Convert to 30-minute segments (no rounding - floor for exact positioning)
-  const segments = Math.floor(decimalHours * GRID_SEGMENTS_PER_HOUR);
+	// Convert to 30-minute segments (no rounding - floor for exact positioning)
+	const segments = Math.floor(decimalHours * GRID_SEGMENTS_PER_HOUR)
 
-  return Math.max(0, Math.min(segments, GRID_TOTAL_SEGMENTS - 1));
-};
+	return Math.max(0, Math.min(segments, GRID_TOTAL_SEGMENTS - 1))
+}
 
 // Helper function to calculate show duration in segments
 const calculateShowDurationInSegments = (
-  startTime: Date,
-  endTime: Date
+	startTime: Date,
+	endTime: Date
 ): number => {
-  const startSegment = timeToGridSegment(startTime);
+	const startSegment = timeToGridSegment(startTime)
 
-  // Handle end time: if 00:00, calculate as if it's 24:00 (end of same day)
-  let endHours = endTime.getHours();
-  let endMinutes = endTime.getMinutes();
+	// Handle end time: if 00:00, calculate as if it's 24:00 (end of same day)
+	let endHours = endTime.getHours()
+	let endMinutes = endTime.getMinutes()
 
-  // If end time is 00:00, treat it as 24:00 for calculation
-  if (endHours === 0 && endMinutes === 0) {
-    endHours = 24;
-    endMinutes = 0;
-  }
+	// If end time is 00:00, treat it as 24:00 for calculation
+	if (endHours === 0 && endMinutes === 0) {
+		endHours = 24
+		endMinutes = 0
+	}
 
-  // Calculate end segment with the corrected end time
-  let endDecimalHours = endHours - GRID_START_HOUR + endMinutes / 60;
+	// Calculate end segment with the corrected end time
+	let endDecimalHours = endHours - GRID_START_HOUR + endMinutes / 60
 
-  // If end time is after our grid (24h), clamp it to the grid end
-  if (endDecimalHours > GRID_TOTAL_HOURS) {
-    endDecimalHours = GRID_TOTAL_HOURS;
-  }
+	// If end time is after our grid (24h), clamp it to the grid end
+	if (endDecimalHours > GRID_TOTAL_HOURS) {
+		endDecimalHours = GRID_TOTAL_HOURS
+	}
 
-  const endSegment = Math.floor(endDecimalHours * GRID_SEGMENTS_PER_HOUR);
-  const clampedEndSegment = Math.max(
-    0,
-    Math.min(endSegment, GRID_TOTAL_SEGMENTS)
-  );
+	const endSegment = Math.floor(endDecimalHours * GRID_SEGMENTS_PER_HOUR)
+	const clampedEndSegment = Math.max(
+		0,
+		Math.min(endSegment, GRID_TOTAL_SEGMENTS)
+	)
 
-  // Calculate exact duration in segments
-  const durationSegments = clampedEndSegment - startSegment;
+	// Calculate exact duration in segments
+	const durationSegments = clampedEndSegment - startSegment
 
-  // Ensure minimum 1 segment duration
-  return Math.max(1, durationSegments);
-};
+	// Ensure minimum 1 segment duration
+	return Math.max(1, durationSegments)
+}
 
 // Helper function to calculate item duration in segments (differentiates between shows and tracks)
 const calculateItemDurationInSegments = (item: ProcessedItem): number => {
-  if (item.type === "show") {
-    // For shows: use traditional start/end time calculation
-    return calculateShowDurationInSegments(item.startTime, item.endTime);
-  } else {
-    // For tracks: use calculated track end time (from cue points)
-    return calculateShowDurationInSegments(item.startTime, item.endTime);
-  }
-};
+	if (item.type === 'show') {
+		// For shows: use traditional start/end time calculation
+		return calculateShowDurationInSegments(item.startTime, item.endTime)
+	} else {
+		// For tracks: use calculated track end time (from cue points)
+		return calculateShowDurationInSegments(item.startTime, item.endTime)
+	}
+}
 
 // Format grid segment time for display
-const formatGridSegmentTime = (segment: number): string => {
-  const hours = Math.floor(segment / GRID_SEGMENTS_PER_HOUR) + GRID_START_HOUR;
-  const minutes = (segment % GRID_SEGMENTS_PER_HOUR) * 30;
+const _formatGridSegmentTime = (segment: number): string => {
+	const hours = Math.floor(segment / GRID_SEGMENTS_PER_HOUR) + GRID_START_HOUR
+	const minutes = (segment % GRID_SEGMENTS_PER_HOUR) * 30
 
-  return `${hours.toString().padStart(2, "0")}:${minutes
-    .toString()
-    .padStart(2, "0")}`;
-};
+	return `${hours.toString().padStart(2, '0')}:${minutes
+		.toString()
+		.padStart(2, '0')}`
+}
 
 // Main computed property - processes all items once
 const processedItems = computed(() => {
-  if (!props.groups?.length) return new Map<string, ProcessedItem[]>();
+	if (!props.groups?.length) return new Map<string, ProcessedItem[]>()
 
-  const itemsByDate = new Map<string, ProcessedItem[]>();
+	const itemsByDate = new Map<string, ProcessedItem[]>()
 
-  for (const group of props.groups) {
-    const dateKey = new Date(group.date).toDateString();
-    const items: ProcessedItem[] = [];
+	for (const group of props.groups) {
+		const dateKey = new Date(group.date).toDateString()
+		const items: ProcessedItem[] = []
 
-    for (const show of group.shows) {
-      const description = props.getShowDescription(show);
+		for (const show of group.shows) {
+			const description = props.getShowDescription(show)
 
-      // Log show processing
-      if (show.tracks?.length > 0) {
-      }
+			// Log show processing
+			if (show.tracks?.length > 0) {
+				// reserved for logging
+			}
 
-      // Only add live shows
-      if (description?.toLowerCase() === "live") {
-        const showStartTime = new Date(props.getShowStart(show));
-        const showEndTime = new Date(props.getShowEnd(show));
+			// Only add live shows
+			if (description?.toLowerCase() === 'live') {
+				const showStartTime = new Date(props.getShowStart(show))
+				const showEndTime = new Date(props.getShowEnd(show))
 
-        items.push({
-          type: "show",
-          id: show.id || `show-${show.name}-${props.getShowStart(show)}`,
-          title: props.getShowTitle(show),
-          startTime: showStartTime,
-          endTime: showEndTime,
-          formattedTime: props.formatTimeRange(
-            props.getShowStart(show),
-            props.getShowEnd(show),
-            false
-          ),
-          date: group.date,
-          isLive: props.isLiveShow(show),
-        });
-      }
+				items.push({
+					type: 'show',
+					id: show.id || `show-${show.name}-${props.getShowStart(show)}`,
+					title: props.getShowTitle(show),
+					startTime: showStartTime,
+					endTime: showEndTime,
+					formattedTime: props.formatTimeRange(
+						props.getShowStart(show),
+						props.getShowEnd(show),
+						false
+					),
+					date: group.date,
+					isLive: props.isLiveShow(show)
+				})
+			}
 
-      // Add tracks
-      if (show.tracks?.length) {
-        for (const track of show.tracks) {
-          if (!track?.title) continue;
+			// Add tracks
+			if (show.tracks?.length) {
+				for (const track of show.tracks) {
+					if (!track?.title) continue
 
-          const startTime = track.starts ? new Date(track.starts) : null;
-          const endTime = calculateTrackEndTime(track);
+					const startTime = track.starts ? new Date(track.starts) : null
+					const endTime = calculateTrackEndTime(track)
 
-          if (startTime) {
-            items.push({
-              type: "track",
-              id: track.id || `track-${track.title}-${startTime.getTime()}`,
-              title: track.title,
-              artist: track.artist || track.creator || track.performer || null,
-              startTime,
-              endTime: endTime || startTime,
-              formattedTime: getTrackTimeRange(track),
-              date: group.date,
-            });
-          }
-        }
-      }
-    }
+					if (startTime) {
+						items.push({
+							type: 'track',
+							id: track.id || `track-${track.title}-${startTime.getTime()}`,
+							title: track.title,
+							artist: track.artist || track.creator || track.performer || null,
+							startTime,
+							endTime: endTime || startTime,
+							formattedTime: getTrackTimeRange(track),
+							date: group.date
+						})
+					}
+				}
+			}
+		}
 
-    // Sort by start time and filter by time range (7-24h)
-    const filteredItems = items
-      .filter((item) => {
-        const startHour =
-          item.startTime.getHours() + item.startTime.getMinutes() / 60;
-        const endHour =
-          item.endTime.getHours() + item.endTime.getMinutes() / 60;
-        return (
-          (startHour >= GRID_START_HOUR && startHour < GRID_END_HOUR) ||
+		// Sort by start time and filter by time range (7-24h)
+		const filteredItems = items
+			.filter((item) => {
+				const startHour =
+          item.startTime.getHours() + item.startTime.getMinutes() / 60
+				const endHour =
+          item.endTime.getHours() + item.endTime.getMinutes() / 60
+				return (
+					(startHour >= GRID_START_HOUR && startHour < GRID_END_HOUR) ||
           (endHour > GRID_START_HOUR && startHour < GRID_END_HOUR)
-        );
-      })
-      .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+				)
+			})
+			.sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
 
-    itemsByDate.set(dateKey, filteredItems);
-  }
+		itemsByDate.set(dateKey, filteredItems)
+	}
 
-  return itemsByDate;
-});
+	return itemsByDate
+})
 
 // Get items for specific day (now just a lookup)
 const getItemsForDay = (date: string | Date): ProcessedItem[] => {
-  const dateKey = new Date(date).toDateString();
-  return processedItems.value.get(dateKey) || [];
-};
+	const dateKey = new Date(date).toDateString()
+	return processedItems.value.get(dateKey) || []
+}
 
 // Grid-based position calculation
 const getItemGridPosition = (item: ProcessedItem) => {
-  const startSegment = timeToGridSegment(item.startTime);
-  const durationSegments = calculateItemDurationInSegments(item);
+	const startSegment = timeToGridSegment(item.startTime)
+	const durationSegments = calculateItemDurationInSegments(item)
 
-  const gridPosition = {
-    gridRowStart: startSegment + 1, // CSS Grid ist 1-indexed
-    gridRowEnd: startSegment + durationSegments + 1,
-    gridColumn: 1,
-  };
+	const gridPosition = {
+		gridRowStart: startSegment + 1, // CSS Grid ist 1-indexed
+		gridRowEnd: startSegment + durationSegments + 1,
+		gridColumn: 1
+	}
 
-  return gridPosition;
-};
+	return gridPosition
+}
 
 // Navigation
-const scrollPrev = () => emblaApi.value?.scrollPrev();
-const scrollNext = () => emblaApi.value?.scrollNext();
-const scrollTo = (index: number) => emblaApi.value?.scrollTo(index);
+const scrollPrev = () => emblaApi.value?.scrollPrev()
+const scrollNext = () => emblaApi.value?.scrollNext()
+const scrollTo = (index: number) => emblaApi.value?.scrollTo(index)
 
 // Throttled save function
-const saveTranslatePositions = useThrottleFn(() => {
-  // Implementation if needed
-}, 100);
+const _saveTranslatePositions = useThrottleFn(() => {
+	// Implementation if needed
+}, 100)
 
 const updateCurrentTime = () => {
-  currentTime.value = new Date();
-};
+	currentTime.value = new Date()
+}
 
 // Lifecycle
 onMounted(() => {
-  if (emblaApi.value) {
-    emblaApi.value.on("select", () => {
-      currentSlideIndex.value = emblaApi.value?.selectedScrollSnap() || 0;
-      canScrollPrev.value = emblaApi.value?.canScrollPrev() || false;
-      canScrollNext.value = emblaApi.value?.canScrollNext() || false;
-    });
-  }
+	if (emblaApi.value) {
+		emblaApi.value.on('select', () => {
+			currentSlideIndex.value = emblaApi.value?.selectedScrollSnap() || 0
+			canScrollPrev.value = emblaApi.value?.canScrollPrev() || false
+			canScrollNext.value = emblaApi.value?.canScrollNext() || false
+		})
+	}
 
-  updateCurrentTime();
+	updateCurrentTime()
 
-  // Only update time if visible to save resources
-  timeUpdateInterval.value = setInterval(() => {
-    if (visibility.value === "visible") {
-      updateCurrentTime();
-    }
-  }, 30000);
-});
+	// Only update time if visible to save resources
+	timeUpdateInterval.value = setInterval(() => {
+		if (visibility.value === 'visible') {
+			updateCurrentTime()
+		}
+	}, 30000)
+})
 
 // Update immediately when becoming visible
 watch(visibility, (curr, prev) => {
-  if (curr === "visible" && prev === "hidden") {
-    updateCurrentTime();
-  }
-});
+	if (curr === 'visible' && prev === 'hidden') {
+		updateCurrentTime()
+	}
+})
 
 onUnmounted(() => {
-  if (timeUpdateInterval.value) {
-    clearInterval(timeUpdateInterval.value);
-  }
-});
+	if (timeUpdateInterval.value) {
+		clearInterval(timeUpdateInterval.value)
+	}
+})
 
 // Watch for groups changes
 watch(
-  () => props.groups,
-  () => {
-    if (emblaApi.value) {
-      emblaApi.value.reInit();
-      currentSlideIndex.value = emblaApi.value?.selectedScrollSnap() || 0;
-      canScrollPrev.value = emblaApi.value?.canScrollPrev() || false;
-      canScrollNext.value = emblaApi.value?.canScrollNext() || false;
-    }
-  },
-  { deep: true }
-);
+	() => props.groups,
+	() => {
+		if (emblaApi.value) {
+			emblaApi.value.reInit()
+			currentSlideIndex.value = emblaApi.value?.selectedScrollSnap() || 0
+			canScrollPrev.value = emblaApi.value?.canScrollPrev() || false
+			canScrollNext.value = emblaApi.value?.canScrollNext() || false
+		}
+	},
+	{ deep: true }
+)
 </script>
 <template>
-  <div class="module-schedule-slider">
-    <!-- Navigation Controls -->
-    <div class="navigation-controls">
-      <!-- Channel Switch -->
-      <div class="location-switch">
-        <button
-          @click="mainStore.setActiveScheduleLocation('channelOne')"
-          :class="[
-            'location-switch__btn',
-            {
-              'location-switch__btn--active':
-                mainStore.activeScheduleLocation === 'channelOne',
-            },
-          ]"
-        >
-          CH1
-        </button>
-        <button
-          @click="mainStore.setActiveScheduleLocation('channelTwo')"
-          :class="[
-            'location-switch__btn',
-            {
-              'location-switch__btn--active':
-                mainStore.activeScheduleLocation === 'channelTwo',
-            },
-          ]"
-        >
-          CH2
-        </button>
-      </div>
+	<div class="module-schedule-slider">
+		<!-- Navigation Controls -->
+		<div class="navigation-controls">
+			<!-- Channel Switch -->
+			<div class="location-switch">
+				<button
+					:class="[
+						'location-switch__btn',
+						{
+							'location-switch__btn--active':
+								mainStore.activeScheduleLocation === 'channelOne',
+						},
+					]"
+					@click="mainStore.setActiveScheduleLocation('channelOne')"
+				>
+					CH1
+				</button>
+				<button
+					:class="[
+						'location-switch__btn',
+						{
+							'location-switch__btn--active':
+								mainStore.activeScheduleLocation === 'channelTwo',
+						},
+					]"
+					@click="mainStore.setActiveScheduleLocation('channelTwo')"
+				>
+					CH2
+				</button>
+			</div>
 
-      <!-- Dot Navigation -->
-      <div class="dot-navigation">
-        <button
-          v-for="(_, index) in props.groups"
-          :key="`dot-${index}`"
-          @click="scrollTo(index)"
-          class="dot"
-          :class="{ active: currentSlideIndex === index }"
-          :aria-label="`Tag ${index + 1} von ${props.groups.length}`"
-        />
-      </div>
+			<!-- Dot Navigation -->
+			<div class="dot-navigation">
+				<button
+					v-for="(_, index) in props.groups"
+					:key="`dot-${index}`"
+					class="dot"
+					:class="{ active: currentSlideIndex === index }"
+					:aria-label="`Tag ${index + 1} von ${props.groups.length}`"
+					@click="scrollTo(index)"
+				/>
+			</div>
 
-      <!-- Arrow Navigation -->
-      <div class="arrow-navigation">
-        <button
-          @click="scrollPrev"
-          class="nav-button prev-button"
-          :class="{ disabled: !canScrollPrev }"
-          :disabled="!canScrollPrev"
-          aria-label="Vorheriger Tag"
-        >
-          <svg width="22" height="20" viewBox="0 0 22 20" fill="none">
-            <path
-              d="M1.67986e-07 9.84832L21.1305 0.452866L21.1305 19.2438L1.67986e-07 9.84832Z"
-              fill="black"
-            />
-          </svg>
-        </button>
+			<!-- Arrow Navigation -->
+			<div class="arrow-navigation">
+				<button
+					class="nav-button prev-button"
+					:class="{ disabled: !canScrollPrev }"
+					:disabled="!canScrollPrev"
+					aria-label="Vorheriger Tag"
+					@click="scrollPrev"
+				>
+					<svg
+						width="22"
+						height="20"
+						viewBox="0 0 22 20"
+						fill="none">
+						<path
+							d="M1.67986e-07 9.84832L21.1305 0.452866L21.1305 19.2438L1.67986e-07 9.84832Z"
+							fill="black"
+						/>
+					</svg>
+				</button>
 
-        <button
-          @click="scrollNext"
-          class="nav-button next-button"
-          :class="{ disabled: !canScrollNext }"
-          :disabled="!canScrollNext"
-          aria-label="Nächster Tag"
-        >
-          <svg width="22" height="20" viewBox="0 0 22 20" fill="none">
-            <path
-              d="M22 9.84894L0.86951 19.2444L0.869511 0.453482L22 9.84894Z"
-              fill="black"
-            />
-          </svg>
-        </button>
-      </div>
-    </div>
+				<button
+					class="nav-button next-button"
+					:class="{ disabled: !canScrollNext }"
+					:disabled="!canScrollNext"
+					aria-label="Nächster Tag"
+					@click="scrollNext"
+				>
+					<svg
+						width="22"
+						height="20"
+						viewBox="0 0 22 20"
+						fill="none">
+						<path
+							d="M22 9.84894L0.86951 19.2444L0.869511 0.453482L22 9.84894Z"
+							fill="black"
+						/>
+					</svg>
+				</button>
+			</div>
+		</div>
 
-    <!-- Schedule Content -->
-    <div class="schedule__content">
-      <!-- Schedule Slider Column -->
-      <div class="schedule__slider-column">
-        <!-- Carousel -->
-        <section ref="emblaNode" class="embla schedule__city">
-          <div
-            v-if="props.groups.length > 0"
-            class="embla__container show-days"
-          >
-            <div
-              v-for="(group, index) in props.groups"
-              :key="`group-${index}`"
-              class="show-day embla__slide"
-              :class="{
-                'show-day--today': group.isToday,
-                'embla__slide--active': currentSlideIndex === index,
-              }"
-            >
-              <!-- Day Header -->
-              <h3 class="show-day__heading">
-                <span v-if="group.isToday" class="today-badge">Today</span>
-                {{ props.formatDate(group.date, false) }}
-              </h3>
+		<!-- Schedule Content -->
+		<div class="schedule__content">
+			<!-- Schedule Slider Column -->
+			<div class="schedule__slider-column">
+				<!-- Carousel -->
+				<section ref="emblaNode" class="embla schedule__city">
+					<div
+						v-if="props.groups.length > 0"
+						class="embla__container show-days"
+					>
+						<div
+							v-for="(group, index) in props.groups"
+							:key="`group-${index}`"
+							class="show-day embla__slide"
+							:class="{
+								'show-day--today': group.isToday,
+								'embla__slide--active': currentSlideIndex === index,
+							}"
+						>
+							<!-- Day Header -->
+							<h3 class="show-day__heading">
+								<span v-if="group.isToday" class="today-badge">Today</span>
+								{{ props.formatDate(group.date, false) }}
+							</h3>
 
-              <!-- Day Content with Time Display and Events -->
-              <div class="day-content">
-                <!-- Events Column -->
-                <div class="day-content__events-column">
-                  <!-- Events Grid -->
-                  <div class="events">
-                    <div class="events-grid">
-                      <!-- Current Time Marker - only show for today -->
-                      <div
-                        v-if="shouldShowTimeMarkerForDate(group.date)"
-                        class="current-time-marker"
-                        :style="currentTimeIndicatorStyle"
-                      >
-                        <div class="current-time-marker__pulse" />
-                      </div>
-                      <!-- Actual Events -->
-                      <div
-                        v-for="(item, itemIndex) in getItemsForDay(group.date)"
-                        :key="`item-${itemIndex}`"
-                        class="event-item"
-                        :class="{
-                          'event-item--show': item.type === 'show',
-                          'event-item--track': item.type === 'track',
-                          'event-item--live-show':
-                            item.type === 'show' && item.isLive,
-                        }"
-                        :style="getItemGridPosition(item)"
-                      >
-                        <div
-                          class="event-item__content"
-                          :class="{ live: item.isLive }"
-                        >
-                          <h4 class="event-item__time">
-                            {{ item.formattedTime }}
-                          </h4>
-                          <h2 class="event-item__title">
-                            <span
-                              v-if="item.type === 'show' && item.isLive"
-                              class="live-indicator"
-                              >LIVE</span
-                            >
-                            {{ item.title }}
-                          </h2>
-                          <h3
-                            v-if="item.type === 'track' && item.artist"
-                            class="event-item__artist"
-                          >
-                            with&nbsp;{{ item.artist }}
-                          </h3>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-  </div>
+							<!-- Day Content with Time Display and Events -->
+							<div class="day-content">
+								<!-- Events Column -->
+								<div class="day-content__events-column">
+									<!-- Events Grid -->
+									<div class="events">
+										<div class="events-grid">
+											<!-- Current Time Marker - only show for today -->
+											<div
+												v-if="shouldShowTimeMarkerForDate(group.date)"
+												class="current-time-marker"
+												:style="currentTimeIndicatorStyle"
+											>
+												<div class="current-time-marker__pulse" />
+											</div>
+											<!-- Actual Events -->
+											<div
+												v-for="(item, itemIndex) in getItemsForDay(group.date)"
+												:key="`item-${itemIndex}`"
+												class="event-item"
+												:class="{
+													'event-item--show': item.type === 'show',
+													'event-item--track': item.type === 'track',
+													'event-item--live-show':
+														item.type === 'show' && item.isLive,
+												}"
+												:style="getItemGridPosition(item)"
+											>
+												<div
+													class="event-item__content"
+													:class="{ live: item.isLive }"
+												>
+													<h4 class="event-item__time">
+														{{ item.formattedTime }}
+													</h4>
+													<h2 class="event-item__title">
+														<span
+															v-if="item.type === 'show' && item.isLive"
+															class="live-indicator"
+														>LIVE</span
+														>
+														{{ item.title }}
+													</h2>
+													<h3
+														v-if="item.type === 'track' && item.artist"
+														class="event-item__artist"
+													>
+														with&nbsp;{{ item.artist }}
+													</h3>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</section>
+			</div>
+		</div>
+	</div>
 </template>
 <style scoped lang="postcss">
 .module-schedule-slider {

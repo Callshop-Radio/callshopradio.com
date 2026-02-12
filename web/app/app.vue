@@ -7,14 +7,14 @@ const route = useRoute();
 
 
 <template>
-  <div class="site">
-    <SiteHead />
-    <main>
-      <NuxtPage />
-    </main>
-    <SiteFoot class="footer" />
-    <ElementsPreviewMode />
-  </div>
+	<div class="site">
+		<SiteHead />
+		<main>
+			<NuxtPage />
+		</main>
+		<SiteFoot class="footer" />
+		<ElementsPreviewMode />
+	</div>
 </template>
 
 <style lang="postcss" scoped>

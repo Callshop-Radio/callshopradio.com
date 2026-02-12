@@ -1,96 +1,94 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-import { SET_QUERY } from "~~/queries/sanity.queries.ts";
-import { useMainStore } from "~/stores/mainStore";
+import { SET_QUERY } from '~~/queries/sanity.queries.ts'
 
-const mainStore = useMainStore();
-const route = useRoute();
+const route = useRoute()
 
-const query = groq`${SET_QUERY}`;
+const query = groq`${SET_QUERY}`
 const { data } = await useCachedSanityQuery(query, {
-  slug: route.params.set,
-});
+	slug: route.params.set
+})
 
 if (!data.value) {
-  console.error("Set nicht gefunden:", route.params.set);
+	console.error('Set nicht gefunden:', route.params.set)
 }
 
 const relatedSets = computed(() => {
-  if (
-    !data.value?.parentShow?.sets ||
+	if (
+		!data.value?.parentShow?.sets ||
     !Array.isArray(data.value.parentShow?.sets)
-  ) {
-    return [];
-  }
+	) {
+		return []
+	}
 
-  return data.value.parentShow?.sets.filter((set) => {
-    return set.slug.current !== route.params.set;
-  });
-});
+	return data.value.parentShow?.sets.filter((set) => {
+		return set.slug.current !== route.params.set
+	})
+})
 
 
-usePageSeo(data?.value?.seo);
+usePageSeo(data?.value?.seo)
 </script>
 
 <template>
-  <div class="set-detail" ref="setDetailRef">
-    <section class="set-detail__intro-section" v-if="data">
-      <ModuleIntroSetDetailPage :set="data" :title="data?.title" />
-    </section>
-    <section
-      class="module-section"
-      v-if="data?.modules && data?.modules.length > 0"
-    >
-      <div
-        class="module"
-        v-for="module in data.modules"
-        :key="module._key || index"
-      >
-        <ModuleContentGrid
-          v-if="module._type == 'module.contentReferenceGrid'"
-          :module="module"
-        />
-        <ModuleContentSlider
-          v-if="module._type == 'module.contentReferenceSlider'"
-          :module="module"
-        />
-        <ModuleHeroEntrySolo
-          v-if="module._type == 'module.heroEntry'"
-          :module="module"
-        />
-        <ModuleHeroSlider
-          v-if="module._type == 'module.heroSlider'"
-          :module="module"
-        />
-      </div>
-    </section>
-    <section
-      v-if="data?.relatedContent.length > 0"
-      class="set-detail__related-content"
-    >
-      <h3>Related</h3>
-      <ModuleRelatedContent
-        v-if="data?.relatedContent.length > 0"
-        :items="data?.relatedContent"
-        type="sets"
-        title=""
-        :limit="6"
-      />
-    </section>
-    <section v-if="relatedSets.length > 0" class="set-detail__more-content">
-      <h3 v-if="data?.parentShow?.title === 'No Show'">Similar Sets</h3>
-      <h3 v-else>
-        More Episodes of <span>{{ data?.parentShow?.title }}</span>
-      </h3>
-      <ModuleRelatedContent
-        v-if="relatedSets.length > 0"
-        :items="relatedSets"
-        type="sets"
-        title=""
-        :limit="6"
-      />
-    </section>
-  </div>
+	<div ref="setDetailRef" class="set-detail">
+		<section v-if="data" class="set-detail__intro-section">
+			<ModuleIntroSetDetailPage :set="data" :title="data?.title" />
+		</section>
+		<section
+			v-if="data?.modules && data?.modules.length > 0"
+			class="module-section"
+		>
+			<div
+				v-for="module in data.modules"
+				:key="module._key || index"
+				class="module"
+			>
+				<ModuleContentGrid
+					v-if="module._type == 'module.contentReferenceGrid'"
+					:module="module"
+				/>
+				<ModuleContentSlider
+					v-if="module._type == 'module.contentReferenceSlider'"
+					:module="module"
+				/>
+				<ModuleHeroEntrySolo
+					v-if="module._type == 'module.heroEntry'"
+					:module="module"
+				/>
+				<ModuleHeroSlider
+					v-if="module._type == 'module.heroSlider'"
+					:module="module"
+				/>
+			</div>
+		</section>
+		<section
+			v-if="data?.relatedContent.length > 0"
+			class="set-detail__related-content"
+		>
+			<h3>Related</h3>
+			<ModuleRelatedContent
+				v-if="data?.relatedContent.length > 0"
+				:items="data?.relatedContent"
+				type="sets"
+				title=""
+				:limit="6"
+			/>
+		</section>
+		<section v-if="relatedSets.length > 0" class="set-detail__more-content">
+			<h3 v-if="data?.parentShow?.title === 'No Show'">Similar Sets</h3>
+			<h3 v-else>
+				More Episodes of <span>{{ data?.parentShow?.title }}</span>
+			</h3>
+			<ModuleRelatedContent
+				v-if="relatedSets.length > 0"
+				:items="relatedSets"
+				type="sets"
+				title=""
+				:limit="6"
+			/>
+		</section>
+	</div>
 </template>
 
 <style lang="postcss" scoped>

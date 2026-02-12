@@ -1,175 +1,175 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from "vue";
-import { useSwipe } from "@vueuse/core";
-import { useMainStore } from "~/stores/mainStore";
+import { useSwipe } from '@vueuse/core'
+import { useMainStore } from '~/stores/mainStore'
+import { computed, onMounted, ref, watch } from 'vue'
 
-const mainStore = useMainStore();
+const mainStore = useMainStore()
 
 const props = defineProps({
-  module: {
-    type: Object,
-    required: true,
-  },
-});
+	module: {
+		type: Object,
+		required: true
+	}
+})
 
 // State
-const currentIndex = ref(0);
-const sliderRef = ref<HTMLElement | null>(null);
+const currentIndex = ref(0)
+const sliderRef = ref<HTMLElement | null>(null)
 
 // Slides
 const slides = computed(() => {
-  return props.module?.slides || [];
-});
+	return props.module?.slides || []
+})
 
 // Navigation
 const scrollNext = () => {
-  if (slides.value.length === 0) return;
-  currentIndex.value = (currentIndex.value + 1) % slides.value.length;
-};
+	if (slides.value.length === 0) return
+	currentIndex.value = (currentIndex.value + 1) % slides.value.length
+}
 
 const scrollPrev = () => {
-  if (slides.value.length === 0) return;
-  currentIndex.value =
-    (currentIndex.value - 1 + slides.value.length) % slides.value.length;
-};
+	if (slides.value.length === 0) return
+	currentIndex.value =
+    (currentIndex.value - 1 + slides.value.length) % slides.value.length
+}
 
 const scrollTo = (index: number) => {
-  currentIndex.value = index;
-};
+	currentIndex.value = index
+}
 
 // Swipe Support
-const { isSwiping, direction } = useSwipe(sliderRef, {
-  onSwipeEnd(e, direction) {
-    if (direction === "left") scrollNext();
-    if (direction === "right") scrollPrev();
-  },
-});
+const { isSwiping: _isSwiping, direction: _direction } = useSwipe(sliderRef, {
+	onSwipeEnd(e, direction) {
+		if (direction === 'left') scrollNext()
+		if (direction === 'right') scrollPrev()
+	}
+})
 
 // Funktion zum Aktualisieren des aktuellen Content-Typs im Store
 const updateCurrentContentType = () => {
-  if (
-    !slides.value ||
+	if (
+		!slides.value ||
     slides.value.length === 0 ||
     currentIndex.value >= slides.value.length
-  )
-    return;
+	)
+		return
 
-  const currentSlide = slides.value[currentIndex.value];
-  const contentType = currentSlide?.contentReference?._type || "";
+	const currentSlide = slides.value[currentIndex.value]
+	const contentType = currentSlide?.contentReference?._type || ''
 
-  // Aktualisiere den Content-Typ im Store
-  mainStore.setCurrentHeroContentType(contentType);
-};
+	// Aktualisiere den Content-Typ im Store
+	mainStore.setCurrentHeroContentType(contentType)
+}
 
 // Überwache Änderungen des currentIndex und aktualisiere den Content-Typ
 watch(currentIndex, () => {
-  updateCurrentContentType();
-});
+	updateCurrentContentType()
+})
 
 // Initial update
 onMounted(() => {
-  updateCurrentContentType();
-});
+	updateCurrentContentType()
+})
 </script>
 
 <template>
-  <div
-    v-if="module && slides.length > 0"
-    :class="`module-hero module-hero--${module.style || 'default'} ${
-      mainStore.currentHeroContentType
-    }`"
-  >
-    <div class="module-hero__header" v-if="module.title">
-      <h3 class="module-hero__title">
-        {{ module.title }}
-      </h3>
-    </div>
+	<div
+		v-if="module && slides.length > 0"
+		:class="`module-hero module-hero--${module.style || 'default'} ${
+			mainStore.currentHeroContentType
+		}`"
+	>
+		<div v-if="module.title" class="module-hero__header">
+			<h3 class="module-hero__title">
+				{{ module.title }}
+			</h3>
+		</div>
     
-    <div class="slider__nav__container">
-      <nav class="slider__nav">
-        <!-- Arrow Navigation -->
-        <div class="slider__nav__arrows" v-if="slides.length > 1">
-          <button
-            class="slider__arrow slider__arrow--prev"
-            @click="scrollPrev"
-            aria-label="Vorheriger Slide"
-          >
-            <svg
-              width="22"
-              height="20"
-              viewBox="0 0 22 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M1.67986e-07 9.84832L21.1305 0.452866L21.1305 19.2438L1.67986e-07 9.84832Z"
-                fill="black"
-              />
-            </svg>
-          </button>
+		<div class="slider__nav__container">
+			<nav class="slider__nav">
+				<!-- Arrow Navigation -->
+				<div v-if="slides.length > 1" class="slider__nav__arrows">
+					<button
+						class="slider__arrow slider__arrow--prev"
+						aria-label="Vorheriger Slide"
+						@click="scrollPrev"
+					>
+						<svg
+							width="22"
+							height="20"
+							viewBox="0 0 22 20"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M1.67986e-07 9.84832L21.1305 0.452866L21.1305 19.2438L1.67986e-07 9.84832Z"
+								fill="black"
+							/>
+						</svg>
+					</button>
           
-           <!-- Dot Navigation -->
-          <div class="slider__nav__dots">
-            <button
-              v-for="(_, index) in slides"
-              :key="index"
-              :class="['slider__dot', { 'is-selected': index === currentIndex }]"
-              @click="scrollTo(index)"
-            ></button>
-          </div>
+					<!-- Dot Navigation -->
+					<div class="slider__nav__dots">
+						<button
+							v-for="(_, index) in slides"
+							:key="index"
+							:class="['slider__dot', { 'is-selected': index === currentIndex }]"
+							@click="scrollTo(index)"
+						/>
+					</div>
 
-          <button
-            class="slider__arrow slider__arrow--next"
-            @click="scrollNext"
-            aria-label="Nächster Slide"
-          >
-            <svg
-              width="22"
-              height="20"
-              viewBox="0 0 22 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M22 9.84894L0.86951 19.2444L0.869511 0.453482L22 9.84894Z"
-                fill="black"
-              />
-            </svg>
-          </button>
-        </div>
-      </nav>
-    </div>
+					<button
+						class="slider__arrow slider__arrow--next"
+						aria-label="Nächster Slide"
+						@click="scrollNext"
+					>
+						<svg
+							width="22"
+							height="20"
+							viewBox="0 0 22 20"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M22 9.84894L0.86951 19.2444L0.869511 0.453482L22 9.84894Z"
+								fill="black"
+							/>
+						</svg>
+					</button>
+				</div>
+			</nav>
+		</div>
 
-    <div class="graphics-behind" :class="mainStore?.currentHeroContentType">
-      <AnimatedGradient
-        class="animated-gradient"
-        :type="mainStore?.currentHeroContentType"
-      />
-      <AnimatedLogoBackground class="animated-logo-background" />
-    </div>
+		<div class="graphics-behind" :class="mainStore?.currentHeroContentType">
+			<AnimatedGradient
+				class="animated-gradient"
+				:type="mainStore?.currentHeroContentType"
+			/>
+			<AnimatedLogoBackground class="animated-logo-background" />
+		</div>
 
-    <!-- Slider Content -->
-    <div ref="sliderRef" class="slider-content">
-      <div
-          v-for="(slide, index) in slides"
-          :key="slide._key || index"
-          class="slide"
-          :class="{ active: index === currentIndex }"
-        >
-          <!-- Verwende die ModuleHeroEntry-Komponente für jeden Slide -->
-          <ModuleHeroEntry
-            :module="slide"
-            :class="`slider-item slider-item--${
-              module.style || slide.layout || 'default'
-            }`"
-          />
-        </div>
-    </div>
+		<!-- Slider Content -->
+		<div ref="sliderRef" class="slider-content">
+			<div
+				v-for="(slide, index) in slides"
+				:key="slide._key || index"
+				class="slide"
+				:class="{ active: index === currentIndex }"
+			>
+				<!-- Verwende die ModuleHeroEntry-Komponente für jeden Slide -->
+				<ModuleHeroEntry
+					:module="slide"
+					:class="`slider-item slider-item--${
+						module.style || slide.layout || 'default'
+					}`"
+				/>
+			</div>
+		</div>
     
-    <div class="graphics-front">
-      <AnimatedLogo class="animated-logo" />
-    </div>
-  </div>
+		<div class="graphics-front">
+			<AnimatedLogo class="animated-logo" />
+		</div>
+	</div>
 </template>
 
 <style lang="postcss" scoped>

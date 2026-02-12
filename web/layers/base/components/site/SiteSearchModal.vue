@@ -1,72 +1,72 @@
 <script setup>
 const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false,
-  },
-});
+	modelValue: {
+		type: Boolean,
+		default: false
+	}
+})
 
-const emit = defineEmits(["update:modelValue", "close"]);
+const emit = defineEmits(['update:modelValue', 'close'])
 
 const isOpen = computed({
-  get: () => props.modelValue,
-  set: (value) => emit("update:modelValue", value),
-});
+	get: () => props.modelValue,
+	set: (value) => emit('update:modelValue', value)
+})
 
 const handleClose = () => {
-  isOpen.value = false;
-  emit("close");
-};
+	isOpen.value = false
+	emit('close')
+}
 
-const handleSelect = (result) => {
-  handleClose();
-};
+const handleSelect = (_result) => {
+	handleClose()
+}
 
 // Close on escape key
 const handleKeydown = (event) => {
-  if (event.key === "Escape") {
-    handleClose();
-  }
-};
+	if (event.key === 'Escape') {
+		handleClose()
+	}
+}
 
 // Add/remove event listener based on open state
 watch(isOpen, (newValue) => {
-  if (newValue) {
-    document.addEventListener("keydown", handleKeydown);
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = "hidden";
-  } else {
-    document.removeEventListener("keydown", handleKeydown);
-    document.body.style.overflow = "";
-  }
-});
+	if (newValue) {
+		document.addEventListener('keydown', handleKeydown)
+		// Prevent body scroll when modal is open
+		document.body.style.overflow = 'hidden'
+	} else {
+		document.removeEventListener('keydown', handleKeydown)
+		document.body.style.overflow = ''
+	}
+})
 
 // Cleanup on unmount
 onUnmounted(() => {
-  document.removeEventListener("keydown", handleKeydown);
-  document.body.style.overflow = "";
-});
+	document.removeEventListener('keydown', handleKeydown)
+	document.body.style.overflow = ''
+})
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition name="search-modal">
-      <div
-        v-if="isOpen"
-        class="search-modal-overlay"
-        @click.self="handleClose"
-      >
-        <div class="search-modal-container">
-          <SiteSearch
-            :is-modal="true"
-            :auto-focus="true"
-            @close="handleClose"
-            @select="handleSelect"
-          />
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+	<Teleport to="body">
+		<Transition name="search-modal">
+			<div
+				v-if="isOpen"
+				class="search-modal-overlay"
+				@click.self="handleClose"
+			>
+				<div class="search-modal-container">
+					<SiteSearch
+						:is-modal="true"
+						:auto-focus="true"
+						@close="handleClose"
+						@select="handleSelect"
+					/>
+				</div>
+			</div>
+		</Transition>
+	</Teleport>
 </template>
 
 <style lang="postcss" scoped>

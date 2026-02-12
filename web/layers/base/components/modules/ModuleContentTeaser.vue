@@ -1,5 +1,18 @@
 <script setup lang="ts">
 // Interfaces für Type Safety
+import {
+	ARTICLE_COUNT_QUERY,
+	ARTICLE_LIST_QUERY,
+	POOL_COUNT_QUERY,
+	POOL_LIST_QUERY,
+	SET_COUNT_QUERY,
+	SET_LIST_QUERY,
+	SHOW_COUNT_QUERY,
+	SHOW_LIST_QUERY
+} from '~~/queries/module.queries'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useMainStore } from '~/stores/mainStore'
+
 interface SiteFallbacks {
   fallbackArticle?: {
     image?: { asset?: { url?: string } };
@@ -23,7 +36,7 @@ interface SiteFallbacks {
   };
 }
 
-interface ContentItem {
+interface _ContentItem {
   _id: string;
   _type: string;
   slug?: { current?: string };
@@ -50,1047 +63,1030 @@ interface ContentItem {
   };
 }
 
-interface MainStore {
+interface _MainStore {
   siteFallbacks?: SiteFallbacks;
 }
 
-// Vue Composables
-import { ref, computed, watch, onMounted, nextTick } from "vue";
-
-// Nuxt Composables
-import { useMainStore } from "~/stores/mainStore";
-import {
-  SET_LIST_QUERY,
-  SET_COUNT_QUERY,
-  POOL_LIST_QUERY,
-  POOL_COUNT_QUERY,
-  ARTICLE_LIST_QUERY,
-  ARTICLE_COUNT_QUERY,
-  SHOW_LIST_QUERY,
-  SHOW_COUNT_QUERY,
-} from "~~/queries/module.queries";
-
-const { locale } = useI18n();
-const localePath = useLocalePath();
-const router = useRouter();
+const { locale: _locale } = useI18n()
+const localePath = useLocalePath()
+const router = useRouter()
 
 // Store mit Type Assertion
-const mainStore = useMainStore() as any; // Temporary any fix
+const mainStore = useMainStore() as any // Temporary any fix
 
 const props = defineProps({
-  module: {
-    type: Object,
-    required: true,
-  },
-});
+	module: {
+		type: Object,
+		required: true
+	}
+})
 
 // ==================== HYBRID DATA LOADING ====================
 // Determine if we need to load data ourselves (no pre-loaded items in props)
 const needsSelfLoad = computed(() => {
-  if (!props.module) return false;
-  const { type, poolItems, setItems, showItems, articleItems } = props.module;
+	if (!props.module) return false
+	const { type, poolItems, setItems, showItems, articleItems } = props.module
 
-  const hasItems: Record<string, boolean> = {
-    pool: poolItems?.length > 0,
-    sets: setItems?.length > 0,
-    shows: showItems?.length > 0,
-    words: articleItems?.length > 0,
-  };
+	const hasItems: Record<string, boolean> = {
+		pool: poolItems?.length > 0,
+		sets: setItems?.length > 0,
+		shows: showItems?.length > 0,
+		words: articleItems?.length > 0
+	}
 
-  return !hasItems[type];
-});
+	return !hasItems[type]
+})
 
 // Self-loaded items state
-const selfLoadedCount = ref(0);
-const isLoadingSelf = ref(false);
-const selfLoadPage = ref(1);
-const SELF_LOAD_PER_PAGE = 50;
+const selfLoadedCount = ref(0)
+const isLoadingSelf = ref(false)
+const selfLoadPage = ref(1)
+const SELF_LOAD_PER_PAGE = 50
 
 // Map module type to query type
 const getModuleQueryType = computed(() => {
-  if (!props.module) return null;
-  const type = props.module.type;
-  if (type === "pool") return "pool";
-  if (type === "sets") return "sets";
-  if (type === "shows") return "shows";
-  if (type === "words") return "words";
-  return null;
-});
+	if (!props.module) return null
+	const type = props.module.type
+	if (type === 'pool') return 'pool'
+	if (type === 'sets') return 'sets'
+	if (type === 'shows') return 'shows'
+	if (type === 'words') return 'words'
+	return null
+})
 
 // Build query config for SSR
 const buildQueryConfig = () => {
-  const type = getModuleQueryType.value;
-  if (!type) return null;
+	const type = getModuleQueryType.value
+	if (!type) return null
 
-  const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
-  const end = selfLoadPage.value * SELF_LOAD_PER_PAGE;
-  let params: Record<string, any> = { start, end };
+	const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE
+	const end = selfLoadPage.value * SELF_LOAD_PER_PAGE
+	const params: Record<string, any> = { start, end }
 
-  switch (type) {
-    case "sets":
-      return { query: SET_LIST_QUERY, countQuery: SET_COUNT_QUERY, params };
-    case "pool":
-      const poolType = props.module.poolContentType;
-      params.types =
-        poolType === "all"
-          ? ["person", "venue"]
-          : poolType === "persons"
-          ? ["person"]
-          : poolType === "venues"
-          ? ["venue"]
-          : ["person", "venue"];
-      return { query: POOL_LIST_QUERY, countQuery: POOL_COUNT_QUERY, params };
-    case "shows":
-      return { query: SHOW_LIST_QUERY, countQuery: SHOW_COUNT_QUERY, params };
-    case "words":
-      return {
-        query: ARTICLE_LIST_QUERY,
-        countQuery: ARTICLE_COUNT_QUERY,
-        params,
-      };
-    default:
-      return null;
-  }
-};
+	switch (type) {
+	case 'sets':
+		return { query: SET_LIST_QUERY, countQuery: SET_COUNT_QUERY, params }
+	case 'pool': {
+		const poolType = props.module.poolContentType
+		params.types =
+        poolType === 'all'
+        	? ['person', 'venue']
+        	: poolType === 'persons'
+        		? ['person']
+        		: poolType === 'venues'
+        			? ['venue']
+        			: ['person', 'venue']
+		return { query: POOL_LIST_QUERY, countQuery: POOL_COUNT_QUERY, params }
+	}
+	case 'shows':
+		return { query: SHOW_LIST_QUERY, countQuery: SHOW_COUNT_QUERY, params }
+	case 'words':
+		return {
+			query: ARTICLE_LIST_QUERY,
+			countQuery: ARTICLE_COUNT_QUERY,
+			params
+		}
+	default:
+		return null
+	}
+}
 
 // SSR-compatible data loading
-const { data: selfLoadedItems, pending: isLoadingInitial } = await useAsyncData(
-  `module-content-teaser-${props.module?._key || props.module?.type}-${
-    props.module?.poolContentType || "default"
-  }`,
-  async () => {
-    if (!needsSelfLoad.value) return [];
+const { data: selfLoadedItems, pending: _isLoadingInitial } = await useAsyncData(
+	`module-content-teaser-${props.module?._key || props.module?.type}-${
+		props.module?.poolContentType || 'default'
+	}`,
+	async () => {
+		if (!needsSelfLoad.value) return []
 
-    const config = buildQueryConfig();
-    if (!config) return [];
+		const config = buildQueryConfig()
+		if (!config) return []
 
-    try {
-      const sanity = useSanity();
-      const [items, count] = await Promise.all([
-        sanity.fetch(config.query, config.params),
-        sanity.fetch(config.countQuery, config.params),
-      ]);
+		try {
+			const sanity = useSanity()
+			const [items, count] = await Promise.all([
+				sanity.fetch(config.query, config.params),
+				sanity.fetch(config.countQuery, config.params)
+			])
 
-      if (typeof count === "number") {
-        selfLoadedCount.value = count;
-      }
+			if (typeof count === 'number') {
+				selfLoadedCount.value = count
+			}
 
-      return items || [];
-    } catch (error) {
-      console.error("[ModuleContentTeaser] SSR Data Fetch Error:", error);
-      return [];
-    }
-  },
-  {
-    default: () => [],
-    lazy: false,
-  }
-);
+			return items || []
+		} catch (error) {
+			console.error('[ModuleContentTeaser] SSR Data Fetch Error:', error)
+			return []
+		}
+	},
+	{
+		default: () => [],
+		lazy: false
+	}
+)
 
 // Load more content (client-side)
 async function loadMoreSelfContent() {
-  if (isLoadingSelf.value) return;
+	if (isLoadingSelf.value) return
 
-  const config = buildQueryConfig();
-  if (!config) return;
+	const config = buildQueryConfig()
+	if (!config) return
 
-  isLoadingSelf.value = true;
+	isLoadingSelf.value = true
 
-  try {
-    const sanity = useSanity();
-    selfLoadPage.value++;
+	try {
+		const sanity = useSanity()
+		selfLoadPage.value++
 
-    const newStart = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
-    const newEnd = selfLoadPage.value * SELF_LOAD_PER_PAGE;
-    config.params.start = newStart;
-    config.params.end = newEnd;
+		const newStart = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE
+		const newEnd = selfLoadPage.value * SELF_LOAD_PER_PAGE
+		config.params.start = newStart
+		config.params.end = newEnd
 
-    const items = await sanity.fetch(config.query, config.params);
+		const items = await sanity.fetch(config.query, config.params)
 
-    if (selfLoadedItems.value) {
-      selfLoadedItems.value = [...selfLoadedItems.value, ...items];
-    }
-  } catch (error) {
-    console.error("[ModuleContentTeaser] Error loading more content:", error);
-  } finally {
-    isLoadingSelf.value = false;
-  }
+		if (selfLoadedItems.value) {
+			selfLoadedItems.value = [...selfLoadedItems.value, ...items]
+		}
+	} catch (error) {
+		console.error('[ModuleContentTeaser] Error loading more content:', error)
+	} finally {
+		isLoadingSelf.value = false
+	}
 }
 
 // State für sichtbare Items
-const itemsPerPage = computed(() => (props.module.type === "words" ? 2 : 3));
-const visibleItemCount = ref(itemsPerPage.value);
-const loadMoreClickCount = ref(0); // Zähler für Load More Klicks
+const itemsPerPage = computed(() => (props.module.type === 'words' ? 2 : 3))
+const visibleItemCount = ref(itemsPerPage.value)
+const loadMoreClickCount = ref(0) // Zähler für Load More Klicks
 
 // Sortierungs-Zustand
-const sortMode = ref("new"); // Standardmäßig "new" (chronologisch)
-const shuffleSeed = ref(Date.now()); // Zufallsseed für Shuffle
+const sortMode = ref('new') // Standardmäßig "new" (chronologisch)
+const shuffleSeed = ref(Date.now()) // Zufallsseed für Shuffle
 
 // Funktion zum Ändern des Sortiermodus
 function changeSortMode(mode: string) {
-  if (mode === "shuffle") {
-    // Bei jedem Klick auf Shuffle einen neuen Seed generieren
-    shuffleSeed.value = Date.now();
-  }
-  sortMode.value = mode;
-  // Nach Sortierung Items zurücksetzen
-  visibleItemCount.value = itemsPerPage.value;
-  loadMoreClickCount.value = 0; // Reset des Zählers bei Sortierung
+	if (mode === 'shuffle') {
+		// Bei jedem Klick auf Shuffle einen neuen Seed generieren
+		shuffleSeed.value = Date.now()
+	}
+	sortMode.value = mode
+	// Nach Sortierung Items zurücksetzen
+	visibleItemCount.value = itemsPerPage.value
+	loadMoreClickCount.value = 0 // Reset des Zählers bei Sortierung
 }
 
 // Hilfsfunktion zur Formatierung von Datum/Zeit
 function formatDate(dateString: string) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "";
-  return date.toLocaleDateString("de-DE", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+	if (!dateString) return ''
+	const date = new Date(dateString)
+	if (isNaN(date.getTime())) return ''
+	return date.toLocaleDateString('de-DE', {
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric'
+	})
 }
 
 // Artwork-URLs für SoundCloud-Tracks
-const artworkUrls = ref(new Map());
+const artworkUrls = ref(new Map())
 
 // Funktion zum Laden weiterer Items
 async function loadMoreItems() {
-  // Simple pagination
-  visibleItemCount.value += itemsPerPage.value;
-  loadMoreClickCount.value++;
+	// Simple pagination
+	visibleItemCount.value += itemsPerPage.value
+	loadMoreClickCount.value++
 
-  // Check if we need to load more from server
-  const currentItems = selfLoadedItems.value || [];
-  if (
-    needsSelfLoad.value &&
+	// Check if we need to load more from server
+	const currentItems = selfLoadedItems.value || []
+	if (
+		needsSelfLoad.value &&
     visibleItemCount.value >= currentItems.length &&
     currentItems.length < selfLoadedCount.value
-  ) {
-    await loadMoreSelfContent();
-  }
+	) {
+		await loadMoreSelfContent()
+	}
 }
 
 // Funktion zur Navigation zur Übersichtsseite
-function navigateToOverview() {
-  let route = "/";
+function _navigateToOverview() {
+	let route = '/'
 
-  switch (categoryType.value) {
-    case "Episodes":
-      route = localePath("/shows");
-      break;
-    case "Shows":
-      route = localePath("/shows");
-      break;
-    case "Words":
-      route = localePath("/words");
-      break;
-    case "Pool":
-      route = localePath("/pool");
-      break;
-    default:
-      route = localePath("/");
-  }
+	switch (categoryType.value) {
+	case 'Episodes':
+		route = localePath('/shows')
+		break
+	case 'Shows':
+		route = localePath('/shows')
+		break
+	case 'Words':
+		route = localePath('/words')
+		break
+	case 'Pool':
+		route = localePath('/pool')
+		break
+	default:
+		route = localePath('/')
+	}
 
-  router.push(route);
+	router.push(route)
 }
 
 // Bestimmen, ob mehr Items zum Laden verfügbar sind
 const hasMoreItems = computed(() => {
-  return sortedItems.value && sortedItems.value.length > visibleItemCount.value;
-});
+	return sortedItems.value && sortedItems.value.length > visibleItemCount.value
+})
 
 // Bestimmen, ob "Show More" angezeigt werden soll
 const shouldShowMoreButton = computed(() => {
-  return loadMoreClickCount.value >= 2 && hasMoreItems.value;
-});
+	return loadMoreClickCount.value >= 2 && hasMoreItems.value
+})
 
 // Alle verfügbaren Items basierend auf Modultyp
 const allItems = computed(() => {
-  if (!props.module) return [];
+	if (!props.module) return []
 
-  // If we're self-loading, return self-loaded items
-  if (needsSelfLoad.value) {
-    return selfLoadedItems.value;
-  }
+	// If we're self-loading, return self-loaded items
+	if (needsSelfLoad.value) {
+		return selfLoadedItems.value
+	}
 
-  // Otherwise use props data (existing behavior)
-  switch (props.module.type) {
-    case "pool":
-      let poolItems = props.module.poolItems || [];
-      if (props.module.poolContentType) {
-        if (props.module.poolContentType === "persons") {
-          poolItems = poolItems.filter((item: any) => item._type === "person");
-        } else if (props.module.poolContentType === "venues") {
-          poolItems = poolItems.filter((item: any) => item._type === "venue");
-        } else if (props.module.poolContentType === "all") {
-          poolItems = poolItems.filter(
-            (item: any) => item._type === "venue" || item._type === "person"
-          );
-        }
-      }
-      return poolItems;
-    case "sets":
-      return props.module.setItems || [];
-    case "shows":
-      return props.module.showItems || [];
-    case "words":
-      return props.module.articleItems || [];
-    default:
-      return [];
-  }
-});
+	// Otherwise use props data (existing behavior)
+	switch (props.module.type) {
+	case 'pool': {
+		let poolItems = props.module.poolItems || []
+		if (props.module.poolContentType) {
+			if (props.module.poolContentType === 'persons') {
+				poolItems = poolItems.filter((item: any) => item._type === 'person')
+			} else if (props.module.poolContentType === 'venues') {
+				poolItems = poolItems.filter((item: any) => item._type === 'venue')
+			} else if (props.module.poolContentType === 'all') {
+				poolItems = poolItems.filter(
+					(item: any) => item._type === 'venue' || item._type === 'person'
+				)
+			}
+		}
+		return poolItems
+	}
+	case 'sets':
+		return props.module.setItems || []
+	case 'shows':
+		return props.module.showItems || []
+	case 'words':
+		return props.module.articleItems || []
+	default:
+		return []
+	}
+})
 
 // Sortierte Items basierend auf allItems und sortMode
 const sortedItems = computed(() => {
-  if (!allItems.value || allItems.value.length === 0) return [];
+	if (!allItems.value || allItems.value.length === 0) return []
 
-  let sortedArray = [...allItems.value];
+	const sortedArray = [...allItems.value]
 
-  // Sortierung anwenden
-  if (sortMode.value === "new") {
-    // Chronologisch sortieren (neuste zuerst)
-    return sortedArray.sort((a, b) => {
-      const dateA = new Date(a.datetime || a._updatedAt || a._createdAt || 0);
-      const dateB = new Date(b.datetime || b._updatedAt || b._createdAt || 0);
-      return dateB.getTime() - dateA.getTime();
-    });
-  } else if (sortMode.value === "shuffle") {
-    // Shuffle mit stabilem Seed für die aktuelle Sitzung
-    return shuffleArray([...sortedArray], shuffleSeed.value);
-  } else if (sortMode.value === "alpha") {
-    // Alphabetisch nach Titel sortieren
-    return sortedArray.sort((a, b) => {
-      // Bestimme den Titel je nach Content-Typ
-      const titleA = (
-        a.title ||
-        a.name ||
-        (a.parentShow ? a.parentShow?.title : "")
-      ).toLowerCase();
-      const titleB = (
-        b.title ||
-        b.name ||
-        (b.parentShow ? b.parentShow?.title : "")
-      ).toLowerCase();
-      return titleA.localeCompare(titleB);
-    });
-  }
+	// Sortierung anwenden
+	if (sortMode.value === 'new') {
+		// Chronologisch sortieren (neuste zuerst)
+		return sortedArray.sort((a, b) => {
+			const dateA = new Date(a.datetime || a._updatedAt || a._createdAt || 0)
+			const dateB = new Date(b.datetime || b._updatedAt || b._createdAt || 0)
+			return dateB.getTime() - dateA.getTime()
+		})
+	} else if (sortMode.value === 'shuffle') {
+		// Shuffle mit stabilem Seed für die aktuelle Sitzung
+		return shuffleArray([...sortedArray], shuffleSeed.value)
+	} else if (sortMode.value === 'alpha') {
+		// Alphabetisch nach Titel sortieren
+		return sortedArray.sort((a, b) => {
+			// Bestimme den Titel je nach Content-Typ (nullish coalescing für sichere .toLowerCase()-Nutzung)
+			const rawA = a.title ?? a.name ?? (a.parentShow != null ? a.parentShow.title : '')
+			const rawB = b.title ?? b.name ?? (b.parentShow != null ? b.parentShow.title : '')
+			const titleA = String(rawA ?? '').toLowerCase()
+			const titleB = String(rawB ?? '').toLowerCase()
+			return titleA.localeCompare(titleB)
+		})
+	}
 
-  return sortedArray;
-});
+	return sortedArray
+})
 
 // Sichtbare Items basierend auf sortierten Items und visibleItemCount
 const visibleItems = computed(() => {
-  return sortedItems.value.slice(0, visibleItemCount.value);
-});
+	return sortedItems.value.slice(0, visibleItemCount.value)
+})
 
 // Content-Typ des aktuellen Moduls
 const contentType = computed(() => {
-  if (!props.module) return null;
+	if (!props.module) return null
 
-  // Basis-Typ ist der Modultyp
-  let type = props.module.type || null;
+	// Basis-Typ ist der Modultyp
+	const type = props.module.type || null
 
-  // Bei "pool" verwenden wir den spezifischen Pool-Content-Typ
-  if (type === "pool" && props.module.poolContentType) {
-    return props.module.poolContentType; // "persons", "venues" oder "all"
-  }
+	// Bei "pool" verwenden wir den spezifischen Pool-Content-Typ
+	if (type === 'pool' && props.module.poolContentType) {
+		return props.module.poolContentType // "persons", "venues" oder "all"
+	}
 
-  return type; // "sets", "shows", "words" oder null
-});
+	return type // "sets", "shows", "words" oder null
+})
 
 // Kategorie-Typ für das UI
-const categoryType = ref("");
+const categoryType = ref('')
 
 // Watcher für den Content-Typ
 watch(
-  contentType,
-  (newValue) => {
-    if (["persons", "venues", "all"].includes(newValue)) {
-      categoryType.value = "Pool";
-    } else if (newValue === "sets") {
-      categoryType.value = "Episodes";
-    } else if (newValue === "shows") {
-      categoryType.value = "Shows";
-    } else if (newValue === "words") {
-      categoryType.value = "Words";
-    } else {
-      categoryType.value = "";
-    }
-  },
-  { immediate: true }
-);
+	contentType,
+	(newValue) => {
+		if (['persons', 'venues', 'all'].includes(newValue)) {
+			categoryType.value = 'Pool'
+		} else if (newValue === 'sets') {
+			categoryType.value = 'Episodes'
+		} else if (newValue === 'shows') {
+			categoryType.value = 'Shows'
+		} else if (newValue === 'words') {
+			categoryType.value = 'Words'
+		} else {
+			categoryType.value = ''
+		}
+	},
+	{ immediate: true }
+)
 
 // Type Class Map für CSS-Klassen
 const typeClassMap: Record<string, string> = {
-  sets: "sets",
-  shows: "shows",
-  words: "words",
-  persons: "pool",
-  venues: "pool",
-  pool: "pool",
-  article: "words",
-  primary: "sets",
-  secondary: "shows",
-  accent: "pool",
-  blue: "pool",
-  green: "words",
-  yellow: "sets",
-};
+	sets: 'sets',
+	shows: 'shows',
+	words: 'words',
+	persons: 'pool',
+	venues: 'pool',
+	pool: 'pool',
+	article: 'words',
+	primary: 'sets',
+	secondary: 'shows',
+	accent: 'pool',
+	blue: 'pool',
+	green: 'words',
+	yellow: 'sets'
+}
 
 // CSS-Klasse entsprechend dem Typ
 const typeClass = computed(() => {
-  return typeClassMap[props.module.type] || "default";
-});
+	return typeClassMap[props.module.type] || 'default'
+})
 // helper function for image fetching and fallbacks
 function getItemImage(item: any) {
-  // Fallbacks je nach Content-Typ
-  const itemType = item._type || "";
+	// Fallbacks je nach Content-Typ
+	const itemType = item._type || ''
 
-  // Bild aus dem Item selbst
-  if (item.image) {
-    return item.image;
-  }
-  if (item.mainImage) {
-    return item.mainImage;
-  }
+	// Bild aus dem Item selbst
+	if (item.image) {
+		return item.image
+	}
+	if (item.mainImage) {
+		return item.mainImage
+	}
 
-  switch (itemType) {
-    case "person":
-      return mainStore?.siteFallbacks?.fallbackPerson?.image;
-    case "venue":
-      return mainStore?.siteFallbacks?.fallbackVenue?.image;
-    case "show":
-      return mainStore?.siteFallbacks?.fallbackShow?.image;
-    case "set":
-      return mainStore?.siteFallbacks?.fallbackSet?.image;
-    case "word":
-    case "article":
-      return mainStore?.siteFallbacks?.fallbackArticle?.image;
-    default:
-      // Allgemeines Fallback-Bild
-      return mainStore?.siteFallbacks?.fallbackPerson?.image;
-  }
+	switch (itemType) {
+	case 'person':
+		return mainStore?.siteFallbacks?.fallbackPerson?.image
+	case 'venue':
+		return mainStore?.siteFallbacks?.fallbackVenue?.image
+	case 'show':
+		return mainStore?.siteFallbacks?.fallbackShow?.image
+	case 'set':
+		return mainStore?.siteFallbacks?.fallbackSet?.image
+	case 'word':
+	case 'article':
+		return mainStore?.siteFallbacks?.fallbackArticle?.image
+	default:
+		// Allgemeines Fallback-Bild
+		return mainStore?.siteFallbacks?.fallbackPerson?.image
+	}
 }
 
 function getItemRoute(item: any) {
-  if (!item || !item?.slug) return "/";
+	if (!item || !item?.slug) return '/'
 
-  switch (item?._type) {
-    case "person":
-    case "venue":
-      return localePath(`/pool/${item?.slug?.current}`);
+	switch (item?._type) {
+	case 'person':
+	case 'venue':
+		return localePath(`/pool/${item?.slug?.current}`)
 
-    case "set":
-      // Prüfe, ob parentShow vorhanden ist
-      if (item?.parentShow?.slug?.current) {
-        return localePath(
-          `/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
-        );
-      }
+	case 'set':
+		// Prüfe, ob parentShow vorhanden ist
+		if (item?.parentShow?.slug?.current) {
+			return localePath(
+				`/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
+			)
+		}
 
-      return localePath(`/shows/${item?.slug?.current}`);
+		return localePath(`/shows/${item?.slug?.current}`)
 
-    case "article":
-      return localePath(`/words/${item?.slug?.current}`);
+	case 'article':
+		return localePath(`/words/${item?.slug?.current}`)
 
-    case "show":
-      return localePath(`/shows/${item?.slug?.current}`);
+	case 'show':
+		return localePath(`/shows/${item?.slug?.current}`)
 
-    // Standard-Fallback
-    default:
-      return localePath(`/${item?._type}/${item?.slug?.current}`);
-  }
+		// Standard-Fallback
+	default:
+		return localePath(`/${item?._type}/${item?.slug?.current}`)
+	}
 }
 
 // Funktion zum Abrufen und Speichern der Artwork-URL
 function loadArtworkUrl(item: any) {
-  if (!item) return;
-  const url = getSoundcloudArtwork(item);
-  artworkUrls.value.set(item._id, url);
+	if (!item) return
+	const url = getSoundcloudArtwork(item)
+	artworkUrls.value.set(item._id, url)
 }
 
-function checkImage(url: string) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
-    img.src = url;
-  });
+function _checkImage(url: string) {
+	return new Promise((resolve) => {
+		const img = new Image()
+		img.onload = () => resolve(true)
+		img.onerror = () => resolve(false)
+		img.src = url
+	})
 }
 
 // Non-blocking artwork URL resolution - returns URL directly, browser handles 404s
 function getSoundcloudArtwork(item: any): string {
-  // Try SoundCloud artwork first (use -t500x500 for better quality without -original issues)
-  const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
-  if (artworkUrl) {
-    return artworkUrl.replace("-large", "-t500x500");
-  }
-  // Fallback chain
-  const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-  const storeFallbackUrl = (mainStore?.siteFallbacks as any)?.fallbackSet?.image
-    ?.asset?.url;
-  return parentShowImageUrl || storeFallbackUrl || "";
+	// Try SoundCloud artwork first (use -t500x500 for better quality without -original issues)
+	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url
+	if (artworkUrl) {
+		return artworkUrl.replace('-large', '-t500x500')
+	}
+	// Fallback chain
+	const parentShowImageUrl = item?.parentShow?.image?.asset?.url
+	const storeFallbackUrl = (mainStore?.siteFallbacks as any)?.fallbackSet?.image
+		?.asset?.url
+	return parentShowImageUrl || storeFallbackUrl || ''
 }
 
 function playTrack(item: any) {
-  if (item?.soundcloud?.tracks?.[0]) {
-    const track = item.soundcloud.tracks[0];
+	if (item?.soundcloud?.tracks?.[0]) {
+		const track = item.soundcloud.tracks[0]
 
-    // Sicherstellen, dass permalink_url gesetzt ist
-    if (!track.permalink_url && track.id) {
-      // Wenn keine permalink_url, aber eine ID vorhanden ist, erstellen wir eine
-      track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
-    }
+		// Sicherstellen, dass permalink_url gesetzt ist
+		if (!track.permalink_url && track.id) {
+			// Wenn keine permalink_url, aber eine ID vorhanden ist, erstellen wir eine
+			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
+		}
 
-    // Track im Store speichern
-    mainStore.currentTrack = track;
-  } else {
-  }
+		// Track im Store speichern
+		mainStore.currentTrack = track
+	} else {
+		// no track to store
+	}
 }
 
 // Stadt-Tags abrufen
 function getItemCityTags(item: any) {
-  const cityTags: any[] = [];
+	const cityTags: any[] = []
 
-  // Direkte City-Tags
-  if (item?.tags && Array.isArray(item?.tags)) {
-    item?.tags.forEach((tag: any) => {
-      if (tag._type === "tag.city") {
-        cityTags.push(tag);
-      }
-    });
-  }
+	// Direkte City-Tags
+	if (item?.tags && Array.isArray(item?.tags)) {
+		item?.tags.forEach((tag: any) => {
+			if (tag._type === 'tag.city') {
+				cityTags.push(tag)
+			}
+		})
+	}
 
-  // City-Tags aus parentShow
-  if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
-    item?.parentShow?.tags.forEach((tag: any) => {
-      if (tag._type === "tag.city") {
-        if (!cityTags.some((existingTag) => existingTag._id === tag._id)) {
-          cityTags.push(tag);
-        }
-      }
-    });
-  }
+	// City-Tags aus parentShow
+	if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
+		item?.parentShow?.tags.forEach((tag: any) => {
+			if (tag._type === 'tag.city') {
+				if (!cityTags.some((existingTag) => existingTag._id === tag._id)) {
+					cityTags.push(tag)
+				}
+			}
+		})
+	}
 
-  return cityTags;
+	return cityTags
 }
 
 // Nicht-Stadt-Tags abrufen
 function getItemNonCityTags(item: any) {
-  if (!item?.tags || !Array.isArray(item?.tags)) return [];
-  return item?.tags.filter((tag: any) => tag._type !== "tag.city");
+	if (!item?.tags || !Array.isArray(item?.tags)) return []
+	return item?.tags.filter((tag: any) => tag._type !== 'tag.city')
 }
 
 // Helper für RichText Blocks
 function getRichTextBlocks(content: any): unknown[] {
-  if (!content) return [];
-  // Verwende eine temporäre Lösung bis parseI18nObj verfügbar ist
-  return Array.isArray(content) ? content : [];
+	if (!content) return []
+	// Verwende eine temporäre Lösung bis parseI18nObj verfügbar ist
+	return Array.isArray(content) ? content : []
 }
 
 function getRichTextBlocksSliced(content: any, slice = 1): unknown[] {
-  if (!content) return [];
-  // Verwende eine temporäre Lösung bis parseI18nObj verfügbar ist
-  return Array.isArray(content) ? content.slice(0, slice) : [];
+	if (!content) return []
+	// Verwende eine temporäre Lösung bis parseI18nObj verfügbar ist
+	return Array.isArray(content) ? content.slice(0, slice) : []
 }
 
 // Fisher-Yates Shuffle-Algorithmus mit Seed
 function shuffleArray(array: any[], seed: number) {
-  const rng = seededRandom(seed);
-  let currentIndex = array.length;
+	const rng = seededRandom(seed)
+	let currentIndex = array.length
 
-  // Solange noch Elemente vorhanden sind
-  while (currentIndex > 0) {
-    // Ein verbleibendes Element auswählen
-    const randomIndex = Math.floor(rng() * currentIndex);
-    currentIndex--;
+	// Solange noch Elemente vorhanden sind
+	while (currentIndex > 0) {
+		// Ein verbleibendes Element auswählen
+		const randomIndex = Math.floor(rng() * currentIndex)
+		currentIndex--;
 
-    // Mit dem aktuellen Element tauschen
-    [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex],
-      array[currentIndex],
-    ];
-  }
+		// Mit dem aktuellen Element tauschen
+		[array[currentIndex], array[randomIndex]] = [
+			array[randomIndex],
+			array[currentIndex]
+		]
+	}
 
-  return array;
+	return array
 }
 
 // Einfacher seeded Random-Generator
 function seededRandom(seed: number) {
-  return function () {
-    seed = (seed * 9301 + 49297) % 233280;
-    return seed / 233280;
-  };
+	return function () {
+		seed = (seed * 9301 + 49297) % 233280
+		return seed / 233280
+	}
 }
 
 // Watcher für visibleItems, um Artwork-URLs für neue Items zu laden
 watch(
-  visibleItems,
-  (newItems) => {
-    if (props.module.type === "sets") {
-      newItems.forEach((item: any) => {
-        if (!artworkUrls.value.has(item?._id)) {
-          loadArtworkUrl(item);
-        }
-      });
-    }
-  },
-  { deep: true }
-);
+	visibleItems,
+	(newItems) => {
+		if (props.module.type === 'sets') {
+			newItems.forEach((item: any) => {
+				if (!artworkUrls.value.has(item?._id)) {
+					loadArtworkUrl(item)
+				}
+			})
+		}
+	},
+	{ deep: true }
+)
 
 // Lifecycle Hooks
 // Lifecycle Hooks
 onMounted(() => {
-  // SSR data loading handles content fetching now
+	// SSR data loading handles content fetching now
 
-  // Beim ersten Laden die Artworks für sichtbare Items laden
-  if (props.module.type === "sets") {
-    visibleItems.value.forEach((item: any) => {
-      loadArtworkUrl(item);
-    });
-  }
-  // Note: Watcher handles additional items when loadMore is called
-});
+	// Beim ersten Laden die Artworks für sichtbare Items laden
+	if (props.module.type === 'sets') {
+		visibleItems.value.forEach((item: any) => {
+			loadArtworkUrl(item)
+		})
+	}
+	// Note: Watcher handles additional items when loadMore is called
+})
 
 function navigateToTagSearch(tag: any, item: any, isGenre = false) {
-  // Determine search term
-  let tagName = "";
+	// Determine search term
+	let tagName = ''
 
-  if (isGenre) {
-    tagName = tag.name || tag.title;
-  } else {
-    // For standard tags, prefer title for searching as it matches the search index
-    // If title implies an object/array (i18n), we need to extract the string
-    // Since we don't have easy access to parseI18nObj in script scope without import,
-    // we try to extract the first value or use the raw string
-    const titleVal = tag.title || tag.name;
+	if (isGenre) {
+		tagName = tag.name || tag.title
+	} else {
+		// For standard tags, prefer title for searching as it matches the search index
+		// If title implies an object/array (i18n), we need to extract the string
+		// Since we don't have easy access to parseI18nObj in script scope without import,
+		// we try to extract the first value or use the raw string
+		const titleVal = tag.title || tag.name
 
-    if (Array.isArray(titleVal)) {
-      // Assume portable text / i18n array, take first element value
-      tagName = titleVal[0]?.value || "";
-    } else if (typeof titleVal === "object") {
-      // Fallback for object without array
-      tagName = "";
-    } else {
-      tagName = titleVal || "";
-    }
-  }
+		if (Array.isArray(titleVal)) {
+			// Assume portable text / i18n array, take first element value
+			tagName = titleVal[0]?.value || ''
+		} else if (typeof titleVal === 'object') {
+			// Fallback for object without array
+			tagName = ''
+		} else {
+			tagName = titleVal || ''
+		}
+	}
 
-  if (!tagName) return;
+	if (!tagName) return
 
-  // Determine Category
-  let category = "all";
-  const itemType = item._type;
+	// Determine Category
+	let category = 'all'
+	const itemType = item._type
 
-  if (["show", "set"].includes(itemType)) category = "shows";
-  else if (["person", "venue"].includes(itemType)) category = "pool";
-  else if (["article"].includes(itemType)) category = "article";
+	if (['show', 'set'].includes(itemType)) category = 'shows'
+	else if (['person', 'venue'].includes(itemType)) category = 'pool'
+	else if (['article'].includes(itemType)) category = 'article'
 
-  // Navigate
-  router.push({
-    path: localePath("/search"),
-    query: {
-      q: tagName,
-      type: category,
-    },
-  });
+	// Navigate
+	router.push({
+		path: localePath('/search'),
+		query: {
+			q: tagName,
+			type: category
+		}
+	})
 }
 </script>
 
 <template>
-  <div
-    v-if="allItems && allItems.length > 0"
-    :class="`content-teaser module-teaser module-teaser--${
-      props.module.style || 'default'
-    } ${typeClass}`"
-  >
-    <div class="module-teaser__header">
-      <h3 v-if="props.module?.title" class="content-teaser__title">
-        {{ props.module?.title }}
-      </h3>
-      <section class="module-teaser__header__type">
-        <div class="content-teaser__sort">
-          <div class="sort-options">
-            <button
-              :class="['sort-button', { active: sortMode === 'new' }]"
-              @click="changeSortMode('new')"
-            >
-              <div class="dot"></div>
-              New
-            </button>
-            <button
-              :class="['sort-button', { active: sortMode === 'alpha' }]"
-              @click="changeSortMode('alpha')"
-            >
-              <div class="dot"></div>
-              A–Z
-            </button>
-            <button
-              :class="['sort-button', { active: sortMode === 'shuffle' }]"
-              @click="changeSortMode('shuffle')"
-            >
-              <div class="dot"></div>
-              Shuffle
-            </button>
-          </div>
-        </div>
-        <NuxtLink
-          :to="
-            categoryType === 'Episodes'
-              ? localePath('/shows')
-              : localePath(categoryType.toLowerCase())
-          "
-        >
-          <h2 class="module-teaser__header__type__pill">
-            {{ categoryType === "Episodes" ? "Shows" : categoryType }}
-          </h2>
-        </NuxtLink>
-      </section>
-    </div>
+	<div
+		v-if="allItems && allItems.length > 0"
+		:class="`content-teaser module-teaser module-teaser--${
+			props.module.style || 'default'
+		} ${typeClass}`"
+	>
+		<div class="module-teaser__header">
+			<h3 v-if="props.module?.title" class="content-teaser__title">
+				{{ props.module?.title }}
+			</h3>
+			<section class="module-teaser__header__type">
+				<div class="content-teaser__sort">
+					<div class="sort-options">
+						<button
+							:class="['sort-button', { active: sortMode === 'new' }]"
+							@click="changeSortMode('new')"
+						>
+							<div class="dot"/>
+							New
+						</button>
+						<button
+							:class="['sort-button', { active: sortMode === 'alpha' }]"
+							@click="changeSortMode('alpha')"
+						>
+							<div class="dot"/>
+							A–Z
+						</button>
+						<button
+							:class="['sort-button', { active: sortMode === 'shuffle' }]"
+							@click="changeSortMode('shuffle')"
+						>
+							<div class="dot"/>
+							Shuffle
+						</button>
+					</div>
+				</div>
+				<NuxtLink
+					:to="
+						categoryType === 'Episodes'
+							? localePath('/shows')
+							: localePath(categoryType.toLowerCase())
+					"
+				>
+					<h2 class="module-teaser__header__type__pill">
+						{{ categoryType === "Episodes" ? "Shows" : categoryType }}
+					</h2>
+				</NuxtLink>
+			</section>
+		</div>
 
-    <div class="content-teaser__grid">
-      <!-- Grid-Items -->
-      <div
-        v-for="item in visibleItems"
-        :key="item?._id"
-        :class="`teaser-item teaser-item--${
-          props.module.style || 'default'
-        } ${typeClass}`"
-      >
-        <!-- Stadt-Tags falls vorhanden -->
-        <div
-          v-if="
-            props.module.showTags &&
-            getItemCityTags(item).length > 0 &&
-            props.module.style !== 'image'
-          "
-          class="teaser-item__tags city-tags"
-        >
-          <button
-            v-for="tag in getItemCityTags(item)"
-            :key="tag._id"
-            class="tag city clickable"
-            @click.prevent="navigateToTagSearch(tag, item)"
-          >
-            {{
-              tag?.short?.[1]?.value
-                ? parseI18nObj(tag?.short)
-                : tag?.short?.[0]?.value ?? tag.short
-            }}
-          </button>
-        </div>
+		<div class="content-teaser__grid">
+			<!-- Grid-Items -->
+			<div
+				v-for="item in visibleItems"
+				:key="item?._id"
+				:class="`teaser-item teaser-item--${
+					props.module.style || 'default'
+				} ${typeClass}`"
+			>
+				<!-- Stadt-Tags falls vorhanden -->
+				<div
+					v-if="
+						props.module.showTags &&
+							getItemCityTags(item).length > 0 &&
+							props.module.style !== 'image'
+					"
+					class="teaser-item__tags city-tags"
+				>
+					<button
+						v-for="tag in getItemCityTags(item)"
+						:key="tag._id"
+						class="tag city clickable"
+						@click.prevent="navigateToTagSearch(tag, item)"
+					>
+						{{
+							tag?.short?.[1]?.value
+								? parseI18nObj(tag?.short)
+								: tag?.short?.[0]?.value ?? tag.short
+						}}
+					</button>
+				</div>
 
-        <!-- Bild -->
-        <NuxtLink
-          v-if="item?.slug"
-          :to="getItemRoute(item)"
-          class="teaser-item__link"
-        >
-          <div class="teaser-item__image" v-if="props.module.type === 'sets'">
-            <img
-              v-if="item?.image && item?.image.asset && item?.image.asset.url"
-              :src="item?.image.asset.url"
-              :alt="item?.title || ''"
-              loading="lazy"
-            />
-            <div v-else-if="item?.soundcloud" class="track-artwork">
-              <img
-                v-if="artworkUrls.get(item?._id)"
-                :src="artworkUrls.get(item?._id)"
-                alt="Track Artwork"
-                class="track-image"
-              />
-              <div v-else class="track-artwork-placeholder"></div>
-            </div>
-            <!-- Zusätzlicher Fallback für Sets ohne Artwork -->
-            <div v-else class="image-placeholder">
-              <img
-                v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
-                :src="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
-                alt="Fallback Image"
-                class="fallback-image"
-              />
-            </div>
-          </div>
-          <div class="teaser-item__image" v-else>
-            <MediaImage
-              v-if="
-                getItemImage(item) &&
-                getItemImage(item).asset &&
-                getItemImage(item).asset.url
-              "
-              :image="getItemImage(item)"
-              :class="`media-${props.module.style || 'default'}`"
-            />
-            <div v-else class="image-placeholder">
-              <img
-                v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
-                :src="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
-                alt="Fallback Image"
-                class="fallback-image"
-              />
-            </div>
-          </div>
-        </NuxtLink>
+				<!-- Bild -->
+				<NuxtLink
+					v-if="item?.slug"
+					:to="getItemRoute(item)"
+					class="teaser-item__link"
+				>
+					<div v-if="props.module.type === 'sets'" class="teaser-item__image">
+						<img
+							v-if="item?.image && item?.image.asset && item?.image.asset.url"
+							:src="item?.image.asset.url"
+							:alt="item?.title || ''"
+							loading="lazy"
+						>
+						<div v-else-if="item?.soundcloud" class="track-artwork">
+							<img
+								v-if="artworkUrls.get(item?._id)"
+								:src="artworkUrls.get(item?._id)"
+								alt="Track Artwork"
+								class="track-image"
+							>
+							<div v-else class="track-artwork-placeholder"/>
+						</div>
+						<!-- Zusätzlicher Fallback für Sets ohne Artwork -->
+						<div v-else class="image-placeholder">
+							<img
+								v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
+								:src="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
+								alt="Fallback Image"
+								class="fallback-image"
+							>
+						</div>
+					</div>
+					<div v-else class="teaser-item__image">
+						<MediaImage
+							v-if="
+								getItemImage(item) &&
+									getItemImage(item).asset &&
+									getItemImage(item).asset.url
+							"
+							:image="getItemImage(item)"
+							:class="`media-${props.module.style || 'default'}`"
+						/>
+						<div v-else class="image-placeholder">
+							<img
+								v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
+								:src="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
+								alt="Fallback Image"
+								class="fallback-image"
+							>
+						</div>
+					</div>
+				</NuxtLink>
 
-        <!-- Inhalt -->
-        <div class="teaser-item__content">
-          <!-- Interaktiver Bereich mit Datum und Play-Button -->
-          <section
-            class="teaser-item__content__interactive"
-            v-if="props.module.type !== 'pool'"
-          >
-            <!-- Datum (falls vorhanden) -->
-            <div
-              v-if="
-                item?.datetime ||
-                item?.publishedAt ||
-                item?._updatedAt ||
-                item?._createdAt
-              "
-              class="teaser-item__date"
-            >
-              {{
-                formatDate(
-                  item?.datetime ||
-                    item?.publishedAt ||
-                    item?._updatedAt ||
-                    item?._createdAt
-                )
-              }}
-            </div>
+				<!-- Inhalt -->
+				<div class="teaser-item__content">
+					<!-- Interaktiver Bereich mit Datum und Play-Button -->
+					<section
+						v-if="props.module.type !== 'pool'"
+						class="teaser-item__content__interactive"
+					>
+						<!-- Datum (falls vorhanden) -->
+						<div
+							v-if="
+								item?.datetime ||
+									item?.publishedAt ||
+									item?._updatedAt ||
+									item?._createdAt
+							"
+							class="teaser-item__date"
+						>
+							{{
+								formatDate(
+									item?.datetime ||
+										item?.publishedAt ||
+										item?._updatedAt ||
+										item?._createdAt
+								)
+							}}
+						</div>
 
-            <!-- Play-Button für Sets -->
-            <button
-              v-if="props.module.type === 'sets' && item?.soundcloud"
-              @click.prevent="playTrack(item)"
-              class="play-button"
-            >
-              <span class="sr-only">Play</span>
-              <svg
-                width="9"
-                height="12"
-                viewBox="0 0 9 12"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M9 6L0 11.1962L0 0.803847L9 6Z" fill="currentColor" />
-              </svg>
-            </button>
-          </section>
+						<!-- Play-Button für Sets -->
+						<button
+							v-if="props.module.type === 'sets' && item?.soundcloud"
+							class="play-button"
+							@click.prevent="playTrack(item)"
+						>
+							<span class="sr-only">Play</span>
+							<svg
+								width="9"
+								height="12"
+								viewBox="0 0 9 12"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path d="M9 6L0 11.1962L0 0.803847L9 6Z" fill="currentColor" />
+							</svg>
+						</button>
+					</section>
 
-          <!-- Show-Informationen für Sets -->
-          <div
-            v-if="item?.parentShow && props.module.type === 'sets'"
-            class="teaser-item__content__show"
-          >
-            <!-- Show-Titel (nur anzeigen wenn NICHT no-show) -->
-            <NuxtLink
-              v-if="
-                item?.parentShow?.title?.toLowerCase() !== 'no-show' &&
-                item?.parentShow?.slug &&
-                item?.clickableTitle
-              "
-              :to="localePath(`/shows/${item?.parentShow?.slug.current}`)"
-              class="teaser-item__link"
-            >
-              <h3 class="teaser-item__title show-title">
-                {{ item?.parentShow?.title }}
-              </h3>
-            </NuxtLink>
-            <!-- Wenn no-show: nur Set-Titel anzeigen -->
-            <h3
-              v-else-if="
-                item?.parentShow?.title?.toLowerCase() === 'no-show' &&
-                item?.title
-              "
-              class="teaser-item__title show-title"
-            >
-              {{ item?.title }}
-            </h3>
-            <!-- Fallback für andere Fälle ohne clickableTitle -->
-            <h3
-              v-else-if="item?.parentShow?.title?.toLowerCase() !== 'no-show'"
-              class="teaser-item__title show-title"
-            >
-              {{ item?.title || item?.parentShow?.title }}
-            </h3>
+					<!-- Show-Informationen für Sets -->
+					<div
+						v-if="item?.parentShow && props.module.type === 'sets'"
+						class="teaser-item__content__show"
+					>
+						<!-- Show-Titel (nur anzeigen wenn NICHT no-show) -->
+						<NuxtLink
+							v-if="
+								item?.parentShow?.title?.toLowerCase() !== 'no-show' &&
+									item?.parentShow?.slug &&
+									item?.clickableTitle
+							"
+							:to="localePath(`/shows/${item?.parentShow?.slug.current}`)"
+							class="teaser-item__link"
+						>
+							<h3 class="teaser-item__title show-title">
+								{{ item?.parentShow?.title }}
+							</h3>
+						</NuxtLink>
+						<!-- Wenn no-show: nur Set-Titel anzeigen -->
+						<h3
+							v-else-if="
+								item?.parentShow?.title?.toLowerCase() === 'no-show' &&
+									item?.title
+							"
+							class="teaser-item__title show-title"
+						>
+							{{ item?.title }}
+						</h3>
+						<!-- Fallback für andere Fälle ohne clickableTitle -->
+						<h3
+							v-else-if="item?.parentShow?.title?.toLowerCase() !== 'no-show'"
+							class="teaser-item__title show-title"
+						>
+							{{ item?.title || item?.parentShow?.title }}
+						</h3>
 
-            <div
-              v-if="item?.persons && item?.persons.length > 0"
-              class="show-artists"
-            >
-              <h3
-                v-for="(artist, index) in item?.persons"
-                :key="artist._id"
-                class="teaser-item__artist"
-              >
-                <NuxtLink
-                  v-if="artist?.poolVisibility"
-                  :to="localePath(`/pool/${artist?.slug?.current}`)"
-                  class="teaser-item__link"
-                >
-                  {{ artist?.title
-                  }}{{ index < item?.persons?.length - 1 ? "," : "" }}&nbsp;
-                </NuxtLink>
-                <span v-else>
-                  {{ artist.title
-                  }}{{ index < item?.persons?.length - 1 ? "," : "" }}&nbsp;
-                </span>
-              </h3>
-            </div>
-          </div>
+						<div
+							v-if="item?.persons && item?.persons.length > 0"
+							class="show-artists"
+						>
+							<h3
+								v-for="(artist, index) in item?.persons"
+								:key="artist._id"
+								class="teaser-item__artist"
+							>
+								<NuxtLink
+									v-if="artist?.poolVisibility"
+									:to="localePath(`/pool/${artist?.slug?.current}`)"
+									class="teaser-item__link"
+								>
+									{{ artist?.title
+									}}{{ index < item?.persons?.length - 1 ? "," : "" }}&nbsp;
+								</NuxtLink>
+								<span v-else>
+									{{ artist.title
+									}}{{ index < item?.persons?.length - 1 ? "," : "" }}&nbsp;
+								</span>
+							</h3>
+						</div>
+					</div>
 
-          <div v-if="props.module.type === 'words'" class="tags read-more">
-            <NuxtLink :to="getItemRoute(item)" class="grid-item__link"
-              ><h3 class="tag">Read More</h3></NuxtLink
-            >
-          </div>
+					<div v-if="props.module.type === 'words'" class="tags read-more">
+						<NuxtLink
+							:to="getItemRoute(item)"
+							class="grid-item__link"
+						><h3 class="tag">Read More</h3></NuxtLink
+						>
+					</div>
 
-          <!-- Titel für alle anderen Content-Typen -->
-          <NuxtLink
-            v-if="props.module.type !== 'sets'"
-            :to="getItemRoute(item)"
-            class="teaser-item__link"
-          >
-            <h3 class="teaser-item__title">
-              {{ item?.title || item?.name }}
-            </h3>
-          </NuxtLink>
+					<!-- Titel für alle anderen Content-Typen -->
+					<NuxtLink
+						v-if="props.module.type !== 'sets'"
+						:to="getItemRoute(item)"
+						class="teaser-item__link"
+					>
+						<h3 class="teaser-item__title">
+							{{ item?.title || item?.name }}
+						</h3>
+					</NuxtLink>
 
-          <!-- RichText Content -->
-          <RichText
-            v-if="
-              item?.useTeaserText &&
-              item?.textTeaser &&
-              props.module.type !== 'words'
-            "
-            :blocks="getRichTextBlocks(item?.textTeaser)"
-          />
-          <RichText
-            v-else-if="
-              !item?.useTeaserText &&
-              item?.text &&
-              item?.text.length > 0 &&
-              props.module.type !== 'words'
-            "
-            :blocks="getRichTextBlocksSliced(item?.text, 1)"
-          />
-          <RichText
-            v-else-if="props.module.type === 'words'"
-            :blocks="parseI18nObj(item?.textTeaser)"
-          />
-          <RichText
-            v-else-if="
-              !item?.text &&
-              item?.description &&
-              item?.description.length > 0 &&
-              (item?.description[0]?.value || item?.description[1]?.value)
-            "
-            :blocks="
-              limitTextBlocks(parseI18nObj(item?.description)?.slice(0, 1), 100)
-            "
-          />
-          <RichText
-            v-else-if="
-              !item?.text &&
-              props.module.poolContentType == 'persons' &&
-              mainStore?.siteFallbacks?.fallbackPerson?.description.length >
-                0 &&
-              (mainStore?.siteFallbacks?.fallbackPerson?.description?.[0]
-                ?.value ||
-                mainStore?.siteFallbacks?.fallbackPerson?.description?.[1]
-                  ?.value)
-            "
-            :blocks="
-              limitTextBlocks(
-                parseI18nObj(
-                  mainStore?.siteFallbacks?.fallbackPerson?.description
-                )?.slice(0, 1),
-                100
-              )
-            "
-          />
-          <RichText
-            v-else-if="
-              !item?.text &&
-              props.module.poolContentType == 'venues' &&
-              mainStore?.siteFallbacks?.fallbackVenue?.description.length > 0 &&
-              (mainStore?.siteFallbacks?.fallbackVenue?.description?.[0]
-                ?.value ||
-                mainStore?.siteFallbacks?.fallbackPerson?.description?.[1]
-                  ?.value)
-            "
-            :blocks="
-              limitTextBlocks(
-                parseI18nObj(
-                  mainStore?.siteFallbacks?.fallbackPerson?.description
-                )?.slice(0, 1),
-                100
-              )
-            "
-          />
+					<!-- RichText Content -->
+					<RichText
+						v-if="
+							item?.useTeaserText &&
+								item?.textTeaser &&
+								props.module.type !== 'words'
+						"
+						:blocks="getRichTextBlocks(item?.textTeaser)"
+					/>
+					<RichText
+						v-else-if="
+							!item?.useTeaserText &&
+								item?.text &&
+								item?.text.length > 0 &&
+								props.module.type !== 'words'
+						"
+						:blocks="getRichTextBlocksSliced(item?.text, 1)"
+					/>
+					<RichText
+						v-else-if="props.module.type === 'words'"
+						:blocks="parseI18nObj(item?.textTeaser)"
+					/>
+					<RichText
+						v-else-if="
+							!item?.text &&
+								item?.description &&
+								item?.description.length > 0 &&
+								(item?.description[0]?.value || item?.description[1]?.value)
+						"
+						:blocks="
+							limitTextBlocks(parseI18nObj(item?.description)?.slice(0, 1), 100)
+						"
+					/>
+					<RichText
+						v-else-if="
+							!item?.text &&
+								props.module.poolContentType == 'persons' &&
+								mainStore?.siteFallbacks?.fallbackPerson?.description.length >
+								0 &&
+								(mainStore?.siteFallbacks?.fallbackPerson?.description?.[0]
+									?.value ||
+									mainStore?.siteFallbacks?.fallbackPerson?.description?.[1]
+										?.value)
+						"
+						:blocks="
+							limitTextBlocks(
+								parseI18nObj(
+									mainStore?.siteFallbacks?.fallbackPerson?.description
+								)?.slice(0, 1),
+								100
+							)
+						"
+					/>
+					<RichText
+						v-else-if="
+							!item?.text &&
+								props.module.poolContentType == 'venues' &&
+								mainStore?.siteFallbacks?.fallbackVenue?.description.length > 0 &&
+								(mainStore?.siteFallbacks?.fallbackVenue?.description?.[0]
+									?.value ||
+									mainStore?.siteFallbacks?.fallbackPerson?.description?.[1]
+										?.value)
+						"
+						:blocks="
+							limitTextBlocks(
+								parseI18nObj(
+									mainStore?.siteFallbacks?.fallbackPerson?.description
+								)?.slice(0, 1),
+								100
+							)
+						"
+					/>
 
-          <!-- Nicht-City Tags anzeigen -->
-          <div
-            v-if="props.module.showTags && getItemNonCityTags(item).length > 0"
-            class="teaser-item__tags tags"
-          >
-            <button
-              v-for="tag in getItemNonCityTags(item)"
-              :key="tag._id"
-              class="tag clickable"
-              @click.prevent="navigateToTagSearch(tag, item)"
-            >
-              {{
-                tag?.title?.[1]?.value
-                  ? parseI18nObj(tag?.title)
-                  : tag?.title?.[0]?.value ?? tag.title
-              }}
-            </button>
-          </div>
+					<!-- Nicht-City Tags anzeigen -->
+					<div
+						v-if="props.module.showTags && getItemNonCityTags(item).length > 0"
+						class="teaser-item__tags tags"
+					>
+						<button
+							v-for="tag in getItemNonCityTags(item)"
+							:key="tag._id"
+							class="tag clickable"
+							@click.prevent="navigateToTagSearch(tag, item)"
+						>
+							{{
+								tag?.title?.[1]?.value
+									? parseI18nObj(tag?.title)
+									: tag?.title?.[0]?.value ?? tag.title
+							}}
+						</button>
+					</div>
 
-          <!-- Genres anzeigen -->
-          <div
-            v-if="props.module.showTags && item.genres?.length"
-            class="teaser-genres"
-          >
-            <button
-              v-for="genre in item.genres"
-              :key="genre._id"
-              class="genre clickable"
-              @click.prevent="navigateToTagSearch(genre, item, true)"
-            >
-              {{ genre.name || genre.title }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+					<!-- Genres anzeigen -->
+					<div
+						v-if="props.module.showTags && item.genres?.length"
+						class="teaser-genres"
+					>
+						<button
+							v-for="genre in item.genres"
+							:key="genre._id"
+							class="genre clickable"
+							@click.prevent="navigateToTagSearch(genre, item, true)"
+						>
+							{{ genre.name || genre.title }}
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
 
-    <!-- Load More Button -->
-    <div v-if="hasMoreItems" class="content-teaser__load-more">
-      <button
-        @click="loadMoreItems"
-        class="load-more-button"
-        :class="{ more: shouldShowMoreButton }"
-      >
-        <template v-if="!shouldShowMoreButton">
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 15 15"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M7.67578 0.541016V14.8113" stroke-width="5" />
-            <path d="M14.8105 7.67578L0.540276 7.67578" stroke-width="5" />
-          </svg>
-        </template>
-        <template v-else> More </template>
-      </button>
-    </div>
-  </div>
+		<!-- Load More Button -->
+		<div v-if="hasMoreItems" class="content-teaser__load-more">
+			<button
+				class="load-more-button"
+				:class="{ more: shouldShowMoreButton }"
+				@click="loadMoreItems"
+			>
+				<template v-if="!shouldShowMoreButton">
+					<svg
+						width="15"
+						height="15"
+						viewBox="0 0 15 15"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path d="M7.67578 0.541016V14.8113" stroke-width="5" />
+						<path d="M14.8105 7.67578L0.540276 7.67578" stroke-width="5" />
+					</svg>
+				</template>
+				<template v-else> More </template>
+			</button>
+		</div>
+	</div>
 </template>
 
 <style lang="postcss" scoped>

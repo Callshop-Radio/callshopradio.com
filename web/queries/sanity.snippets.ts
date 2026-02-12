@@ -2,7 +2,7 @@ export const IMAGE_QUERY = `{
   ...,
   "alt": asset->altText,
 	asset->,
-}`;
+}`
 
 export const LINK_QUERY = `
 	...,
@@ -39,7 +39,7 @@ export const LINK_QUERY = `
 	_type == "linkCookie" => {
 		"linkType": "linkCookie",
 	},
-`;
+`
 
 export const SINGLE_LINK_QUERY = `{
     ...,
@@ -78,7 +78,7 @@ export const SINGLE_LINK_QUERY = `{
     _type == "none" => {
       "linkType": "none",
     }
-  }`;
+  }`
 
 export const SINGLE_LINK_OPTIONAL_QUERY = `{
     ...,
@@ -111,7 +111,7 @@ export const SINGLE_LINK_OPTIONAL_QUERY = `{
       ...,
       "func": func
     },
-  }`;
+  }`
 
 export const RICH_TEXT_QUERY = `{
 	...,
@@ -135,7 +135,7 @@ export const RICH_TEXT_QUERY = `{
 			video ${IMAGE_QUERY},
 		}
 	},
-}`;
+}`
 export const TAG_QUERY = `
     "availableTags": {
         "genres": *[_type == 'tag.genre']| order(lower(title)) {
@@ -195,7 +195,7 @@ export const TAG_QUERY = `
             _type,
             title
         }
-    }`;
+    }`
 
 export const MODULE_QUERY = `{
     _type == "module.heroSlider" => {
@@ -371,7 +371,7 @@ export const MODULE_QUERY = `{
         "showItems": [],
         "setItems": []
     },
-}`;
+}`
 
 export const SEO_QUERY = `
 	"seo": {
@@ -383,4 +383,4 @@ export const SEO_QUERY = `
 			*[_type == "siteSettings"][0].seo.image.asset->url + "?w=1200&h=630&fit=crop&auto=format&fm=jpg"
 		)
 	}
-`;
+`

@@ -1,183 +1,183 @@
 <script setup lang="ts">
-import emblaCarouselVue from "embla-carousel-vue";
-import { useThrottleFn } from "@vueuse/core";
-import { ref, onMounted, computed } from "vue";
-import { useMainStore } from "~/stores/mainStore";
+import { useThrottleFn } from '@vueuse/core'
+import { useMainStore } from '~/stores/mainStore'
+import { computed, onMounted, ref } from 'vue'
+import emblaCarouselVue from 'embla-carousel-vue'
 
-const mainStore = useMainStore();
+const _mainStore = useMainStore()
 
 const props = defineProps({
-  poolItems: {
-    type: Array,
-    required: true,
-  },
-});
+	poolItems: {
+		type: Array,
+		required: true
+	}
+})
 
 // Init Embla Carousel
 const [emblaNode, emblaApi] = emblaCarouselVue({
-  align: "start",
-  loop: true,
-});
+	align: 'start',
+	loop: true
+})
 
 // Dots nav
-const selectedIndex = ref(0);
+const selectedIndex = ref(0)
 // Aktuelle Slide-Position
-const currentIndex = ref(0);
-const scrollSnaps = ref<number[]>([]);
+const currentIndex = ref(0)
+const scrollSnaps = ref<number[]>([])
 
 // Save position for smooth transitions
 const saveTranslatePositions = useThrottleFn(() => {
-  if (!emblaContainer.value) return;
-  containerStyle = emblaContainer.value.style.transform;
-}, 100);
+	if (!emblaContainer.value) return
+	containerStyle = emblaContainer.value.style.transform
+}, 100)
 
-const emblaContainer = ref<HTMLElement>();
-let containerStyle: string = "";
+const emblaContainer = ref<HTMLElement>()
+let containerStyle: string = ''
 
 async function restoreTranslatePositions() {
-  if (!emblaContainer.value) return;
-  emblaContainer.value.style.transform = containerStyle;
+	if (!emblaContainer.value) return
+	emblaContainer.value.style.transform = containerStyle
 }
 
 // Dots functions
 const onSelect = () => {
-  if (!emblaApi.value) return;
-  selectedIndex.value = emblaApi.value.selectedScrollSnap();
-  currentIndex.value = selectedIndex.value; // Aktualisiere currentIndex, wenn sich der Slide ändert
-};
+	if (!emblaApi.value) return
+	selectedIndex.value = emblaApi.value.selectedScrollSnap()
+	currentIndex.value = selectedIndex.value // Aktualisiere currentIndex, wenn sich der Slide ändert
+}
 
 const scrollTo = (index: number) => {
-  if (!emblaApi.value) return;
-  emblaApi.value.scrollTo(index);
-  currentIndex.value = index; // Aktualisiere currentIndex beim manuellen Scrollen
-};
+	if (!emblaApi.value) return
+	emblaApi.value.scrollTo(index)
+	currentIndex.value = index // Aktualisiere currentIndex beim manuellen Scrollen
+}
 
 const scrollPrev = () => {
-  if (!emblaApi.value) return;
-  emblaApi.value.scrollPrev();
-};
+	if (!emblaApi.value) return
+	emblaApi.value.scrollPrev()
+}
 
 const scrollNext = () => {
-  if (!emblaApi.value) return;
-  emblaApi.value.scrollNext();
-};
+	if (!emblaApi.value) return
+	emblaApi.value.scrollNext()
+}
 
 const setupDots = () => {
-  if (!emblaApi.value) return;
+	if (!emblaApi.value) return
 
-  // Scroll snaps für Navigation
-  scrollSnaps.value = emblaApi.value.scrollSnapList();
+	// Scroll snaps für Navigation
+	scrollSnaps.value = emblaApi.value.scrollSnapList()
 
-  // Set current index
-  selectedIndex.value = emblaApi.value.selectedScrollSnap();
-  currentIndex.value = selectedIndex.value; // Initialisiere currentIndex
+	// Set current index
+	selectedIndex.value = emblaApi.value.selectedScrollSnap()
+	currentIndex.value = selectedIndex.value // Initialisiere currentIndex
 
-  // Event-Listener für Aktualisierung des ausgewählten Index
-  emblaApi.value.on("select", onSelect);
-};
+	// Event-Listener für Aktualisierung des ausgewählten Index
+	emblaApi.value.on('select', onSelect)
+}
 
 // Event-Listener nach dem Mounting
 onMounted(() => {
-  if (emblaApi.value) {
-    emblaApi.value.on("scroll", saveTranslatePositions);
-    emblaApi.value.on("destroy", restoreTranslatePositions);
+	if (emblaApi.value) {
+		emblaApi.value.on('scroll', saveTranslatePositions)
+		emblaApi.value.on('destroy', restoreTranslatePositions)
 
-    setupDots();
-  }
-});
+		setupDots()
+	}
+})
 
 // Verwende die Pool-Items aus den Props
 const slides = computed(() => {
-  const result = [];
-  // Gruppiere Pool-Items in Paare (2 pro Slide)
-  for (let i = 0; i < props.poolItems.length; i += 2) {
-    const pair = [props.poolItems[i]];
-    // Füge das zweite Pool-Item hinzu, wenn verfügbar
-    if (i + 1 < props.poolItems.length) {
-      pair.push(props.poolItems[i + 1]);
-    }
-    result.push(pair);
-  }
-  return result;
-});
+	const result = []
+	// Gruppiere Pool-Items in Paare (2 pro Slide)
+	for (let i = 0; i < props.poolItems.length; i += 2) {
+		const pair = [props.poolItems[i]]
+		// Füge das zweite Pool-Item hinzu, wenn verfügbar
+		if (i + 1 < props.poolItems.length) {
+			pair.push(props.poolItems[i + 1])
+		}
+		result.push(pair)
+	}
+	return result
+})
 </script>
 
 <template>
-  <div
-    v-if="slides.length > 0"
-    :class="`embla intro-pool-slider intro-pool-slider--default`"
-  >
-    <div class="embla__nav__container">
-      <nav class="embla__nav" v-if="scrollSnaps.length > 1">
-        <button
-          class="embla__arrow embla__arrow--prev"
-          @click="scrollPrev"
-          aria-label="Vorheriger Slide"
-        >
-          <svg
-            width="22"
-            height="20"
-            viewBox="0 0 22 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M1.67986e-07 9.84832L21.1305 0.452866L21.1305 19.2438L1.67986e-07 9.84832Z"
-              fill="black"
-            />
-          </svg>
-        </button>
+	<div
+		v-if="slides.length > 0"
+		:class="`embla intro-pool-slider intro-pool-slider--default`"
+	>
+		<div class="embla__nav__container">
+			<nav v-if="scrollSnaps.length > 1" class="embla__nav">
+				<button
+					class="embla__arrow embla__arrow--prev"
+					aria-label="Vorheriger Slide"
+					@click="scrollPrev"
+				>
+					<svg
+						width="22"
+						height="20"
+						viewBox="0 0 22 20"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M1.67986e-07 9.84832L21.1305 0.452866L21.1305 19.2438L1.67986e-07 9.84832Z"
+							fill="black"
+						/>
+					</svg>
+				</button>
 
-        <div class="embla__nav__dots">
-          <button
-            v-for="(_, index) in scrollSnaps"
-            :key="index"
-            :class="['embla__dot', { 'is-selected': index === selectedIndex }]"
-            @click="scrollTo(index)"
-          ></button>
-        </div>
-        <!-- Arrow Navigation -->
-        <button
-          class="embla__arrow embla__arrow--next"
-          @click="scrollNext"
-          aria-label="Nächster Slide"
-        >
-          <svg
-            width="22"
-            height="20"
-            viewBox="0 0 22 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M22 9.84894L0.86951 19.2444L0.869511 0.453482L22 9.84894Z"
-              fill="black"
-            />
-          </svg>
-        </button>
-      </nav>
-    </div>
+				<div class="embla__nav__dots">
+					<button
+						v-for="(_, index) in scrollSnaps"
+						:key="index"
+						:class="['embla__dot', { 'is-selected': index === selectedIndex }]"
+						@click="scrollTo(index)"
+					/>
+				</div>
+				<!-- Arrow Navigation -->
+				<button
+					class="embla__arrow embla__arrow--next"
+					aria-label="Nächster Slide"
+					@click="scrollNext"
+				>
+					<svg
+						width="22"
+						height="20"
+						viewBox="0 0 22 20"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M22 9.84894L0.86951 19.2444L0.869511 0.453482L22 9.84894Z"
+							fill="black"
+						/>
+					</svg>
+				</button>
+			</nav>
+		</div>
 
-    <div ref="emblaNode" class="embla">
-      <div ref="emblaContainer" class="embla__container">
-        <div
-          v-for="(poolGroup, index) in slides"
-          :key="index"
-          class="embla__slide"
-          :class="{ active: index === currentIndex }"
-        >
-          <div class="pool-group">
-            <ModuleIntroPool
-              v-for="(poolItem, itemIndex) in poolGroup"
-              :key="poolItem._id || itemIndex"
-              :poolItem="poolItem"
-              :class="`slider-item slider-item--default`"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+		<div ref="emblaNode" class="embla">
+			<div ref="emblaContainer" class="embla__container">
+				<div
+					v-for="(poolGroup, index) in slides"
+					:key="index"
+					class="embla__slide"
+					:class="{ active: index === currentIndex }"
+				>
+					<div class="pool-group">
+						<ModuleIntroPool
+							v-for="(poolItem, itemIndex) in poolGroup"
+							:key="poolItem._id || itemIndex"
+							:pool-item="poolItem"
+							:class="`slider-item slider-item--default`"
+						/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </template>
 
 <style lang="postcss" scoped>

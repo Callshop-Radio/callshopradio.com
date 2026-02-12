@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useMainStore } from "~/stores/mainStore";
+import { computed } from 'vue'
+import { useMainStore } from '~/stores/mainStore'
 
-const { locale, setLocale } = useI18n();
-const localePath = useLocalePath();
+const { locale: _locale, setLocale: _setLocale } = useI18n()
+const localePath = useLocalePath()
 
 // Typdefinitionen für Artikel
 interface Image {
@@ -38,70 +38,70 @@ interface Article {
 // Props
 const props = defineProps<{
   article: Article;
-}>();
+}>()
 
 // Store
-const mainStore = useMainStore();
+const mainStore = useMainStore()
 
 // Composable für Bild-Management
 const useImageManagement = () => {
-  function getItemImage(item?: Article): Image | null {
-    if (!item) return null;
+	function getItemImage(item?: Article): Image | null {
+		if (!item) return null
 
-    // Bild aus dem Artikel
-    if (item.image) {
-      return item.image;
-    }
+		// Bild aus dem Artikel
+		if (item.image) {
+			return item.image
+		}
 
-    // Fallback für Artikel
-    return mainStore?.siteFallbacks?.fallbackArticle?.image;
-  }
+		// Fallback für Artikel
+		return mainStore?.siteFallbacks?.fallbackArticle?.image
+	}
 
-  return {
-    getItemImage,
-  };
-};
+	return {
+		getItemImage
+	}
+}
 
 // Funktion zum Bestimmen der passenden Route
 function getItemRoute(item) {
-  if (!item || !item?.slug) return "/";
-  return localePath(`/words/${item?.slug?.current}`);
+	if (!item || !item?.slug) return '/'
+	return localePath(`/words/${item?.slug?.current}`)
 }
 
 // Anwendung der Composables
-const { getItemImage } = useImageManagement();
+const { getItemImage } = useImageManagement()
 
 // Computed properties
 const articleImage = computed(() => {
-  const image = getItemImage(props.article);
-  return image?.asset?.url || "";
-});
+	const image = getItemImage(props.article)
+	return image?.asset?.url || ''
+})
 </script>
 
 <template>
-  <div v-if="article" class="article-content">
-    <div class="article-container">
-      <!-- Bild/Media-Bereich -->
-      <div class="article-media">
-        <NuxtLink :to="getItemRoute(article)" class="grid-item__link">
-          <img
-            v-if="articleImage"
-            :src="articleImage"
-            alt="Article Image"
-            class="article-image"
-            loading="lazy"
-          />
-          <div v-else class="article-image-placeholder"></div>
-        </NuxtLink>
-      </div>
+	<div v-if="article" class="article-content">
+		<div class="article-container">
+			<!-- Bild/Media-Bereich -->
+			<div class="article-media">
+				<NuxtLink :to="getItemRoute(article)" class="grid-item__link">
+					<img
+						v-if="articleImage"
+						:src="articleImage"
+						alt="Article Image"
+						class="article-image"
+						loading="lazy"
+					>
+					<div v-else class="article-image-placeholder"/>
+				</NuxtLink>
+			</div>
 
-      <!-- Content-Bereich -->
-      <div class="article-info">
-        <div class="article-info-container">
-          <!-- Titel-Bereich -->
-          <div class="article-header">
-            <!-- Datum -->
-            <!-- <div class="article-meta">
+			<!-- Content-Bereich -->
+			<div class="article-info">
+				<div class="article-info-container">
+					<!-- Titel-Bereich -->
+					<div class="article-header">
+						<!-- Datum -->
+						<!-- <div class="article-meta">
               <h3 class="article-date" v-if="article?.datetime">
                 {{ formatDate(article.datetime) }}
               </h3>
@@ -109,73 +109,73 @@ const articleImage = computed(() => {
                 {{ formatDate(article._updatedAt) }}
               </h3>
             </div> -->
-            <div class="article-title-container">
-              <NuxtLink
-                :to="getItemRoute(article)"
-                class="article__link article-title"
-              >
-                <h2 v-if="article?.title" class="article-title">
-                  {{ article?.title }}
-                </h2>
-              </NuxtLink>
-            </div>
-          </div>
+						<div class="article-title-container">
+							<NuxtLink
+								:to="getItemRoute(article)"
+								class="article__link article-title"
+							>
+								<h2 v-if="article?.title" class="article-title">
+									{{ article?.title }}
+								</h2>
+							</NuxtLink>
+						</div>
+					</div>
 
-          <!-- Artikel-Teaser -->
-          <div v-if="article.useTeaserText" class="article-teaser">
-            <div class="tags read-more">
-              <NuxtLink :to="getItemRoute(article)" class="tag">
-                Read More
-              </NuxtLink>
-            </div>
-            <RichText
-              v-if="article.textTeaser"
-              :value="article.textTeaser"
-              class="rich-text"
-              :blocks="parseI18nObj(article.textTeaser || [])"
-            />
-          </div>
-          <div
-            v-else-if="!article.useTeaserText && article.text"
-            class="article-teaser"
-          >
-            <div class="tags read-more">
-              <NuxtLink :to="getItemRoute(article)" class="tag">
-                Read More
-              </NuxtLink>
-            </div>
-            <RichText
-              v-if="article.textTeaser"
-              :value="article.textTeaser"
-              class="rich-text"
-              :blocks="
-                limitTextBlocks(
-                  parseI18nObj(article.text || [])?.slice(0, 1),
-                  100
-                )
-              "
-            />
-          </div>
+					<!-- Artikel-Teaser -->
+					<div v-if="article.useTeaserText" class="article-teaser">
+						<div class="tags read-more">
+							<NuxtLink :to="getItemRoute(article)" class="tag">
+								Read More
+							</NuxtLink>
+						</div>
+						<RichText
+							v-if="article.textTeaser"
+							:value="article.textTeaser"
+							class="rich-text"
+							:blocks="parseI18nObj(article.textTeaser || [])"
+						/>
+					</div>
+					<div
+						v-else-if="!article.useTeaserText && article.text"
+						class="article-teaser"
+					>
+						<div class="tags read-more">
+							<NuxtLink :to="getItemRoute(article)" class="tag">
+								Read More
+							</NuxtLink>
+						</div>
+						<RichText
+							v-if="article.textTeaser"
+							:value="article.textTeaser"
+							class="rich-text"
+							:blocks="
+								limitTextBlocks(
+									parseI18nObj(article.text || [])?.slice(0, 1),
+									100
+								)
+							"
+						/>
+					</div>
 
-          <!-- Tags -->
-          <div v-if="article?.tags?.length" class="article-tags tags">
-            <button
-              v-for="tag in article?.tags.slice(0, 3)"
-              :key="tag._id"
-              class="tag"
-              type="button"
-            >
-              {{
-                tag?.title?.[1]?.value
-                  ? parseI18nObj(tag?.title)
-                  : tag?.title[0]?.value ?? tag.title
-              }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+					<!-- Tags -->
+					<div v-if="article?.tags?.length" class="article-tags tags">
+						<button
+							v-for="tag in article?.tags.slice(0, 3)"
+							:key="tag._id"
+							class="tag"
+							type="button"
+						>
+							{{
+								tag?.title?.[1]?.value
+									? parseI18nObj(tag?.title)
+									: tag?.title[0]?.value ?? tag.title
+							}}
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </template>
 
 <style lang="postcss" scoped>

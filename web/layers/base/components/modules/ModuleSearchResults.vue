@@ -1,878 +1,886 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
-import { useMainStore } from "~/stores/mainStore";
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useMainStore } from '~/stores/mainStore'
 
-const { locale } = useI18n();
-const localePath = useLocalePath();
-const mainStore = useMainStore();
+const { locale: _locale } = useI18n()
+const localePath = useLocalePath()
+const mainStore = useMainStore()
 
 const props = defineProps({
-  results: { type: Array, default: () => [] },
-  searchQuery: { type: String, default: "" },
-  isLoading: { type: Boolean, default: false },
-  activeContentType: { type: String, default: "all" },
-  availableTags: { type: Object, default: null },
-});
+	results: { type: Array, default: () => [] },
+	searchQuery: { type: String, default: '' },
+	isLoading: { type: Boolean, default: false },
+	activeContentType: { type: String, default: 'all' },
+	availableTags: { type: Object, default: null }
+})
 
 // Compute the category type for CSS class
 const categoryType = computed(() => {
-  const type = props.activeContentType;
-  if (type === "person" || type === "venue") return "Pool";
-  if (type === "set" || type === "show") return "sets";
-  if (type === "article") return "Words";
-  return "sets"; // Default to shows style for "all"
-});
+	const type = props.activeContentType
+	if (type === 'person' || type === 'venue') return 'Pool'
+	if (type === 'set' || type === 'show') return 'sets'
+	if (type === 'article') return 'Words'
+	return 'sets' // Default to shows style for "all"
+})
 
 // ==================== CONSTANTS ====================
-const MAIN_CITIES = ["Vienna", "Düsseldorf", "Leipzig"];
-const SCROLL_THRESHOLD = 30;
+const MAIN_CITIES = ['Vienna', 'Düsseldorf', 'Leipzig']
+const SCROLL_THRESHOLD = 30
 
 // Tag-Typ zu Farbe Mapping
 const TAG_TYPE_COLORS: Record<string, string> = {
-  'tag.genre': 'pink',
-  'tag.subGenre': 'pink',
-  'tag.mood': 'pink',
-  'tag.musician': 'blue',
-  'tag.venue': 'blue',
-  'tag.crafts': 'blue',
-  'tag.article': 'green',
-  'tag.city': 'neutral',
-  'tag.global': 'neutral',
-};
+	'tag.genre': 'pink',
+	'tag.subGenre': 'pink',
+	'tag.mood': 'pink',
+	'tag.musician': 'blue',
+	'tag.venue': 'blue',
+	'tag.crafts': 'blue',
+	'tag.article': 'green',
+	'tag.city': 'neutral',
+	'tag.global': 'neutral'
+}
 
 // Tag-Typ zu Kategorie Mapping
-const TAG_CATEGORIES = {
-  shows: ['tag.genre', 'tag.subGenre', 'tag.mood'],
-  pool: ['tag.musician', 'tag.venue', 'tag.crafts'],
-  words: ['tag.article'],
-};
+const _TAG_CATEGORIES = {
+	shows: ['tag.genre', 'tag.subGenre', 'tag.mood'],
+	pool: ['tag.musician', 'tag.venue', 'tag.crafts'],
+	words: ['tag.article']
+}
 
 // ==================== STATE ====================
-const activeFilters = ref(new Set<string>());
-const activeGenres = ref(new Set<string>());
-const activeSubGenres = ref(new Set<string>());
-const activeFilterType = ref<string | null>(null);
-const isOtherCitiesActive = ref(false);
-const showFilters = ref(true);
-const lastScrollY = ref(0);
-const sortMode = ref<"new" | "alpha">("new");
-const artworkUrls = ref(new Map<string, string>());
-const moduleContainer = ref<HTMLElement | null>(null);
+const activeFilters = ref(new Set<string>())
+const activeGenres = ref(new Set<string>())
+const activeSubGenres = ref(new Set<string>())
+const activeFilterType = ref<string | null>(null)
+const isOtherCitiesActive = ref(false)
+const showFilters = ref(true)
+const lastScrollY = ref(0)
+const sortMode = ref<'new' | 'alpha'>('new')
+const artworkUrls = ref(new Map<string, string>())
+const moduleContainer = ref<HTMLElement | null>(null)
 
 
 // ==================== COMPUTED: Tags ====================
 
 const getUsedTagIdsInItems = computed(() => {
-  const usedTagIds = new Set<string>();
-  const addTags = (tags: any[]) => {
-    if (Array.isArray(tags)) {
-      tags.forEach((tag) => tag?._id && usedTagIds.add(tag._id));
-    }
-  };
-  (props.results as any[]).forEach((item) => {
-    addTags(item.tags);
-    addTags(item.parentShow?.tags);
-  });
-  return usedTagIds;
-});
+	const usedTagIds = new Set<string>()
+	const addTags = (tags: any[]) => {
+		if (Array.isArray(tags)) {
+			tags.forEach((tag) => tag?._id && usedTagIds.add(tag._id))
+		}
+	};
+	(props.results as any[]).forEach((item) => {
+		addTags(item.tags)
+		addTags(item.parentShow?.tags)
+	})
+	return usedTagIds
+})
 
 const categorizedTags = computed(() => {
-  const usedTagIds = getUsedTagIdsInItems.value;
+	const usedTagIds = getUsedTagIdsInItems.value
   
-  // Method 1: Use availableTags (Hierarchy) - Preferred
-  if (props.availableTags) {
-    const filterByUsed = (tags: any[]) =>
-      tags?.filter((t) => usedTagIds.has(t._id)) || [];
+	// Method 1: Use availableTags (Hierarchy) - Preferred
+	if (props.availableTags) {
+		const filterByUsed = (tags: any[]) =>
+			tags?.filter((t) => usedTagIds.has(t._id)) || []
 
-    const genres = (props.availableTags.genres || [])
-      .map((genre: any) => {
-        const isUsed = usedTagIds.has(genre._id);
-        const usedSubGenres = genre.subGenres?.filter((t: any) => usedTagIds.has(t._id)) || [];
-        // Keep genre if it is used OR has used subgenres
-        if (!isUsed && !usedSubGenres.length) return null;
-        return { ...genre, subGenres: usedSubGenres };
-      })
-      .filter(Boolean);
+		const genres = (props.availableTags.genres || [])
+			.map((genre: any) => {
+				const isUsed = usedTagIds.has(genre._id)
+				const usedSubGenres = genre.subGenres?.filter((t: any) => usedTagIds.has(t._id)) || []
+				// Keep genre if it is used OR has used subgenres
+				if (!isUsed && !usedSubGenres.length) return null
+				return { ...genre, subGenres: usedSubGenres }
+			})
+			.filter(Boolean)
 
-    return {
-      genres,
-      subGenres: [], // Subgenres are nested in genres
-      cities: filterByUsed(props.availableTags.cities),
-      global: filterByUsed(props.availableTags.global),
-      mood: filterByUsed(props.availableTags.mood),
-    };
-  }
+		return {
+			genres,
+			subGenres: [], // Subgenres are nested in genres
+			cities: filterByUsed(props.availableTags.cities),
+			global: filterByUsed(props.availableTags.global),
+			mood: filterByUsed(props.availableTags.mood)
+		}
+	}
 
-  // Method 2: Extract from results (Fall back)
-  const genres: any[] = [];
-  const subGenres: any[] = [];
-  const cities: any[] = [];
-  const global: any[] = [];
-  const mood: any[] = [];
+	// Method 2: Extract from results (Fall back)
+	const genres: any[] = []
+	const subGenres: any[] = []
+	const cities: any[] = []
+	const global: any[] = []
+	const mood: any[] = []
 
-  const addUnique = (arr: any[], tag: any) => {
-    if (tag?._id && !arr.some((t) => t._id === tag._id)) {
-      arr.push(tag);
-    }
-  };
+	const addUnique = (arr: any[], tag: any) => {
+		if (tag?._id && !arr.some((t) => t._id === tag._id)) {
+			arr.push(tag)
+		}
+	};
 
-  (props.results as any[]).forEach((item: any) => {
-    const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])];
-    allTags.forEach((tag: any) => {
-      // Check for parentGenre (from modified query)
-      if (tag.parentGenre) {
-        addUnique(genres, tag.parentGenre);
-      }
+	(props.results as any[]).forEach((item: any) => {
+		const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])]
+		allTags.forEach((tag: any) => {
+			// Check for parentGenre (from modified query)
+			if (tag.parentGenre) {
+				addUnique(genres, tag.parentGenre)
+			}
 
-      if (!tag?._type) return;
-      switch (tag._type) {
-        case "tag.city": addUnique(cities, tag); break;
-        case "tag.genre": addUnique(genres, tag); break;
-        case "tag.subGenre": addUnique(subGenres, tag); break;
-        case "tag.global": addUnique(global, tag); break;
-        case "tag.mood": addUnique(mood, tag); break;
-      }
-    });
-  });
+			if (!tag?._type) return
+			switch (tag._type) {
+			case 'tag.city': addUnique(cities, tag); break
+			case 'tag.genre': addUnique(genres, tag); break
+			case 'tag.subGenre': addUnique(subGenres, tag); break
+			case 'tag.global': addUnique(global, tag); break
+			case 'tag.mood': addUnique(mood, tag); break
+			}
+		})
+	})
 
-  return { genres, subGenres, cities, global, mood };
-});
+	return { genres, subGenres, cities, global, mood }
+})
 
 // Pool-specific tags extracted from results
 const poolTags = computed(() => {
-  const musicians: any[] = [];
-  const venues: any[] = [];
-  const crafts: any[] = [];
-  const articles: any[] = [];
+	const musicians: any[] = []
+	const venues: any[] = []
+	const crafts: any[] = []
+	const articles: any[] = []
 
-  const addUnique = (arr: any[], tag: any) => {
-    if (tag?._id && !arr.some((t) => t._id === tag._id)) {
-      arr.push(tag);
-    }
-  };
+	const addUnique = (arr: any[], tag: any) => {
+		if (tag?._id && !arr.some((t) => t._id === tag._id)) {
+			arr.push(tag)
+		}
+	};
 
-  (props.results as any[]).forEach((item: any) => {
-    const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])];
-    allTags.forEach((tag: any) => {
-      if (!tag?._type) return;
-      switch (tag._type) {
-        case "tag.musician": addUnique(musicians, tag); break;
-        case "tag.venue": addUnique(venues, tag); break;
-        case "tag.crafts": addUnique(crafts, tag); break;
-        case "tag.service": addUnique(venues, tag); break; // Service tags also for venues
-        case "tag.article": addUnique(articles, tag); break;
-      }
-    });
-  });
+	(props.results as any[]).forEach((item: any) => {
+		const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])]
+		allTags.forEach((tag: any) => {
+			if (!tag?._type) return
+			switch (tag._type) {
+			case 'tag.musician': addUnique(musicians, tag); break
+			case 'tag.venue': addUnique(venues, tag); break
+			case 'tag.crafts': addUnique(crafts, tag); break
+			case 'tag.service': addUnique(venues, tag); break // Service tags also for venues
+			case 'tag.article': addUnique(articles, tag); break
+			}
+		})
+	})
 
-  return { musicians, venues, crafts, articles };
-});
+	return { musicians, venues, crafts, articles }
+})
 
 
 
 // Get color for a tag based on its type
-function getTagColor(tag: any): string {
-  if (!tag?._type) return 'neutral';
-  return TAG_TYPE_COLORS[tag._type] || 'neutral';
+function _getTagColor(tag: any): string {
+	if (!tag?._type) return 'neutral'
+	return TAG_TYPE_COLORS[tag._type] || 'neutral'
 }
 
 // Group all tags by content type/color for unified filter display
 const groupedTagsByColor = computed(() => {
-  // Shows/Sets tags (pink)
-  // Handle both hierarchical (from availableTags) and flat (fallback) structures
-  const flattenedSubGenres = categorizedTags.value.subGenres?.length 
-    ? categorizedTags.value.subGenres 
-    : categorizedTags.value.genres.flatMap((g: any) => g.subGenres || []);
+	// Shows/Sets tags (pink)
+	// Handle both hierarchical (from availableTags) and flat (fallback) structures
+	const flattenedSubGenres = categorizedTags.value.subGenres?.length 
+		? categorizedTags.value.subGenres 
+		: categorizedTags.value.genres.flatMap((g: any) => g.subGenres || [])
 
-  const showsTags = [
-    ...categorizedTags.value.genres,
-    ...flattenedSubGenres,
-    ...categorizedTags.value.mood,
-  ];
+	const showsTags = [
+		...categorizedTags.value.genres,
+		...flattenedSubGenres,
+		...categorizedTags.value.mood
+	]
   
-  // Pool tags (blue) - flatten musician, venue, crafts
-  const poolTagsFlat = [
-    ...poolTags.value.musicians,
-    ...poolTags.value.venues,
-    ...poolTags.value.crafts,
-  ];
+	// Pool tags (blue) - flatten musician, venue, crafts
+	const poolTagsFlat = [
+		...poolTags.value.musicians,
+		...poolTags.value.venues,
+		...poolTags.value.crafts
+	]
   
-  const wordsTags = poolTags.value.articles || [];
+	const wordsTags = poolTags.value.articles || []
 
-  return {
-    shows: { 
-      tags: showsTags, 
-      genres: categorizedTags.value.genres,
-      subGenres: flattenedSubGenres,
-      mood: categorizedTags.value.mood,
-      color: 'pink', 
-      label: 'Shows/Sets',
-      hasContent: showsTags.length > 0,
-    },
-    pool: { 
-      tags: poolTagsFlat, 
-      musicians: poolTags.value.musicians,
-      venues: poolTags.value.venues,
-      crafts: poolTags.value.crafts,
-      color: 'blue', 
-      label: 'Pool',
-      hasContent: poolTagsFlat.length > 0,
-    },
-    words: { 
-      tags: wordsTags, 
-      articles: poolTags.value.articles,
-      color: 'green', 
-      label: 'Words',
-      hasContent: wordsTags.length > 0,
-    },
-  };
-});
+	return {
+		shows: { 
+			tags: showsTags, 
+			genres: categorizedTags.value.genres,
+			subGenres: flattenedSubGenres,
+			mood: categorizedTags.value.mood,
+			color: 'pink', 
+			label: 'Shows/Sets',
+			hasContent: showsTags.length > 0
+		},
+		pool: { 
+			tags: poolTagsFlat, 
+			musicians: poolTags.value.musicians,
+			venues: poolTags.value.venues,
+			crafts: poolTags.value.crafts,
+			color: 'blue', 
+			label: 'Pool',
+			hasContent: poolTagsFlat.length > 0
+		},
+		words: { 
+			tags: wordsTags, 
+			articles: poolTags.value.articles,
+			color: 'green', 
+			label: 'Words',
+			hasContent: wordsTags.length > 0
+		}
+	}
+})
 
 // Helper for accessing pool tags by type name (avoids TypeScript casting in template)
 function getPoolTagsByType(typeName: string): any[] {
-  const pool = groupedTagsByColor.value.pool;
-  if (typeName === 'musicians') return pool.musicians;
-  if (typeName === 'venues') return pool.venues;
-  if (typeName === 'crafts') return pool.crafts;
-  return [];
+	const pool = groupedTagsByColor.value.pool
+	if (typeName === 'musicians') return pool.musicians
+	if (typeName === 'venues') return pool.venues
+	if (typeName === 'crafts') return pool.crafts
+	return []
 }
 
 
 // ==================== TAG HELPERS ====================
 function getItemTags(item: any, type?: string): any[] {
-  const tags: any[] = [];
-  const addTags = (source: any[] | undefined) => {
-    if (!Array.isArray(source)) return;
-    source.forEach((tag) => {
-      if (
-        tag &&
+	const tags: any[] = []
+	const addTags = (source: any[] | undefined) => {
+		if (!Array.isArray(source)) return
+		source.forEach((tag) => {
+			if (
+				tag &&
         (!type || tag._type === type) &&
         !tags.some((t) => t._id === tag._id)
-      ) {
-        tags.push(tag);
-      }
-    });
-  };
-  addTags(item.tags);
-  addTags(item.parentShow?.tags);
-  return tags;
+			) {
+				tags.push(tag)
+			}
+		})
+	}
+	addTags(item.tags)
+	addTags(item.parentShow?.tags)
+	return tags
 }
 
-const getItemCityTags = (item: any) => getItemTags(item, "tag.city");
-const getItemNonCityTags = (item: any) =>
-  (item.tags || []).filter((t: any) => t._type !== "tag.city");
+const getItemCityTags = (item: any) => getItemTags(item, 'tag.city')
+const _getItemNonCityTags = (item: any) =>
+	(item.tags || []).filter((t: any) => t._type !== 'tag.city')
 
 function getTagTitle(title: any): string {
-  if (!title) return "";
-  if (typeof title === "string") return title;
-  if (Array.isArray(title)) {
-    return parseI18nObj(title) || title[0]?.value || "";
-  }
-  if (typeof title === "object") {
-    return title.de || title.en || Object.values(title)[0] || "";
-  }
-  return String(title);
+	if (!title) return ''
+	if (typeof title === 'string') return title
+	if (Array.isArray(title)) {
+		return parseI18nObj(title) || title[0]?.value || ''
+	}
+	if (typeof title === 'object') {
+		return title.de || title.en || Object.values(title)[0] || ''
+	}
+	return String(title)
 }
 
-function isMainCity(cityTag: any): boolean {
-  if (!cityTag?.title) return false;
-  const cityName = getTagTitle(cityTag.title);
-  return MAIN_CITIES.includes(cityName);
+function _isMainCity(cityTag: any): boolean {
+	if (!cityTag?.title) return false
+	const cityName = getTagTitle(cityTag.title)
+	return MAIN_CITIES.includes(cityName)
 }
 
 function getTagNameById(tagId: string): string {
-  if (tagId === "others") return "Elsewhere";
+	if (tagId === 'others') return 'Elsewhere'
   
-  // Check city tags
-  const city = categorizedTags.value.cities.find((t: any) => t._id === tagId);
-  if (city) return getTagTitle(city.title);
+	// Check city tags
+	const city = categorizedTags.value.cities.find((t: any) => t._id === tagId)
+	if (city) return getTagTitle(city.title)
   
-  // Check genre tags
-  const genre = categorizedTags.value.genres.find((t: any) => t._id === tagId);
-  if (genre) return genre.title || "Genre";
+	// Check genre tags
+	const genre = categorizedTags.value.genres.find((t: any) => t._id === tagId)
+	if (genre) return genre.title || 'Genre'
   
-  // Check subgenre tags
-  const subGenre = categorizedTags.value.subGenres.find((t: any) => t._id === tagId);
-  if (subGenre) return subGenre.title || "SubGenre";
+	// Check subgenre tags
+	const subGenre = categorizedTags.value.subGenres.find((t: any) => t._id === tagId)
+	if (subGenre) return subGenre.title || 'SubGenre'
   
-  // Check pool tags (musicians, venues, crafts)
-  const poolTagArrays = [
-    poolTags.value.musicians,
-    poolTags.value.venues,
-    poolTags.value.crafts,
-    poolTags.value.articles,
-  ];
-  for (const arr of poolTagArrays) {
-    const found = arr.find((t: any) => t._id === tagId);
-    if (found) return found.title || "Tag";
-  }
+	// Check pool tags (musicians, venues, crafts)
+	const poolTagArrays = [
+		poolTags.value.musicians,
+		poolTags.value.venues,
+		poolTags.value.crafts,
+		poolTags.value.articles
+	]
+	for (const arr of poolTagArrays) {
+		const found = arr.find((t: any) => t._id === tagId)
+		if (found) return found.title || 'Tag'
+	}
   
-  // Check if it's a main city name (string filter)
-  if (MAIN_CITIES.includes(tagId)) return tagId;
+	// Check if it's a main city name (string filter)
+	if (MAIN_CITIES.includes(tagId)) return tagId
   
-  return "Unknown Filter";
+	return 'Unknown Filter'
 }
 
 // ==================== FILTER LOGIC ====================
 function toggleFilter(tagId: string) {
-  const isActive = activeFilters.value.has(tagId);
+	const isActive = activeFilters.value.has(tagId)
 
-  if (isActive) {
-    activeFilters.value.delete(tagId);
-    if (tagId === "others") isOtherCitiesActive.value = false;
-  } else {
-    activeFilters.value.add(tagId);
-    if (tagId === "others") isOtherCitiesActive.value = true;
-  }
+	if (isActive) {
+		activeFilters.value.delete(tagId)
+		if (tagId === 'others') isOtherCitiesActive.value = false
+	} else {
+		activeFilters.value.add(tagId)
+		if (tagId === 'others') isOtherCitiesActive.value = true
+	}
 }
 
 function toggleGenreFilter(genreId: string) {
-  if (activeGenres.value.has(genreId)) {
-    activeGenres.value.delete(genreId);
-    // Clear subgenres for this genre (if we had genre->subgenre mapping we'd use it)
-  } else {
-    activeGenres.value.add(genreId);
-  }
+	if (activeGenres.value.has(genreId)) {
+		activeGenres.value.delete(genreId)
+		// Clear subgenres for this genre (if we had genre->subgenre mapping we'd use it)
+	} else {
+		activeGenres.value.add(genreId)
+	}
 }
 
 function toggleSubGenreFilter(subGenreId: string) {
-  if (activeSubGenres.value.has(subGenreId)) {
-    activeSubGenres.value.delete(subGenreId);
-    activeFilters.value.delete(subGenreId);
-  } else {
-    activeSubGenres.value.add(subGenreId);
-    activeFilters.value.add(subGenreId);
-  }
+	if (activeSubGenres.value.has(subGenreId)) {
+		activeSubGenres.value.delete(subGenreId)
+		activeFilters.value.delete(subGenreId)
+	} else {
+		activeSubGenres.value.add(subGenreId)
+		activeFilters.value.add(subGenreId)
+	}
 }
 
 function toggleFilterType(type: string) {
-  activeFilterType.value = activeFilterType.value === type ? null : type;
+	activeFilterType.value = activeFilterType.value === type ? null : type
 }
 
 function resetFilters() {
-  activeFilters.value.clear();
-  activeGenres.value.clear();
-  activeSubGenres.value.clear();
-  activeFilterType.value = null;
-  isOtherCitiesActive.value = false;
+	activeFilters.value.clear()
+	activeGenres.value.clear()
+	activeSubGenres.value.clear()
+	activeFilterType.value = null
+	isOtherCitiesActive.value = false
 }
 
 // ==================== ITEM MATCHING ====================
 function itemHasTag(item: any, tagId: string): boolean {
-  return getItemTags(item).some((t) => t._id === tagId);
+	return getItemTags(item).some((t) => t._id === tagId)
 }
 
 // Check if item has a city tag matching the city name
 function itemHasCityByName(item: any, cityName: string): boolean {
-  const cityTags = getItemCityTags(item);
-  return cityTags.some((t) => {
-    const tagTitle = parseI18nObj(t.title) || t.title || t.short || "";
-    return tagTitle.toLowerCase() === cityName.toLowerCase();
-  });
+	const cityTags = getItemCityTags(item)
+	return cityTags.some((t) => {
+		const tagTitle = parseI18nObj(t.title) || t.title || t.short || ''
+		return tagTitle.toLowerCase() === cityName.toLowerCase()
+	})
 }
 
 function itemMatchesFilters(item: any): boolean {
-  // Genre filter check
-  if (activeGenres.value.size > 0) {
-    if (activeSubGenres.value.size > 0) {
-      // SubGenres selected: item must have ALL selected subgenres
-      for (const subGenreId of activeSubGenres.value) {
-        if (!itemHasTag(item, subGenreId)) return false;
-      }
-    } else {
-      // Only genres selected: item must have at least one genre or its subgenres
-      const itemTags = getItemTags(item);
-      const itemTagIds = new Set(itemTags.map((t) => t._id));
+	// Genre filter check
+	if (activeGenres.value.size > 0) {
+		if (activeSubGenres.value.size > 0) {
+			// SubGenres selected: item must have ALL selected subgenres
+			for (const subGenreId of activeSubGenres.value) {
+				if (!itemHasTag(item, subGenreId)) return false
+			}
+		} else {
+			// Only genres selected: item must have at least one genre or its subgenres
+			const itemTags = getItemTags(item)
+			const itemTagIds = new Set(itemTags.map((t) => t._id))
       
-      // Check if item has any of the selected genres or related subGenres
-      let matchesGenre = false;
-      for (const genreId of activeGenres.value) {
-        if (itemTagIds.has(genreId)) {
-          matchesGenre = true;
-          break;
-        }
-        // Also check if item has any subgenre (by checking _type)
-        if (itemTags.some((t) => t._type === "tag.subGenre")) {
-          matchesGenre = true;
-          break;
-        }
-      }
-      if (!matchesGenre) return false;
-    }
-  }
+			// Check if item has any of the selected genres or related subGenres
+			let matchesGenre = false
+			for (const genreId of activeGenres.value) {
+				if (itemTagIds.has(genreId)) {
+					matchesGenre = true
+					break
+				}
+				// Also check if item has any subgenre (by checking _type)
+				if (itemTags.some((t) => t._type === 'tag.subGenre')) {
+					matchesGenre = true
+					break
+				}
+			}
+			if (!matchesGenre) return false
+		}
+	}
 
-  // Normal filters check (AND logic - cities and other tags)
-  if (activeFilters.value.size === 0) return true;
+	// Normal filters check (AND logic - cities and other tags)
+	if (activeFilters.value.size === 0) return true
 
-  for (const filterId of activeFilters.value) {
-    if (filterId === "others") {
-      // Elsewhere: item must NOT have any main city tag
-      const hasMainCity = MAIN_CITIES.some((city) => itemHasCityByName(item, city));
-      if (hasMainCity) return false;
-    } else if (MAIN_CITIES.includes(filterId)) {
-      // City filter: check by city name
-      if (!itemHasCityByName(item, filterId)) return false;
-    } else if (!itemHasTag(item, filterId)) {
-      // Regular tag filter
-      return false;
-    }
-  }
-  return true;
+	for (const filterId of activeFilters.value) {
+		if (filterId === 'others') {
+			// Elsewhere: item must NOT have any main city tag
+			const hasMainCity = MAIN_CITIES.some((city) => itemHasCityByName(item, city))
+			if (hasMainCity) return false
+		} else if (MAIN_CITIES.includes(filterId)) {
+			// City filter: check by city name
+			if (!itemHasCityByName(item, filterId)) return false
+		} else if (!itemHasTag(item, filterId)) {
+			// Regular tag filter
+			return false
+		}
+	}
+	return true
 }
 
 // ==================== SORTING ====================
-function changeSortMode(mode: "new" | "alpha") {
-  sortMode.value = mode;
+function changeSortMode(mode: 'new' | 'alpha') {
+	sortMode.value = mode
 }
 
 const filteredItems = computed(() => {
-  const items = (props.results as any[]).filter(itemMatchesFilters);
+	const items = (props.results as any[]).filter(itemMatchesFilters)
 
-  const sortFns = {
-    new: (a: any, b: any) =>
-      new Date(b.datetime || b._updatedAt || b._createdAt || 0).getTime() -
+	const sortFns = {
+		new: (a: any, b: any) =>
+			new Date(b.datetime || b._updatedAt || b._createdAt || 0).getTime() -
       new Date(a.datetime || a._updatedAt || a._createdAt || 0).getTime(),
-    alpha: (a: any, b: any) =>
-      (a.title || a.name || a.parentShow?.title || "")
-        .toLowerCase()
-        .localeCompare(
-          (b.title || b.name || b.parentShow?.title || "").toLowerCase()
-        ),
-  };
+		alpha: (a: any, b: any) =>
+			(a.title || a.name || a.parentShow?.title || '')
+				.toLowerCase()
+				.localeCompare(
+					(b.title || b.name || b.parentShow?.title || '').toLowerCase()
+				)
+	}
 
-  return items.sort(sortFns[sortMode.value]);
-});
+	return items.sort(sortFns[sortMode.value])
+})
 
 // Group filtered items by content type for sectioned display
 const groupedResults = computed(() => {
-  const pool: any[] = [];
-  const shows: any[] = [];
-  const words: any[] = [];
+	const pool: any[] = []
+	const shows: any[] = []
+	const words: any[] = []
   
-  filteredItems.value.forEach((item: any) => {
-    switch (item._type) {
-      case 'person':
-      case 'venue':
-        pool.push(item);
-        break;
-      case 'show':
-      case 'set':
-        shows.push(item);
-        break;
-      case 'article':
-        words.push(item);
-        break;
-    }
-  });
+	filteredItems.value.forEach((item: any) => {
+		switch (item._type) {
+		case 'person':
+		case 'venue':
+			pool.push(item)
+			break
+		case 'show':
+		case 'set':
+			shows.push(item)
+			break
+		case 'article':
+			words.push(item)
+			break
+		}
+	})
   
-  return { pool, shows, words };
-});
+	return { pool, shows, words }
+})
 
 
 
 // Show all filtered items (no pagination limit) - keep for backward compatibility
-const visibleItems = computed(() => filteredItems.value);
+const _visibleItems = computed(() => filteredItems.value)
 
 // ==================== UI HELPERS ====================
 function toggleFiltersVisibility() {
-  showFilters.value = !showFilters.value;
+	showFilters.value = !showFilters.value
 }
 
 function handleScroll() {
-  const scrollY = window.scrollY;
-  const scrollDiff = scrollY - lastScrollY.value;
-  if (scrollDiff > SCROLL_THRESHOLD && showFilters.value)
-    showFilters.value = false;
-  else if (scrollDiff < -20 && !showFilters.value) showFilters.value = true;
-  lastScrollY.value = scrollY;
+	const scrollY = window.scrollY
+	const scrollDiff = scrollY - lastScrollY.value
+	if (scrollDiff > SCROLL_THRESHOLD && showFilters.value)
+		showFilters.value = false
+	else if (scrollDiff < -20 && !showFilters.value) showFilters.value = true
+	lastScrollY.value = scrollY
 }
 
-function formatDate(dateString: string): string {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "";
-  return date.toLocaleDateString("de-DE", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+function _formatDate(dateString: string): string {
+	if (!dateString) return ''
+	const date = new Date(dateString)
+	if (isNaN(date.getTime())) return ''
+	return date.toLocaleDateString('de-DE', {
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric'
+	})
 }
 
 // ==================== ROUTING ====================
-function getItemRoute(item: any): string {
-  if (!item?.slug) return "/";
-  const slug = item.slug.current;
-  const routes: Record<string, string> = {
-    person: `/pool/${slug}`,
-    venue: `/pool/${slug}`,
-    set: item.parentShow?.slug?.current
-      ? `/shows/${item.parentShow.slug.current}/${slug}`
-      : `/shows/${slug}`,
-    article: `/words/${slug}`,
-    show: `/shows/${slug}`,
-  };
-  return localePath(routes[item._type] || `/${item._type}/${slug}`);
+function _getItemRoute(item: any): string {
+	if (!item?.slug) return '/'
+	const slug = item.slug.current
+	const routes: Record<string, string> = {
+		person: `/pool/${slug}`,
+		venue: `/pool/${slug}`,
+		set: item.parentShow?.slug?.current
+			? `/shows/${item.parentShow.slug.current}/${slug}`
+			: `/shows/${slug}`,
+		article: `/words/${slug}`,
+		show: `/shows/${slug}`
+	}
+	return localePath(routes[item._type] || `/${item._type}/${slug}`)
 }
 
 // ==================== IMAGE HANDLING ====================
-function getItemImage(item: any) {
-  if (item.image || item.mainImage) return item.image || item.mainImage;
+function _getItemImage(item: any) {
+	if (item.image || item.mainImage) return item.image || item.mainImage
 
-  const fallbacks = mainStore?.siteFallbacks as any;
-  const fallbackMap: Record<string, any> = {
-    person: fallbacks?.fallbackPerson?.image,
-    venue: fallbacks?.fallbackVenue?.image,
-    show: fallbacks?.fallbackShow?.image,
-    set: fallbacks?.fallbackSet?.image,
-    word: fallbacks?.fallbackArticle?.image,
-    article: fallbacks?.fallbackArticle?.image,
-  };
-  return fallbackMap[item._type] || fallbacks?.fallbackPerson?.image;
+	const fallbacks = mainStore?.siteFallbacks as any
+	const fallbackMap: Record<string, any> = {
+		person: fallbacks?.fallbackPerson?.image,
+		venue: fallbacks?.fallbackVenue?.image,
+		show: fallbacks?.fallbackShow?.image,
+		set: fallbacks?.fallbackSet?.image,
+		word: fallbacks?.fallbackArticle?.image,
+		article: fallbacks?.fallbackArticle?.image
+	}
+	return fallbackMap[item._type] || fallbacks?.fallbackPerson?.image
 }
 
-async function checkImage(url: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
-    img.src = url;
-  });
+async function _checkImage(url: string): Promise<boolean> {
+	return new Promise((resolve) => {
+		const img = new Image()
+		img.onload = () => resolve(true)
+		img.onerror = () => resolve(false)
+		img.src = url
+	})
 }
 
 // Non-blocking artwork URL resolution
 function getSoundcloudArtwork(item: any): string {
-  const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
-  if (artworkUrl) {
-    return artworkUrl.replace("-large", "-t500x500");
-  }
-  const fallbacks = mainStore?.siteFallbacks as any;
-  return (
-    item?.parentShow?.image?.asset?.url ||
+	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url
+	if (artworkUrl) {
+		return artworkUrl.replace('-large', '-t500x500')
+	}
+	const fallbacks = mainStore?.siteFallbacks as any
+	return (
+		item?.parentShow?.image?.asset?.url ||
     fallbacks?.fallbackSet?.image?.asset?.url ||
-    ""
-  );
+    ''
+	)
 }
 
 function loadArtworkUrl(item: any) {
-  if (!item) return;
-  const url = getSoundcloudArtwork(item);
-  artworkUrls.value.set(item._id, url);
+	if (!item) return
+	const url = getSoundcloudArtwork(item)
+	artworkUrls.value.set(item._id, url)
 }
 
-function playTrack(item: any) {
-  const track = item?.soundcloud?.tracks?.[0];
-  if (!track) return;
-  if (!track.permalink_url && track.id) {
-    track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
-  }
-  mainStore.currentTrack = track;
+function _playTrack(item: any) {
+	const track = item?.soundcloud?.tracks?.[0]
+	if (!track) return
+	if (!track.permalink_url && track.id) {
+		track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
+	}
+	mainStore.currentTrack = track
 }
 
 // ==================== LIFECYCLE ====================
 onMounted(() => {
-  // Load artwork for sets
-  (props.results as any[]).forEach((item) => {
-    if (item._type === "set") {
-      loadArtworkUrl(item);
-    }
-  });
+	// Load artwork for sets
+	(props.results as any[]).forEach((item) => {
+		if (item._type === 'set') {
+			loadArtworkUrl(item)
+		}
+	})
 
-  lastScrollY.value = window.scrollY;
-  window.addEventListener("scroll", handleScroll, { passive: true });
-});
+	lastScrollY.value = window.scrollY
+	window.addEventListener('scroll', handleScroll, { passive: true })
+})
 
 onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
-});
+	window.removeEventListener('scroll', handleScroll)
+})
 
 // Reload artwork when results change
 watch(() => props.results, () => {
-  // Load artwork for new set items
-  (props.results as any[]).forEach((item) => {
-    if (item._type === "set" && !artworkUrls.value.has(item._id)) {
-      loadArtworkUrl(item);
-    }
-  });
-});
+	// Load artwork for new set items
+	(props.results as any[]).forEach((item) => {
+		if (item._type === 'set' && !artworkUrls.value.has(item._id)) {
+			loadArtworkUrl(item)
+		}
+	})
+})
 </script>
 
 <template>
-  <ClientOnly>
-    <div
-      v-if="results.length > 0 || isLoading"
-      ref="moduleContainer"
-      :class="`content-grid module-grid search-results ${categoryType.toLowerCase()}`"
-    >
-      <!-- Filter Panel -->
-      <div class="content-grid__filter-section">
-        <div class="content-grid__filter-bar">
-          <!-- Active Filters -->
-          <div class="active-filters">
-            <h4
-              class="active-filters__title"
-              :class="{ active: activeFilters.size > 0 }"
-            >
-              <span @click="resetFilters()" class="close-cross">
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 8 8"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle cx="4" cy="4" r="4" fill="black" />
-                  <rect
-                    x="1.77783"
-                    y="2.4082"
-                    width="0.888889"
-                    height="5.33333"
-                    transform="rotate(-45 1.77783 2.4082)"
-                    fill="#E8E8E8"
-                  />
-                  <path
-                    d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
-                    fill="#E8E8E8"
-                  />
-                </svg>
-              </span>
-              <span @click="toggleFiltersVisibility"
-                >Tags&nbsp;<span class="toggle-arrow">{{
-                  showFilters ? "↑" : "↓"
-                }}</span></span
-              >
-            </h4>
-            <div class="active-filters__list tags">
-              <div
-                v-for="filterId in activeFilters"
-                :key="filterId"
-                class="active-filter tag"
-              >
-                <span
-                  class="active-filter__name"
-                  @click="toggleFilter(filterId)"
-                >
-                  {{ getTagNameById(filterId) }}
-                  <span class="close-cross">
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 8 8"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle cx="4" cy="4" r="4" fill="black" />
-                      <rect
-                        x="1.77783"
-                        y="2.4082"
-                        width="0.888889"
-                        height="5.33333"
-                        transform="rotate(-45 1.77783 2.4082)"
-                        fill="#E8E8E8"
-                      />
-                      <path
-                        d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
-                        fill="#E8E8E8"
-                      />
-                    </svg>
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
+	<ClientOnly>
+		<div
+			v-if="results.length > 0 || isLoading"
+			ref="moduleContainer"
+			:class="`content-grid module-grid search-results ${categoryType.toLowerCase()}`"
+		>
+			<!-- Filter Panel -->
+			<div class="content-grid__filter-section">
+				<div class="content-grid__filter-bar">
+					<!-- Active Filters -->
+					<div class="active-filters">
+						<h4
+							class="active-filters__title"
+							:class="{ active: activeFilters.size > 0 }"
+						>
+							<span class="close-cross" @click="resetFilters()">
+								<svg
+									width="10"
+									height="10"
+									viewBox="0 0 8 8"
+									fill="none"
+									xmlns="http://www.w3.org/2000/svg"
+								>
+									<circle
+										cx="4"
+										cy="4"
+										r="4"
+										fill="black" />
+									<rect
+										x="1.77783"
+										y="2.4082"
+										width="0.888889"
+										height="5.33333"
+										transform="rotate(-45 1.77783 2.4082)"
+										fill="#E8E8E8"
+									/>
+									<path
+										d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
+										fill="#E8E8E8"
+									/>
+								</svg>
+							</span>
+							<span @click="toggleFiltersVisibility"
+							>Tags&nbsp;<span class="toggle-arrow">{{
+								showFilters ? "↑" : "↓"
+							}}</span></span
+							>
+						</h4>
+						<div class="active-filters__list tags">
+							<div
+								v-for="filterId in activeFilters"
+								:key="filterId"
+								class="active-filter tag"
+							>
+								<span
+									class="active-filter__name"
+									@click="toggleFilter(filterId)"
+								>
+									{{ getTagNameById(filterId) }}
+									<span class="close-cross">
+										<svg
+											width="10"
+											height="10"
+											viewBox="0 0 8 8"
+											fill="none"
+											xmlns="http://www.w3.org/2000/svg"
+										>
+											<circle
+												cx="4"
+												cy="4"
+												r="4"
+												fill="black" />
+											<rect
+												x="1.77783"
+												y="2.4082"
+												width="0.888889"
+												height="5.33333"
+												transform="rotate(-45 1.77783 2.4082)"
+												fill="#E8E8E8"
+											/>
+											<path
+												d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
+												fill="#E8E8E8"
+											/>
+										</svg>
+									</span>
+								</span>
+							</div>
+						</div>
+					</div>
 
-          <!-- Cities Filter (always visible) -->
-          <div class="filter-cities tags">
-            <h4 class="filter-cities__title">City</h4>
-            <div class="filter-tags">
-              <button
-                v-for="city in MAIN_CITIES"
-                :key="city"
-                class="tag filter-tag filter-tag--city"
-                :class="{ 'filter-tag--active': activeFilters.has(city) }"
-                @click="toggleFilter(city)"
-              >
-                {{ city }}
-              </button>
-              <button
-                class="tag filter-tag filter-tag--city"
-                :class="{ 'filter-tag--active': isOtherCitiesActive }"
-                @click="toggleFilter('others')"
-              >
-                Elsewhere
-              </button>
-            </div>
-          </div>
+					<!-- Cities Filter (always visible) -->
+					<div class="filter-cities tags">
+						<h4 class="filter-cities__title">City</h4>
+						<div class="filter-tags">
+							<button
+								v-for="city in MAIN_CITIES"
+								:key="city"
+								class="tag filter-tag filter-tag--city"
+								:class="{ 'filter-tag--active': activeFilters.has(city) }"
+								@click="toggleFilter(city)"
+							>
+								{{ city }}
+							</button>
+							<button
+								class="tag filter-tag filter-tag--city"
+								:class="{ 'filter-tag--active': isOtherCitiesActive }"
+								@click="toggleFilter('others')"
+							>
+								Elsewhere
+							</button>
+						</div>
+					</div>
 
-          <div class="sort-options">
-            <h4 class="sort-options__title">Sort</h4>
-            <button
-              :class="['sort-button', { active: sortMode === 'new' }]"
-              @click="changeSortMode('new')"
-            >
-              <div class="dot"></div>
-              New
-            </button>
-            <button
-              :class="['sort-button', { active: sortMode === 'alpha' }]"
-              @click="changeSortMode('alpha')"
-            >
-              <div class="dot"></div>
-              A–Z
-            </button>
-          </div>
-        </div>
+					<div class="sort-options">
+						<h4 class="sort-options__title">Sort</h4>
+						<button
+							:class="['sort-button', { active: sortMode === 'new' }]"
+							@click="changeSortMode('new')"
+						>
+							<div class="dot"/>
+							New
+						</button>
+						<button
+							:class="['sort-button', { active: sortMode === 'alpha' }]"
+							@click="changeSortMode('alpha')"
+						>
+							<div class="dot"/>
+							A–Z
+						</button>
+					</div>
+				</div>
 
 
-        <!-- Filter Tags Panel -->
-        <div v-if="filteredItems.length > 0" class="content-grid__filters">
-          <div class="filter-container tags">
+				<!-- Filter Tags Panel -->
+				<div v-if="filteredItems.length > 0" class="content-grid__filters">
+					<div class="filter-container tags">
             
-            <!-- Single filter-category containing both primary and secondary tags -->
-            <div 
-              v-if="groupedTagsByColor.shows.hasContent || groupedTagsByColor.pool.hasContent || groupedTagsByColor.words.hasContent" 
-              class="filter-category tags" 
-              :class="{ active: showFilters }"
-            >
-              <!-- PRIMARY TAGS: All parent-level tags side by side, color-coded -->
-              <div class="filter-tags filter-tags--primary">
-                <!-- Shows/Sets: Genres (Pink) -->
-                <button
-                  v-for="genre in groupedTagsByColor.shows.genres"
-                  :key="'genre-' + genre._id"
-                  class="tag filter-tag filter-tag--pink"
-                  :class="{ 'filter-tag--active': activeGenres.has(genre._id) }"
-                  @click="toggleGenreFilter(genre._id)"
-                >
-                  {{ genre.title }}
-                </button>
+						<!-- Single filter-category containing both primary and secondary tags -->
+						<div 
+							v-if="groupedTagsByColor.shows.hasContent || groupedTagsByColor.pool.hasContent || groupedTagsByColor.words.hasContent" 
+							class="filter-category tags" 
+							:class="{ active: showFilters }"
+						>
+							<!-- PRIMARY TAGS: All parent-level tags side by side, color-coded -->
+							<div class="filter-tags filter-tags--primary">
+								<!-- Shows/Sets: Genres (Pink) -->
+								<button
+									v-for="genre in groupedTagsByColor.shows.genres"
+									:key="'genre-' + genre._id"
+									class="tag filter-tag filter-tag--pink"
+									:class="{ 'filter-tag--active': activeGenres.has(genre._id) }"
+									@click="toggleGenreFilter(genre._id)"
+								>
+									{{ genre.title }}
+								</button>
 
-                <!-- Shows: Mood (Pink) - Added missing primary filter -->
-                <button
-                  v-for="tag in groupedTagsByColor.shows.mood"
-                  :key="'mood-' + tag._id"
-                  class="tag filter-tag filter-tag--pink"
-                  :class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
-                  @click="toggleFilter(tag._id)"
-                >
-                  {{ tag.title }}
-                </button>
+								<!-- Shows: Mood (Pink) - Added missing primary filter -->
+								<button
+									v-for="tag in groupedTagsByColor.shows.mood"
+									:key="'mood-' + tag._id"
+									class="tag filter-tag filter-tag--pink"
+									:class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
+									@click="toggleFilter(tag._id)"
+								>
+									{{ tag.title }}
+								</button>
                 
-                <!-- Pool: Type toggles (Blue) -->
-                <button
-                  v-if="groupedTagsByColor.pool.musicians.length > 0"
-                  class="tag filter-type filter-type--blue"
-                  :class="{ 'filter-type--active': activeFilterType === 'musicians' }"
-                  @click="toggleFilterType('musicians')"
-                >
-                  Musicians
-                </button>
-                <button
-                  v-if="groupedTagsByColor.pool.venues.length > 0"
-                  class="tag filter-type filter-type--blue"
-                  :class="{ 'filter-type--active': activeFilterType === 'venues' }"
-                  @click="toggleFilterType('venues')"
-                >
-                  Venues
-                </button>
-                <button
-                  v-if="groupedTagsByColor.pool.crafts.length > 0"
-                  class="tag filter-type filter-type--blue"
-                  :class="{ 'filter-type--active': activeFilterType === 'crafts' }"
-                  @click="toggleFilterType('crafts')"
-                >
-                  Crafts
-                </button>
+								<!-- Pool: Type toggles (Blue) -->
+								<button
+									v-if="groupedTagsByColor.pool.musicians.length > 0"
+									class="tag filter-type filter-type--blue"
+									:class="{ 'filter-type--active': activeFilterType === 'musicians' }"
+									@click="toggleFilterType('musicians')"
+								>
+									Musicians
+								</button>
+								<button
+									v-if="groupedTagsByColor.pool.venues.length > 0"
+									class="tag filter-type filter-type--blue"
+									:class="{ 'filter-type--active': activeFilterType === 'venues' }"
+									@click="toggleFilterType('venues')"
+								>
+									Venues
+								</button>
+								<button
+									v-if="groupedTagsByColor.pool.crafts.length > 0"
+									class="tag filter-type filter-type--blue"
+									:class="{ 'filter-type--active': activeFilterType === 'crafts' }"
+									@click="toggleFilterType('crafts')"
+								>
+									Crafts
+								</button>
                 
-                <!-- Words: Article tags (Green) -->
-                <button
-                  v-for="tag in groupedTagsByColor.words.articles"
-                  :key="'article-' + tag._id"
-                  class="tag filter-tag filter-tag--green"
-                  :class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
-                  @click="toggleFilter(tag._id)"
-                >
-                  {{ tag.title }}
-                </button>
-              </div>
+								<!-- Words: Article tags (Green) -->
+								<button
+									v-for="tag in groupedTagsByColor.words.articles"
+									:key="'article-' + tag._id"
+									class="tag filter-tag filter-tag--green"
+									:class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
+									@click="toggleFilter(tag._id)"
+								>
+									{{ tag.title }}
+								</button>
+							</div>
               
-              <!-- SECONDARY TAGS: All sub-level tags below primary tags -->
-              <div 
-                v-if="(activeGenres.size > 0 && groupedTagsByColor.shows.subGenres.length > 0) || (activeFilterType && getPoolTagsByType(activeFilterType).length > 0)" 
-                class="filter-subgenres"
-              >
-                <!-- SubGenres (Pink) - Only show when Genres are active, filtered by parent -->
-                <template v-if="activeGenres.size > 0">
-                  <button
-                    v-for="subGenre in groupedTagsByColor.shows.subGenres.filter(sg => sg.parentGenre && activeGenres.has(sg.parentGenre._id))"
-                    :key="'subgenre-' + subGenre._id"
-                    class="tag filter-tag filter-tag--pink filter-tag--subgenre"
-                    :class="{ 'filter-tag--active': activeSubGenres.has(subGenre._id) }"
-                    @click="toggleSubGenreFilter(subGenre._id)"
-                  >
-                    {{ subGenre.title }}
-                  </button>
-                </template>
+							<!-- SECONDARY TAGS: All sub-level tags below primary tags -->
+							<div 
+								v-if="(activeGenres.size > 0 && groupedTagsByColor.shows.subGenres.length > 0) || (activeFilterType && getPoolTagsByType(activeFilterType).length > 0)" 
+								class="filter-subgenres"
+							>
+								<!-- SubGenres (Pink) - Only show when Genres are active, filtered by parent -->
+								<template v-if="activeGenres.size > 0">
+									<button
+										v-for="subGenre in groupedTagsByColor.shows.subGenres.filter(sg => sg.parentGenre && activeGenres.has(sg.parentGenre._id))"
+										:key="'subgenre-' + subGenre._id"
+										class="tag filter-tag filter-tag--pink filter-tag--subgenre"
+										:class="{ 'filter-tag--active': activeSubGenres.has(subGenre._id) }"
+										@click="toggleSubGenreFilter(subGenre._id)"
+									>
+										{{ subGenre.title }}
+									</button>
+								</template>
                 
-                <!-- Specific Pool tags (Blue) - when a pool type is selected -->
-                <template v-if="activeFilterType">
-                  <button
-                    v-for="tag in getPoolTagsByType(activeFilterType)"
-                    :key="'pool-' + tag._id"
-                    class="tag filter-tag filter-tag--blue"
-                    :class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
-                    @click="toggleFilter(tag._id)"
-                  >
-                    {{ tag.title }}
-                  </button>
-                </template>
-              </div>
-            </div>
+								<!-- Specific Pool tags (Blue) - when a pool type is selected -->
+								<template v-if="activeFilterType">
+									<button
+										v-for="tag in getPoolTagsByType(activeFilterType)"
+										:key="'pool-' + tag._id"
+										class="tag filter-tag filter-tag--blue"
+										:class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
+										@click="toggleFilter(tag._id)"
+									>
+										{{ tag.title }}
+									</button>
+								</template>
+							</div>
+						</div>
 
-          </div>
-        </div>
-      </div>
+					</div>
+				</div>
+			</div>
 
-      <!-- Loading State -->
-      <div v-if="isLoading" class="content-grid__loading">
-        <div class="loading-spinner"></div>
-        <span>Searching...</span>
-      </div>
+			<!-- Loading State -->
+			<div v-if="isLoading" class="content-grid__loading">
+				<div class="loading-spinner"/>
+				<span>Searching...</span>
+			</div>
 
-      <!-- Content Sections using ModuleSearchResultBlock -->
-      <div v-else class="content-grid__container content-grid__container--sectioned">
+			<!-- Content Sections using ModuleSearchResultBlock -->
+			<div v-else class="content-grid__container content-grid__container--sectioned">
         
-        <!-- Shows/Sets Section -->
-        <ModuleSearchResultBlock
-          v-if="groupedResults.shows.length > 0"
-          :items="groupedResults.shows"
-          type="shows"
-        />
+				<!-- Shows/Sets Section -->
+				<ModuleSearchResultBlock
+					v-if="groupedResults.shows.length > 0"
+					:items="groupedResults.shows"
+					type="shows"
+				/>
         
-        <!-- Pool Section -->
-        <ModuleSearchResultBlock
-          v-if="groupedResults.pool.length > 0"
-          :items="groupedResults.pool"
-          type="pool"
-        />
+				<!-- Pool Section -->
+				<ModuleSearchResultBlock
+					v-if="groupedResults.pool.length > 0"
+					:items="groupedResults.pool"
+					type="pool"
+				/>
         
-        <!-- Words Section -->
-        <ModuleSearchResultBlock
-          v-if="groupedResults.words.length > 0"
-          :items="groupedResults.words"
-          type="words"
-        />
+				<!-- Words Section -->
+				<ModuleSearchResultBlock
+					v-if="groupedResults.words.length > 0"
+					:items="groupedResults.words"
+					type="words"
+				/>
         
-        <!-- No Results -->
-        <div 
-          v-if="groupedResults.shows.length === 0 && groupedResults.pool.length === 0 && groupedResults.words.length === 0 && searchQuery && !isLoading" 
-          class="content-grid__no-results"
-        >
-          No matching content for "{{ searchQuery }}".
-        </div>
-      </div>
-    </div>
+				<!-- No Results -->
+				<div 
+					v-if="groupedResults.shows.length === 0 && groupedResults.pool.length === 0 && groupedResults.words.length === 0 && searchQuery && !isLoading" 
+					class="content-grid__no-results"
+				>
+					No matching content for "{{ searchQuery }}".
+				</div>
+			</div>
+		</div>
 
-  </ClientOnly>
+	</ClientOnly>
 </template>
 
 <style lang="postcss" scoped>

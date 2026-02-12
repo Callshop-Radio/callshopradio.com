@@ -1,1265 +1,1267 @@
 <script setup lang="ts">
-import emblaCarouselVue from "embla-carousel-vue";
-import { useThrottleFn } from "@vueuse/core";
-import { ref, onMounted, computed } from "vue";
-import { useMainStore } from "~/stores/mainStore";
 import {
-  SET_LIST_QUERY,
-  SET_COUNT_QUERY,
-  POOL_LIST_QUERY,
-  POOL_COUNT_QUERY,
-  ARTICLE_LIST_QUERY,
-  ARTICLE_COUNT_QUERY,
-  SHOW_LIST_QUERY,
-  SHOW_COUNT_QUERY,
-} from "~~/queries/module.queries";
+	ARTICLE_COUNT_QUERY,
+	ARTICLE_LIST_QUERY,
+	POOL_COUNT_QUERY,
+	POOL_LIST_QUERY,
+	SET_COUNT_QUERY,
+	SET_LIST_QUERY,
+	SHOW_COUNT_QUERY,
+	SHOW_LIST_QUERY
+} from '~~/queries/module.queries'
+import { computed, onMounted, ref } from 'vue'
+import emblaCarouselVue from 'embla-carousel-vue'
+import { useMainStore } from '~/stores/mainStore'
+import { useThrottleFn } from '@vueuse/core'
 
-const { locale, setLocale } = useI18n();
-const localePath = useLocalePath();
+const { locale: _locale, setLocale: _setLocale } = useI18n()
+const localePath = useLocalePath()
 
-const mainStore = useMainStore();
+const mainStore = useMainStore()
 
 const props = defineProps({
-  module: {
-    type: Object,
-    required: true,
-  },
-});
+	module: {
+		type: Object,
+		required: true
+	}
+})
 
 // ==================== HYBRID DATA LOADING ====================
 const needsSelfLoad = computed(() => {
-  if (!props.module) return false;
-  const { type, poolItems, setItems, showItems, articleItems } = props.module;
+	if (!props.module) return false
+	const { type, poolItems, setItems, showItems, articleItems } = props.module
 
-  const hasItems: Record<string, boolean> = {
-    pool: poolItems?.length > 0,
-    sets: setItems?.length > 0,
-    shows: showItems?.length > 0,
-    words: articleItems?.length > 0,
-  };
+	const hasItems: Record<string, boolean> = {
+		pool: poolItems?.length > 0,
+		sets: setItems?.length > 0,
+		shows: showItems?.length > 0,
+		words: articleItems?.length > 0
+	}
 
-  return !hasItems[type];
-});
+	return !hasItems[type]
+})
 
 // Self-loaded items state
-const selfLoadedCount = ref(0);
-const isLoadingSelf = ref(false);
-const selfLoadPage = ref(1);
-const SELF_LOAD_PER_PAGE = 50;
+const selfLoadedCount = ref(0)
+const isLoadingSelf = ref(false)
+const selfLoadPage = ref(1)
+const SELF_LOAD_PER_PAGE = 50
 
 // Map module type to query type
 const getModuleQueryType = computed(() => {
-  if (!props.module) return null;
-  const type = props.module.type;
-  if (type === "pool") return "pool";
-  if (type === "sets") return "sets";
-  if (type === "shows") return "shows";
-  if (type === "words") return "words";
-  return null;
-});
+	if (!props.module) return null
+	const type = props.module.type
+	if (type === 'pool') return 'pool'
+	if (type === 'sets') return 'sets'
+	if (type === 'shows') return 'shows'
+	if (type === 'words') return 'words'
+	return null
+})
 
 // Build query config for SSR
 const buildQueryConfig = () => {
-  const type = getModuleQueryType.value;
-  if (!type) return null;
+	const type = getModuleQueryType.value
+	if (!type) return null
 
-  const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
-  const end = selfLoadPage.value * SELF_LOAD_PER_PAGE;
-  let params: Record<string, any> = { start, end };
+	const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE
+	const end = selfLoadPage.value * SELF_LOAD_PER_PAGE
+	const params: Record<string, any> = { start, end }
 
-  switch (type) {
-    case "sets":
-      return { query: SET_LIST_QUERY, countQuery: SET_COUNT_QUERY, params };
-    case "pool":
-      const poolType = props.module.poolContentType;
-      params.types =
-        poolType === "all"
-          ? ["person", "venue"]
-          : poolType === "persons"
-          ? ["person"]
-          : poolType === "venues"
-          ? ["venue"]
-          : ["person", "venue"];
-      return { query: POOL_LIST_QUERY, countQuery: POOL_COUNT_QUERY, params };
-    case "shows":
-      return { query: SHOW_LIST_QUERY, countQuery: SHOW_COUNT_QUERY, params };
-    case "words":
-      return {
-        query: ARTICLE_LIST_QUERY,
-        countQuery: ARTICLE_COUNT_QUERY,
-        params,
-      };
-    default:
-      return null;
-  }
-};
-
-// SSR-compatible data loading
-const { data: selfLoadedItems, pending: isLoadingInitial } = await useAsyncData(
-  `module-content-slider-${props.module?._key || props.module?.type}-${
-    props.module?.poolContentType || "default"
-  }`,
-  async () => {
-    if (!needsSelfLoad.value) return [];
-
-    const config = buildQueryConfig();
-    if (!config) return [];
-
-    try {
-      const sanity = useSanity();
-      const [items, count] = await Promise.all([
-        sanity.fetch(config.query, config.params),
-        sanity.fetch(config.countQuery, config.params),
-      ]);
-
-      if (typeof count === "number") {
-        selfLoadedCount.value = count;
-      }
-
-      return items || [];
-    } catch (error) {
-      console.error("[ModuleContentSlider] SSR Data Fetch Error:", error);
-      return [];
-    }
-  },
-  {
-    default: () => [],
-    lazy: false,
-  }
-);
-
-// Load more content (client-side)
-async function loadMoreSelfContent() {
-  if (isLoadingSelf.value) return;
-
-  const config = buildQueryConfig();
-  if (!config) return;
-
-  isLoadingSelf.value = true;
-
-  try {
-    const sanity = useSanity();
-    selfLoadPage.value++;
-
-    const newStart = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
-    const newEnd = selfLoadPage.value * SELF_LOAD_PER_PAGE;
-    config.params.start = newStart;
-    config.params.end = newEnd;
-
-    const items = await sanity.fetch(config.query, config.params);
-
-    if (selfLoadedItems.value) {
-      selfLoadedItems.value = [...selfLoadedItems.value, ...items];
-    }
-  } catch (error) {
-    console.error("[ModuleContentSlider] Error loading more content:", error);
-  } finally {
-    isLoadingSelf.value = false;
-  }
+	switch (type) {
+	case 'sets':
+		return { query: SET_LIST_QUERY, countQuery: SET_COUNT_QUERY, params }
+	case 'pool': {
+		const poolType = props.module.poolContentType
+		params.types =
+        poolType === 'all'
+        	? ['person', 'venue']
+        	: poolType === 'persons'
+        		? ['person']
+        		: poolType === 'venues'
+        			? ['venue']
+        			: ['person', 'venue']
+		return { query: POOL_LIST_QUERY, countQuery: POOL_COUNT_QUERY, params }
+	}
+	case 'shows':
+		return { query: SHOW_LIST_QUERY, countQuery: SHOW_COUNT_QUERY, params }
+	case 'words':
+		return {
+			query: ARTICLE_LIST_QUERY,
+			countQuery: ARTICLE_COUNT_QUERY,
+			params
+		}
+	default:
+		return null
+	}
 }
 
-const currentIndex = ref(0);
+// SSR-compatible data loading
+const { data: selfLoadedItems, pending: _isLoadingInitial } = await useAsyncData(
+	`module-content-slider-${props.module?._key || props.module?.type}-${
+		props.module?.poolContentType || 'default'
+	}`,
+	async () => {
+		if (!needsSelfLoad.value) return []
+
+		const config = buildQueryConfig()
+		if (!config) return []
+
+		try {
+			const sanity = useSanity()
+			const [items, count] = await Promise.all([
+				sanity.fetch(config.query, config.params),
+				sanity.fetch(config.countQuery, config.params)
+			])
+
+			if (typeof count === 'number') {
+				selfLoadedCount.value = count
+			}
+
+			return items || []
+		} catch (error) {
+			console.error('[ModuleContentSlider] SSR Data Fetch Error:', error)
+			return []
+		}
+	},
+	{
+		default: () => [],
+		lazy: false
+	}
+)
+
+// Load more content (client-side)
+async function _loadMoreSelfContent() {
+	if (isLoadingSelf.value) return
+
+	const config = buildQueryConfig()
+	if (!config) return
+
+	isLoadingSelf.value = true
+
+	try {
+		const sanity = useSanity()
+		selfLoadPage.value++
+
+		const newStart = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE
+		const newEnd = selfLoadPage.value * SELF_LOAD_PER_PAGE
+		config.params.start = newStart
+		config.params.end = newEnd
+
+		const items = await sanity.fetch(config.query, config.params)
+
+		if (selfLoadedItems.value) {
+			selfLoadedItems.value = [...selfLoadedItems.value, ...items]
+		}
+	} catch (error) {
+		console.error('[ModuleContentSlider] Error loading more content:', error)
+	} finally {
+		isLoadingSelf.value = false
+	}
+}
+
+const currentIndex = ref(0)
 
 // Init Embla Carousel
 const [emblaNode, emblaApi] = emblaCarouselVue({
-  align: "start",
-  loop: true,
-  slidesToScroll: 1, // One slide with 3 items
-});
+	align: 'start',
+	loop: true,
+	slidesToScroll: 1 // One slide with 3 items
+})
 
 // Dots nav
-const selectedIndex = ref(0);
-const scrollSnaps = ref<number[]>([]);
+const selectedIndex = ref(0)
+const scrollSnaps = ref<number[]>([])
 
 // Save position for smooth transitions
 const saveTranslatePositions = useThrottleFn(() => {
-  if (!emblaContainer.value) return;
-  containerStyle = emblaContainer.value.style.transform;
-}, 100);
+	if (!emblaContainer.value) return
+	containerStyle = emblaContainer.value.style.transform
+}, 100)
 
-const emblaContainer = ref<HTMLElement>();
-let containerStyle: string = "";
+const emblaContainer = ref<HTMLElement>()
+let containerStyle: string = ''
 
 async function restoreTranslatePositions() {
-  if (!emblaContainer.value) return;
-  emblaContainer.value.style.transform = containerStyle;
+	if (!emblaContainer.value) return
+	emblaContainer.value.style.transform = containerStyle
 }
 
 // Screen-Größe überwachen
-const isDesktop = ref(true);
+const isDesktop = ref(true)
 
 // Mobile Carousel Instanz
 const [mobileEmblaNode, mobileEmblaApi] = emblaCarouselVue({
-  align: "start",
-  loop: true,
-  slidesToScroll: 1,
-});
+	align: 'start',
+	loop: true,
+	slidesToScroll: 1
+})
 
-const mobileContainer = ref<HTMLElement>();
-let mobileContainerStyle: string = "";
-const mobileCurrentIndex = ref(0);
-const mobileSelectedIndex = ref(0);
-const mobileScrollSnaps = ref<number[]>([]);
+const mobileContainer = ref<HTMLElement>()
+let mobileContainerStyle: string = ''
+const mobileCurrentIndex = ref(0)
+const mobileSelectedIndex = ref(0)
+const mobileScrollSnaps = ref<number[]>([])
 
 // Dots functions
 const onSelect = () => {
-  if (!emblaApi.value) return;
-  selectedIndex.value = emblaApi.value.selectedScrollSnap();
-  currentIndex.value = selectedIndex.value;
-};
+	if (!emblaApi.value) return
+	selectedIndex.value = emblaApi.value.selectedScrollSnap()
+	currentIndex.value = selectedIndex.value
+}
 const scrollTo = (index: number) => {
-  if (!emblaApi.value) return;
-  emblaApi.value.scrollTo(index);
-  currentIndex.value = index;
-};
+	if (!emblaApi.value) return
+	emblaApi.value.scrollTo(index)
+	currentIndex.value = index
+}
 
 const scrollPrev = () => {
-  if (!emblaApi.value) return;
-  emblaApi.value.scrollPrev();
-};
+	if (!emblaApi.value) return
+	emblaApi.value.scrollPrev()
+}
 
 const scrollNext = () => {
-  if (!emblaApi.value) return;
-  emblaApi.value.scrollNext();
-};
+	if (!emblaApi.value) return
+	emblaApi.value.scrollNext()
+}
 
 const setupDots = () => {
-  if (!emblaApi.value) return;
+	if (!emblaApi.value) return
 
-  // Scroll snaps for navigation
-  scrollSnaps.value = emblaApi.value.scrollSnapList();
+	// Scroll snaps for navigation
+	scrollSnaps.value = emblaApi.value.scrollSnapList()
 
-  // Set current index
-  selectedIndex.value = emblaApi.value.selectedScrollSnap();
-  currentIndex.value = selectedIndex.value; // Initialisiere currentIndex
+	// Set current index
+	selectedIndex.value = emblaApi.value.selectedScrollSnap()
+	currentIndex.value = selectedIndex.value // Initialisiere currentIndex
 
-  // Event-Listener for updating the selected index
-  emblaApi.value.on("select", onSelect);
-};
+	// Event-Listener for updating the selected index
+	emblaApi.value.on('select', onSelect)
+}
 
 // Event-Listener after mounting
 // Event-Listener after mounting (updated for SSR)
 onMounted(() => {
-  // Data loading handled by useAsyncData now
+	// Data loading handled by useAsyncData now
 
-  if (emblaApi.value) {
-    emblaApi.value.on("scroll", saveTranslatePositions);
-    emblaApi.value.on("destroy", restoreTranslatePositions);
+	if (emblaApi.value) {
+		emblaApi.value.on('scroll', saveTranslatePositions)
+		emblaApi.value.on('destroy', restoreTranslatePositions)
 
-    setupDots();
-  }
+		setupDots()
+	}
 
-  // Mobile Slider Setup
-  if (mobileEmblaApi.value) {
-    mobileEmblaApi.value.on("scroll", mobileSaveTranslatePositions);
-    mobileEmblaApi.value.on("destroy", mobileRestoreTranslatePositions);
-    mobileSetupDots();
-  }
+	// Mobile Slider Setup
+	if (mobileEmblaApi.value) {
+		mobileEmblaApi.value.on('scroll', mobileSaveTranslatePositions)
+		mobileEmblaApi.value.on('destroy', mobileRestoreTranslatePositions)
+		mobileSetupDots()
+	}
 
-  // Bildschirmgröße überwachen
-  checkScreenSize();
-  window.addEventListener("resize", checkScreenSize);
-});
+	// Bildschirmgröße überwachen
+	checkScreenSize()
+	window.addEventListener('resize', checkScreenSize)
+})
 
 onUnmounted(() => {
-  window.removeEventListener("resize", checkScreenSize);
-});
+	window.removeEventListener('resize', checkScreenSize)
+})
 
 // helper function for image fetching and fallbacks
 function getItemImage(item) {
-  // Fallbacks je nach Content-Typ
-  const itemType = item._type || "";
+	// Fallbacks je nach Content-Typ
+	const itemType = item._type || ''
 
-  // Bild aus dem Item selbst
-  if (item.image || item.mainImage) {
-    return item.image || item.mainImage;
-  }
+	// Bild aus dem Item selbst
+	if (item.image || item.mainImage) {
+		return item.image || item.mainImage
+	}
 
-  switch (itemType) {
-    case "person":
-      return mainStore?.siteFallbacks?.fallbackPerson?.image;
-    case "venue":
-      return mainStore?.siteFallbacks?.fallbackVenue?.image;
-    case "show":
-      return mainStore?.siteFallbacks?.fallbackShow?.image;
-    case "set":
-      return mainStore?.siteFallbacks?.fallbackSet?.image;
-    case "word":
-    case "article":
-      return mainStore?.siteFallbacks?.fallbackArticle?.image;
-    default:
-      // Allgemeines Fallback-Bild
-      return mainStore?.siteFallbacks?.fallbackPerson?.image;
-  }
+	switch (itemType) {
+	case 'person':
+		return mainStore?.siteFallbacks?.fallbackPerson?.image
+	case 'venue':
+		return mainStore?.siteFallbacks?.fallbackVenue?.image
+	case 'show':
+		return mainStore?.siteFallbacks?.fallbackShow?.image
+	case 'set':
+		return mainStore?.siteFallbacks?.fallbackSet?.image
+	case 'word':
+	case 'article':
+		return mainStore?.siteFallbacks?.fallbackArticle?.image
+	default:
+		// Allgemeines Fallback-Bild
+		return mainStore?.siteFallbacks?.fallbackPerson?.image
+	}
 }
 
 function getItemRoute(item) {
-  if (!item || !item?.slug) return "/";
+	if (!item || !item?.slug) return '/'
 
-  switch (item?._type) {
-    case "person":
-    case "venue":
-      return localePath(`/pool/${item?.slug?.current}`);
+	switch (item?._type) {
+	case 'person':
+	case 'venue':
+		return localePath(`/pool/${item?.slug?.current}`)
 
-    case "set":
-      // Prüfe, ob parentShow vorhanden ist
-      if (item?.parentShow?.slug?.current) {
-        return localePath(
-          `/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
-        );
-      }
+	case 'set':
+		// Prüfe, ob parentShow vorhanden ist
+		if (item?.parentShow?.slug?.current) {
+			return localePath(
+				`/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
+			)
+		}
 
-      return localePath(`/shows/${item?.slug?.current}`);
+		return localePath(`/shows/${item?.slug?.current}`)
 
-    case "article":
-      return localePath(`/words/${item?.slug?.current}`);
+	case 'article':
+		return localePath(`/words/${item?.slug?.current}`)
 
-    case "show":
-      return localePath(`/shows/${item?.slug?.current}`);
+	case 'show':
+		return localePath(`/shows/${item?.slug?.current}`)
 
-    // Standard-Fallback
-    default:
-      return localePath(`/${item?._type}/${item?.slug?.current}`);
-  }
+		// Standard-Fallback
+	default:
+		return localePath(`/${item?._type}/${item?.slug?.current}`)
+	}
 }
 
-const artworkUrls = ref(new Map());
+const artworkUrls = ref(new Map())
 
 // Funktion zum Abrufen und Speichern der Artwork-URL (synchron)
 function loadArtworkUrl(item) {
-  if (!item) return;
-  const url = getSoundcloudArtwork(item);
-  artworkUrls.value.set(item._id, url);
+	if (!item) return
+	const url = getSoundcloudArtwork(item)
+	artworkUrls.value.set(item._id, url)
 }
 
-function checkImage(url) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
-    img.src = url;
-  });
+function _checkImage(url) {
+	return new Promise((resolve) => {
+		const img = new Image()
+		img.onload = () => resolve(true)
+		img.onerror = () => resolve(false)
+		img.src = url
+	})
 }
 
 // Non-blocking artwork URL resolution - returns URL directly
 function getSoundcloudArtwork(item) {
-  // Try SoundCloud artwork first (use -t500x500 for better quality)
-  const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
-  if (artworkUrl) {
-    return artworkUrl.replace("-large", "-t500x500");
-  }
-  // Fallback chain
-  const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-  const storeFallbackUrl =
-    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
-  return parentShowImageUrl || storeFallbackUrl || "";
+	// Try SoundCloud artwork first (use -t500x500 for better quality)
+	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url
+	if (artworkUrl) {
+		return artworkUrl.replace('-large', '-t500x500')
+	}
+	// Fallback chain
+	const parentShowImageUrl = item?.parentShow?.image?.asset?.url
+	const storeFallbackUrl =
+    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
+	return parentShowImageUrl || storeFallbackUrl || ''
 }
 
 // Hilfsfunktion zum Gruppieren der Items in Dreiergruppen mit Optimierung für vollständige Slides
 function groupItems(items, contentType = null) {
-  if (!items || !items.length) return [];
+	if (!items || !items.length) return []
 
-  // Items nach contentType filtern, falls angegeben
-  let filteredItems = items;
+	// Items nach contentType filtern, falls angegeben
+	let filteredItems = items
 
-  if (contentType) {
-    // Filterlogik basierend auf dem Schema
-    if (contentType === "persons") {
-      filteredItems = items.filter((item) => item._type === "person");
-    } else if (contentType === "venues") {
-      filteredItems = items.filter((item) => item._type === "venue");
-    } else if (contentType === "all") {
-      filteredItems = items.filter(
-        (item) => item._type === "venue" || item._type === "person"
-      );
-    }
-  }
+	if (contentType) {
+		// Filterlogik basierend auf dem Schema
+		if (contentType === 'persons') {
+			filteredItems = items.filter((item) => item._type === 'person')
+		} else if (contentType === 'venues') {
+			filteredItems = items.filter((item) => item._type === 'venue')
+		} else if (contentType === 'all') {
+			filteredItems = items.filter(
+				(item) => item._type === 'venue' || item._type === 'person'
+			)
+		}
+	}
 
-  // Bei "image" Style: Ein Item pro Gruppe
-  if (props.module.style === "image") {
-    // Anzahl begrenzen, falls count angegeben ist
-    const limitedItems =
+	// Bei "image" Style: Ein Item pro Gruppe
+	if (props.module.style === 'image') {
+		// Anzahl begrenzen, falls count angegeben ist
+		const limitedItems =
       props.module.count && props.module.count > 0
-        ? filteredItems.slice(0, props.module.count)
-        : filteredItems;
+      	? filteredItems.slice(0, props.module.count)
+      	: filteredItems
 
-    // Jedes Item in ein Array verpacken
-    return limitedItems.map((item) => [item]);
-  }
+		// Jedes Item in ein Array verpacken
+		return limitedItems.map((item) => [item])
+	}
 
-  // Bei anderen Styles: In Dreiergruppen aufteilen
+	// Bei anderen Styles: In Dreiergruppen aufteilen
 
-  // Anzahl der Items auf eine durch 3 teilbare Zahl begrenzen
-  let itemCount = filteredItems.length;
+	// Anzahl der Items auf eine durch 3 teilbare Zahl begrenzen
+	let itemCount = filteredItems.length
 
-  // Wenn count angegeben ist, begrenzen wir auf die nächstkleinere durch 3 teilbare Zahl
-  if (props.module.count && props.module.count > 0) {
-    // Mehrere volle Slides mit je 3 Items (count * 3)
-    const maxCount = props.module.count * 3;
+	// Wenn count angegeben ist, begrenzen wir auf die nächstkleinere durch 3 teilbare Zahl
+	if (props.module.count && props.module.count > 0) {
+		// Mehrere volle Slides mit je 3 Items (count * 3)
+		const maxCount = props.module.count * 3
 
-    // Auf die nächstkleinere durch 3 teilbare Zahl begrenzen
-    itemCount = Math.min(itemCount, maxCount);
-  }
+		// Auf die nächstkleinere durch 3 teilbare Zahl begrenzen
+		itemCount = Math.min(itemCount, maxCount)
+	}
 
-  // Auf die nächstkleinere durch 3 teilbare Zahl abrunden
-  itemCount = Math.floor(itemCount / 3) * 3;
+	// Auf die nächstkleinere durch 3 teilbare Zahl abrunden
+	itemCount = Math.floor(itemCount / 3) * 3
 
-  // Items begrenzen
-  const limitedItems = filteredItems.slice(0, itemCount);
+	// Items begrenzen
+	const limitedItems = filteredItems.slice(0, itemCount)
 
-  // In Dreiergruppen aufteilen
-  const groups = [];
-  for (let i = 0; i < limitedItems.length; i += 3) {
-    groups.push(limitedItems.slice(i, i + 3));
-  }
+	// In Dreiergruppen aufteilen
+	const groups = []
+	for (let i = 0; i < limitedItems.length; i += 3) {
+		groups.push(limitedItems.slice(i, i + 3))
+	}
 
-  return groups;
+	return groups
 }
 
 // Für mobile Version: Ein Element pro Slide
 function groupMobileItems(items, contentType = null) {
-  if (!items || !items.length) return [];
+	if (!items || !items.length) return []
 
-  // Items nach contentType filtern, analog zur Desktop-Version
-  let filteredItems = items;
+	// Items nach contentType filtern, analog zur Desktop-Version
+	let filteredItems = items
 
-  if (contentType) {
-    if (contentType === "persons") {
-      filteredItems = items.filter((item) => item._type === "person");
-    } else if (contentType === "venues") {
-      filteredItems = items.filter((item) => item._type === "venue");
-    } else if (contentType === "all") {
-      filteredItems = items.filter(
-        (item) => item._type === "venue" || item._type === "person"
-      );
-    }
-  }
+	if (contentType) {
+		if (contentType === 'persons') {
+			filteredItems = items.filter((item) => item._type === 'person')
+		} else if (contentType === 'venues') {
+			filteredItems = items.filter((item) => item._type === 'venue')
+		} else if (contentType === 'all') {
+			filteredItems = items.filter(
+				(item) => item._type === 'venue' || item._type === 'person'
+			)
+		}
+	}
 
-  // Anzahl begrenzen, falls count angegeben ist
-  let limitedItems = filteredItems;
-  if (props.module.count && props.module.count > 0) {
-    limitedItems = filteredItems.slice(0, props.module.count);
-  }
+	// Anzahl begrenzen, falls count angegeben ist
+	let limitedItems = filteredItems
+	if (props.module.count && props.module.count > 0) {
+		limitedItems = filteredItems.slice(0, props.module.count)
+	}
 
-  // Für mobile: Ein Item pro Gruppe
-  return limitedItems.map((item) => [item]);
+	// Für mobile: Ein Item pro Gruppe
+	return limitedItems.map((item) => [item])
 }
 
 // Mobile Slider Dots-Funktionen
 const mobileOnSelect = () => {
-  if (!mobileEmblaApi.value) return;
-  mobileSelectedIndex.value = mobileEmblaApi.value.selectedScrollSnap();
-  mobileCurrentIndex.value = mobileSelectedIndex.value;
-};
+	if (!mobileEmblaApi.value) return
+	mobileSelectedIndex.value = mobileEmblaApi.value.selectedScrollSnap()
+	mobileCurrentIndex.value = mobileSelectedIndex.value
+}
 
 const mobileScrollTo = (index: number) => {
-  if (!mobileEmblaApi.value) return;
-  mobileEmblaApi.value.scrollTo(index);
-  mobileCurrentIndex.value = index;
-};
+	if (!mobileEmblaApi.value) return
+	mobileEmblaApi.value.scrollTo(index)
+	mobileCurrentIndex.value = index
+}
 
 const mobileScrollPrev = () => {
-  if (!mobileEmblaApi.value) return;
-  mobileEmblaApi.value.scrollPrev();
-};
+	if (!mobileEmblaApi.value) return
+	mobileEmblaApi.value.scrollPrev()
+}
 
 const mobileScrollNext = () => {
-  if (!mobileEmblaApi.value) return;
-  mobileEmblaApi.value.scrollNext();
-};
+	if (!mobileEmblaApi.value) return
+	mobileEmblaApi.value.scrollNext()
+}
 
 const mobileSetupDots = () => {
-  if (!mobileEmblaApi.value) return;
-  mobileScrollSnaps.value = mobileEmblaApi.value.scrollSnapList();
-  mobileSelectedIndex.value = mobileEmblaApi.value.selectedScrollSnap();
-  mobileCurrentIndex.value = mobileSelectedIndex.value;
-  mobileEmblaApi.value.on("select", mobileOnSelect);
-};
+	if (!mobileEmblaApi.value) return
+	mobileScrollSnaps.value = mobileEmblaApi.value.scrollSnapList()
+	mobileSelectedIndex.value = mobileEmblaApi.value.selectedScrollSnap()
+	mobileCurrentIndex.value = mobileSelectedIndex.value
+	mobileEmblaApi.value.on('select', mobileOnSelect)
+}
 
 // Speichern/Wiederherstellen der Position für mobile
 const mobileSaveTranslatePositions = useThrottleFn(() => {
-  if (!mobileContainer.value) return;
-  mobileContainerStyle = mobileContainer.value.style.transform;
-}, 100);
+	if (!mobileContainer.value) return
+	mobileContainerStyle = mobileContainer.value.style.transform
+}, 100)
 
 async function mobileRestoreTranslatePositions() {
-  if (!mobileContainer.value) return;
-  mobileContainer.value.style.transform = mobileContainerStyle;
+	if (!mobileContainer.value) return
+	mobileContainer.value.style.transform = mobileContainerStyle
 }
 
 // Mobile Slider Items berechnen
 const mobileGroupedItems = computed(() => {
-  if (!props.module) return [];
+	if (!props.module) return []
 
-  // If we're self-loading, use self-loaded items
-  if (needsSelfLoad.value) {
-    return groupMobileItems(
-      selfLoadedItems.value,
-      props.module.poolContentType
-    );
-  }
+	// If we're self-loading, use self-loaded items
+	if (needsSelfLoad.value) {
+		return groupMobileItems(
+			selfLoadedItems.value,
+			props.module.poolContentType
+		)
+	}
 
-  switch (props.module.type) {
-    case "pool":
-      return groupMobileItems(
-        props.module.poolItems || [],
-        props.module.poolContentType
-      );
-    case "sets":
-      return groupMobileItems(props.module.setItems || []);
-    case "shows":
-      return groupMobileItems(props.module.showItems || []);
-    case "words":
-      return groupMobileItems(props.module.articleItems || []);
-    default:
-      return [];
-  }
-});
+	switch (props.module.type) {
+	case 'pool':
+		return groupMobileItems(
+			props.module.poolItems || [],
+			props.module.poolContentType
+		)
+	case 'sets':
+		return groupMobileItems(props.module.setItems || [])
+	case 'shows':
+		return groupMobileItems(props.module.showItems || [])
+	case 'words':
+		return groupMobileItems(props.module.articleItems || [])
+	default:
+		return []
+	}
+})
 
 // Prüfen der Bildschirmgröße
 function checkScreenSize() {
-  const newIsDesktop = window.innerWidth >= 900;
-  if (isDesktop.value !== newIsDesktop) {
-    isDesktop.value = newIsDesktop;
-    // Re-init current carousel on next tick ensures correct sizing
-    setTimeout(() => {
-      if (newIsDesktop && emblaApi.value) emblaApi.value.reInit();
-      if (!newIsDesktop && mobileEmblaApi.value) mobileEmblaApi.value.reInit();
-    }, 50);
-  }
+	const newIsDesktop = window.innerWidth >= 900
+	if (isDesktop.value !== newIsDesktop) {
+		isDesktop.value = newIsDesktop
+		// Re-init current carousel on next tick ensures correct sizing
+		setTimeout(() => {
+			if (newIsDesktop && emblaApi.value) emblaApi.value.reInit()
+			if (!newIsDesktop && mobileEmblaApi.value) mobileEmblaApi.value.reInit()
+		}, 50)
+	}
 }
 
 // Content-Typ des aktuellen Moduls
 const contentType = computed(() => {
-  if (!props.module) return null;
+	if (!props.module) return null
 
-  // Basis-Typ ist der Modultyp
-  let type = props.module.type || null;
+	// Basis-Typ ist der Modultyp
+	const type = props.module.type || null
 
-  // Bei "pool" verwenden wir den spezifischen Pool-Content-Typ
-  if (type === "pool" && props.module.poolContentType) {
-    return props.module.poolContentType; // "persons", "venues" oder "all"
-  }
+	// Bei "pool" verwenden wir den spezifischen Pool-Content-Typ
+	if (type === 'pool' && props.module.poolContentType) {
+		return props.module.poolContentType // "persons", "venues" oder "all"
+	}
 
-  return type; // "sets", "shows", "words" oder null
-});
+	return type // "sets", "shows", "words" oder null
+})
 
 // Kategorie-Typ für das UI
-const categoryType = ref("");
+const categoryType = ref('')
 
 // Watcher für den Content-Typ
 watch(
-  contentType,
-  (newValue) => {
-    if (["persons", "venues", "all"].includes(newValue)) {
-      categoryType.value = "Pool";
-    } else if (newValue === "sets") {
-      categoryType.value = "Episodes";
-    } else if (newValue === "shows") {
-      categoryType.value = "Shows";
-    } else if (newValue === "words") {
-      categoryType.value = "Words";
-    } else {
-      categoryType.value = "";
-    }
-  },
-  { immediate: true }
-);
+	contentType,
+	(newValue) => {
+		if (['persons', 'venues', 'all'].includes(newValue)) {
+			categoryType.value = 'Pool'
+		} else if (newValue === 'sets') {
+			categoryType.value = 'Episodes'
+		} else if (newValue === 'shows') {
+			categoryType.value = 'Shows'
+		} else if (newValue === 'words') {
+			categoryType.value = 'Words'
+		} else {
+			categoryType.value = ''
+		}
+	},
+	{ immediate: true }
+)
 
 // Berechne gruppierte Items nach Typ
 const groupedItems = computed(() => {
-  if (!props.module) return [];
+	if (!props.module) return []
 
-  // If we're self-loading, use self-loaded items
-  if (needsSelfLoad.value) {
-    return groupItems(selfLoadedItems.value, props.module.poolContentType);
-  }
+	// If we're self-loading, use self-loaded items
+	if (needsSelfLoad.value) {
+		return groupItems(selfLoadedItems.value, props.module.poolContentType)
+	}
 
-  // Otherwise use props data (existing behavior)
-  switch (props.module.type) {
-    case "pool":
-      return groupItems(
-        props.module.poolItems || [],
-        props.module.poolContentType
-      );
-    case "sets":
-      return groupItems(props.module.setItems || []);
-    case "shows":
-      return groupItems(props.module.showItems || []);
-    case "words":
-      return groupItems(props.module.articleItems || []);
-    default:
-      return [];
-  }
-});
+	// Otherwise use props data (existing behavior)
+	switch (props.module.type) {
+	case 'pool':
+		return groupItems(
+			props.module.poolItems || [],
+			props.module.poolContentType
+		)
+	case 'sets':
+		return groupItems(props.module.setItems || [])
+	case 'shows':
+		return groupItems(props.module.showItems || [])
+	case 'words':
+		return groupItems(props.module.articleItems || [])
+	default:
+		return []
+	}
+})
 
 function playTrack(item) {
-  if (item?.soundcloud?.tracks?.[0]) {
-    const track = item.soundcloud.tracks[0];
+	if (item?.soundcloud?.tracks?.[0]) {
+		const track = item.soundcloud.tracks[0]
 
-    // Sicherstellen, dass permalink_url gesetzt ist
-    if (!track.permalink_url && track.id) {
-      // Wenn keine permalink_url, aber eine ID vorhanden ist, erstellen wir eine
-      track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
-    }
+		// Sicherstellen, dass permalink_url gesetzt ist
+		if (!track.permalink_url && track.id) {
+			// Wenn keine permalink_url, aber eine ID vorhanden ist, erstellen wir eine
+			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
+		}
 
-    // Track im Store speichern
-    mainStore.currentTrack = track;
-  } else {
-  }
+		// Track im Store speichern
+		mainStore.currentTrack = track
+	} else {
+		// no track to store
+	}
 }
 </script>
 
 <template>
-  <div
-    v-if="module"
-    :class="`embla module-carousel module-carousel--${
-      module.style || 'default'
-    } ${categoryType.toLowerCase()}`"
-  >
-    <div class="module-carousel__header">
-      <h3 v-if="module?.title" class="module-carousel__title">
-        {{ module?.title }}
-      </h3>
-      <section
-        v-if="categoryType == 'Episodes'"
-        class="module-carousel__header__type"
-      >
-        <NuxtLink :to="localePath('/shows')">
-          <h2 class="module-carousel__header__type__pill">Shows</h2>
-        </NuxtLink>
-      </section>
-      <section v-else class="module-carousel__header__type">
-        <NuxtLink :to="localePath(categoryType.toLowerCase())">
-          <h2 class="module-carousel__header__type__pill">
-            {{ categoryType }}
-          </h2>
-        </NuxtLink>
-      </section>
-    </div>
+	<div
+		v-if="module"
+		:class="`embla module-carousel module-carousel--${
+			module.style || 'default'
+		} ${categoryType.toLowerCase()}`"
+	>
+		<div class="module-carousel__header">
+			<h3 v-if="module?.title" class="module-carousel__title">
+				{{ module?.title }}
+			</h3>
+			<section
+				v-if="categoryType == 'Episodes'"
+				class="module-carousel__header__type"
+			>
+				<NuxtLink :to="localePath('/shows')">
+					<h2 class="module-carousel__header__type__pill">Shows</h2>
+				</NuxtLink>
+			</section>
+			<section v-else class="module-carousel__header__type">
+				<NuxtLink :to="localePath(categoryType.toLowerCase())">
+					<h2 class="module-carousel__header__type__pill">
+						{{ categoryType }}
+					</h2>
+				</NuxtLink>
+			</section>
+		</div>
 
-    <!-- Desktop Version (v-if wenn >= 900px) -->
-    <div v-if="isDesktop">
-      <nav class="embla__nav">
-        <!-- Dot Navigation -->
-        <div class="embla__nav__dots" v-if="scrollSnaps.length > 1">
-          <button
-            v-for="(_, index) in scrollSnaps"
-            :key="index"
-            :class="['embla__dot', { 'is-selected': index === selectedIndex }]"
-            @click="scrollTo(index)"
-          ></button>
-        </div>
+		<!-- Desktop Version (v-if wenn >= 900px) -->
+		<div v-if="isDesktop">
+			<nav class="embla__nav">
+				<!-- Dot Navigation -->
+				<div v-if="scrollSnaps.length > 1" class="embla__nav__dots">
+					<button
+						v-for="(_, index) in scrollSnaps"
+						:key="index"
+						:class="['embla__dot', { 'is-selected': index === selectedIndex }]"
+						@click="scrollTo(index)"
+					/>
+				</div>
 
-        <!-- Arrow Navigation -->
-        <div class="embla__nav__arrows" v-if="scrollSnaps.length > 1">
-          <button
-            class="embla__arrow embla__arrow--prev"
-            @click="scrollPrev"
-            aria-label="Vorheriger Slide"
-          >
-            <svg
-              width="22"
-              height="20"
-              viewBox="0 0 22 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M1.67986e-07 9.84832L21.1305 0.452866L21.1305 19.2438L1.67986e-07 9.84832Z"
-                fill="black"
-              />
-            </svg>
-          </button>
-          <button
-            class="embla__arrow embla__arrow--next"
-            @click="scrollNext"
-            aria-label="Nächster Slide"
-          >
-            <svg
-              width="22"
-              height="20"
-              viewBox="0 0 22 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M22 9.84894L0.86951 19.2444L0.869511 0.453482L22 9.84894Z"
-                fill="black"
-              />
-            </svg>
-          </button>
-        </div>
-      </nav>
+				<!-- Arrow Navigation -->
+				<div v-if="scrollSnaps.length > 1" class="embla__nav__arrows">
+					<button
+						class="embla__arrow embla__arrow--prev"
+						aria-label="Vorheriger Slide"
+						@click="scrollPrev"
+					>
+						<svg
+							width="22"
+							height="20"
+							viewBox="0 0 22 20"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M1.67986e-07 9.84832L21.1305 0.452866L21.1305 19.2438L1.67986e-07 9.84832Z"
+								fill="black"
+							/>
+						</svg>
+					</button>
+					<button
+						class="embla__arrow embla__arrow--next"
+						aria-label="Nächster Slide"
+						@click="scrollNext"
+					>
+						<svg
+							width="22"
+							height="20"
+							viewBox="0 0 22 20"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M22 9.84894L0.86951 19.2444L0.869511 0.453482L22 9.84894Z"
+								fill="black"
+							/>
+						</svg>
+					</button>
+				</div>
+			</nav>
 
-      <div ref="emblaNode" class="embla">
-        <div ref="emblaContainer" class="embla__container">
-          <div
-            v-for="(group, groupIndex) in groupedItems"
-            :key="groupIndex"
-            class="embla__slide"
-            :class="{ active: groupIndex === currentIndex }"
-          >
-            <div :class="`slide-group group-${module.style || 'default'}`">
-              <!-- Existierender Slider-Inhalt für Desktop -->
-              <div
-                v-for="item in group"
-                :key="item._id"
-                :class="`slide-item slide-${module.style || 'default'}`"
-              >
-                <div
-                  v-if="
-                    module.showTags &&
-                    item.tags?.length &&
-                    module.style !== 'image'
-                  "
-                  class="slide__tags city-tags"
-                >
-                  <button
-                    v-for="tag in item.tags.filter(
-                      (tag) => tag._type == 'tag.city'
-                    )"
-                    :key="tag._id || tag._ref"
-                    class="tag city"
-                  >
-                    {{
-                      tag?.short?.[1]?.value
-                        ? parseI18nObj(tag?.short)
-                        : tag?.short[0].value ?? tag.short
-                    }}
-                  </button>
-                </div>
-                <div
-                  v-else-if="module.style !== 'image'"
-                  class="slide__tags city-tags"
-                ></div>
-                <NuxtLink
-                  v-if="item?.slug"
-                  :to="getItemRoute(item)"
-                  class="slide__link"
-                >
-                  <MediaImage
-                    v-if="getItemImage(item) && categoryType !== 'Episodes'"
-                    :image="getItemImage(item)"
-                    :class="`media-${module.style}`"
-                  />
-                  <img
-                    v-else-if="
-                      categoryType === 'Episodes' && artworkUrls.get(item._id)
-                    "
-                    :src="artworkUrls.get(item._id)"
-                    alt="Episode Image"
-                    class="track-artwork"
-                  />
-                  <div
-                    v-else-if="categoryType === 'Episodes'"
-                    class="track-artwork-placeholder"
-                    @vue:mounted="loadArtworkUrl(item)"
-                  ></div>
-                </NuxtLink>
-                <div class="slide-content">
-                  <section class="slide-content__interactive">
-                    <h3 class="slide-date" v-if="item?.datetime">
-                      {{ formatDate(item.datetime) }}
-                    </h3>
-                    <h3 class="slide-date" v-else-if="item?._updatedAt">
-                      {{ formatDate(item._updatedAt) }}
-                    </h3>
-                    <button
-                      @click="playTrack(item)"
-                      v-if="categoryType == 'Episodes'"
-                      class="play"
-                    >
-                      <svg
-                        width="9"
-                        height="12"
-                        viewBox="0 0 9 12"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M9 6L-4.89399e-07 11.1962L-3.51373e-08 0.803847L9 6Z"
-                          fill="black"
-                        />
-                      </svg>
-                    </button>
-                  </section>
-                  <NuxtLink
-                    v-if="
-                      item?.clickableTitle &&
-                      item?.parentShow?.title !== 'No Show'
-                    "
-                    :to="
-                      localePath(
-                        `/shows/no-show/${item?.parentShow?.slug?.current}`
-                      )
-                    "
-                    class="slide__link"
-                  >
-                    <h3 class="slide-title show-title">
-                      {{ item?.parentShow?.title }}
-                    </h3>
-                  </NuxtLink>
-                  <h3
-                    v-else-if="
-                      item?.parentShow && item?.parentShow?.title !== 'No Show'
-                    "
-                    class="slide-title show-title"
-                  >
-                    {{ item?.parentShow?.title }}
-                  </h3>
-                  <NuxtLink
-                    v-if="item?.slug"
-                    :to="getItemRoute(item)"
-                    class="slide__link"
-                  >
-                    <h3 class="slide-title" v-if="contentType !== 'sets'">
-                      {{ item?.title }}
-                    </h3>
-                  </NuxtLink>
-                  <h3 class="slide-title" v-else-if="contentType !== 'sets'">
-                    {{ item?.title }}
-                  </h3>
-                  <div
-                    v-if="
-                      contentType === 'sets' &&
-                      item.persons &&
-                      item.persons.length > 0
-                    "
-                    class="show-artists"
-                  >
-                    <h3
-                      v-for="(artist, index) in item.persons"
-                      :key="artist._id"
-                      class="slide-title"
-                    >
-                      <NuxtLink
-                        v-if="artist?.poolVisibility"
-                        :to="localePath(`/pool/${artist?.slug?.current}`)"
-                        class="slide__link"
-                      >
-                        {{ artist.title
-                        }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
-                      </NuxtLink>
-                      <span v-else class="slide-title">
-                        {{ artist.title
-                        }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
-                      </span>
-                    </h3>
-                  </div>
-                  <RichText
-                    v-if="item?.useTeaserText && item?.textTeaser"
-                    :blocks="parseI18nObj(item?.textTeaser)"
-                  />
-                  <RichText
-                    v-else-if="
-                      !item?.useTeaserText && item?.text && item.text.length > 0
-                    "
-                    :blocks="parseI18nObj(item?.text)?.slice(0, 1)"
-                  />
-                  <RichText
-                    v-else-if="
-                      !item?.text &&
-                      item?.description &&
-                      item.description.length > 0 &&
-                      (item.description[0]?.value || item.description[1]?.value)
-                    "
-                    :blocks="
-                      limitTextBlocks(
-                        parseI18nObj(item?.description)?.slice(0, 1),
-                        100
-                      )
-                    "
-                  />
-                  <RichText
-                    v-else-if="
-                      !item?.text &&
-                      module.poolContentType == 'persons' &&
-                      mainStore?.siteFallbacks?.fallbackPerson?.description
-                        .length > 0 &&
-                      (mainStore?.siteFallbacks?.fallbackPerson
-                        ?.description?.[0]?.value ||
-                        mainStore?.siteFallbacks?.fallbackPerson
-                          ?.description?.[1]?.value)
-                    "
-                    :blocks="
-                      limitTextBlocks(
-                        parseI18nObj(
-                          mainStore?.siteFallbacks?.fallbackPerson?.description
-                        )?.slice(0, 1),
-                        100
-                      )
-                    "
-                  />
-                  <RichText
-                    v-else-if="
-                      !item?.text &&
-                      module.poolContentType == 'venues' &&
-                      mainStore?.siteFallbacks?.fallbackVenue?.description
-                        .length > 0 &&
-                      (mainStore?.siteFallbacks?.fallbackVenue?.description?.[0]
-                        ?.value ||
-                        mainStore?.siteFallbacks?.fallbackPerson
-                          ?.description?.[1]?.value)
-                    "
-                    :blocks="
-                      limitTextBlocks(
-                        parseI18nObj(
-                          mainStore?.siteFallbacks?.fallbackPerson?.description
-                        )?.slice(0, 1),
-                        100
-                      )
-                    "
-                  />
-                  <div
-                    v-if="module.showTags && item.tags?.length"
-                    class="slide__tags tags"
-                  >
-                    <button
-                      v-for="tag in item.tags.filter(
-                        (tag) => tag._type !== 'tag.city'
-                      )"
-                      :key="tag._id || tag._ref"
-                      class="tag"
-                    >
-                      {{
-                        tag?.title?.[1]?.value
-                          ? parseI18nObj(tag?.title)
-                          : tag?.title[0].value ?? tag.title
-                      }}
-                    </button>
-                  </div>
-                  <div
-                    v-if="module.showTags && item.genres?.length"
-                    class="slide-genres"
-                  >
-                    <span
-                      v-for="genre in item.genres"
-                      :key="genre._id"
-                      class="genre"
-                      >{{ genre.name || genre.title }}</span
-                    >
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Mobile Version (v-if wenn < 900px) -->
-    <div v-if="!isDesktop" class="mobile-slider">
-      <nav class="embla__nav">
-        <!-- Mobile Dot Navigation -->
-        <div class="embla__nav__dots" v-if="mobileScrollSnaps.length > 1">
-          <button
-            v-for="(_, index) in mobileScrollSnaps"
-            :key="index"
-            :class="[
-              'embla__dot',
-              { 'is-selected': index === mobileSelectedIndex },
-            ]"
-            @click="mobileScrollTo(index)"
-          ></button>
-        </div>
+			<div ref="emblaNode" class="embla">
+				<div ref="emblaContainer" class="embla__container">
+					<div
+						v-for="(group, groupIndex) in groupedItems"
+						:key="groupIndex"
+						class="embla__slide"
+						:class="{ active: groupIndex === currentIndex }"
+					>
+						<div :class="`slide-group group-${module.style || 'default'}`">
+							<!-- Existierender Slider-Inhalt für Desktop -->
+							<div
+								v-for="item in group"
+								:key="item._id"
+								:class="`slide-item slide-${module.style || 'default'}`"
+							>
+								<div
+									v-if="
+										module.showTags &&
+											item.tags?.length &&
+											module.style !== 'image'
+									"
+									class="slide__tags city-tags"
+								>
+									<button
+										v-for="tag in item.tags.filter(
+											(tag) => tag._type == 'tag.city'
+										)"
+										:key="tag._id || tag._ref"
+										class="tag city"
+									>
+										{{
+											tag?.short?.[1]?.value
+												? parseI18nObj(tag?.short)
+												: tag?.short[0].value ?? tag.short
+										}}
+									</button>
+								</div>
+								<div
+									v-else-if="module.style !== 'image'"
+									class="slide__tags city-tags"
+								/>
+								<NuxtLink
+									v-if="item?.slug"
+									:to="getItemRoute(item)"
+									class="slide__link"
+								>
+									<MediaImage
+										v-if="getItemImage(item) && categoryType !== 'Episodes'"
+										:image="getItemImage(item)"
+										:class="`media-${module.style}`"
+									/>
+									<img
+										v-else-if="
+											categoryType === 'Episodes' && artworkUrls.get(item._id)
+										"
+										:src="artworkUrls.get(item._id)"
+										alt="Episode Image"
+										class="track-artwork"
+									>
+									<div
+										v-else-if="categoryType === 'Episodes'"
+										class="track-artwork-placeholder"
+										@vue:mounted="loadArtworkUrl(item)"
+									/>
+								</NuxtLink>
+								<div class="slide-content">
+									<section class="slide-content__interactive">
+										<h3 v-if="item?.datetime" class="slide-date">
+											{{ formatDate(item.datetime) }}
+										</h3>
+										<h3 v-else-if="item?._updatedAt" class="slide-date">
+											{{ formatDate(item._updatedAt) }}
+										</h3>
+										<button
+											v-if="categoryType == 'Episodes'"
+											class="play"
+											@click="playTrack(item)"
+										>
+											<svg
+												width="9"
+												height="12"
+												viewBox="0 0 9 12"
+												fill="none"
+												xmlns="http://www.w3.org/2000/svg"
+											>
+												<path
+													d="M9 6L-4.89399e-07 11.1962L-3.51373e-08 0.803847L9 6Z"
+													fill="black"
+												/>
+											</svg>
+										</button>
+									</section>
+									<NuxtLink
+										v-if="
+											item?.clickableTitle &&
+												item?.parentShow?.title !== 'No Show'
+										"
+										:to="
+											localePath(
+												`/shows/no-show/${item?.parentShow?.slug?.current}`
+											)
+										"
+										class="slide__link"
+									>
+										<h3 class="slide-title show-title">
+											{{ item?.parentShow?.title }}
+										</h3>
+									</NuxtLink>
+									<h3
+										v-else-if="
+											item?.parentShow && item?.parentShow?.title !== 'No Show'
+										"
+										class="slide-title show-title"
+									>
+										{{ item?.parentShow?.title }}
+									</h3>
+									<NuxtLink
+										v-if="item?.slug"
+										:to="getItemRoute(item)"
+										class="slide__link"
+									>
+										<h3 v-if="contentType !== 'sets'" class="slide-title">
+											{{ item?.title }}
+										</h3>
+									</NuxtLink>
+									<h3 v-else-if="contentType !== 'sets'" class="slide-title">
+										{{ item?.title }}
+									</h3>
+									<div
+										v-if="
+											contentType === 'sets' &&
+												item.persons &&
+												item.persons.length > 0
+										"
+										class="show-artists"
+									>
+										<h3
+											v-for="(artist, index) in item.persons"
+											:key="artist._id"
+											class="slide-title"
+										>
+											<NuxtLink
+												v-if="artist?.poolVisibility"
+												:to="localePath(`/pool/${artist?.slug?.current}`)"
+												class="slide__link"
+											>
+												{{ artist.title
+												}}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+											</NuxtLink>
+											<span v-else class="slide-title">
+												{{ artist.title
+												}}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+											</span>
+										</h3>
+									</div>
+									<RichText
+										v-if="item?.useTeaserText && item?.textTeaser"
+										:blocks="parseI18nObj(item?.textTeaser)"
+									/>
+									<RichText
+										v-else-if="
+											!item?.useTeaserText && item?.text && item.text.length > 0
+										"
+										:blocks="parseI18nObj(item?.text)?.slice(0, 1)"
+									/>
+									<RichText
+										v-else-if="
+											!item?.text &&
+												item?.description &&
+												item.description.length > 0 &&
+												(item.description[0]?.value || item.description[1]?.value)
+										"
+										:blocks="
+											limitTextBlocks(
+												parseI18nObj(item?.description)?.slice(0, 1),
+												100
+											)
+										"
+									/>
+									<RichText
+										v-else-if="
+											!item?.text &&
+												module.poolContentType == 'persons' &&
+												mainStore?.siteFallbacks?.fallbackPerson?.description
+													.length > 0 &&
+												(mainStore?.siteFallbacks?.fallbackPerson
+													?.description?.[0]?.value ||
+													mainStore?.siteFallbacks?.fallbackPerson
+														?.description?.[1]?.value)
+										"
+										:blocks="
+											limitTextBlocks(
+												parseI18nObj(
+													mainStore?.siteFallbacks?.fallbackPerson?.description
+												)?.slice(0, 1),
+												100
+											)
+										"
+									/>
+									<RichText
+										v-else-if="
+											!item?.text &&
+												module.poolContentType == 'venues' &&
+												mainStore?.siteFallbacks?.fallbackVenue?.description
+													.length > 0 &&
+												(mainStore?.siteFallbacks?.fallbackVenue?.description?.[0]
+													?.value ||
+													mainStore?.siteFallbacks?.fallbackPerson
+														?.description?.[1]?.value)
+										"
+										:blocks="
+											limitTextBlocks(
+												parseI18nObj(
+													mainStore?.siteFallbacks?.fallbackPerson?.description
+												)?.slice(0, 1),
+												100
+											)
+										"
+									/>
+									<div
+										v-if="module.showTags && item.tags?.length"
+										class="slide__tags tags"
+									>
+										<button
+											v-for="tag in item.tags.filter(
+												(tag) => tag._type !== 'tag.city'
+											)"
+											:key="tag._id || tag._ref"
+											class="tag"
+										>
+											{{
+												tag?.title?.[1]?.value
+													? parseI18nObj(tag?.title)
+													: tag?.title[0].value ?? tag.title
+											}}
+										</button>
+									</div>
+									<div
+										v-if="module.showTags && item.genres?.length"
+										class="slide-genres"
+									>
+										<span
+											v-for="genre in item.genres"
+											:key="genre._id"
+											class="genre"
+										>{{ genre.name || genre.title }}</span
+										>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Mobile Version (v-if wenn < 900px) -->
+		<div v-if="!isDesktop" class="mobile-slider">
+			<nav class="embla__nav">
+				<!-- Mobile Dot Navigation -->
+				<div v-if="mobileScrollSnaps.length > 1" class="embla__nav__dots">
+					<button
+						v-for="(_, index) in mobileScrollSnaps"
+						:key="index"
+						:class="[
+							'embla__dot',
+							{ 'is-selected': index === mobileSelectedIndex },
+						]"
+						@click="mobileScrollTo(index)"
+					/>
+				</div>
 
-        <!-- Mobile Arrow Navigation -->
-        <div class="embla__nav__arrows" v-if="mobileScrollSnaps.length > 1">
-          <button
-            class="embla__arrow embla__arrow--prev"
-            @click="mobileScrollPrev"
-            aria-label="Vorheriger Slide"
-          >
-            <svg
-              width="22"
-              height="20"
-              viewBox="0 0 22 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M1.67986e-07 9.84832L21.1305 0.452866L21.1305 19.2438L1.67986e-07 9.84832Z"
-                fill="black"
-              />
-            </svg>
-          </button>
-          <button
-            class="embla__arrow embla__arrow--next"
-            @click="mobileScrollNext"
-            aria-label="Nächster Slide"
-          >
-            <svg
-              width="22"
-              height="20"
-              viewBox="0 0 22 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M22 9.84894L0.86951 19.2444L0.869511 0.453482L22 9.84894Z"
-                fill="black"
-              />
-            </svg>
-          </button>
-        </div>
-      </nav>
+				<!-- Mobile Arrow Navigation -->
+				<div v-if="mobileScrollSnaps.length > 1" class="embla__nav__arrows">
+					<button
+						class="embla__arrow embla__arrow--prev"
+						aria-label="Vorheriger Slide"
+						@click="mobileScrollPrev"
+					>
+						<svg
+							width="22"
+							height="20"
+							viewBox="0 0 22 20"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M1.67986e-07 9.84832L21.1305 0.452866L21.1305 19.2438L1.67986e-07 9.84832Z"
+								fill="black"
+							/>
+						</svg>
+					</button>
+					<button
+						class="embla__arrow embla__arrow--next"
+						aria-label="Nächster Slide"
+						@click="mobileScrollNext"
+					>
+						<svg
+							width="22"
+							height="20"
+							viewBox="0 0 22 20"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M22 9.84894L0.86951 19.2444L0.869511 0.453482L22 9.84894Z"
+								fill="black"
+							/>
+						</svg>
+					</button>
+				</div>
+			</nav>
 
-      <div ref="mobileEmblaNode" class="embla">
-        <div ref="mobileContainer" class="embla__container">
-          <div
-            v-for="(group, groupIndex) in mobileGroupedItems"
-            :key="groupIndex"
-            class="embla__slide"
-            :class="{ active: groupIndex === mobileCurrentIndex }"
-          >
-            <div
-              :class="`slide-group mobile-group-${module.style || 'default'}`"
-            >
-              <!-- Mobile Slider-Inhalt (ein Item pro Slide) -->
-              <div
-                v-for="item in group"
-                :key="item._id"
-                :class="`slide-item mobile-slide-${module.style || 'default'}`"
-              >
-                <div
-                  v-if="
-                    module.showTags &&
-                    item.tags?.length &&
-                    module.style !== 'image'
-                  "
-                  class="slide__tags city-tags"
-                >
-                  <button
-                    v-for="tag in item.tags.filter(
-                      (tag) => tag._type == 'tag.city'
-                    )"
-                    :key="tag._id || tag._ref"
-                    class="tag city"
-                  >
-                    {{
-                      tag?.short?.[1]?.value
-                        ? parseI18nObj(tag?.short)
-                        : tag?.short[0].value ?? tag.short
-                    }}
-                  </button>
-                </div>
-                <div
-                  v-else-if="module.style !== 'image'"
-                  class="slide__tags city-tags"
-                ></div>
-                <NuxtLink
-                  v-if="item?.slug"
-                  :to="getItemRoute(item)"
-                  class="slide__link"
-                >
-                  <MediaImage
-                    v-if="getItemImage(item) && categoryType !== 'Episodes'"
-                    :image="getItemImage(item)"
-                    :class="`media-${module.style}`"
-                  />
-                  <img
-                    v-else-if="
-                      categoryType === 'Episodes' && artworkUrls.get(item._id)
-                    "
-                    :src="artworkUrls.get(item._id)"
-                    alt="Episode Image"
-                    class="track-artwork"
-                  />
-                  <div
-                    v-else-if="categoryType === 'Episodes'"
-                    class="track-artwork-placeholder"
-                    @vue:mounted="loadArtworkUrl(item)"
-                  ></div>
-                </NuxtLink>
-                <div class="slide-content">
-                  <section class="slide-content__interactive">
-                    <h3 class="slide-date" v-if="item?.datetime">
-                      {{ formatDate(item.datetime) }}
-                    </h3>
-                    <h3 class="slide-date" v-else-if="item?._updatedAt">
-                      {{ formatDate(item._updatedAt) }}
-                    </h3>
-                    <button
-                      @click="playTrack(item)"
-                      v-if="categoryType == 'Episodes'"
-                      class="play"
-                    >
-                      <svg
-                        width="9"
-                        height="12"
-                        viewBox="0 0 9 12"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M9 6L-4.89399e-07 11.1962L-3.51373e-08 0.803847L9 6Z"
-                          fill="black"
-                        />
-                      </svg>
-                    </button>
-                  </section>
-                  <NuxtLink
-                    v-if="
-                      item?.parentShow?.slug &&
-                      item?.clickableTitle &&
-                      item?.parentShow?.title !== 'No Show'
-                    "
-                    :to="localePath(`/shows/${item?.parentShow?.slug.current}`)"
-                    class="slide__link"
-                  >
-                    <h3 class="slide-title show-title">
-                      {{ item?.parentShow?.title }}
-                    </h3>
-                  </NuxtLink>
-                  <h3
-                    v-else-if="
-                      item?.parentShow && item?.parentShow?.title !== 'No Show'
-                    "
-                    class="slide-title show-title"
-                  >
-                    {{ item?.parentShow?.title }}
-                  </h3>
-                  <NuxtLink
-                    v-if="item?.slug"
-                    :to="getItemRoute(item)"
-                    a
-                    class="slide__link"
-                  >
-                    <h3 class="slide-title" v-if="contentType !== 'sets'">
-                      {{ item?.title }}
-                    </h3>
-                  </NuxtLink>
-                  <h3 class="slide-title" v-else-if="contentType !== 'sets'">
-                    {{ item?.title }}
-                  </h3>
-                  <div
-                    v-if="
-                      contentType === 'sets' &&
-                      item.persons &&
-                      item.persons.length > 0
-                    "
-                    class="show-artists"
-                  >
-                    <h3
-                      v-for="(artist, index) in item.persons"
-                      :key="artist._id"
-                      class="slide-title"
-                    >
-                      <NuxtLink
-                        v-if="artist?.poolVisibility"
-                        :to="localePath(`/pool/${artist?.slug?.current}`)"
-                        class="slide__link"
-                      >
-                        {{ artist.title
-                        }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
-                      </NuxtLink>
-                      <span v-else class="slide-title">
-                        {{ artist.title
-                        }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
-                      </span>
-                    </h3>
-                  </div>
-                  <RichText
-                    v-if="item?.useTeaserText && item?.textTeaser"
-                    :blocks="parseI18nObj(item?.textTeaser)"
-                  />
-                  <RichText
-                    v-else-if="
-                      !item?.useTeaserText && item?.text && item.text.length > 0
-                    "
-                    :blocks="parseI18nObj(item?.text)?.slice(0, 1)"
-                  />
-                  <RichText
-                    v-else-if="
-                      !item?.text &&
-                      item?.description &&
-                      item.description.length > 0 &&
-                      (item.description[0]?.value || item.description[1]?.value)
-                    "
-                    :blocks="
-                      limitTextBlocks(
-                        parseI18nObj(item?.description)?.slice(0, 1),
-                        100
-                      )
-                    "
-                  />
-                  <RichText
-                    v-else-if="
-                      !item?.text &&
-                      module.poolContentType == 'persons' &&
-                      mainStore?.siteFallbacks?.fallbackPerson?.description
-                        .length > 0 &&
-                      (mainStore?.siteFallbacks?.fallbackPerson
-                        ?.description?.[0]?.value ||
-                        mainStore?.siteFallbacks?.fallbackPerson
-                          ?.description?.[1]?.value)
-                    "
-                    :blocks="
-                      limitTextBlocks(
-                        parseI18nObj(
-                          mainStore?.siteFallbacks?.fallbackPerson?.description
-                        )?.slice(0, 1),
-                        100
-                      )
-                    "
-                  />
-                  <RichText
-                    v-else-if="
-                      !item?.text &&
-                      module.poolContentType == 'venues' &&
-                      mainStore?.siteFallbacks?.fallbackVenue?.description
-                        .length > 0 &&
-                      (mainStore?.siteFallbacks?.fallbackVenue?.description?.[0]
-                        ?.value ||
-                        mainStore?.siteFallbacks?.fallbackPerson
-                          ?.description?.[1]?.value)
-                    "
-                    :blocks="
-                      limitTextBlocks(
-                        parseI18nObj(
-                          mainStore?.siteFallbacks?.fallbackPerson?.description
-                        )?.slice(0, 1),
-                        100
-                      )
-                    "
-                  />
-                  <div
-                    v-if="module.showTags && item.tags?.length"
-                    class="slide__tags tags"
-                  >
-                    <button
-                      v-for="tag in item.tags.filter(
-                        (tag) => tag._type !== 'tag.city'
-                      )"
-                      :key="tag._id || tag._ref"
-                      class="tag"
-                    >
-                      {{
-                        tag?.title?.[1]?.value
-                          ? parseI18nObj(tag?.title)
-                          : tag?.title[0].value ?? tag.title
-                      }}
-                    </button>
-                  </div>
-                  <div
-                    v-if="module.showTags && item.genres?.length"
-                    class="slide-genres"
-                  >
-                    <span
-                      v-for="genre in item.genres"
-                      :key="genre._id"
-                      class="genre"
-                      >{{ genre.name || genre.title }}</span
-                    >
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+			<div ref="mobileEmblaNode" class="embla">
+				<div ref="mobileContainer" class="embla__container">
+					<div
+						v-for="(group, groupIndex) in mobileGroupedItems"
+						:key="groupIndex"
+						class="embla__slide"
+						:class="{ active: groupIndex === mobileCurrentIndex }"
+					>
+						<div
+							:class="`slide-group mobile-group-${module.style || 'default'}`"
+						>
+							<!-- Mobile Slider-Inhalt (ein Item pro Slide) -->
+							<div
+								v-for="item in group"
+								:key="item._id"
+								:class="`slide-item mobile-slide-${module.style || 'default'}`"
+							>
+								<div
+									v-if="
+										module.showTags &&
+											item.tags?.length &&
+											module.style !== 'image'
+									"
+									class="slide__tags city-tags"
+								>
+									<button
+										v-for="tag in item.tags.filter(
+											(tag) => tag._type == 'tag.city'
+										)"
+										:key="tag._id || tag._ref"
+										class="tag city"
+									>
+										{{
+											tag?.short?.[1]?.value
+												? parseI18nObj(tag?.short)
+												: tag?.short[0].value ?? tag.short
+										}}
+									</button>
+								</div>
+								<div
+									v-else-if="module.style !== 'image'"
+									class="slide__tags city-tags"
+								/>
+								<NuxtLink
+									v-if="item?.slug"
+									:to="getItemRoute(item)"
+									class="slide__link"
+								>
+									<MediaImage
+										v-if="getItemImage(item) && categoryType !== 'Episodes'"
+										:image="getItemImage(item)"
+										:class="`media-${module.style}`"
+									/>
+									<img
+										v-else-if="
+											categoryType === 'Episodes' && artworkUrls.get(item._id)
+										"
+										:src="artworkUrls.get(item._id)"
+										alt="Episode Image"
+										class="track-artwork"
+									>
+									<div
+										v-else-if="categoryType === 'Episodes'"
+										class="track-artwork-placeholder"
+										@vue:mounted="loadArtworkUrl(item)"
+									/>
+								</NuxtLink>
+								<div class="slide-content">
+									<section class="slide-content__interactive">
+										<h3 v-if="item?.datetime" class="slide-date">
+											{{ formatDate(item.datetime) }}
+										</h3>
+										<h3 v-else-if="item?._updatedAt" class="slide-date">
+											{{ formatDate(item._updatedAt) }}
+										</h3>
+										<button
+											v-if="categoryType == 'Episodes'"
+											class="play"
+											@click="playTrack(item)"
+										>
+											<svg
+												width="9"
+												height="12"
+												viewBox="0 0 9 12"
+												fill="none"
+												xmlns="http://www.w3.org/2000/svg"
+											>
+												<path
+													d="M9 6L-4.89399e-07 11.1962L-3.51373e-08 0.803847L9 6Z"
+													fill="black"
+												/>
+											</svg>
+										</button>
+									</section>
+									<NuxtLink
+										v-if="
+											item?.parentShow?.slug &&
+												item?.clickableTitle &&
+												item?.parentShow?.title !== 'No Show'
+										"
+										:to="localePath(`/shows/${item?.parentShow?.slug.current}`)"
+										class="slide__link"
+									>
+										<h3 class="slide-title show-title">
+											{{ item?.parentShow?.title }}
+										</h3>
+									</NuxtLink>
+									<h3
+										v-else-if="
+											item?.parentShow && item?.parentShow?.title !== 'No Show'
+										"
+										class="slide-title show-title"
+									>
+										{{ item?.parentShow?.title }}
+									</h3>
+									<NuxtLink
+										v-if="item?.slug"
+										:to="getItemRoute(item)"
+										a
+										class="slide__link"
+									>
+										<h3 v-if="contentType !== 'sets'" class="slide-title">
+											{{ item?.title }}
+										</h3>
+									</NuxtLink>
+									<h3 v-else-if="contentType !== 'sets'" class="slide-title">
+										{{ item?.title }}
+									</h3>
+									<div
+										v-if="
+											contentType === 'sets' &&
+												item.persons &&
+												item.persons.length > 0
+										"
+										class="show-artists"
+									>
+										<h3
+											v-for="(artist, index) in item.persons"
+											:key="artist._id"
+											class="slide-title"
+										>
+											<NuxtLink
+												v-if="artist?.poolVisibility"
+												:to="localePath(`/pool/${artist?.slug?.current}`)"
+												class="slide__link"
+											>
+												{{ artist.title
+												}}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+											</NuxtLink>
+											<span v-else class="slide-title">
+												{{ artist.title
+												}}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+											</span>
+										</h3>
+									</div>
+									<RichText
+										v-if="item?.useTeaserText && item?.textTeaser"
+										:blocks="parseI18nObj(item?.textTeaser)"
+									/>
+									<RichText
+										v-else-if="
+											!item?.useTeaserText && item?.text && item.text.length > 0
+										"
+										:blocks="parseI18nObj(item?.text)?.slice(0, 1)"
+									/>
+									<RichText
+										v-else-if="
+											!item?.text &&
+												item?.description &&
+												item.description.length > 0 &&
+												(item.description[0]?.value || item.description[1]?.value)
+										"
+										:blocks="
+											limitTextBlocks(
+												parseI18nObj(item?.description)?.slice(0, 1),
+												100
+											)
+										"
+									/>
+									<RichText
+										v-else-if="
+											!item?.text &&
+												module.poolContentType == 'persons' &&
+												mainStore?.siteFallbacks?.fallbackPerson?.description
+													.length > 0 &&
+												(mainStore?.siteFallbacks?.fallbackPerson
+													?.description?.[0]?.value ||
+													mainStore?.siteFallbacks?.fallbackPerson
+														?.description?.[1]?.value)
+										"
+										:blocks="
+											limitTextBlocks(
+												parseI18nObj(
+													mainStore?.siteFallbacks?.fallbackPerson?.description
+												)?.slice(0, 1),
+												100
+											)
+										"
+									/>
+									<RichText
+										v-else-if="
+											!item?.text &&
+												module.poolContentType == 'venues' &&
+												mainStore?.siteFallbacks?.fallbackVenue?.description
+													.length > 0 &&
+												(mainStore?.siteFallbacks?.fallbackVenue?.description?.[0]
+													?.value ||
+													mainStore?.siteFallbacks?.fallbackPerson
+														?.description?.[1]?.value)
+										"
+										:blocks="
+											limitTextBlocks(
+												parseI18nObj(
+													mainStore?.siteFallbacks?.fallbackPerson?.description
+												)?.slice(0, 1),
+												100
+											)
+										"
+									/>
+									<div
+										v-if="module.showTags && item.tags?.length"
+										class="slide__tags tags"
+									>
+										<button
+											v-for="tag in item.tags.filter(
+												(tag) => tag._type !== 'tag.city'
+											)"
+											:key="tag._id || tag._ref"
+											class="tag"
+										>
+											{{
+												tag?.title?.[1]?.value
+													? parseI18nObj(tag?.title)
+													: tag?.title[0].value ?? tag.title
+											}}
+										</button>
+									</div>
+									<div
+										v-if="module.showTags && item.genres?.length"
+										class="slide-genres"
+									>
+										<span
+											v-for="genre in item.genres"
+											:key="genre._id"
+											class="genre"
+										>{{ genre.name || genre.title }}</span
+										>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </template>
 
 <style lang="postcss" scoped>

@@ -1,18 +1,16 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-import { ENTRY_QUERY } from "~~/queries/sanity.queries.ts";
-import { useMainStore } from "~/stores/mainStore";
+import { ENTRY_QUERY } from '~~/queries/sanity.queries.ts'
 
-const mainStore = useMainStore();
-const route = useRoute();
+const route = useRoute()
 
-const query = groq`${ENTRY_QUERY}`;
+const query = groq`${ENTRY_QUERY}`
 const { data } = await useCachedSanityQuery(query, {
-  slug: route.params.slug,
-});
+	slug: route.params.slug
+})
 
 if (!data.value) {
-  console.error("Article nicht gefunden:", route.params.slug);
+	console.error('Article nicht gefunden:', route.params.slug)
 }
 
 // const relatedEntries = computed(() => {
@@ -28,60 +26,60 @@ if (!data.value) {
 //   });
 // });
 
-usePageSeo(data?.value?.seo);
+usePageSeo(data?.value?.seo)
 
 useHead({
-  bodyAttrs: {
-    class: `page--article-detail`,
-  },
-});
+	bodyAttrs: {
+		class: 'page--article-detail'
+	}
+})
 </script>
 
 <template>
-  <div class="entry-detail">
-    <section class="entry-detail__intro-section" v-if="data">
-      <ModuleIntroArticleDetailPage :article="data" />
-      <section
-        v-if="data?.relatedContent && data?.relatedContent.length > 0"
-        class="entry-detail__related-content"
-      >
-        <h3>Related Articles</h3>
-        <ModuleRelatedContent
-          v-if="data?.relatedContent.length > 0"
-          :items="data?.relatedContent"
-          type="words"
-          title=""
-        />
-      </section>
-      <section
-        class="module-section"
-        v-if="data?.modules && data?.modules.length > 0"
-      >
-        <div
-          class="module"
-          v-for="module in data.modules"
-          :key="module._key || index"
-        >
-          <ModuleContentGrid
-            v-if="module._type == 'module.contentReferenceGrid'"
-            :module="module"
-          />
-          <ModuleContentTeaser
-            v-if="module._type == 'module.contentReferenceSlider'"
-            :module="module"
-          />
-          <ModuleHeroEntrySolo
-            v-if="module._type == 'module.heroEntry'"
-            :module="module"
-          />
-          <ModuleHeroSlider
-            v-if="module._type == 'module.heroSlider'"
-            :module="module"
-          />
-        </div>
-      </section>
-    </section>
-  </div>
+	<div class="entry-detail">
+		<section v-if="data" class="entry-detail__intro-section">
+			<ModuleIntroArticleDetailPage :article="data" />
+			<section
+				v-if="data?.relatedContent && data?.relatedContent.length > 0"
+				class="entry-detail__related-content"
+			>
+				<h3>Related Articles</h3>
+				<ModuleRelatedContent
+					v-if="data?.relatedContent.length > 0"
+					:items="data?.relatedContent"
+					type="words"
+					title=""
+				/>
+			</section>
+			<section
+				v-if="data?.modules && data?.modules.length > 0"
+				class="module-section"
+			>
+				<div
+					v-for="module in data.modules"
+					:key="module._key || index"
+					class="module"
+				>
+					<ModuleContentGrid
+						v-if="module._type == 'module.contentReferenceGrid'"
+						:module="module"
+					/>
+					<ModuleContentTeaser
+						v-if="module._type == 'module.contentReferenceSlider'"
+						:module="module"
+					/>
+					<ModuleHeroEntrySolo
+						v-if="module._type == 'module.heroEntry'"
+						:module="module"
+					/>
+					<ModuleHeroSlider
+						v-if="module._type == 'module.heroSlider'"
+						:module="module"
+					/>
+				</div>
+			</section>
+		</section>
+	</div>
 </template>
 
 <style lang="postcss" scoped>

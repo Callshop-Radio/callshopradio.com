@@ -5,7 +5,7 @@
  * These queries match the original MODULE_QUERY data structure.
  */
 
-import { IMAGE_QUERY, RICH_TEXT_QUERY } from './sanity.snippets';
+import { IMAGE_QUERY, RICH_TEXT_QUERY } from './sanity.snippets'
 
 // ==================== SET QUERIES ====================
 
@@ -13,7 +13,7 @@ import { IMAGE_QUERY, RICH_TEXT_QUERY } from './sanity.snippets';
  * Query for set listings - matches original MODULE_QUERY structure
  */
 // Breakdown for dynamic composition
-export const SET_BASE_FILTER = "_type == 'set' && datetime != null";
+export const SET_BASE_FILTER = '_type == \'set\' && datetime != null'
 
 export const SET_PROJECTION = `{
   ...,
@@ -81,26 +81,26 @@ export const SET_PROJECTION = `{
       short
     } | order(lower(title)),
   }
-}`;
+}`
 
 /**
  * Query for set listings - matches original MODULE_QUERY structure
  */
-export const SET_LIST_QUERY = `*[${SET_BASE_FILTER}] | order(datetime desc)[$start...$end] ${SET_PROJECTION}`;
+export const SET_LIST_QUERY = `*[${SET_BASE_FILTER}] | order(datetime desc)[$start...$end] ${SET_PROJECTION}`
 
 /**
  * Count query for sets pagination
  */
 export const SET_COUNT_QUERY = `
 count(*[_type == 'set' && datetime != null])
-`;
+`
 
 // ==================== POOL QUERIES ====================
 
 /**
  * Query for pool items (persons and venues) - matches original MODULE_QUERY
  */
-export const POOL_BASE_FILTER = "_type in $types && poolVisibility == true";
+export const POOL_BASE_FILTER = '_type in $types && poolVisibility == true'
 
 export const POOL_PROJECTION = `{
   ...,
@@ -119,23 +119,23 @@ export const POOL_PROJECTION = `{
     title
   } | order(lower(title)),
   location
-}`;
+}`
 
-export const POOL_LIST_QUERY = `*[${POOL_BASE_FILTER}] | order(_updatedAt desc)[$start...$end] ${POOL_PROJECTION}`;
+export const POOL_LIST_QUERY = `*[${POOL_BASE_FILTER}] | order(_updatedAt desc)[$start...$end] ${POOL_PROJECTION}`
 
 /**
  * Count query for pool pagination
  */
 export const POOL_COUNT_QUERY = `
 count(*[_type in $types && poolVisibility == true])
-`;
+`
 
 // ==================== ARTICLE QUERIES ====================
 
 /**
  * Query for article listings - matches original MODULE_QUERY
  */
-export const ARTICLE_BASE_FILTER = "_type == 'article'";
+export const ARTICLE_BASE_FILTER = '_type == \'article\''
 
 export const ARTICLE_PROJECTION = `{
   ...,
@@ -157,23 +157,23 @@ export const ARTICLE_PROJECTION = `{
     title,
     short
   } | order(lower(title))
-}`;
+}`
 
-export const ARTICLE_LIST_QUERY = `*[${ARTICLE_BASE_FILTER}] | order(datetime desc)[$start...$end] ${ARTICLE_PROJECTION}`;
+export const ARTICLE_LIST_QUERY = `*[${ARTICLE_BASE_FILTER}] | order(datetime desc)[$start...$end] ${ARTICLE_PROJECTION}`
 
 /**
  * Count query for articles pagination
  */
 export const ARTICLE_COUNT_QUERY = `
 count(*[_type == 'article'])
-`;
+`
 
 // ==================== SHOW QUERIES ====================
 
 /**
  * Query for show listings - matches original MODULE_QUERY
  */
-export const SHOW_BASE_FILTER = "_type == 'show'";
+export const SHOW_BASE_FILTER = '_type == \'show\''
 
 export const SHOW_PROJECTION = `{
   ...,
@@ -192,16 +192,16 @@ export const SHOW_PROJECTION = `{
     title,
     short
   } | order(lower(title))
-}`;
+}`
 
-export const SHOW_LIST_QUERY = `*[${SHOW_BASE_FILTER}] | order(datetime desc)[$start...$end] ${SHOW_PROJECTION}`;
+export const SHOW_LIST_QUERY = `*[${SHOW_BASE_FILTER}] | order(datetime desc)[$start...$end] ${SHOW_PROJECTION}`
 
 /**
  * Count query for shows pagination
  */
 export const SHOW_COUNT_QUERY = `
 count(*[_type == 'show'])
-`;
+`
 
 // ==================== LIGHTWEIGHT MODULE METADATA ====================
 
@@ -263,7 +263,7 @@ export const MODULE_METADATA_QUERY = `{
     autoLoad
     // NO content items - fetched by module
   }
-}`;
+}`
 
 // ==================== QUERY BUILDERS ====================
 
@@ -271,8 +271,8 @@ export const MODULE_METADATA_QUERY = `{
  * Build a query for specific content type
  */
 export const buildModuleQuery = (
-  type: 'sets' | 'pool' | 'shows' | 'words',
-  options: {
+	type: 'sets' | 'pool' | 'shows' | 'words',
+	options: {
     start?: number;
     end?: number;
     contentType?: string | string[];
@@ -280,60 +280,61 @@ export const buildModuleQuery = (
     filterOrTags?: string[][]; // Array of OR groups (e.g. [[GenreA, GenreB], [CityX, CityY]])
   } = {}
 ) => {
-  const { start = 0, end = 24, filterTags = [], filterOrTags = [] } = options;
+	const { start = 0, end = 24, filterTags = [], filterOrTags = [] } = options
   
-  // Build dynamic filters
-  let filterString = "";
+	// Build dynamic filters
+	let filterString = ''
   
-  // AND logic: Match specific tags
-  if (filterTags.length > 0) {
-    filterTags.forEach(tagId => {
-       // Using references() to match if the document references the tag
-       filterString += ` && references("${tagId}")`;
-    });
-  }
+	// AND logic: Match specific tags
+	if (filterTags.length > 0) {
+		filterTags.forEach(tagId => {
+			// Using references() to match if the document references the tag
+			filterString += ` && references("${tagId}")`
+		})
+	}
   
-  // OR logic: Process each group
-  if (filterOrTags.length > 0) {
-    filterOrTags.forEach(group => {
-      if (group.length > 0) {
-        const quotedIds = group.map(id => `"${id}"`).join(", ");
-        filterString += ` && references(${quotedIds})`;
-      }
-    });
-  }
+	// OR logic: Process each group
+	if (filterOrTags.length > 0) {
+		filterOrTags.forEach(group => {
+			if (group.length > 0) {
+				const quotedIds = group.map(id => `"${id}"`).join(', ')
+				filterString += ` && references(${quotedIds})`
+			}
+		})
+	}
 
-  const buildParams = { start, end };
-  const getQuery = (baseFilter: string, projection: string, orderBy: string = "order(datetime desc)") => ({
-    query: `*[${baseFilter}${filterString}] | ${orderBy}[$start...$end] ${projection}`,
-    countQuery: `count(*[${baseFilter}${filterString}])`,
-    params: buildParams
-  });
+	const buildParams = { start, end }
+	const getQuery = (baseFilter: string, projection: string, orderBy: string = 'order(datetime desc)') => ({
+		query: `*[${baseFilter}${filterString}] | ${orderBy}[$start...$end] ${projection}`,
+		countQuery: `count(*[${baseFilter}${filterString}])`,
+		params: buildParams
+	})
 
-  switch (type) {
-    case 'sets':
-      return getQuery(SET_BASE_FILTER, SET_PROJECTION);
+	switch (type) {
+	case 'sets':
+		return getQuery(SET_BASE_FILTER, SET_PROJECTION)
       
-    case 'pool':
-      const poolParams = { 
-        ...buildParams, 
-        types: options.contentType 
-          ? (Array.isArray(options.contentType) ? options.contentType : [options.contentType]) 
-          : ['person', 'venue'] 
-      };
-      return {
-        query: `*[${POOL_BASE_FILTER}${filterString}] | order(_updatedAt desc)[$start...$end] ${POOL_PROJECTION}`,
-        countQuery: `count(*[${POOL_BASE_FILTER}${filterString}])`,
-        params: poolParams
-      };
+	case 'pool': {
+		const poolParams = { 
+			...buildParams, 
+			types: options.contentType 
+				? (Array.isArray(options.contentType) ? options.contentType : [options.contentType]) 
+				: ['person', 'venue'] 
+		}
+		return {
+			query: `*[${POOL_BASE_FILTER}${filterString}] | order(_updatedAt desc)[$start...$end] ${POOL_PROJECTION}`,
+			countQuery: `count(*[${POOL_BASE_FILTER}${filterString}])`,
+			params: poolParams
+		}
+	}
       
-    case 'shows':
-      return getQuery(SHOW_BASE_FILTER, SHOW_PROJECTION);
+	case 'shows':
+		return getQuery(SHOW_BASE_FILTER, SHOW_PROJECTION)
       
-    case 'words':
-      return getQuery(ARTICLE_BASE_FILTER, ARTICLE_PROJECTION);
+	case 'words':
+		return getQuery(ARTICLE_BASE_FILTER, ARTICLE_PROJECTION)
       
-    default:
-      throw new Error(`Unknown content type: ${type}`);
-  }
-};
+	default:
+		throw new Error(`Unknown content type: ${type}`)
+	}
+}

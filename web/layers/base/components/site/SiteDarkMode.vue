@@ -1,45 +1,50 @@
 
-<template>
-  <div class="darkmodeswitch" @click="toggleDarkMode">
-    <svg
-      width="24"
-      height="15"
-      viewBox="0 0 18 11"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle class="left" cx="5.5" cy="5.5" r="5.5" fill="var(--color-text)" />
-      <circle
-        class="right"
-        cx="12.5"
-        cy="5.5"
-        r="5"
-        fill="var(--color-bg)"
-        stroke="var(--color-text)"
-      />
-    </svg>
-  </div>
-</template>
-          
 <script setup>
-import { computed } from "vue";
-import { useMainStore } from "@/stores/mainStore";
+import { computed } from 'vue'
+import { useMainStore } from '@/stores/mainStore'
 
-const mainStore = useMainStore();
-const isDarkMode = computed(() => mainStore?.isDarkMode);
+const mainStore = useMainStore()
+const _isDarkMode = computed(() => mainStore?.isDarkMode)
 
 const detectSystemDarkMode = () => {
-  mainStore.detectSystemDarkMode();
-};
+	mainStore.detectSystemDarkMode()
+}
 
 const toggleDarkMode = () => {
-  mainStore.toggleDarkMode();
-};
+	mainStore.toggleDarkMode()
+}
 
 onMounted(() => {
-  detectSystemDarkMode();
-});
+	detectSystemDarkMode()
+})
 </script>
+          
+<template>
+	<div class="darkmodeswitch" @click="toggleDarkMode">
+		<svg
+			width="24"
+			height="15"
+			viewBox="0 0 18 11"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<circle
+				class="left"
+				cx="5.5"
+				cy="5.5"
+				r="5.5"
+				fill="var(--color-text)" />
+			<circle
+				class="right"
+				cx="12.5"
+				cy="5.5"
+				r="5"
+				fill="var(--color-bg)"
+				stroke="var(--color-text)"
+			/>
+		</svg>
+	</div>
+</template>
           
 <style scoped lang="postcss">
 .darkmodeswitch {

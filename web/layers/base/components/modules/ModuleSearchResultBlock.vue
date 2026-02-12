@@ -9,459 +9,463 @@
  * - title: Optional section title
  */
 
-import { ref, computed, watch, onMounted, nextTick } from "vue";
-import { useMainStore } from "~/stores/mainStore";
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { useMainStore } from '~/stores/mainStore'
 
-const { locale } = useI18n();
-const localePath = useLocalePath();
-const mainStore = useMainStore() as any;
+const { locale: _locale } = useI18n()
+const localePath = useLocalePath()
+const mainStore = useMainStore() as any
 
 const props = defineProps({
-  items: {
-    type: Array as () => any[],
-    default: () => [],
-  },
-  type: {
-    type: String as () => "pool" | "shows" | "words",
-    required: true,
-  },
-  title: {
-    type: String,
-    default: "",
-  },
-});
+	items: {
+		type: Array as () => any[],
+		default: () => []
+	},
+	type: {
+		type: String as () => 'pool' | 'shows' | 'words',
+		required: true
+	},
+	title: {
+		type: String,
+		default: ''
+	}
+})
 
 // State
-const ITEMS_PER_PAGE = 6;
-const visibleItemCount = ref(ITEMS_PER_PAGE);
-const artworkUrls = ref(new Map<string, string>());
+const ITEMS_PER_PAGE = 6
+const visibleItemCount = ref(ITEMS_PER_PAGE)
+const artworkUrls = ref(new Map<string, string>())
 
 // Color and styling based on type
 const typeConfig = computed(() => {
-  const configs: Record<
+	const configs: Record<
     string,
     { color: string; label: string; cssClass: string }
   > = {
-    pool: { color: "blue", label: "Pool", cssClass: "pool" },
-    shows: { color: "pink", label: "Shows", cssClass: "sets" },
-    words: { color: "green", label: "Words", cssClass: "words" },
-  };
-  return configs[props.type] || configs.shows;
-});
+  	pool: { color: 'blue', label: 'Pool', cssClass: 'pool' },
+  	shows: { color: 'pink', label: 'Shows', cssClass: 'sets' },
+  	words: { color: 'green', label: 'Words', cssClass: 'words' }
+  }
+	return configs[props.type] || configs.shows
+})
 
 // Visible items (paginated) - items come pre-sorted from parent
 const visibleItems = computed(() => {
-  return props.items.slice(0, visibleItemCount.value);
-});
+	return props.items.slice(0, visibleItemCount.value)
+})
 
 // Has more items to load
 const hasMoreItems = computed(() => {
-  return props.items.length > visibleItemCount.value;
-});
+	return props.items.length > visibleItemCount.value
+})
 
 // Functions
 function loadMoreItems() {
-  visibleItemCount.value += ITEMS_PER_PAGE;
+	visibleItemCount.value += ITEMS_PER_PAGE
 
-  // Load artwork URLs for newly visible items (for shows/sets)
-  if (props.type === "shows") {
-    nextTick(() => {
-      const newItems = props.items.slice(
-        visibleItemCount.value - ITEMS_PER_PAGE,
-        visibleItemCount.value
-      );
-      newItems.forEach((item: any) => {
-        if (!artworkUrls.value.has(item?._id)) {
-          loadArtworkUrl(item);
-        }
-      });
-    });
-  }
+	// Load artwork URLs for newly visible items (for shows/sets)
+	if (props.type === 'shows') {
+		nextTick(() => {
+			const newItems = props.items.slice(
+				visibleItemCount.value - ITEMS_PER_PAGE,
+				visibleItemCount.value
+			)
+			newItems.forEach((item: any) => {
+				if (!artworkUrls.value.has(item?._id)) {
+					loadArtworkUrl(item)
+				}
+			})
+		})
+	}
 }
 
 function formatDate(dateString: string) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "";
-  return date.toLocaleDateString("de-DE", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+	if (!dateString) return ''
+	const date = new Date(dateString)
+	if (isNaN(date.getTime())) return ''
+	return date.toLocaleDateString('de-DE', {
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric'
+	})
 }
 
 function getItemImage(item: any) {
-  if (item.image) return item.image;
-  if (item.mainImage) return item.mainImage;
+	if (item.image) return item.image
+	if (item.mainImage) return item.mainImage
 
-  const fallbacks: Record<string, any> = {
-    person: mainStore?.siteFallbacks?.fallbackPerson?.image,
-    venue: mainStore?.siteFallbacks?.fallbackVenue?.image,
-    show: mainStore?.siteFallbacks?.fallbackShow?.image,
-    set: mainStore?.siteFallbacks?.fallbackSet?.image,
-    article: mainStore?.siteFallbacks?.fallbackArticle?.image,
-  };
+	const fallbacks: Record<string, any> = {
+		person: mainStore?.siteFallbacks?.fallbackPerson?.image,
+		venue: mainStore?.siteFallbacks?.fallbackVenue?.image,
+		show: mainStore?.siteFallbacks?.fallbackShow?.image,
+		set: mainStore?.siteFallbacks?.fallbackSet?.image,
+		article: mainStore?.siteFallbacks?.fallbackArticle?.image
+	}
 
-  return fallbacks[item._type] || mainStore?.siteFallbacks?.fallbackSet?.image;
+	return fallbacks[item._type] || mainStore?.siteFallbacks?.fallbackSet?.image
 }
 
 function getItemRoute(item: any) {
-  if (!item || !item?.slug) return "/";
+	if (!item || !item?.slug) return '/'
 
-  switch (item?._type) {
-    case "person":
-    case "venue":
-      return localePath(`/pool/${item?.slug?.current}`);
-    case "set":
-      if (item?.parentShow?.slug?.current) {
-        return localePath(
-          `/shows/${item.parentShow.slug.current}/${item?.slug?.current}`
-        );
-      }
-      return localePath(`/shows/${item?.slug?.current}`);
-    case "article":
-      return localePath(`/words/${item?.slug?.current}`);
-    case "show":
-      return localePath(`/shows/${item?.slug?.current}`);
-    default:
-      return localePath(`/${item?._type}/${item?.slug?.current}`);
-  }
+	switch (item?._type) {
+	case 'person':
+	case 'venue':
+		return localePath(`/pool/${item?.slug?.current}`)
+	case 'set':
+		if (item?.parentShow?.slug?.current) {
+			return localePath(
+				`/shows/${item.parentShow.slug.current}/${item?.slug?.current}`
+			)
+		}
+		return localePath(`/shows/${item?.slug?.current}`)
+	case 'article':
+		return localePath(`/words/${item?.slug?.current}`)
+	case 'show':
+		return localePath(`/shows/${item?.slug?.current}`)
+	default:
+		return localePath(`/${item?._type}/${item?.slug?.current}`)
+	}
 }
 
 function getItemCityTags(item: any) {
-  const cityTags: any[] = [];
+	const cityTags: any[] = []
 
-  if (item?.tags && Array.isArray(item?.tags)) {
-    item.tags.forEach((tag: any) => {
-      if (tag._type === "tag.city") {
-        cityTags.push(tag);
-      }
-    });
-  }
+	if (item?.tags && Array.isArray(item?.tags)) {
+		item.tags.forEach((tag: any) => {
+			if (tag._type === 'tag.city') {
+				cityTags.push(tag)
+			}
+		})
+	}
 
-  if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
-    item.parentShow.tags.forEach((tag: any) => {
-      if (
-        tag._type === "tag.city" &&
+	if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
+		item.parentShow.tags.forEach((tag: any) => {
+			if (
+				tag._type === 'tag.city' &&
         !cityTags.some((t) => t._id === tag._id)
-      ) {
-        cityTags.push(tag);
-      }
-    });
-  }
+			) {
+				cityTags.push(tag)
+			}
+		})
+	}
 
-  return cityTags;
+	return cityTags
 }
 
 function getItemNonCityTags(item: any) {
-  const tags: any[] = [];
+	const tags: any[] = []
 
-  const addTags = (sourceTags: any[]) => {
-    if (Array.isArray(sourceTags)) {
-      sourceTags.forEach((tag: any) => {
-        if (tag._type !== "tag.city" && !tags.some((t) => t._id === tag._id)) {
-          tags.push(tag);
-        }
-      });
-    }
-  };
+	const addTags = (sourceTags: any[]) => {
+		if (Array.isArray(sourceTags)) {
+			sourceTags.forEach((tag: any) => {
+				if (tag._type !== 'tag.city' && !tags.some((t) => t._id === tag._id)) {
+					tags.push(tag)
+				}
+			})
+		}
+	}
 
-  addTags(item?.tags);
-  addTags(item?.parentShow?.tags);
+	addTags(item?.tags)
+	addTags(item?.parentShow?.tags)
 
-  return tags;
+	return tags
 }
 
-function checkImage(url: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
-    img.src = url;
-  });
+function _checkImage(url: string): Promise<boolean> {
+	return new Promise((resolve) => {
+		const img = new Image()
+		img.onload = () => resolve(true)
+		img.onerror = () => resolve(false)
+		img.src = url
+	})
 }
 
 // Non-blocking artwork URL resolution
 function getSoundcloudArtwork(item: any): string {
-  const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
-  if (artworkUrl) {
-    return artworkUrl.replace("-large", "-t500x500");
-  }
-  const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-  const storeFallbackUrl =
-    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
-  return parentShowImageUrl || storeFallbackUrl || "";
+	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url
+	if (artworkUrl) {
+		return artworkUrl.replace('-large', '-t500x500')
+	}
+	const parentShowImageUrl = item?.parentShow?.image?.asset?.url
+	const storeFallbackUrl =
+    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
+	return parentShowImageUrl || storeFallbackUrl || ''
 }
 
 function loadArtworkUrl(item: any) {
-  if (!item) return;
-  const url = getSoundcloudArtwork(item);
-  artworkUrls.value.set(item._id, url);
+	if (!item) return
+	const url = getSoundcloudArtwork(item)
+	artworkUrls.value.set(item._id, url)
 }
 
 function playTrack(item: any) {
-  if (item?.soundcloud?.tracks?.[0]) {
-    const track = item.soundcloud.tracks[0];
-    if (!track.permalink_url && track.id) {
-      track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
-    }
-    mainStore.currentTrack = track;
-  }
+	if (item?.soundcloud?.tracks?.[0]) {
+		const track = item.soundcloud.tracks[0]
+		if (!track.permalink_url && track.id) {
+			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
+		}
+		mainStore.currentTrack = track
+	}
 }
 
 // Lifecycle
 onMounted(() => {
-  if (props.type === "shows") {
-    visibleItems.value.forEach((item: any) => {
-      loadArtworkUrl(item);
-    });
-  }
-});
+	if (props.type === 'shows') {
+		visibleItems.value.forEach((item: any) => {
+			loadArtworkUrl(item)
+		})
+	}
+})
 
 // Reset when items change
 watch(
-  () => props.items,
-  () => {
-    visibleItemCount.value = ITEMS_PER_PAGE;
-  },
-  { deep: true }
-);
+	() => props.items,
+	() => {
+		visibleItemCount.value = ITEMS_PER_PAGE
+	},
+	{ deep: true }
+)
 </script>
 
 <template>
-  <div
-    v-if="items && items.length > 0"
-    :class="[
-      'search-result-block',
-      `search-result-block--${typeConfig?.cssClass}`,
-    ]"
-  >
-    <!-- Header with Category Pill -->
-    <div class="search-result-block__header">
-      <NuxtLink
-        :to="type === 'shows' ? localePath('/shows') : localePath(`/${type}`)"
-        class="search-result-block__header__link"
-      >
-        <h2
-          class="search-result-block__pill"
-          :class="`search-result-block__pill--${typeConfig?.color}`"
-        >
-          {{ title || typeConfig?.label }}
-        </h2>
-      </NuxtLink>
-      <span class="search-result-block__count">({{ items.length }})</span>
-    </div>
+	<div
+		v-if="items && items.length > 0"
+		:class="[
+			'search-result-block',
+			`search-result-block--${typeConfig?.cssClass}`,
+		]"
+	>
+		<!-- Header with Category Pill -->
+		<div class="search-result-block__header">
+			<NuxtLink
+				:to="type === 'shows' ? localePath('/shows') : localePath(`/${type}`)"
+				class="search-result-block__header__link"
+			>
+				<h2
+					class="search-result-block__pill"
+					:class="`search-result-block__pill--${typeConfig?.color}`"
+				>
+					{{ title || typeConfig?.label }}
+				</h2>
+			</NuxtLink>
+			<span class="search-result-block__count">({{ items.length }})</span>
+		</div>
 
-    <!-- Content Grid -->
-    <div class="search-result-block__grid">
-      <div
-        v-for="item in visibleItems"
-        :key="item._id"
-        :class="['teaser-item', `teaser-item--${typeConfig?.cssClass}`]"
-      >
-        <!-- City Tags (displayed above image like in ModuleContentTeaser/ModuleContentGrid) -->
-        <div
-          v-if="getItemCityTags(item).length > 0"
-          class="teaser-item__tags city-tags"
-        >
-          <span
-            v-for="tag in getItemCityTags(item)"
-            :key="tag._id"
-            class="tag city"
-          >
-            {{ parseI18nObj(tag?.short) || tag?.short }}
-          </span>
-        </div>
+		<!-- Content Grid -->
+		<div class="search-result-block__grid">
+			<div
+				v-for="item in visibleItems"
+				:key="item._id"
+				:class="['teaser-item', `teaser-item--${typeConfig?.cssClass}`]"
+			>
+				<!-- City Tags (displayed above image like in ModuleContentTeaser/ModuleContentGrid) -->
+				<div
+					v-if="getItemCityTags(item).length > 0"
+					class="teaser-item__tags city-tags"
+				>
+					<span
+						v-for="tag in getItemCityTags(item)"
+						:key="tag._id"
+						class="tag city"
+					>
+						{{ parseI18nObj(tag?.short) || tag?.short }}
+					</span>
+				</div>
 
-        <!-- Image -->
-        <NuxtLink
-          v-if="item?.slug"
-          :to="getItemRoute(item)"
-          class="teaser-item__link"
-        >
-          <div class="teaser-item__image">
-            <!-- Set with SoundCloud -->
-            <template v-if="item._type === 'set'">
-              <img
-                v-if="item?.image?.asset?.url"
-                :src="item.image.asset.url"
-                :alt="item?.title || ''"
-              />
-              <div v-else-if="item?.soundcloud" class="track-artwork">
-                <img
-                  v-if="artworkUrls.get(item._id)"
-                  :src="artworkUrls.get(item._id)"
-                  alt="Track Artwork"
-                />
-                <div v-else class="track-artwork-placeholder"></div>
-              </div>
-              <img
-                v-else-if="
-                  mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
-                "
-                :src="mainStore.siteFallbacks.fallbackSet.image.asset.url"
-                alt="Fallback"
-              />
-            </template>
-            <!-- Other types -->
-            <template v-else>
-              <img
-                v-if="getItemImage(item)?.asset?.url"
-                :src="getItemImage(item).asset.url"
-                :alt="item?.title || ''"
-              />
-              <img
-                v-else-if="
-                  mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
-                "
-                :src="mainStore.siteFallbacks.fallbackSet.image.asset.url"
-                alt="Fallback"
-              />
-            </template>
-          </div>
-        </NuxtLink>
+				<!-- Image -->
+				<NuxtLink
+					v-if="item?.slug"
+					:to="getItemRoute(item)"
+					class="teaser-item__link"
+				>
+					<div class="teaser-item__image">
+						<!-- Set with SoundCloud -->
+						<template v-if="item._type === 'set'">
+							<img
+								v-if="item?.image?.asset?.url"
+								:src="item.image.asset.url"
+								:alt="item?.title || ''"
+							>
+							<div v-else-if="item?.soundcloud" class="track-artwork">
+								<img
+									v-if="artworkUrls.get(item._id)"
+									:src="artworkUrls.get(item._id)"
+									alt="Track Artwork"
+								>
+								<div v-else class="track-artwork-placeholder"/>
+							</div>
+							<img
+								v-else-if="
+									mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
+								"
+								:src="mainStore.siteFallbacks.fallbackSet.image.asset.url"
+								alt="Fallback"
+							>
+						</template>
+						<!-- Other types -->
+						<template v-else>
+							<img
+								v-if="getItemImage(item)?.asset?.url"
+								:src="getItemImage(item).asset.url"
+								:alt="item?.title || ''"
+							>
+							<img
+								v-else-if="
+									mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
+								"
+								:src="mainStore.siteFallbacks.fallbackSet.image.asset.url"
+								alt="Fallback"
+							>
+						</template>
+					</div>
+				</NuxtLink>
 
-        <!-- Content -->
-        <div class="teaser-item__content">
-          <!-- Interactive section (date, play button) for Shows -->
-          <section
-            v-if="type === 'shows'"
-            class="teaser-item__content__interactive"
-          >
-            <div
-              v-if="item?.datetime || item?.publishedAt"
-              class="teaser-item__date"
-            >
-              {{ formatDate(item.datetime || item.publishedAt) }}
-            </div>
-            <button
-              v-if="item._type === 'set' && item?.soundcloud"
-              @click.prevent="playTrack(item)"
-              class="play-button"
-            >
-              <span class="sr-only">Play</span>
-              <svg width="9" height="12" viewBox="0 0 9 12" fill="none">
-                <path d="M9 6L0 11.1962L0 0.803847L9 6Z" fill="currentColor" />
-              </svg>
-            </button>
-          </section>
+				<!-- Content -->
+				<div class="teaser-item__content">
+					<!-- Interactive section (date, play button) for Shows -->
+					<section
+						v-if="type === 'shows'"
+						class="teaser-item__content__interactive"
+					>
+						<div
+							v-if="item?.datetime || item?.publishedAt"
+							class="teaser-item__date"
+						>
+							{{ formatDate(item.datetime || item.publishedAt) }}
+						</div>
+						<button
+							v-if="item._type === 'set' && item?.soundcloud"
+							class="play-button"
+							@click.prevent="playTrack(item)"
+						>
+							<span class="sr-only">Play</span>
+							<svg
+								width="9"
+								height="12"
+								viewBox="0 0 9 12"
+								fill="none">
+								<path d="M9 6L0 11.1962L0 0.803847L9 6Z" fill="currentColor" />
+							</svg>
+						</button>
+					</section>
 
-          <!-- Show info for sets -->
-          <div
-            v-if="item?.parentShow && item._type === 'set'"
-            class="teaser-item__content__show"
-          >
-            <!-- Only show parent show link if NOT no-show -->
-            <NuxtLink
-              v-if="
-                item.parentShow?.title?.toLowerCase() !== 'no-show' &&
-                item.parentShow?.slug
-              "
-              :to="localePath(`/shows/${item.parentShow.slug.current}`)"
-              class="teaser-item__link"
-            >
-              <h3 class="teaser-item__title show-title">
-                {{ item.parentShow.title }}
-              </h3>
-            </NuxtLink>
-            <!-- If no-show: show only set title -->
-            <h3
-              v-else-if="
-                item.parentShow?.title?.toLowerCase() === 'no-show' &&
-                item?.title
-              "
-              class="teaser-item__title show-title"
-            >
-              {{ item.title }}
-            </h3>
+					<!-- Show info for sets -->
+					<div
+						v-if="item?.parentShow && item._type === 'set'"
+						class="teaser-item__content__show"
+					>
+						<!-- Only show parent show link if NOT no-show -->
+						<NuxtLink
+							v-if="
+								item.parentShow?.title?.toLowerCase() !== 'no-show' &&
+									item.parentShow?.slug
+							"
+							:to="localePath(`/shows/${item.parentShow.slug.current}`)"
+							class="teaser-item__link"
+						>
+							<h3 class="teaser-item__title show-title">
+								{{ item.parentShow.title }}
+							</h3>
+						</NuxtLink>
+						<!-- If no-show: show only set title -->
+						<h3
+							v-else-if="
+								item.parentShow?.title?.toLowerCase() === 'no-show' &&
+									item?.title
+							"
+							class="teaser-item__title show-title"
+						>
+							{{ item.title }}
+						</h3>
 
-            <!-- Artists -->
-            <div v-if="item.persons?.length > 0" class="show-artists">
-              <h3
-                v-for="(artist, index) in item.persons"
-                :key="artist._id"
-                class="teaser-item__artist"
-              >
-                <NuxtLink
-                  v-if="artist?.poolVisibility"
-                  :to="localePath(`/pool/${artist?.slug?.current}`)"
-                  class="teaser-item__link"
-                >
-                  {{ artist.title
-                  }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
-                </NuxtLink>
-                <span v-else>
-                  {{ artist.title
-                  }}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
-                </span>
-              </h3>
-            </div>
-          </div>
+						<!-- Artists -->
+						<div v-if="item.persons?.length > 0" class="show-artists">
+							<h3
+								v-for="(artist, index) in item.persons"
+								:key="artist._id"
+								class="teaser-item__artist"
+							>
+								<NuxtLink
+									v-if="artist?.poolVisibility"
+									:to="localePath(`/pool/${artist?.slug?.current}`)"
+									class="teaser-item__link"
+								>
+									{{ artist.title
+									}}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+								</NuxtLink>
+								<span v-else>
+									{{ artist.title
+									}}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+								</span>
+							</h3>
+						</div>
+					</div>
 
-          <!-- Title for other content -->
-          <NuxtLink
-            v-if="item._type !== 'set'"
-            :to="getItemRoute(item)"
-            class="teaser-item__link"
-          >
-            <h3 class="teaser-item__title">
-              {{ item?.title || item?.name }}
-            </h3>
-          </NuxtLink>
+					<!-- Title for other content -->
+					<NuxtLink
+						v-if="item._type !== 'set'"
+						:to="getItemRoute(item)"
+						class="teaser-item__link"
+					>
+						<h3 class="teaser-item__title">
+							{{ item?.title || item?.name }}
+						</h3>
+					</NuxtLink>
 
-          <!-- Teaser text (for words) -->
-          <RichText
-            v-if="type === 'words' && item?.useTeaserText && item?.textTeaser"
-            :blocks="parseI18nObj(item.textTeaser)"
-          />
-          <RichText
-            v-else-if="
-              type === 'words' && !item?.useTeaserText && item?.text?.length > 0
-            "
-            :blocks="parseI18nObj(item.text)?.slice(0, 1)"
-          />
+					<!-- Teaser text (for words) -->
+					<RichText
+						v-if="type === 'words' && item?.useTeaserText && item?.textTeaser"
+						:blocks="parseI18nObj(item.textTeaser)"
+					/>
+					<RichText
+						v-else-if="
+							type === 'words' && !item?.useTeaserText && item?.text?.length > 0
+						"
+						:blocks="parseI18nObj(item.text)?.slice(0, 1)"
+					/>
 
-          <!-- Description (for pool) -->
-          <RichText
-            v-if="type === 'pool' && item?.description?.length > 0"
-            :blocks="
-              limitTextBlocks(parseI18nObj(item.description)?.slice(0, 1), 100)
-            "
-          />
+					<!-- Description (for pool) -->
+					<RichText
+						v-if="type === 'pool' && item?.description?.length > 0"
+						:blocks="
+							limitTextBlocks(parseI18nObj(item.description)?.slice(0, 1), 100)
+						"
+					/>
 
-          <!-- Non-City Tags -->
-          <div
-            v-if="getItemNonCityTags(item).length > 0"
-            class="teaser-item__tags tags"
-          >
-            <span
-              v-for="tag in getItemNonCityTags(item)"
-              :key="tag._id"
-              class="tag"
-            >
-              {{ tag.title }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+					<!-- Non-City Tags -->
+					<div
+						v-if="getItemNonCityTags(item).length > 0"
+						class="teaser-item__tags tags"
+					>
+						<span
+							v-for="tag in getItemNonCityTags(item)"
+							:key="tag._id"
+							class="tag"
+						>
+							{{ tag.title }}
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
 
-    <!-- Load More Button -->
-    <div v-if="hasMoreItems" class="search-result-block__load-more">
-      <button @click="loadMoreItems" class="load-more-button">
-        <svg
-          width="15"
-          height="15"
-          viewBox="0 0 15 15"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M7.67578 0.541016V14.8113" stroke-width="5" />
-          <path d="M14.8105 7.67578L0.540276 7.67578" stroke-width="5" />
-        </svg>
-      </button>
-    </div>
-  </div>
+		<!-- Load More Button -->
+		<div v-if="hasMoreItems" class="search-result-block__load-more">
+			<button class="load-more-button" @click="loadMoreItems">
+				<svg
+					width="15"
+					height="15"
+					viewBox="0 0 15 15"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path d="M7.67578 0.541016V14.8113" stroke-width="5" />
+					<path d="M14.8105 7.67578L0.540276 7.67578" stroke-width="5" />
+				</svg>
+			</button>
+		</div>
+	</div>
 </template>
 
 <style lang="postcss" scoped>
