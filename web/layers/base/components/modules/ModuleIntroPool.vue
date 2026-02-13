@@ -17,7 +17,7 @@ interface Image {
 interface Tag {
   _id?: string;
   _type?: string;
-  title?: string | any;
+  title?: string | unknown;
   short?: string;
 }
 
@@ -31,7 +31,7 @@ interface PoolItem {
   mainImage?: Image;
   location?: string;
   tags?: Tag[];
-  bio?: any[];
+  bio?: unknown[];
 }
 
 // Props

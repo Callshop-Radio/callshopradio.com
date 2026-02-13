@@ -65,7 +65,7 @@ const buildQueryConfig = () => {
 
 	const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE
 	const end = selfLoadPage.value * SELF_LOAD_PER_PAGE
-	const params: Record<string, any> = { start, end }
+	const params: Record<string, unknown> = { start, end }
 
 	switch (type) {
 	case 'sets':

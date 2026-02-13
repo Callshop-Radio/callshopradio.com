@@ -4,8 +4,6 @@
  * Allows modules to fetch their own content with pagination,
  * content-type filtering, shuffle support, and global caching.
  */
-import { computed, ref } from 'vue'
-import { useSanity } from '#imports'
 import {
 	ARTICLE_COUNT_QUERY,
 	ARTICLE_LIST_QUERY,
@@ -16,13 +14,16 @@ import {
 	SHOW_COUNT_QUERY,
 	SHOW_LIST_QUERY
 } from '~~/queries/module.queries'
+import { computed, ref } from 'vue'
+import type { ContentItem } from '~~/types/sanity'
+import { useSanity } from '#imports'
 
 // ==================== GLOBAL CACHE ====================
 // Cache for module content, persists across components
-interface CacheEntry<T = any> {
-  items: T[];
-  count: number;
-  timestamp: number;
+interface CacheEntry<T = ContentItem> {
+	items: T[]
+	count: number
+	timestamp: number
 }
 
 const moduleContentCache = new Map<string, CacheEntry>()
@@ -31,7 +32,7 @@ const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 /**
  * Generate cache key from query type and params
  */
-function getCacheKey(type: string, params: Record<string, any>): string {
+function getCacheKey(type: string, params: Record<string, unknown>): string {
 	return `${type}:${JSON.stringify(params)}`
 }
 
@@ -52,7 +53,7 @@ export async function prefetchModuleContent(
 ): Promise<void> {
 	const sanity = useSanity()
 	const limit = options.limit || 50
-	const params: Record<string, any> = { start: 0, end: limit }
+	const params: Record<string, unknown> = { start: 0, end: limit }
 
 	// Set pool types if applicable
 	if (type === 'pool') {
@@ -90,7 +91,7 @@ export async function prefetchModuleContent(
 			count: typeof count === 'number' ? count : 0,
 			timestamp: Date.now()
 		})
-	} catch (_err) {
+	} catch {
 		// Silent fail
 	}
 }
@@ -113,13 +114,13 @@ export interface ModuleContentOptions {
   useCache?: boolean; // Use global cache (default: true)
 }
 
-export interface ModuleContentState<T = any> {
-  items: T[];
-  isLoading: boolean;
-  page: number;
-  totalCount: number;
-  hasMore: boolean;
-  error: Error | null;
+export interface ModuleContentState<T = ContentItem> {
+	items: T[]
+	isLoading: boolean
+	page: number
+	totalCount: number
+	hasMore: boolean
+	error: Error | null
 }
 
 /**
@@ -142,7 +143,7 @@ function seededShuffle<T>(array: T[], seed: number): T[] {
 	return result
 }
 
-export const useModuleContent = <T = any>(options: ModuleContentOptions) => {
+export const useModuleContent = <T = ContentItem>(options: ModuleContentOptions) => {
 	const sanity = useSanity()
 
 	// State
@@ -215,25 +216,27 @@ export const useModuleContent = <T = any>(options: ModuleContentOptions) => {
 			const { query, countQuery, params } = getQueryConfig()
 			const cacheKey = getCacheKey(options.type, params)
 
-			let fetchedItems: any[]
+			let fetchedItems: T[]
 			let count: number
 
 			// Check cache first (only for first page, not when appending)
 			const cachedEntry =
-        useCache && !append ? moduleContentCache.get(cacheKey) : undefined
+				useCache && !append ? moduleContentCache.get(cacheKey) : undefined
 
 			if (isCacheValid(cachedEntry)) {
 				// Use cached data
-				fetchedItems = cachedEntry!.items
+				fetchedItems = cachedEntry!.items as T[]
 				count = cachedEntry!.count
 			} else {
 				// Fetch from Sanity
-				[fetchedItems, count] = await Promise.all([
-					sanity.fetch(query, params),
+				const [items, countResult] = await Promise.all([
+					sanity.fetch(query, params) as Promise<T[]>,
 					totalCount.value === 0
 						? sanity.fetch(countQuery, params)
 						: Promise.resolve(totalCount.value)
 				])
+				fetchedItems = items
+				count = typeof countResult === 'number' ? countResult : 0
 
 				// Store in cache
 				if (useCache && !append) {

@@ -1,12 +1,12 @@
 <script setup>
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useDocumentVisibility } from '@vueuse/core'
 import { useMainStore } from '~/stores/mainStore'
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const mainStore = useMainStore()
 
 // API key from environment variables
-const apiKey = process.env.NUXT_LIBRETIME_API_KEY;
+const apiKey = process.env.NUXT_LIBRETIME_API_KEY
 
 // Define stream URLs
 const streamUrl1 = 'https://icecast.callshopradio.com/callshopradio'

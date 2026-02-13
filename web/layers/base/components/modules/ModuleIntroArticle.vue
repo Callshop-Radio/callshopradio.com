@@ -22,10 +22,10 @@ interface Article {
   image?: Image;
   datetime?: string;
   _updatedAt?: string;
-  text?: any[];
+  text?: unknown[];
   useTeaserText?: boolean;
-  textTeaser?: any[];
-  tags?: any[];
+  textTeaser?: unknown[];
+  tags?: import('~/types/sanity').Tag[];
   socials?: {
     instagram?: string;
     soundcloud?: string;

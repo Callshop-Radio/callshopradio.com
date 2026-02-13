@@ -9,16 +9,17 @@
  * - title: Optional section title
  */
 
+import type { ContentItem, Image, Tag } from '~/types/sanity'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useMainStore } from '~/stores/mainStore'
 
 const { locale: _locale } = useI18n()
 const localePath = useLocalePath()
-const mainStore = useMainStore() as any
+const mainStore = useMainStore()
 
 const props = defineProps({
 	items: {
-		type: Array as () => any[],
+		type: Array as () => ContentItem[],
 		default: () => []
 	},
 	type: {
@@ -70,7 +71,7 @@ function loadMoreItems() {
 				visibleItemCount.value - ITEMS_PER_PAGE,
 				visibleItemCount.value
 			)
-			newItems.forEach((item: any) => {
+			newItems.forEach((item: ContentItem) => {
 				if (!artworkUrls.value.has(item?._id)) {
 					loadArtworkUrl(item)
 				}
@@ -90,22 +91,22 @@ function formatDate(dateString: string) {
 	})
 }
 
-function getItemImage(item: any) {
+function getItemImage(item: ContentItem): Image | undefined {
 	if (item.image) return item.image
 	if (item.mainImage) return item.mainImage
 
-	const fallbacks: Record<string, any> = {
-		person: mainStore?.siteFallbacks?.fallbackPerson?.image,
-		venue: mainStore?.siteFallbacks?.fallbackVenue?.image,
-		show: mainStore?.siteFallbacks?.fallbackShow?.image,
-		set: mainStore?.siteFallbacks?.fallbackSet?.image,
-		article: mainStore?.siteFallbacks?.fallbackArticle?.image
+	const fallbacks: Record<string, Image | undefined> = {
+		person: mainStore.siteFallbacks?.fallbackPerson?.image,
+		venue: mainStore.siteFallbacks?.fallbackVenue?.image,
+		show: mainStore.siteFallbacks?.fallbackShow?.image,
+		set: mainStore.siteFallbacks?.fallbackSet?.image,
+		article: mainStore.siteFallbacks?.fallbackArticle?.image
 	}
 
-	return fallbacks[item._type] || mainStore?.siteFallbacks?.fallbackSet?.image
+	return fallbacks[item._type ?? ''] ?? mainStore.siteFallbacks?.fallbackSet?.image
 }
 
-function getItemRoute(item: any) {
+function getItemRoute(item: ContentItem) {
 	if (!item || !item?.slug) return '/'
 
 	switch (item?._type) {
@@ -128,11 +129,11 @@ function getItemRoute(item: any) {
 	}
 }
 
-function getItemCityTags(item: any) {
-	const cityTags: any[] = []
+function getItemCityTags(item: ContentItem) {
+	const cityTags: Tag[] = []
 
 	if (item?.tags && Array.isArray(item?.tags)) {
-		item.tags.forEach((tag: any) => {
+		item.tags.forEach((tag: Tag) => {
 			if (tag._type === 'tag.city') {
 				cityTags.push(tag)
 			}
@@ -140,10 +141,10 @@ function getItemCityTags(item: any) {
 	}
 
 	if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
-		item.parentShow.tags.forEach((tag: any) => {
+		item.parentShow.tags.forEach((tag: Tag) => {
 			if (
 				tag._type === 'tag.city' &&
-        !cityTags.some((t) => t._id === tag._id)
+				!cityTags.some((t) => t._id === tag._id)
 			) {
 				cityTags.push(tag)
 			}
@@ -153,12 +154,12 @@ function getItemCityTags(item: any) {
 	return cityTags
 }
 
-function getItemNonCityTags(item: any) {
-	const tags: any[] = []
+function getItemNonCityTags(item: ContentItem) {
+	const tags: Tag[] = []
 
-	const addTags = (sourceTags: any[]) => {
+	const addTags = (sourceTags: Tag[] | undefined) => {
 		if (Array.isArray(sourceTags)) {
-			sourceTags.forEach((tag: any) => {
+			sourceTags.forEach((tag: Tag) => {
 				if (tag._type !== 'tag.city' && !tags.some((t) => t._id === tag._id)) {
 					tags.push(tag)
 				}
@@ -182,26 +183,26 @@ function _checkImage(url: string): Promise<boolean> {
 }
 
 // Non-blocking artwork URL resolution
-function getSoundcloudArtwork(item: any): string {
-	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url
+function getSoundcloudArtwork(item: ContentItem): string {
+	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url as string | undefined
 	if (artworkUrl) {
 		return artworkUrl.replace('-large', '-t500x500')
 	}
 	const parentShowImageUrl = item?.parentShow?.image?.asset?.url
 	const storeFallbackUrl =
-    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
+		mainStore.siteFallbacks?.fallbackSet?.image?.asset?.url
 	return parentShowImageUrl || storeFallbackUrl || ''
 }
 
-function loadArtworkUrl(item: any) {
+function loadArtworkUrl(item: ContentItem) {
 	if (!item) return
 	const url = getSoundcloudArtwork(item)
-	artworkUrls.value.set(item._id, url)
+	artworkUrls.value.set(item._id ?? '', url)
 }
 
-function playTrack(item: any) {
+function playTrack(item: ContentItem) {
 	if (item?.soundcloud?.tracks?.[0]) {
-		const track = item.soundcloud.tracks[0]
+		const track = item.soundcloud.tracks[0] as { id?: number; permalink_url?: string }
 		if (!track.permalink_url && track.id) {
 			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
 		}
@@ -212,7 +213,7 @@ function playTrack(item: any) {
 // Lifecycle
 onMounted(() => {
 	if (props.type === 'shows') {
-		visibleItems.value.forEach((item: any) => {
+		visibleItems.value.forEach((item: ContentItem) => {
 			loadArtworkUrl(item)
 		})
 	}

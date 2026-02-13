@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useThrottleFn } from '@vueuse/core'
-import { useMainStore } from '~/stores/mainStore'
 import { computed, onMounted, ref } from 'vue'
 import emblaCarouselVue from 'embla-carousel-vue'
+import { useMainStore } from '~/stores/mainStore'
+import { useThrottleFn } from '@vueuse/core'
 
 const _mainStore = useMainStore()
 

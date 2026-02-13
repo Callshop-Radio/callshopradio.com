@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { ContentItem, Tag } from '~/types/sanity'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useMainStore } from '~/stores/mainStore'
 const { locale: _locale } = useI18n()
@@ -311,7 +312,7 @@ onMounted(() => {
 	// Note: Watcher handles additional items when loadMore is called
 })
 
-function navigateToTagSearch(tag: any, item: any, isGenre = false) {
+function navigateToTagSearch(tag: Tag, item: ContentItem | { _type?: string }, isGenre = false) {
 	// Determine search term
 	let tagName = ''
 

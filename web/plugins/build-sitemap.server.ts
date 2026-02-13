@@ -1,6 +1,8 @@
+/* eslint-disable sort-imports -- ~~/queries vs ~~/types with type import */
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { SITEMAP_QUERY } from '~~/queries/sanity.queries'
+import type { SitemapRoute } from '~~/types/sanity'
 
 export default defineNitroPlugin(async (nitroApp) => {
 	// Only run during build process
@@ -13,9 +15,9 @@ export default defineNitroPlugin(async (nitroApp) => {
 			const sanity = useSanity()
 			const query = groq`${SITEMAP_QUERY}`
 
-			let sitemapData
+			let sitemapData: SitemapRoute[]
 			try {
-				sitemapData = await sanity.fetch(query)
+				sitemapData = (await sanity.fetch(query)) as SitemapRoute[]
 			} catch (sanityError) {
 				console.warn(
 					'Warning: Could not fetch sitemap data from Sanity:',
@@ -26,12 +28,12 @@ export default defineNitroPlugin(async (nitroApp) => {
 
 			// Filter out invalid routes and handle special cases
 			const validRoutes = sitemapData
-				.filter((route: any) => {
+				.filter((route: SitemapRoute) => {
 					// Basic validation
 					if (
 						!route.loc ||
-            route.loc === 'undefined' ||
-            route.loc.startsWith('/api/')
+						route.loc === 'undefined' ||
+						route.loc.startsWith('/api/')
 					) {
 						return false
 					}
@@ -43,7 +45,7 @@ export default defineNitroPlugin(async (nitroApp) => {
 
 					return true
 				})
-				.map((route: any) => {
+				.map((route: SitemapRoute) => {
 					// Fix set URLs that might have issues
 					if (route._type === 'set' && route.show && route.show.slug) {
 						route.loc = `/shows/${route.show.slug}/${route.slug}`

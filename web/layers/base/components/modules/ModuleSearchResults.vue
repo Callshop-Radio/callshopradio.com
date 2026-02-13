@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { ContentItem, Image, Tag } from '~/types/sanity'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useMainStore } from '~/stores/mainStore'
 
@@ -7,7 +8,7 @@ const localePath = useLocalePath()
 const mainStore = useMainStore()
 
 const props = defineProps({
-	results: { type: Array, default: () => [] },
+	results: { type: Array as () => ContentItem[], default: () => [] },
 	searchQuery: { type: String, default: '' },
 	isLoading: { type: Boolean, default: false },
 	activeContentType: { type: String, default: 'all' },
@@ -64,12 +65,12 @@ const moduleContainer = ref<HTMLElement | null>(null)
 
 const getUsedTagIdsInItems = computed(() => {
 	const usedTagIds = new Set<string>()
-	const addTags = (tags: any[]) => {
+	const addTags = (tags: Tag[] | undefined) => {
 		if (Array.isArray(tags)) {
 			tags.forEach((tag) => tag?._id && usedTagIds.add(tag._id))
 		}
-	};
-	(props.results as any[]).forEach((item) => {
+	}
+	props.results.forEach((item) => {
 		addTags(item.tags)
 		addTags(item.parentShow?.tags)
 	})
@@ -81,13 +82,13 @@ const categorizedTags = computed(() => {
   
 	// Method 1: Use availableTags (Hierarchy) - Preferred
 	if (props.availableTags) {
-		const filterByUsed = (tags: any[]) =>
+		const filterByUsed = (tags: Tag[] | undefined) =>
 			tags?.filter((t) => usedTagIds.has(t._id)) || []
 
 		const genres = (props.availableTags.genres || [])
-			.map((genre: any) => {
+			.map((genre: Tag & { subGenres?: Tag[] }) => {
 				const isUsed = usedTagIds.has(genre._id)
-				const usedSubGenres = genre.subGenres?.filter((t: any) => usedTagIds.has(t._id)) || []
+				const usedSubGenres = genre.subGenres?.filter((t: Tag) => usedTagIds.has(t._id)) || []
 				// Keep genre if it is used OR has used subgenres
 				if (!isUsed && !usedSubGenres.length) return null
 				return { ...genre, subGenres: usedSubGenres }
@@ -104,21 +105,21 @@ const categorizedTags = computed(() => {
 	}
 
 	// Method 2: Extract from results (Fall back)
-	const genres: any[] = []
-	const subGenres: any[] = []
-	const cities: any[] = []
-	const global: any[] = []
-	const mood: any[] = []
+	const genres: Tag[] = []
+	const subGenres: Tag[] = []
+	const cities: Tag[] = []
+	const global: Tag[] = []
+	const mood: Tag[] = []
 
-	const addUnique = (arr: any[], tag: any) => {
+	const addUnique = (arr: Tag[], tag: Tag) => {
 		if (tag?._id && !arr.some((t) => t._id === tag._id)) {
 			arr.push(tag)
 		}
-	};
+	}
 
-	(props.results as any[]).forEach((item: any) => {
+	props.results.forEach((item: ContentItem) => {
 		const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])]
-		allTags.forEach((tag: any) => {
+		allTags.forEach((tag: Tag & { parentGenre?: Tag }) => {
 			// Check for parentGenre (from modified query)
 			if (tag.parentGenre) {
 				addUnique(genres, tag.parentGenre)
@@ -140,20 +141,20 @@ const categorizedTags = computed(() => {
 
 // Pool-specific tags extracted from results
 const poolTags = computed(() => {
-	const musicians: any[] = []
-	const venues: any[] = []
-	const crafts: any[] = []
-	const articles: any[] = []
+	const musicians: Tag[] = []
+	const venues: Tag[] = []
+	const crafts: Tag[] = []
+	const articles: Tag[] = []
 
-	const addUnique = (arr: any[], tag: any) => {
+	const addUnique = (arr: Tag[], tag: Tag) => {
 		if (tag?._id && !arr.some((t) => t._id === tag._id)) {
 			arr.push(tag)
 		}
-	};
+	}
 
-	(props.results as any[]).forEach((item: any) => {
+	props.results.forEach((item: ContentItem) => {
 		const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])]
-		allTags.forEach((tag: any) => {
+		allTags.forEach((tag: Tag) => {
 			if (!tag?._type) return
 			switch (tag._type) {
 			case 'tag.musician': addUnique(musicians, tag); break
@@ -171,7 +172,7 @@ const poolTags = computed(() => {
 
 
 // Get color for a tag based on its type
-function _getTagColor(tag: any): string {
+function _getTagColor(tag: Tag): string {
 	if (!tag?._type) return 'neutral'
 	return TAG_TYPE_COLORS[tag._type] || 'neutral'
 }
@@ -182,7 +183,7 @@ const groupedTagsByColor = computed(() => {
 	// Handle both hierarchical (from availableTags) and flat (fallback) structures
 	const flattenedSubGenres = categorizedTags.value.subGenres?.length 
 		? categorizedTags.value.subGenres 
-		: categorizedTags.value.genres.flatMap((g: any) => g.subGenres || [])
+		: categorizedTags.value.genres.flatMap((g: Tag & { subGenres?: Tag[] }) => g.subGenres || [])
 
 	const showsTags = [
 		...categorizedTags.value.genres,
@@ -229,7 +230,7 @@ const groupedTagsByColor = computed(() => {
 })
 
 // Helper for accessing pool tags by type name (avoids TypeScript casting in template)
-function getPoolTagsByType(typeName: string): any[] {
+function getPoolTagsByType(typeName: string): Tag[] {
 	const pool = groupedTagsByColor.value.pool
 	if (typeName === 'musicians') return pool.musicians
 	if (typeName === 'venues') return pool.venues
@@ -239,9 +240,9 @@ function getPoolTagsByType(typeName: string): any[] {
 
 
 // ==================== TAG HELPERS ====================
-function getItemTags(item: any, type?: string): any[] {
-	const tags: any[] = []
-	const addTags = (source: any[] | undefined) => {
+function getItemTags(item: ContentItem, type?: string): Tag[] {
+	const tags: Tag[] = []
+	const addTags = (source: Tag[] | undefined) => {
 		if (!Array.isArray(source)) return
 		source.forEach((tag) => {
 			if (
@@ -258,11 +259,11 @@ function getItemTags(item: any, type?: string): any[] {
 	return tags
 }
 
-const getItemCityTags = (item: any) => getItemTags(item, 'tag.city')
-const _getItemNonCityTags = (item: any) =>
-	(item.tags || []).filter((t: any) => t._type !== 'tag.city')
+const getItemCityTags = (item: ContentItem) => getItemTags(item, 'tag.city')
+const _getItemNonCityTags = (item: ContentItem) =>
+	(item.tags || []).filter((t: Tag) => t._type !== 'tag.city')
 
-function getTagTitle(title: any): string {
+function getTagTitle(title: Tag['title']): string {
 	if (!title) return ''
 	if (typeof title === 'string') return title
 	if (Array.isArray(title)) {
@@ -274,7 +275,7 @@ function getTagTitle(title: any): string {
 	return String(title)
 }
 
-function _isMainCity(cityTag: any): boolean {
+function _isMainCity(cityTag: Tag): boolean {
 	if (!cityTag?.title) return false
 	const cityName = getTagTitle(cityTag.title)
 	return MAIN_CITIES.includes(cityName)
@@ -284,15 +285,15 @@ function getTagNameById(tagId: string): string {
 	if (tagId === 'others') return 'Elsewhere'
   
 	// Check city tags
-	const city = categorizedTags.value.cities.find((t: any) => t._id === tagId)
+	const city = categorizedTags.value.cities.find((t: Tag) => t._id === tagId)
 	if (city) return getTagTitle(city.title)
   
 	// Check genre tags
-	const genre = categorizedTags.value.genres.find((t: any) => t._id === tagId)
+	const genre = categorizedTags.value.genres.find((t: Tag) => t._id === tagId)
 	if (genre) return genre.title || 'Genre'
   
 	// Check subgenre tags
-	const subGenre = categorizedTags.value.subGenres.find((t: any) => t._id === tagId)
+	const subGenre = categorizedTags.value.subGenres.find((t: Tag) => t._id === tagId)
 	if (subGenre) return subGenre.title || 'SubGenre'
   
 	// Check pool tags (musicians, venues, crafts)
@@ -303,7 +304,7 @@ function getTagNameById(tagId: string): string {
 		poolTags.value.articles
 	]
 	for (const arr of poolTagArrays) {
-		const found = arr.find((t: any) => t._id === tagId)
+		const found = arr.find((t: Tag) => t._id === tagId)
 		if (found) return found.title || 'Tag'
 	}
   
@@ -358,12 +359,12 @@ function resetFilters() {
 }
 
 // ==================== ITEM MATCHING ====================
-function itemHasTag(item: any, tagId: string): boolean {
+function itemHasTag(item: ContentItem, tagId: string): boolean {
 	return getItemTags(item).some((t) => t._id === tagId)
 }
 
 // Check if item has a city tag matching the city name
-function itemHasCityByName(item: any, cityName: string): boolean {
+function itemHasCityByName(item: ContentItem, cityName: string): boolean {
 	const cityTags = getItemCityTags(item)
 	return cityTags.some((t) => {
 		const tagTitle = parseI18nObj(t.title) || t.title || t.short || ''
@@ -371,7 +372,7 @@ function itemHasCityByName(item: any, cityName: string): boolean {
 	})
 }
 
-function itemMatchesFilters(item: any): boolean {
+function itemMatchesFilters(item: ContentItem): boolean {
 	// Genre filter check
 	if (activeGenres.value.size > 0) {
 		if (activeSubGenres.value.size > 0) {
@@ -426,13 +427,13 @@ function changeSortMode(mode: 'new' | 'alpha') {
 }
 
 const filteredItems = computed(() => {
-	const items = (props.results as any[]).filter(itemMatchesFilters)
+	const items = props.results.filter(itemMatchesFilters)
 
 	const sortFns = {
-		new: (a: any, b: any) =>
+		new: (a: ContentItem, b: ContentItem) =>
 			new Date(b.datetime || b._updatedAt || b._createdAt || 0).getTime() -
-      new Date(a.datetime || a._updatedAt || a._createdAt || 0).getTime(),
-		alpha: (a: any, b: any) =>
+			new Date(a.datetime || a._updatedAt || a._createdAt || 0).getTime(),
+		alpha: (a: ContentItem, b: ContentItem) =>
 			(a.title || a.name || a.parentShow?.title || '')
 				.toLowerCase()
 				.localeCompare(
@@ -445,11 +446,11 @@ const filteredItems = computed(() => {
 
 // Group filtered items by content type for sectioned display
 const groupedResults = computed(() => {
-	const pool: any[] = []
-	const shows: any[] = []
-	const words: any[] = []
-  
-	filteredItems.value.forEach((item: any) => {
+	const pool: ContentItem[] = []
+	const shows: ContentItem[] = []
+	const words: ContentItem[] = []
+
+	filteredItems.value.forEach((item: ContentItem) => {
 		switch (item._type) {
 		case 'person':
 		case 'venue':
@@ -499,7 +500,7 @@ function _formatDate(dateString: string): string {
 }
 
 // ==================== ROUTING ====================
-function _getItemRoute(item: any): string {
+function _getItemRoute(item: ContentItem): string {
 	if (!item?.slug) return '/'
 	const slug = item.slug.current
 	const routes: Record<string, string> = {
@@ -515,11 +516,11 @@ function _getItemRoute(item: any): string {
 }
 
 // ==================== IMAGE HANDLING ====================
-function _getItemImage(item: any) {
+function _getItemImage(item: ContentItem) {
 	if (item.image || item.mainImage) return item.image || item.mainImage
 
-	const fallbacks = mainStore?.siteFallbacks as any
-	const fallbackMap: Record<string, any> = {
+	const fallbacks = mainStore.siteFallbacks
+	const fallbackMap: Record<string, Image | undefined> = {
 		person: fallbacks?.fallbackPerson?.image,
 		venue: fallbacks?.fallbackVenue?.image,
 		show: fallbacks?.fallbackShow?.image,
@@ -527,7 +528,7 @@ function _getItemImage(item: any) {
 		word: fallbacks?.fallbackArticle?.image,
 		article: fallbacks?.fallbackArticle?.image
 	}
-	return fallbackMap[item._type] || fallbacks?.fallbackPerson?.image
+	return fallbackMap[item._type ?? ''] ?? fallbacks?.fallbackPerson?.image
 }
 
 async function _checkImage(url: string): Promise<boolean> {
@@ -540,26 +541,26 @@ async function _checkImage(url: string): Promise<boolean> {
 }
 
 // Non-blocking artwork URL resolution
-function getSoundcloudArtwork(item: any): string {
-	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url
+function getSoundcloudArtwork(item: ContentItem): string {
+	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url as string | undefined
 	if (artworkUrl) {
 		return artworkUrl.replace('-large', '-t500x500')
 	}
-	const fallbacks = mainStore?.siteFallbacks as any
+	const fallbacks = mainStore.siteFallbacks
 	return (
 		item?.parentShow?.image?.asset?.url ||
-    fallbacks?.fallbackSet?.image?.asset?.url ||
-    ''
+		fallbacks?.fallbackSet?.image?.asset?.url ||
+		''
 	)
 }
 
-function loadArtworkUrl(item: any) {
+function loadArtworkUrl(item: ContentItem) {
 	if (!item) return
 	const url = getSoundcloudArtwork(item)
 	artworkUrls.value.set(item._id, url)
 }
 
-function _playTrack(item: any) {
+function _playTrack(item: ContentItem) {
 	const track = item?.soundcloud?.tracks?.[0]
 	if (!track) return
 	if (!track.permalink_url && track.id) {
@@ -571,7 +572,7 @@ function _playTrack(item: any) {
 // ==================== LIFECYCLE ====================
 onMounted(() => {
 	// Load artwork for sets
-	(props.results as any[]).forEach((item) => {
+	props.results.forEach((item) => {
 		if (item._type === 'set') {
 			loadArtworkUrl(item)
 		}
@@ -588,7 +589,7 @@ onUnmounted(() => {
 // Reload artwork when results change
 watch(() => props.results, () => {
 	// Load artwork for new set items
-	(props.results as any[]).forEach((item) => {
+	props.results.forEach((item) => {
 		if (item._type === 'set' && !artworkUrls.value.has(item._id)) {
 			loadArtworkUrl(item)
 		}

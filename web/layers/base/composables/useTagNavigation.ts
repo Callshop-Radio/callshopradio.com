@@ -1,8 +1,10 @@
+import type { ContentItem, Tag } from '~/types/sanity'
+
 export const useTagNavigation = () => {
 	const router = useRouter()
 	const localePath = useLocalePath()
 
-	function navigateToTagSearch(tag: any, item: any, isGenre = false) {
+	function navigateToTagSearch(tag: Tag, item: ContentItem | { _type?: string }, isGenre = false) {
 		// Determine search term
 		let tagName = ''
 

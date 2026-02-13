@@ -28,14 +28,14 @@ interface Article {
   image?: Image;
   mainImage?: Image;
   content?: object;
-  text?: any[];
+  text?: unknown[];
   slug?: {
     current?: string;
   };
   publishedAt?: string;
   _updatedAt?: string;
   authors?: Person[];
-  tags?: any[];
+  tags?: import('~/types/sanity').Tag[];
   excerpt?: string;
 }
 
@@ -75,7 +75,7 @@ const useImageManagement = () => {
 }
 
 // Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
-function _getItemRoute(item: any) {
+function _getItemRoute(item: import('~/types/sanity').ContentItem) {
 	if (!item || !item?.slug) return '/'
 
 	switch (item?._type) {
@@ -173,11 +173,11 @@ onMounted(() => {
 })
 
 const cityTags = computed(() => {
-	return props.article?.tags?.filter((tag: any) => tag._type === 'tag.city') || []
+	return props.article?.tags?.filter((tag: import('~/types/sanity').Tag) => tag._type === 'tag.city') || []
 })
 
 const otherTags = computed(() => {
-	return props.article?.tags?.filter((tag: any) => tag._type !== 'tag.city') || []
+	return props.article?.tags?.filter((tag: import('~/types/sanity').Tag) => tag._type !== 'tag.city') || []
 })
 
 // Article Language Switcher
@@ -189,14 +189,14 @@ watch(locale, (newVal: string) => {
 
 const availableLocales = computed(() => {
 	if (Array.isArray(props.article?.text)) {
-		return props.article.text.map((t: any) => t._key)
+		return props.article.text.map((t: { _key?: string }) => t._key)
 	}
 	return []
 })
 
 const currentArticleText = computed(() => {
 	if (!props.article?.text || !Array.isArray(props.article.text)) return null
-	return props.article.text.find((t: any) => t._key === articleLocale.value)?.value
+	return props.article.text.find((t: { _key?: string; value?: string }) => t._key === articleLocale.value)?.value
 })
 </script>
 

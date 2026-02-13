@@ -6,37 +6,53 @@ import { useMainStore } from '~/stores/mainStore'
 
 const mainStore = useMainStore()
 
+/** Minimal show shape for schedule (LibreTime/schedule API) */
+interface ScheduleShow {
+	_id?: string
+	title?: string
+	slug?: { current?: string }
+	[key: string]: unknown
+}
+
+/** Track with start/duration for schedule grid */
+interface ScheduleTrack {
+	starts?: string
+	cue_out?: string
+	length?: string
+	[key: string]: unknown
+}
+
 interface Group {
-  date: string | Date;
-  shows: any[];
-  isToday?: boolean;
+	date: string | Date
+	shows: ScheduleShow[]
+	isToday?: boolean
 }
 
 interface ProcessedItem {
-  type: 'show' | 'track';
-  id: string;
-  title: string;
-  artist?: string;
-  startTime: Date;
-  endTime: Date;
-  formattedTime: string;
-  date: string | Date;
-  isLive?: boolean;
+	type: 'show' | 'track'
+	id: string
+	title: string
+	artist?: string
+	startTime: Date
+	endTime: Date
+	formattedTime: string
+	date: string | Date
+	isLive?: boolean
 }
 
 const props = defineProps<{
-  groups: Group[];
-  formatDate: (date: string | Date, includeFullDay?: boolean) => string;
-  getShowTitle: (show: any) => string;
-  getShowStart: (show: any) => string;
-  getShowEnd: (show: any) => string;
-  formatTimeRange: (
-    startTime: string,
-    endTime: string,
-    includeDate?: boolean
-  ) => string;
-  getShowDescription: (show: any) => string;
-  isLiveShow: (show: any) => boolean;
+	groups: Group[]
+	formatDate: (date: string | Date, includeFullDay?: boolean) => string
+	getShowTitle: (show: ScheduleShow) => string
+	getShowStart: (show: ScheduleShow) => string
+	getShowEnd: (show: ScheduleShow) => string
+	formatTimeRange: (
+		startTime: string,
+		endTime: string,
+		includeDate?: boolean
+	) => string
+	getShowDescription: (show: ScheduleShow) => string
+	isLiveShow: (show: ScheduleShow) => boolean
 }>()
 
 // Carousel setup
@@ -141,7 +157,7 @@ const parseTrackLength = (
 	return { hours: 0, minutes: 0, seconds: 0 }
 }
 
-const calculateTrackEndTime = (track: any): Date | null => {
+const calculateTrackEndTime = (track: ScheduleTrack): Date | null => {
 	if (!track.starts) return null
 
 	const startTime = new Date(track.starts)
@@ -182,7 +198,7 @@ const formatTrackTime = (dateTime: Date | null): string => {
 	return `${hours}:${minutes}`
 }
 
-const getTrackTimeRange = (track: any): string => {
+const getTrackTimeRange = (track: ScheduleTrack): string => {
 	if (!track.starts) return ''
 
 	const startTime = new Date(track.starts)

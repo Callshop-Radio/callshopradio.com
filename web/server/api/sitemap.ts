@@ -1,3 +1,4 @@
+import type { SitemapEntry, SitemapRoute } from '~~/types/sanity'
 import { SITEMAP_QUERY } from '~~/queries/sanity.queries'
 
 export default defineEventHandler(async (_event) => {
@@ -5,16 +6,16 @@ export default defineEventHandler(async (_event) => {
 	const query = groq`${SITEMAP_QUERY}`
 
 	try {
-		const sitemapData = await sanity.fetch(query)
+		const sitemapData = (await sanity.fetch(query)) as SitemapRoute[]
 
 		// Filter out any invalid routes and handle special cases
 		const validRoutes = sitemapData
-			.filter((route: any) => {
+			.filter((route: SitemapRoute) => {
 				// Basic validation
 				if (
 					!route.loc ||
-          route.loc === 'undefined' ||
-          route.loc.startsWith('/api/')
+					route.loc === 'undefined' ||
+					route.loc.startsWith('/api/')
 				) {
 					return false
 				}
@@ -26,7 +27,7 @@ export default defineEventHandler(async (_event) => {
 
 				return true
 			})
-			.map((route: any) => {
+			.map((route: SitemapRoute) => {
 				// Fix set URLs that might have issues
 				if (route._type === 'set' && route.show && route.show.slug) {
 					route.loc = `/shows/${route.show.slug}/${route.slug}`
@@ -64,10 +65,17 @@ export default defineEventHandler(async (_event) => {
 		]
 
 		// Transform data to match @nuxtjs/sitemap format
-		const routes = [
-			...validRoutes.map((route: any) => ({
+		interface RouteWithLoc {
+			loc: string
+			lastmod?: string
+			modifiedAt?: string
+			changefreq?: string
+			priority?: number
+		}
+		const routes: RouteWithLoc[] = [
+			...validRoutes.map((route: SitemapRoute) => ({
 				loc: route.loc,
-				lastmod: new Date(route.modifiedAt).toISOString(),
+				lastmod: new Date(route.modifiedAt ?? '').toISOString(),
 				changefreq: route.changefreq,
 				priority: route.priority
 			})),
@@ -82,11 +90,11 @@ export default defineEventHandler(async (_event) => {
 
 		// Format for Nuxt Sitemap module
 		const _siteUrl =
-      process.env.NUXT_PUBLIC_SITE_URL || 'https://callshopradio.com'
+			process.env.NUXT_PUBLIC_SITE_URL || 'https://callshopradio.com'
 
-		return uniqueRoutes.map((route: any) => ({
-			url: route.loc, // Using 'url' instead of 'loc' for Nuxt Sitemap
-			lastmod: route.lastmod || route.modifiedAt,
+		return uniqueRoutes.map((route: RouteWithLoc): SitemapEntry => ({
+			url: route.loc,
+			lastmod: route.lastmod ?? route.modifiedAt,
 			changefreq: route.changefreq,
 			priority: route.priority
 		}))

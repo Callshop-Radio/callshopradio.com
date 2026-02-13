@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { ContentItem, Tag } from '~/types/sanity'
 import { computed, onMounted, ref } from 'vue'
 import { useMainStore } from '~/stores/mainStore'
 
@@ -38,11 +39,11 @@ interface ContentReference {
   datetime?: string;
   _updatedAt?: string;
   useTeaserText?: boolean;
-  textTeaser?: any[];
-  text?: any[];
-  description?: any[];
-  bio?: any[];
-  tags?: any[];
+  textTeaser?: unknown[];
+  text?: unknown[];
+  description?: unknown[];
+  bio?: unknown[];
+  tags?: unknown[];
   persons?: Array<{
     _id?: string;
     title?: string;
@@ -61,12 +62,12 @@ interface ContentReference {
 
 interface Link {
   title?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface Module {
   title?: string;
-  text?: any[];
+  text?: unknown[];
   layout?: string;
   contentReference?: ContentReference;
   link?: Link;
@@ -117,7 +118,7 @@ const useImageManagement = () => {
 		}
 
 		// Fallback-Bilder basierend auf Content-Typ
-		const fallbacks = mainStore?.siteFallbacks as any
+		const fallbacks = mainStore.siteFallbacks
 		if (!fallbacks) return null
 
 		const fallbackMap: Record<string, Image | undefined> = {
@@ -160,7 +161,7 @@ const useSoundCloud = () => {
 
 		const track = item.soundcloud?.tracks?.[0]
 		const parentShowImageUrl = item.parentShow?.image?.asset?.url
-		const fallbackUrl = (mainStore?.siteFallbacks as any)?.fallbackSet?.image?.asset?.url
+		const fallbackUrl = mainStore.siteFallbacks?.fallbackSet?.image?.asset?.url
 
 		// Try SoundCloud artwork (use -t500x500 for reliability)
 		if (track?.artwork_url) {
@@ -187,7 +188,7 @@ const useSoundCloud = () => {
 			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
 		}
 
-		(mainStore as any).currentTrack = track
+		mainStore.currentTrack = track
 	}
 
 	return {
@@ -230,7 +231,7 @@ onMounted(() => {
 	}
 })
 
-function navigateToTagSearch(tag: any, item: any, isGenre = false) {
+function navigateToTagSearch(tag: Tag, item: ContentItem | { _type?: string }, isGenre = false) {
 	// Determine search term
 	let tagName = ''
 

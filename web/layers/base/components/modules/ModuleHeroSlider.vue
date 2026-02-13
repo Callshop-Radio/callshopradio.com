@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useSwipe } from '@vueuse/core'
-import { useMainStore } from '~/stores/mainStore'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useMainStore } from '~/stores/mainStore'
+import { useSwipe } from '@vueuse/core'
 
 const mainStore = useMainStore()
 

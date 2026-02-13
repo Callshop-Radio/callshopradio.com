@@ -1,37 +1,40 @@
 import { SITEMAP_QUERY } from '~~/queries/sanity.queries'
+import type { SitemapRoute } from '~~/types/sanity'
 
 export default defineEventHandler(async (event) => {
 	// Set headers for XML response
 	setHeader(event, 'content-type', 'application/xml; charset=utf-8')
 	setHeader(event, 'cache-control', 'max-age=3600')
-  
+
 	const sanity = useSanity()
 	const query = groq`${SITEMAP_QUERY}`
-  
+
 	try {
-		const sitemapData = await sanity.fetch(query)
-    
+		const sitemapData = (await sanity.fetch(query)) as SitemapRoute[]
+
 		// Filter out invalid routes and handle special cases
-		const validRoutes = sitemapData.filter((route: any) => {
-			// Basic validation
-			if (!route.loc || route.loc === 'undefined' || route.loc.startsWith('/api/')) {
-				return false
-			}
-      
-			// Special handling for sets - they need a parent show
-			if (route._type === 'set') {
-				return route.show && route.show.slug
-			}
-      
-			return true
-		}).map((route: any) => {
-			// Fix set URLs that might have issues
-			if (route._type === 'set' && route.show && route.show.slug) {
-				route.loc = `/shows/${route.show.slug}/${route.slug}`
-			}
-      
-			return route
-		})
+		const validRoutes = sitemapData
+			.filter((route: SitemapRoute) => {
+				// Basic validation
+				if (!route.loc || route.loc === 'undefined' || route.loc.startsWith('/api/')) {
+					return false
+				}
+
+				// Special handling for sets - they need a parent show
+				if (route._type === 'set') {
+					return route.show && route.show.slug
+				}
+
+				return true
+			})
+			.map((route: SitemapRoute) => {
+				// Fix set URLs that might have issues
+				if (route._type === 'set' && route.show && route.show.slug) {
+					route.loc = `/shows/${route.show.slug}/${route.slug}`
+				}
+
+				return route
+			})
     
 		// Add static routes specific to Callshop Radio
 		const staticRoutes = [

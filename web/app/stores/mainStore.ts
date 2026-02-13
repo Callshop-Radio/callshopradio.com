@@ -1,23 +1,38 @@
 import { SITE_OPTIONS_QUERY } from '~~/queries/sanity.queries'
+import type { SiteFallbacks } from '~~/types/sanity'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+/** Payload for addToRepro (repro list / current track info) */
+export interface AddToReproPayload {
+	link: string
+	name: string
+	active: boolean
+}
+
+/** Minimal current track shape for SoundCloud / repro */
+export interface CurrentTrack {
+	link?: string
+	name?: string
+	[key: string]: unknown
+}
+
 export const useMainStore = defineStore('mainStore', () => {
 	// state als refs
-	const siteCookieBanner = ref({})
-	const siteNav = ref({})
-	const siteSettings = ref({})
-	const siteFallbacks = ref({})
+	const siteCookieBanner = ref<Record<string, unknown>>({})
+	const siteNav = ref<Record<string, unknown>>({})
+	const siteSettings = ref<Record<string, unknown>>({})
+	const siteFallbacks = ref<SiteFallbacks | Record<string, unknown>>({})
 	const link = ref('')
 	const titel = ref('')
-	const currentTrack = ref(null)
+	const currentTrack = ref<CurrentTrack | null>(null)
 	const active = ref(false)
 	const isPlayerPlaying = ref(false)
 	const isPlayerVisible = ref(true)
 	const activeScheduleLocation = ref('channelOne')
 	const activeStreamingChannel = ref('channelOne')
-	const currentHeroContentType = ref('') // Neue Variable für den aktuellen Content-Typ im Hero
-	const isDarkMode = ref()
+	const currentHeroContentType = ref('')
+	const isDarkMode = ref<boolean | undefined>(undefined)
 	const menuOpen = ref(false)
 
 	// actions als Funktionen
@@ -32,13 +47,13 @@ export const useMainStore = defineStore('mainStore', () => {
 		siteFallbacks.value = data?.siteFallbacks
 	}
 
-	function addToRepro(payload) {
+	function addToRepro(payload: AddToReproPayload) {
 		link.value = payload.link
 		titel.value = payload.name
 		active.value = payload.active
 	}
 
-	function setPlayerStatus(isPlaying) {
+	function setPlayerStatus(isPlaying: boolean) {
 		isPlayerPlaying.value = isPlaying
 	}
 
@@ -50,7 +65,7 @@ export const useMainStore = defineStore('mainStore', () => {
 		currentTrack.value = null
 	}
 
-	function setActiveScheduleLocation(location) {
+	function setActiveScheduleLocation(location: string) {
 		activeScheduleLocation.value = location
 	}
 
@@ -58,12 +73,11 @@ export const useMainStore = defineStore('mainStore', () => {
 		menuOpen.value = !menuOpen.value
 	}
 
-	function setActiveStreamingChannel(channel) {
+	function setActiveStreamingChannel(channel: string) {
 		activeStreamingChannel.value = channel
 	}
 
-	// Neue Funktion zum Setzen des aktuellen Hero Content Types
-	function setCurrentHeroContentType(type) {
+	function setCurrentHeroContentType(type: string) {
 		currentHeroContentType.value = type
 	}
 

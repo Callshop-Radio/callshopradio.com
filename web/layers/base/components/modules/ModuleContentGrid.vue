@@ -9,6 +9,7 @@ import {
 	SHOW_COUNT_QUERY,
 	SHOW_LIST_QUERY
 } from '~~/queries/module.queries'
+import type { ContentItem, Image, Tag } from '~/types/sanity'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useMainStore } from '~/stores/mainStore'
 
@@ -131,8 +132,8 @@ const buildQueryConfig = () => {
 				// Special "Others" logic: OR of all non-main cities
 				// Find all city tags that are NOT main cities
 				const otherCityIds = categorizedTags.value.cities
-					.filter((c: any) => !isMainCity({ title: c.title }))
-					.map((c: any) => c._id)
+					.filter((c: Tag) => !isMainCity({ title: c.title }))
+					.map((c: Tag) => c._id)
 
 				if (otherCityIds.length > 0) {
 					filterOrTags.push(otherCityIds)
@@ -152,16 +153,16 @@ const buildQueryConfig = () => {
 			genreOrGroup.push(genreId)
 			// Add subgenres of this genre
 			const genre = categorizedTags.value.genres.find(
-				(g: any) => g._id === genreId
+				(g: Tag & { subGenres?: Tag[] }) => g._id === genreId
 			)
-			genre?.subGenres?.forEach((sg: any) => genreOrGroup.push(sg._id))
+			genre?.subGenres?.forEach((sg: Tag) => genreOrGroup.push(sg._id))
 		})
 		if (genreOrGroup.length > 0) {
 			filterOrTags.push(genreOrGroup)
 		}
 	}
 
-	const params: Record<string, any> = {
+	const params: Record<string, unknown> = {
 		start,
 		end,
 		filterTags,
@@ -264,7 +265,7 @@ async function fetchActiveContent(reset = false) {
 		// RE-IMPORT from module.queries.ts
 		const { buildModuleQuery } = await import('~~/queries/module.queries')
 
-		const queryData = buildModuleQuery(getModuleQueryType.value as any, {
+		const queryData = buildModuleQuery(getModuleQueryType.value as 'sets' | 'pool' | 'shows' | 'words', {
 			start: config.params.start,
 			end: config.params.end,
 			contentType: config.params.types,
@@ -350,7 +351,7 @@ const allItems = computed(() => {
 	return itemsMap[type]?.() || []
 })
 
-function filterPoolItems(items: any[], contentType: string) {
+function filterPoolItems(items: ContentItem[], contentType: string) {
 	if (!items?.length) return []
 	const typeMap = {
 		persons: 'person',
@@ -375,7 +376,7 @@ const _getUsedTagIdsInItems = computed(() => {
 	return new Set<string>()
 })
 
-function _collectTagIds(tags: any[] | undefined, set: Set<string>) {
+function _collectTagIds(tags: Tag[] | undefined, set: Set<string>) {
 	if (!Array.isArray(tags)) return
 	tags.forEach((tag) => tag?._id && set.add(tag._id))
 }
@@ -385,7 +386,7 @@ const categorizedTags = computed(() => {
 	if (!availableTags) return { genres: [], cities: [], global: [], mood: [] }
 
 	// Return full available tags without filtering
-	const genres = (availableTags.genres || []).map((genre: any) => {
+	const genres = (availableTags.genres || []).map((genre: Tag & { subGenres?: Tag[] }) => {
 		// Always include subgenres
 		return { ...genre, subGenres: genre.subGenres || [] }
 	})
@@ -403,12 +404,12 @@ const availableTags = computed(() => {
 	// Return all tags flattened
 	return Object.values(props.module.availableTags)
 		.flat()
-		.filter((tag: any) => tag?._id)
+		.filter((tag: Tag) => tag?._id)
 })
 
 const poolTags = computed(() => {
 	const tags = availableTags.value
-	const byType = (type: string) => tags.filter((t: any) => t._type === type)
+	const byType = (type: string) => tags.filter((t: Tag) => t._type === type)
 	return {
 		musicians: byType('tag.musician'),
 		venues: byType('tag.venue'),
@@ -418,13 +419,13 @@ const poolTags = computed(() => {
 })
 
 const getContentTypeSpecificTags = computed(() =>
-	availableTags.value.filter((tag: any) => tag._type !== 'tag.city')
+	availableTags.value.filter((tag: Tag) => tag._type !== 'tag.city')
 )
 
 // ==================== TAG HELPERS ====================
-function getItemTags(item: any, type?: string): any[] {
-	const tags: any[] = []
-	const addTags = (source: any[] | undefined) => {
+function getItemTags(item: ContentItem, type?: string): Tag[] {
+	const tags: Tag[] = []
+	const addTags = (source: Tag[] | undefined) => {
 		if (!Array.isArray(source)) return
 		source.forEach((tag) => {
 			if (
@@ -441,11 +442,11 @@ function getItemTags(item: any, type?: string): any[] {
 	return tags
 }
 
-const getItemCityTags = (item: any) => getItemTags(item, 'tag.city')
-const getItemNonCityTags = (item: any) =>
-	(item.tags || []).filter((t: any) => t._type !== 'tag.city')
+const getItemCityTags = (item: ContentItem) => getItemTags(item, 'tag.city')
+const getItemNonCityTags = (item: ContentItem) =>
+	(item.tags || []).filter((t: Tag) => t._type !== 'tag.city')
 
-function getTagTitle(title: any): string {
+function getTagTitle(title: Tag['title']): string {
 	// Handle both string and i18n array formats
 	if (!title) return ''
 	if (typeof title === 'string') return title
@@ -459,7 +460,7 @@ function getTagTitle(title: any): string {
 	return String(title)
 }
 
-function isMainCity(cityTag: any): boolean {
+function isMainCity(cityTag: Tag): boolean {
 	if (!cityTag?.title) return false
 	const cityName = getTagTitle(cityTag.title)
 	return MAIN_CITIES.includes(cityName)
@@ -468,14 +469,14 @@ function isMainCity(cityTag: any): boolean {
 function getTagCategory(tagId: string): string {
 	if (tagId === 'others') return 'city'
 	const { cities, genres, mood } = categorizedTags.value
-	if (cities.some((t: any) => t._id === tagId)) return 'city'
-	if (genres.some((t: any) => t._id === tagId)) return 'genre'
+	if (cities.some((t: Tag) => t._id === tagId)) return 'city'
+	if (genres.some((t: Tag) => t._id === tagId)) return 'genre'
 	for (const genre of genres) {
-		if (genre.subGenres?.some((t: any) => t._id === tagId)) return 'subGenre'
+		if (genre.subGenres?.some((t: Tag) => t._id === tagId)) return 'subGenre'
 	}
-	if (mood?.some((t: any) => t._id === tagId)) return 'mood'
+	if (mood?.some((t: Tag) => t._id === tagId)) return 'mood'
 
-	const tag = availableTags.value.find((t: any) => t._id === tagId)
+	const tag = availableTags.value.find((t: Tag) => t._id === tagId)
 	const typeMap: Record<string, string> = {
 		'tag.musician': 'musician',
 		'tag.venue': 'venue',
@@ -493,12 +494,12 @@ function getTagNameById(tagId: string): string {
 		categorizedTags.value.genres,
 		categorizedTags.value.mood,
 		categorizedTags.value.global,
-		...categorizedTags.value.genres.map((g: any) => g.subGenres || []),
+		...categorizedTags.value.genres.map((g: Tag & { subGenres?: Tag[] }) => g.subGenres || []),
 		availableTags.value
 	]
 
 	for (const source of searchSources) {
-		const found = source?.find?.((t: any) => t._id === tagId)
+		const found = source?.find?.((t: Tag) => t._id === tagId)
 		if (found) return getTagTitle(found.title)
 	}
 	return 'Unknown Filter'
@@ -581,9 +582,9 @@ function toggleGenreFilter(genreId: string) {
 		removeFromHistory('genre', genreId)
 
 		const genre = categorizedTags.value.genres.find(
-			(g: any) => g._id === genreId
+			(g: Tag & { subGenres?: Tag[] }) => g._id === genreId
 		)
-		genre?.subGenres?.forEach((sg: any) => {
+		genre?.subGenres?.forEach((sg: Tag) => {
 			activeSubGenres.value.delete(sg._id)
 			activeFilters.value.delete(sg._id)
 			removeFromHistory('subGenre', sg._id)
@@ -624,11 +625,11 @@ function resetFilters() {
 }
 
 // ==================== ITEM MATCHING ====================
-function itemHasTag(item: any, tagId: string): boolean {
+function itemHasTag(item: ContentItem, tagId: string): boolean {
 	return getItemTags(item).some((t) => t._id === tagId)
 }
 
-function itemMatchesFilters(item: any): boolean {
+function itemMatchesFilters(item: ContentItem): boolean {
 	// Genre filter check
 	if (activeGenres.value.size > 0) {
 		if (activeSubGenres.value.size > 0) {
@@ -783,7 +784,7 @@ function formatDate(dateString: string): string {
 }
 
 // ==================== ROUTING ====================
-function getItemRoute(item: any): string {
+function getItemRoute(item: ContentItem): string {
 	if (!item?.slug) return '/'
 	const slug = item.slug.current
 	const routes = {
@@ -799,7 +800,7 @@ function getItemRoute(item: any): string {
 }
 
 // ==================== IMAGE HANDLING ====================
-function getItemImage(item: any) {
+function getItemImage(item: ContentItem) {
 	if (item.image || item.mainImage) return item.image || item.mainImage
 
 	const fallbacks = mainStore?.siteFallbacks
@@ -824,7 +825,7 @@ async function _checkImage(url: string): Promise<boolean> {
 }
 
 // Non-blocking artwork URL resolution - returns URL directly, browser handles 404s
-function getSoundcloudArtwork(item: any): string {
+function getSoundcloudArtwork(item: ContentItem): string {
 	// Try SoundCloud artwork first (use -t500x500 for better quality without -original issues)
 	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url
 	if (artworkUrl) {
@@ -839,13 +840,13 @@ function getSoundcloudArtwork(item: any): string {
 	)
 }
 
-function loadArtworkUrl(item: any) {
+function loadArtworkUrl(item: ContentItem) {
 	if (!item) return
 	const url = getSoundcloudArtwork(item)
 	artworkUrls.value.set(item._id, url)
 }
 
-function playTrack(item: any) {
+function playTrack(item: ContentItem) {
 	const track = item?.soundcloud?.tracks?.[0]
 	if (!track) return
 	if (!track.permalink_url && track.id) {
@@ -869,7 +870,7 @@ onMounted(() => {
 // Load artwork URLs when more items become visible
 watch(visibleItemCount, () => {
 	if (contentType.value === 'sets') {
-		visibleItems.value.forEach((item: any) => {
+		visibleItems.value.forEach((item: ContentItem) => {
 			if (!artworkUrls.value.has(item._id)) {
 				loadArtworkUrl(item)
 			}

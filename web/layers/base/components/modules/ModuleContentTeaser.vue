@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// Interfaces für Type Safety
 import {
 	ARTICLE_COUNT_QUERY,
 	ARTICLE_LIST_QUERY,
@@ -10,69 +9,14 @@ import {
 	SHOW_COUNT_QUERY,
 	SHOW_LIST_QUERY
 } from '~~/queries/module.queries'
+import type { ContentItem, Tag } from '~/types/sanity'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useMainStore } from '~/stores/mainStore'
-
-interface SiteFallbacks {
-  fallbackArticle?: {
-    image?: { asset?: { url?: string } };
-    description?: any[];
-  };
-  fallbackPerson?: {
-    image?: { asset?: { url?: string } };
-    description?: any[];
-  };
-  fallbackSet?: {
-    image?: { asset?: { url?: string } };
-    description?: any[];
-  };
-  fallbackShow?: {
-    image?: { asset?: { url?: string } };
-    description?: any[];
-  };
-  fallbackVenue?: {
-    image?: { asset?: { url?: string } };
-    description?: any[];
-  };
-}
-
-interface _ContentItem {
-  _id: string;
-  _type: string;
-  slug?: { current?: string };
-  title?: any;
-  name?: any;
-  image?: { asset?: { url?: string } };
-  textTeaser?: any;
-  text?: any;
-  description?: any;
-  tags?: any[];
-  datetime?: string;
-  poolVisibility?: string;
-  soundcloud?: {
-    tracks?: Array<{
-      id?: string;
-      permalink_url?: string;
-      artwork_url?: string;
-    }>;
-  };
-  parentShow?: {
-    slug?: { current?: string };
-    image?: { asset?: { url?: string } };
-    tags?: any[];
-  };
-}
-
-interface _MainStore {
-  siteFallbacks?: SiteFallbacks;
-}
 
 const { locale: _locale } = useI18n()
 const localePath = useLocalePath()
 const router = useRouter()
-
-// Store mit Type Assertion
-const mainStore = useMainStore() as any // Temporary any fix
+const mainStore = useMainStore()
 
 const props = defineProps({
 	module: {
@@ -121,7 +65,7 @@ const buildQueryConfig = () => {
 
 	const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE
 	const end = selfLoadPage.value * SELF_LOAD_PER_PAGE
-	const params: Record<string, any> = { start, end }
+	const params: Record<string, unknown> = { start, end }
 
 	switch (type) {
 	case 'sets':
@@ -317,12 +261,12 @@ const allItems = computed(() => {
 		let poolItems = props.module.poolItems || []
 		if (props.module.poolContentType) {
 			if (props.module.poolContentType === 'persons') {
-				poolItems = poolItems.filter((item: any) => item._type === 'person')
+				poolItems = poolItems.filter((item: ContentItem) => item._type === 'person')
 			} else if (props.module.poolContentType === 'venues') {
-				poolItems = poolItems.filter((item: any) => item._type === 'venue')
+				poolItems = poolItems.filter((item: ContentItem) => item._type === 'venue')
 			} else if (props.module.poolContentType === 'all') {
 				poolItems = poolItems.filter(
-					(item: any) => item._type === 'venue' || item._type === 'person'
+					(item: ContentItem) => item._type === 'venue' || item._type === 'person'
 				)
 			}
 		}
@@ -435,11 +379,9 @@ const typeClass = computed(() => {
 	return typeClassMap[props.module.type] || 'default'
 })
 // helper function for image fetching and fallbacks
-function getItemImage(item: any) {
-	// Fallbacks je nach Content-Typ
+function getItemImage(item: ContentItem) {
 	const itemType = item._type || ''
 
-	// Bild aus dem Item selbst
 	if (item.image) {
 		return item.image
 	}
@@ -449,23 +391,22 @@ function getItemImage(item: any) {
 
 	switch (itemType) {
 	case 'person':
-		return mainStore?.siteFallbacks?.fallbackPerson?.image
+		return mainStore.siteFallbacks?.fallbackPerson?.image
 	case 'venue':
-		return mainStore?.siteFallbacks?.fallbackVenue?.image
+		return mainStore.siteFallbacks?.fallbackVenue?.image
 	case 'show':
-		return mainStore?.siteFallbacks?.fallbackShow?.image
+		return mainStore.siteFallbacks?.fallbackShow?.image
 	case 'set':
-		return mainStore?.siteFallbacks?.fallbackSet?.image
+		return mainStore.siteFallbacks?.fallbackSet?.image
 	case 'word':
 	case 'article':
-		return mainStore?.siteFallbacks?.fallbackArticle?.image
+		return mainStore.siteFallbacks?.fallbackArticle?.image
 	default:
-		// Allgemeines Fallback-Bild
-		return mainStore?.siteFallbacks?.fallbackPerson?.image
+		return mainStore.siteFallbacks?.fallbackPerson?.image
 	}
 }
 
-function getItemRoute(item: any) {
+function getItemRoute(item: ContentItem) {
 	if (!item || !item?.slug) return '/'
 
 	switch (item?._type) {
@@ -496,10 +437,10 @@ function getItemRoute(item: any) {
 }
 
 // Funktion zum Abrufen und Speichern der Artwork-URL
-function loadArtworkUrl(item: any) {
+function loadArtworkUrl(item: ContentItem) {
 	if (!item) return
 	const url = getSoundcloudArtwork(item)
-	artworkUrls.value.set(item._id, url)
+	artworkUrls.value.set(item._id ?? '', url)
 }
 
 function _checkImage(url: string) {
@@ -512,52 +453,42 @@ function _checkImage(url: string) {
 }
 
 // Non-blocking artwork URL resolution - returns URL directly, browser handles 404s
-function getSoundcloudArtwork(item: any): string {
-	// Try SoundCloud artwork first (use -t500x500 for better quality without -original issues)
-	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url
+function getSoundcloudArtwork(item: ContentItem): string {
+	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url as string | undefined
 	if (artworkUrl) {
 		return artworkUrl.replace('-large', '-t500x500')
 	}
-	// Fallback chain
 	const parentShowImageUrl = item?.parentShow?.image?.asset?.url
-	const storeFallbackUrl = (mainStore?.siteFallbacks as any)?.fallbackSet?.image
-		?.asset?.url
+	const storeFallbackUrl = mainStore.siteFallbacks?.fallbackSet?.image?.asset?.url
 	return parentShowImageUrl || storeFallbackUrl || ''
 }
 
-function playTrack(item: any) {
+function playTrack(item: ContentItem) {
 	if (item?.soundcloud?.tracks?.[0]) {
-		const track = item.soundcloud.tracks[0]
+		const track = item.soundcloud.tracks[0] as { id?: number; permalink_url?: string }
 
-		// Sicherstellen, dass permalink_url gesetzt ist
 		if (!track.permalink_url && track.id) {
-			// Wenn keine permalink_url, aber eine ID vorhanden ist, erstellen wir eine
 			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
 		}
 
-		// Track im Store speichern
 		mainStore.currentTrack = track
-	} else {
-		// no track to store
 	}
 }
 
 // Stadt-Tags abrufen
-function getItemCityTags(item: any) {
-	const cityTags: any[] = []
+function getItemCityTags(item: ContentItem) {
+	const cityTags: Tag[] = []
 
-	// Direkte City-Tags
 	if (item?.tags && Array.isArray(item?.tags)) {
-		item?.tags.forEach((tag: any) => {
+		item?.tags.forEach((tag: Tag) => {
 			if (tag._type === 'tag.city') {
 				cityTags.push(tag)
 			}
 		})
 	}
 
-	// City-Tags aus parentShow
 	if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
-		item?.parentShow?.tags.forEach((tag: any) => {
+		item?.parentShow?.tags.forEach((tag: Tag) => {
 			if (tag._type === 'tag.city') {
 				if (!cityTags.some((existingTag) => existingTag._id === tag._id)) {
 					cityTags.push(tag)
@@ -570,26 +501,24 @@ function getItemCityTags(item: any) {
 }
 
 // Nicht-Stadt-Tags abrufen
-function getItemNonCityTags(item: any) {
+function getItemNonCityTags(item: ContentItem) {
 	if (!item?.tags || !Array.isArray(item?.tags)) return []
-	return item?.tags.filter((tag: any) => tag._type !== 'tag.city')
+	return item?.tags.filter((tag: Tag) => tag._type !== 'tag.city')
 }
 
 // Helper für RichText Blocks
-function getRichTextBlocks(content: any): unknown[] {
+function getRichTextBlocks(content: unknown): unknown[] {
 	if (!content) return []
-	// Verwende eine temporäre Lösung bis parseI18nObj verfügbar ist
 	return Array.isArray(content) ? content : []
 }
 
-function getRichTextBlocksSliced(content: any, slice = 1): unknown[] {
+function getRichTextBlocksSliced(content: unknown, slice = 1): unknown[] {
 	if (!content) return []
-	// Verwende eine temporäre Lösung bis parseI18nObj verfügbar ist
 	return Array.isArray(content) ? content.slice(0, slice) : []
 }
 
 // Fisher-Yates Shuffle-Algorithmus mit Seed
-function shuffleArray(array: any[], seed: number) {
+function shuffleArray(array: ContentItem[], seed: number) {
 	const rng = seededRandom(seed)
 	let currentIndex = array.length
 
@@ -622,7 +551,7 @@ watch(
 	visibleItems,
 	(newItems) => {
 		if (props.module.type === 'sets') {
-			newItems.forEach((item: any) => {
+			newItems.forEach((item: ContentItem) => {
 				if (!artworkUrls.value.has(item?._id)) {
 					loadArtworkUrl(item)
 				}
@@ -635,18 +564,14 @@ watch(
 // Lifecycle Hooks
 // Lifecycle Hooks
 onMounted(() => {
-	// SSR data loading handles content fetching now
-
-	// Beim ersten Laden die Artworks für sichtbare Items laden
 	if (props.module.type === 'sets') {
-		visibleItems.value.forEach((item: any) => {
+		visibleItems.value.forEach((item: ContentItem) => {
 			loadArtworkUrl(item)
 		})
 	}
-	// Note: Watcher handles additional items when loadMore is called
 })
 
-function navigateToTagSearch(tag: any, item: any, isGenre = false) {
+function navigateToTagSearch(tag: Tag, item: ContentItem | { _type?: string }, isGenre = false) {
 	// Determine search term
 	let tagName = ''
 

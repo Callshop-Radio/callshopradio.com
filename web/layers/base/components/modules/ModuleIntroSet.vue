@@ -30,7 +30,7 @@ interface Set {
   datetime?: string;
   _updatedAt?: string;
   persons?: Person[];
-  tags?: any[];
+  tags?: import('~/types/sanity').Tag[];
   soundcloud?: {
     tracks?: Array<{
       id?: string;

@@ -32,8 +32,8 @@ interface Person {
 interface Tag {
   _id?: string;
   _type?: string;
-  title?: any;
-  short?: any;
+  title?: unknown;
+  short?: unknown;
 }
 
 interface Set {
@@ -41,12 +41,12 @@ interface Set {
   _type?: string;
   title?: string;
   image?: Image;
-  content?: any;
+  content?: unknown;
   mainImage?: Image;
   parentShow?: {
     title?: string;
     image?: Image;
-    content?: any;
+    content?: unknown;
     slug?: {
       current?: string;
     };
@@ -56,8 +56,8 @@ interface Set {
   _updatedAt?: string;
   persons?: Person[];
   tags?: Tag[];
-  tracklistRich?: any;
-  tracklist?: any[];
+  tracklistRich?: unknown;
+  tracklist?: unknown[];
   soundcloud?: {
     tracks?: Array<{
       id?: string;
