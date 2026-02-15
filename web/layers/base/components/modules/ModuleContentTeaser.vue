@@ -1549,6 +1549,7 @@ function navigateToTagSearch(tag: Tag, item: ContentItem | { _type?: string }, i
 }
 
 /* Responsive Anpassungen */
+/* Tablet: 2 Spalten */
 @media (max-width: 900px) {
   .content-teaser {
     &__grid {
@@ -1560,7 +1561,7 @@ function navigateToTagSearch(tag: Tag, item: ContentItem | { _type?: string }, i
 
       /* Anpassungen für 2er-Grid */
       &:nth-child(3n) {
-        margin-right: calc(var(--big-margin) / 2);
+        margin-right: auto;
       }
 
       &:nth-child(2n) {
@@ -1573,7 +1574,7 @@ function navigateToTagSearch(tag: Tag, item: ContentItem | { _type?: string }, i
       }
     }
 
-    /* Image-Style anpassen für mobile */
+    /* Image-Style anpassen für Tablet */
     &--image {
       .teaser-item {
         flex-direction: column;
@@ -1588,20 +1589,36 @@ function navigateToTagSearch(tag: Tag, item: ContentItem | { _type?: string }, i
         }
       }
     }
+    
+    /* Words bleibt bei 2 Spalten auf Tablet */
+    &.words {
+      .teaser-item {
+        max-width: calc(50% - var(--big-padding) * 1.5);
+      }
+    }
   }
 }
 
+/* Mobil: 1 Spalte */
 @media (max-width: 600px) {
   .content-teaser {
+    &__grid {
+      gap: calc(var(--big-margin) / 2);
+    }
+    
     .teaser-item {
       max-width: 100%;
 
-      &:nth-child(2n) {
-        margin-right: calc(var(--big-margin) / 2);
-      }
-
-      &:nth-child(1n) {
+      &:nth-child(2n),
+      &:nth-child(3n) {
         margin-right: 0;
+      }
+    }
+    
+    /* Words auf mobil auch einspaltig */
+    &.words {
+      .teaser-item {
+        max-width: 100%;
       }
     }
   }

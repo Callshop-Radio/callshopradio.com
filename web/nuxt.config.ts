@@ -152,7 +152,8 @@ export default defineNuxtConfig({
 		// Server-only secrets
 		sanityWebhookSecret: process.env.SANITY_WEBHOOK_SECRET,
 		public: {
-			baseUrl: process.env.NUXT_PUBLIC_SITE_URL
+			baseUrl: process.env.NUXT_PUBLIC_SITE_URL,
+			libretimeApiKey: process.env.NUXT_LIBRETIME_API_KEY
 		}
 	},
 

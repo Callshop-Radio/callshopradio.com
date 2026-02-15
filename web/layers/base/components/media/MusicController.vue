@@ -5,9 +5,6 @@ import { useMainStore } from '~/stores/mainStore'
 
 const mainStore = useMainStore()
 
-// API key from environment variables
-const apiKey = process.env.NUXT_LIBRETIME_API_KEY
-
 // Define stream URLs
 const streamUrl1 = 'https://icecast.callshopradio.com/callshopradio'
 const streamUrl2 = 'https://icecast.callshopradio.com/callshopradio-wien'
@@ -35,42 +32,35 @@ const liveStatus = ref({
 	}
 })
 
-// Helper function for API calls
-const fetcher = async (url, apiKey = null) => {
+// Helper function for API calls via proxy
+const fetcher = async (url, requiresAuth = false) => {
 	try {
-		const headers = apiKey
-			? {
-				Authorization: `Api-Key ${apiKey}`,
-				'Content-Type': 'application/json'
-			}
-			: {}
-		const response = await fetch(url, { headers })
-
-		if (!response.ok)
-			throw new Error(`Error fetching data: ${response.statusText}`)
-		return await response.json()
-	} catch {
+		// Use the Nitro API proxy to avoid CORS issues
+		const proxyUrl = `/api/libretime-proxy?endpoint=${encodeURIComponent(url)}&auth=${requiresAuth}`
+		const response = await $fetch(proxyUrl)
+		return response
+	} catch (error) {
+		console.error(`[MusicController] Fetch error for ${url}:`, error)
 		return null
 	}
 }
 
-// Manual status update function
+	// Manual status update function
 const updateLiveStatus = async () => {
 	try {
 		// Stream 1
 		const liveInfoUrl1 = 'https://libretime.callshopradio.com/api/live-info-v2'
-		const onAirLightUrl1 = `https://libretime.callshopradio.com/api/on-air-light/format/json?api_key=${apiKey}`
+		const onAirLightUrl1 = 'https://libretime.callshopradio.com/api/on-air-light/format/json'
 		const icecastUrl = 'https://icecast.callshopradio.com/status-json.xsl'
 
 		// Stream 2
-		const liveInfoUrl2 =
-      'https://wien.callshopradio.com/api/live-info-v2?days=7'
+		const liveInfoUrl2 = 'https://wien.callshopradio.com/api/live-info-v2?days=7'
 
 		const [liveData1, onAirLight1, icecastData, liveData2] = await Promise.all([
-			fetcher(liveInfoUrl1),
-			fetcher(onAirLightUrl1),
-			fetcher(icecastUrl).catch(() => null),
-			fetcher(liveInfoUrl2)
+			fetcher(liveInfoUrl1, true),  // requiresAuth = true
+			fetcher(onAirLightUrl1, true), // requiresAuth = true
+			fetcher(icecastUrl, false).catch(() => null), // no auth
+			fetcher(liveInfoUrl2, false) // no auth
 		])
 
 		// Adapt format for Stream 2
@@ -99,8 +89,15 @@ const updateLiveStatus = async () => {
 				liveData: liveData2 || {}
 			}
 		}
-	} catch {
-		// Silent error handling
+
+		// Debug: Log successful update
+		console.log('[MusicController] Live status updated:', {
+			hasLiveData1: !!liveData1,
+			hasOnAirLight1: !!onAirLight1,
+			hasLiveData2: !!liveData2
+		})
+	} catch (error) {
+		console.error('[MusicController] Error updating live status:', error)
 	}
 }
 // Function to play and stop stream for Track 1

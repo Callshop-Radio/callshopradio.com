@@ -161,7 +161,6 @@ export const article = defineType({
       type: 'internationalizedArrayRichText',
       group: 'editorial',
       hidden: ({parent}) => parent?.useTeaserText !== true,
-      group: 'editorial',
     },
     {
       name: 'contentReferences',
