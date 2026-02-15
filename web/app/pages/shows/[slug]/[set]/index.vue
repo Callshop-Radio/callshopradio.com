@@ -48,7 +48,7 @@ usePageSeo(data?.value?.seo)
 					v-if="module._type == 'module.contentReferenceGrid'"
 					:module="module"
 				/>
-				<ModuleContentSlider
+				<ModuleContentTeaser
 					v-if="module._type == 'module.contentReferenceSlider'"
 					:module="module"
 				/>
