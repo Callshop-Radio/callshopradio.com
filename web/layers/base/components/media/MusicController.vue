@@ -65,7 +65,7 @@ const updateLiveStatus = async () => {
 
 		// Adapt format for Stream 2
 		let onAirLight2 = null
-		if (liveData2) {
+		if (liveData2?.sources) {
 			onAirLight2 = {
 				on_air_light:
           liveData2.sources.livedj === 'on' ||
