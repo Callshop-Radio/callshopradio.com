@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "nuxt build && node -e \"require('fs').cpSync('.output/public', 'dist', { recursive: true })\"",
+    "build": "nuxt build",
     "dev": "nuxt dev --host",
     "generate": "NODE_OPTIONS='--max-old-space-size=4096' nuxt generate",
     "generate:ssg": "NODE_OPTIONS='--max-old-space-size=6144' nuxt generate --dotenv .env",
