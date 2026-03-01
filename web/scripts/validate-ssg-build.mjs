@@ -8,7 +8,7 @@
 import fs from 'fs'
 import path from 'path'
 
-const DIST_DIR = './.output/public'
+const DIST_DIR = './dist'
 const REQUIRED_FILES = [
 	'index.html',
 	'200.html',
