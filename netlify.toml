@@ -4,6 +4,8 @@
   command = "pnpm run build"
  
  [build.environment]
+   # Sanity-Variablen (NUXT_SANITY_PROJECT_ID, NUXT_SANITY_DATASET) beim Build setzen,
+   # damit /pool/*, /shows/*, /words/* mit echten Daten geprerendert werden (sonst 404 → Redirect)
    NODE_OPTIONS = "--max-old-space-size=8192"
    NPM_FLAGS = "--legacy-peer-deps"
   NITRO_PRESET = "netlify"

@@ -72,9 +72,17 @@ export async function getPrerenderRoutes(): Promise<string[]> {
 			return route.loc;
 		});
 
-	const unique = [...new Set([...STATIC_ROUTES, ...valid])];
-	console.log(
-		`[prerender-routes] ${unique.length} Routen aus Sanity + statisch (ohne crawlLinks).`
+	const defaultRoutes = [...new Set([...STATIC_ROUTES, ...valid])];
+
+	// i18n prefix_except_default: Deutsche URLs (/de, /de/shows/…) müssen auch geprerendert werden,
+	// sonst liefern Permalinks wie /de/shows/xyz 404
+	const deRoutes = defaultRoutes.flatMap((r) =>
+		r === "/" ? ["/de"] : [`/de${r}`]
 	);
-	return unique;
+	const allRoutes = [...defaultRoutes, ...deRoutes];
+
+	console.log(
+		`[prerender-routes] ${allRoutes.length} Routen (${defaultRoutes.length} en + ${deRoutes.length} de).`
+	);
+	return allRoutes;
 }
