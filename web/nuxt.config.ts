@@ -1,3 +1,5 @@
+import { getPrerenderRoutes } from "./lib/fetch-prerender-routes";
+
 export default defineNuxtConfig({
 	// TODO: Remove this once Nuxt 4 has launched
 	future: {
@@ -111,10 +113,11 @@ export default defineNuxtConfig({
 
 	nitro: {
 		prerender: {
-			concurrency: 2,
-			crawlLinks: true,
+			// Kein Crawling – nur vetted Routes aus Sanity (gleiche Logik wie Sitemap)
+			crawlLinks: false,
+			concurrency: 1,
 			failOnError: false,
-			routes: ["/"],
+			routes: ["/", "/sitemap.xml"], // wird im Hook durch Sanity-Liste ersetzt
 			ignore: ["/api/**"],
 		},
 		experimental: {
@@ -144,10 +147,14 @@ export default defineNuxtConfig({
 		},
 	},
 
-	// Prerender-Hook deaktiviert - Hybrid Rendering mit ISR/SWR
-	// hooks: {
-	//   async 'nitro:config'(nitroConfig) { ... }
-	// },
+	hooks: {
+		async "nitro:config"(nitroConfig) {
+			if (nitroConfig.dev) return;
+			const routes = await getPrerenderRoutes();
+			nitroConfig.prerender = nitroConfig.prerender || {};
+			nitroConfig.prerender.routes = routes;
+		},
+	},
 
 	runtimeConfig: {
 		// Server-only secrets
