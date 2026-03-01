@@ -114,9 +114,9 @@ export default defineNuxtConfig({
 	nitro: {
 		prerender: {
 			crawlLinks: false,
-			concurrency: 2,
+			concurrency: 1,
 			failOnError: false,
-			routes: ['/'],
+			routes: ['/', '/sitemap.xml'],
 			ignore: ['/api/**']
 		},
 		experimental: {
@@ -146,10 +146,14 @@ export default defineNuxtConfig({
 		}
 	},
 
-	// Prerender-Hook deaktiviert - Hybrid Rendering mit ISR/SWR
-	// hooks: {
-	//   async 'nitro:config'(nitroConfig) { ... }
-	// },
+	hooks: {
+		async 'nitro:config'(nitroConfig) {
+			if (nitroConfig.dev) return
+			const routes = await getPrerenderRoutes()
+			nitroConfig.prerender = nitroConfig.prerender || {}
+			nitroConfig.prerender.routes = routes
+		}
+	},
 
 	runtimeConfig: {
 		// Server-only secrets
