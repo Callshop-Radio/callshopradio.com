@@ -1,175 +1,175 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from "vue";
-import { useSwipe } from "@vueuse/core";
-import { useMainStore } from "~/stores/mainStore";
+import { computed, onMounted, ref, watch } from 'vue'
+import { useMainStore } from '~/stores/mainStore'
+import { useSwipe } from '@vueuse/core'
 
-const mainStore = useMainStore();
+const mainStore = useMainStore()
 
 const props = defineProps({
-  module: {
-    type: Object,
-    required: true,
-  },
-});
+	module: {
+		type: Object,
+		required: true
+	}
+})
 
 // State
-const currentIndex = ref(0);
-const sliderRef = ref<HTMLElement | null>(null);
+const currentIndex = ref(0)
+const sliderRef = ref<HTMLElement | null>(null)
 
 // Slides
 const slides = computed(() => {
-  return props.module?.slides || [];
-});
+	return props.module?.slides || []
+})
 
 // Navigation
 const scrollNext = () => {
-  if (slides.value.length === 0) return;
-  currentIndex.value = (currentIndex.value + 1) % slides.value.length;
-};
+	if (slides.value.length === 0) return
+	currentIndex.value = (currentIndex.value + 1) % slides.value.length
+}
 
 const scrollPrev = () => {
-  if (slides.value.length === 0) return;
-  currentIndex.value =
-    (currentIndex.value - 1 + slides.value.length) % slides.value.length;
-};
+	if (slides.value.length === 0) return
+	currentIndex.value =
+    (currentIndex.value - 1 + slides.value.length) % slides.value.length
+}
 
 const scrollTo = (index: number) => {
-  currentIndex.value = index;
-};
+	currentIndex.value = index
+}
 
 // Swipe Support
-const { isSwiping, direction } = useSwipe(sliderRef, {
-  onSwipeEnd(e, direction) {
-    if (direction === "left") scrollNext();
-    if (direction === "right") scrollPrev();
-  },
-});
+const { isSwiping: _isSwiping, direction: _direction } = useSwipe(sliderRef, {
+	onSwipeEnd(e, direction) {
+		if (direction === 'left') scrollNext()
+		if (direction === 'right') scrollPrev()
+	}
+})
 
 // Funktion zum Aktualisieren des aktuellen Content-Typs im Store
 const updateCurrentContentType = () => {
-  if (
-    !slides.value ||
+	if (
+		!slides.value ||
     slides.value.length === 0 ||
     currentIndex.value >= slides.value.length
-  )
-    return;
+	)
+		return
 
-  const currentSlide = slides.value[currentIndex.value];
-  const contentType = currentSlide?.contentReference?._type || "";
+	const currentSlide = slides.value[currentIndex.value]
+	const contentType = currentSlide?.contentReference?._type || ''
 
-  // Aktualisiere den Content-Typ im Store
-  mainStore.setCurrentHeroContentType(contentType);
-};
+	// Aktualisiere den Content-Typ im Store
+	mainStore.setCurrentHeroContentType(contentType)
+}
 
 // Überwache Änderungen des currentIndex und aktualisiere den Content-Typ
 watch(currentIndex, () => {
-  updateCurrentContentType();
-});
+	updateCurrentContentType()
+})
 
 // Initial update
 onMounted(() => {
-  updateCurrentContentType();
-});
+	updateCurrentContentType()
+})
 </script>
 
 <template>
-  <div
-    v-if="module && slides.length > 0"
-    :class="`module-hero module-hero--${module.style || 'default'} ${
-      mainStore.currentHeroContentType
-    }`"
-  >
-    <div class="module-hero__header" v-if="module.title">
-      <h3 class="module-hero__title">
-        {{ module.title }}
-      </h3>
-    </div>
+	<div
+		v-if="module && slides.length > 0"
+		:class="`module-hero module-hero--${module.style || 'default'} ${
+			mainStore.currentHeroContentType
+		}`"
+	>
+		<div v-if="module.title" class="module-hero__header">
+			<h3 class="module-hero__title">
+				{{ module.title }}
+			</h3>
+		</div>
     
-    <div class="slider__nav__container">
-      <nav class="slider__nav">
-        <!-- Arrow Navigation -->
-        <div class="slider__nav__arrows" v-if="slides.length > 1">
-          <button
-            class="slider__arrow slider__arrow--prev"
-            @click="scrollPrev"
-            aria-label="Vorheriger Slide"
-          >
-            <svg
-              width="22"
-              height="20"
-              viewBox="0 0 22 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M1.67986e-07 9.84832L21.1305 0.452866L21.1305 19.2438L1.67986e-07 9.84832Z"
-                fill="black"
-              />
-            </svg>
-          </button>
+		<div class="slider__nav__container">
+			<nav class="slider__nav">
+				<!-- Arrow Navigation -->
+				<div v-if="slides.length > 1" class="slider__nav__arrows">
+					<button
+						class="slider__arrow slider__arrow--prev"
+						aria-label="Vorheriger Slide"
+						@click="scrollPrev"
+					>
+						<svg
+							width="22"
+							height="20"
+							viewBox="0 0 22 20"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M1.67986e-07 9.84832L21.1305 0.452866L21.1305 19.2438L1.67986e-07 9.84832Z"
+								fill="black"
+							/>
+						</svg>
+					</button>
           
-           <!-- Dot Navigation -->
-          <div class="slider__nav__dots">
-            <button
-              v-for="(_, index) in slides"
-              :key="index"
-              :class="['slider__dot', { 'is-selected': index === currentIndex }]"
-              @click="scrollTo(index)"
-            ></button>
-          </div>
+					<!-- Dot Navigation -->
+					<div class="slider__nav__dots">
+						<button
+							v-for="(_, index) in slides"
+							:key="index"
+							:class="['slider__dot', { 'is-selected': index === currentIndex }]"
+							@click="scrollTo(index)"
+						/>
+					</div>
 
-          <button
-            class="slider__arrow slider__arrow--next"
-            @click="scrollNext"
-            aria-label="Nächster Slide"
-          >
-            <svg
-              width="22"
-              height="20"
-              viewBox="0 0 22 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M22 9.84894L0.86951 19.2444L0.869511 0.453482L22 9.84894Z"
-                fill="black"
-              />
-            </svg>
-          </button>
-        </div>
-      </nav>
-    </div>
+					<button
+						class="slider__arrow slider__arrow--next"
+						aria-label="Nächster Slide"
+						@click="scrollNext"
+					>
+						<svg
+							width="22"
+							height="20"
+							viewBox="0 0 22 20"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M22 9.84894L0.86951 19.2444L0.869511 0.453482L22 9.84894Z"
+								fill="black"
+							/>
+						</svg>
+					</button>
+				</div>
+			</nav>
+		</div>
 
-    <div class="graphics-behind" :class="mainStore?.currentHeroContentType">
-      <AnimatedGradient
-        class="animated-gradient"
-        :type="mainStore?.currentHeroContentType"
-      />
-      <AnimatedLogoBackground class="animated-logo-background" />
-    </div>
+		<div class="graphics-behind" :class="mainStore?.currentHeroContentType">
+			<AnimatedGradient
+				class="animated-gradient"
+				:type="mainStore?.currentHeroContentType"
+			/>
+			<AnimatedLogoBackground class="animated-logo-background" />
+		</div>
 
-    <!-- Slider Content -->
-    <div ref="sliderRef" class="slider-content">
-      <div
-          v-for="(slide, index) in slides"
-          :key="slide._key || index"
-          class="slide"
-          :class="{ active: index === currentIndex }"
-        >
-          <!-- Verwende die ModuleHeroEntry-Komponente für jeden Slide -->
-          <ModuleHeroEntry
-            :module="slide"
-            :class="`slider-item slider-item--${
-              module.style || slide.layout || 'default'
-            }`"
-          />
-        </div>
-    </div>
+		<!-- Slider Content -->
+		<div ref="sliderRef" class="slider-content">
+			<div
+				v-for="(slide, index) in slides"
+				:key="slide._key || index"
+				class="slide"
+				:class="{ active: index === currentIndex }"
+			>
+				<!-- Verwende die ModuleHeroEntry-Komponente für jeden Slide -->
+				<ModuleHeroEntry
+					:module="slide"
+					:class="`slider-item slider-item--${
+						module.style || slide.layout || 'default'
+					}`"
+				/>
+			</div>
+		</div>
     
-    <div class="graphics-front">
-      <AnimatedLogo class="animated-logo" />
-    </div>
-  </div>
+		<div class="graphics-front">
+			<AnimatedLogo class="animated-logo" />
+		</div>
+	</div>
 </template>
 
 <style lang="postcss" scoped>
@@ -178,7 +178,7 @@ onMounted(() => {
   max-width: clamp(100%, 100%, var(--page-max-width));
   position: relative;
 
-  @media screen and (max-width: 900px) {
+  @media screen and (max-width: 1100px) {
     margin-top: var(--base-margin);
   }
 
@@ -187,11 +187,18 @@ onMounted(() => {
   }
 
   &__header {
-    padding: 0 calc(var(--big-margin) / 2);
-    margin-bottom: var(--small-margin);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: var(--small-margin);
+    
+    /* Mobile: Kompakteres Padding */
+    padding: 0 var(--mid-margin);
+    
+    /* Tablet/Desktop: Standard Padding */
+    @media screen and (min-width: 600px) {
+      padding: 0 calc(var(--big-margin) / 2);
+    }
   }
 
   .graphics-behind {
@@ -206,50 +213,96 @@ onMounted(() => {
     &.person {
       .animated-gradient {
         position: absolute;
-        top: -12.5%;
-        left: -75%;
-        width: 200%;
-        height: 200%;
-        @media screen and (min-width: 900px) {
-          position: absolute;
+        
+        /* Mobile: Zentriert für venue/person */
+        top: 30%;
+        left: -25%;
+        width: 190%;
+        height: 190%;
+        opacity: 0.85;
+        
+        /* Tablet: Zentriert mit mehr Coverage */
+        @media screen and (min-width: 600px) and (max-width: 1100px) {
+          top: 15%;
+          left: -35%;
+          width: 200%;
+          height: 200%;
+          opacity: 0.9;
+        }
+        
+        /* Desktop: Original Position */
+        @media screen and (min-width: 1100px) {
           top: -60%;
           left: -15%;
           width: 140%;
           height: 140%;
+          opacity: 1;
         }
       }
     }
     .animated-logo-background {
-      width: 180svw;
-      height: 80svh;
       position: absolute;
-      right: 0;
       z-index: 0;
-      transform: translate(66svw, -5svh);
-      @media screen and (min-width: 900px) {
+      
+      /* Mobile: Zentriert hinter dem Bild */
+      width: 140svw;
+      height: 60svh;
+      left: 50%;
+      top: 40svw;
+      transform: translate(-50%, -50%);
+      opacity: 0.8;
+      
+      /* Tablet: Zentriert mit mehr Platz */
+      @media screen and (min-width: 600px) and (max-width: 1100px) {
+        width: 150svw;
+        height: 65svh;
+        left: 50%;
+        top: 30svw;
+        transform: translate(-50%, -50%);
+        opacity: 0.85;
+      }
+      
+      /* Desktop: Original Position */
+      @media screen and (min-width: 1100px) {
         width: 575px;
         height: 415px;
         right: calc(var(--big-margin) * 2);
+        left: auto;
         top: calc(
           35.3125rem - var(--big-margin) * 2 + var(--mid-margin) + 0.625rem
         );
         transform: translate(33%, -100%);
+        opacity: 1;
       }
     }
     .animated-gradient {
       position: absolute;
-      top: -12.5%;
-      left: -75%;
-      width: 200%;
-      height: 200%;
       transition: width 0.5s ease, height 0.5s ease, top 0.5s ease,
         left 0.5s ease;
-      @media screen and (min-width: 900px) {
-        position: absolute;
+      
+      /* Mobile: Zentriert hinter dem Content */
+      top: 30%;
+      left: -20%;
+      width: 180%;
+      height: 180%;
+      opacity: 0.85;
+      
+      /* Tablet: Zentrierter mit mehr Coverage */
+      @media screen and (min-width: 600px) and (max-width: 1100px) {
+        top: 20%;
+        left: -30%;
+        width: 190%;
+        height: 190%;
+        opacity: 0.9;
+      }
+      
+      /* Desktop: Original Position */
+      @media screen and (min-width: 1100px) {
         top: -33%;
         left: -45%;
         width: 110%;
         height: 110%;
+        opacity: 1;
       }
     }
   }
@@ -262,20 +315,38 @@ onMounted(() => {
     height: 100%;
     z-index: 0;
     .animated-logo {
-      width: 180svw;
-      height: 80svh;
       position: absolute;
-      right: 0;
       z-index: 0;
-      transform: translate(66svw, -5svh);
-      @media screen and (min-width: 900px) {
+      
+      /* Mobile: Zentriert hinter dem Bild */
+      width: 140svw;
+      height: 60svh;
+      left: 50%;
+      top: 40svw;
+      transform: translate(-50%, -50%);
+      opacity: 0.8;
+      
+      /* Tablet: Zentriert mit mehr Platz */
+      @media screen and (min-width: 600px) and (max-width: 1100px) {
+        width: 150svw;
+        height: 65svh;
+        left: 50%;
+        top: 30svw;
+        transform: translate(-50%, -50%);
+        opacity: 0.85;
+      }
+      
+      /* Desktop: Original Position */
+      @media screen and (min-width: 1100px) {
         width: 575px;
         height: 415px;
         right: calc(var(--big-margin) * 2);
+        left: auto;
         top: calc(
           35.3125rem - var(--big-margin) * 2 + var(--mid-margin) + 0.625rem
         );
         transform: translate(33%, -100%);
+        opacity: 1;
       }
     }
   }
@@ -284,37 +355,49 @@ onMounted(() => {
     width: 100%;
     height: 100%;
     position: relative;
+    
     .slider__nav {
       @apply flex row items-center justify-space-between;
-      position: absolute;
-      top: calc(80svw + var(--big-margin) * 2);
-      right: calc(var(--big-margin));
       padding: var(--mid-padding);
-      width: calc(100% - var(--big-margin) * 2);
       background-color: var(--color-bg);
       border-radius: 100px;
       border: 0.0625rem solid var(--color-text);
       shape-rendering: crispEdges;
       z-index: 10;
+      
+      /* Mobile: Unterhalb des Bildes */
+      position: absolute;
+      top: calc(80svw + var(--big-margin));
+      right: calc(var(--big-margin));
+      width: calc(100% - var(--big-margin) * 2);
+      
       @media screen and (min-width: 600px) {
+        /* Tablet: Unterhalb eines kleineren Bildes */
+        top: calc(50svw + var(--big-margin));
+      }
+      
+      @media screen and (min-width: 1100px) {
+        /* Desktop: Feste Position am unteren rechten Rand */
         top: calc(35.3125rem - var(--big-margin) * 2);
         right: var(--big-margin);
-        padding: var(--mid-padding);
         width: max-content;
-        background-color: var(--color-bg);
-        border-radius: 100px;
-        border: 0.0625rem solid var(--color-text);
-        shape-rendering: crispEdges;
-        z-index: 10;
       }
 
       .slider__nav__arrows {
-        @apply flex;
-        gap: 0 var(--mid-margin);
+        @apply flex row items-center;
         margin: 0;
+        
+        /* Mobile: Full-width mit space-between */
         @media screen and (max-width: 600px) {
-          @apply flex row items-center justify-space-between;
           width: 100%;
+          justify-content: space-between;
+          gap: 0;
+        }
+        
+        /* Tablet/Desktop: Kompakte Anordnung */
+        @media screen and (min-width: 601px) {
+          gap: 0 var(--mid-margin);
+          justify-content: center;
         }
 
         .slider__arrow {
@@ -369,13 +452,12 @@ onMounted(() => {
   }
 
   .slide {
-    @apply flex flex-row w-full;
+    @apply flex w-full;
     grid-area: 1 / 1 / 2 / 2;
     width: 100%;
-    padding: 0 calc(var(--big-margin) / 2);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.4s ease; /* Gentle transition */
+    transition: opacity 0.4s ease;
     z-index: 1;
 
     &.active {
@@ -384,10 +466,28 @@ onMounted(() => {
       z-index: 2;
     }
 
-    @media screen and (max-width: 900px) {
-        flex-flow: column wrap;
-        align-items: center;
-        justify-content: flex-start;
+    /* Mobile: Column Layout, kompaktes Padding */
+    @media screen and (max-width: 600px) {
+      flex-flow: column wrap;
+      align-items: stretch;
+      justify-content: flex-start;
+      padding: 0 var(--mid-margin);
+    }
+    
+    /* Tablet: Column Layout mit mehr Spacing */
+    @media screen and (min-width: 601px) and (max-width: 1100px) {
+      flex-flow: column wrap;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0 calc(var(--big-margin) / 2);
+      gap: var(--mid-margin);
+    }
+    
+    /* Desktop: Row Layout */
+    @media screen and (min-width: 1101px) {
+      flex-flow: row nowrap;
+      align-items: flex-start;
+      padding: 0 calc(var(--big-margin) / 2);
     }
   }
 }

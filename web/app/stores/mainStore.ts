@@ -1,148 +1,162 @@
-import { defineStore } from "pinia";
-import { ref } from "vue";
-import { SITE_OPTIONS_QUERY } from "~~/queries/sanity.queries";
+import { SITE_OPTIONS_QUERY } from '~~/queries/sanity.queries'
+import type { SiteFallbacks } from '~~/types/sanity'
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
-export const useMainStore = defineStore("mainStore", () => {
-  // state als refs
-  const siteCookieBanner = ref({});
-  const siteNav = ref({});
-  const siteSettings = ref({});
-  const siteFallbacks = ref({});
-  const link = ref("");
-  const titel = ref("");
-  const currentTrack = ref(null);
-  const active = ref(false);
-  const isPlayerPlaying = ref(false);
-  const isPlayerVisible = ref(true);
-  const activeScheduleLocation = ref("channelOne");
-  const activeStreamingChannel = ref("channelOne");
-  const currentHeroContentType = ref(""); // Neue Variable für den aktuellen Content-Typ im Hero
-  const isDarkMode = ref();
-  const menuOpen = ref(false);
+/** Payload for addToRepro (repro list / current track info) */
+export interface AddToReproPayload {
+	link: string
+	name: string
+	active: boolean
+}
 
-  // actions als Funktionen
-  async function nuxtServerInit() {
-    const sanity = useSanity();
-    const query = groq`${SITE_OPTIONS_QUERY}`;
-    const data = await sanity.fetch(query);
+/** Minimal current track shape for SoundCloud / repro */
+export interface CurrentTrack {
+	link?: string
+	name?: string
+	[key: string]: unknown
+}
 
-    siteCookieBanner.value = data?.siteCookieBanner;
-    siteNav.value = data?.siteNav;
-    siteSettings.value = data?.siteSettings;
-    siteFallbacks.value = data?.siteFallbacks;
-  }
+export const useMainStore = defineStore('mainStore', () => {
+	// state als refs
+	const siteCookieBanner = ref<Record<string, unknown>>({})
+	const siteNav = ref<Record<string, unknown>>({})
+	const siteSettings = ref<Record<string, unknown>>({})
+	const siteFallbacks = ref<SiteFallbacks | Record<string, unknown>>({})
+	const link = ref('')
+	const titel = ref('')
+	const currentTrack = ref<CurrentTrack | null>(null)
+	const active = ref(false)
+	const isPlayerPlaying = ref(false)
+	const isPlayerVisible = ref(true)
+	const activeScheduleLocation = ref('channelOne')
+	const activeStreamingChannel = ref('channelOne')
+	const currentHeroContentType = ref('')
+	const isDarkMode = ref<boolean | undefined>(undefined)
+	const menuOpen = ref(false)
 
-  function addToRepro(payload) {
-    link.value = payload.link;
-    titel.value = payload.name;
-    active.value = payload.active;
-  }
+	// actions als Funktionen
+	async function nuxtServerInit() {
+		const sanity = useSanity()
+		const query = groq`${SITE_OPTIONS_QUERY}`
+		const data = await sanity.fetch(query)
 
-  function setPlayerStatus(isPlaying) {
-    isPlayerPlaying.value = isPlaying;
-  }
+		siteCookieBanner.value = data?.siteCookieBanner
+		siteNav.value = data?.siteNav
+		siteSettings.value = data?.siteSettings
+		siteFallbacks.value = data?.siteFallbacks
+	}
 
-  function togglePlayerVisibility() {
-    isPlayerVisible.value = !isPlayerVisible.value;
-  }
+	function addToRepro(payload: AddToReproPayload) {
+		link.value = payload.link
+		titel.value = payload.name
+		active.value = payload.active
+	}
 
-  function resetSoundCloudPlayer() {
-    currentTrack.value = null;
-  }
+	function setPlayerStatus(isPlaying: boolean) {
+		isPlayerPlaying.value = isPlaying
+	}
 
-  function setActiveScheduleLocation(location) {
-    activeScheduleLocation.value = location;
-  }
+	function togglePlayerVisibility() {
+		isPlayerVisible.value = !isPlayerVisible.value
+	}
 
-  function toggleMenu() {
-    menuOpen.value = !menuOpen.value;
-  }
+	function resetSoundCloudPlayer() {
+		currentTrack.value = null
+	}
 
-  function setActiveStreamingChannel(channel) {
-    activeStreamingChannel.value = channel;
-  }
+	function setActiveScheduleLocation(location: string) {
+		activeScheduleLocation.value = location
+	}
 
-  // Neue Funktion zum Setzen des aktuellen Hero Content Types
-  function setCurrentHeroContentType(type) {
-    currentHeroContentType.value = type;
-  }
+	function toggleMenu() {
+		menuOpen.value = !menuOpen.value
+	}
 
-  function detectSystemDarkMode() {
-    // Prüfen ob im Browser-Kontext
-    if (process.client) {
-      // MediaQueryList-Objekt erstellen, um Systemeinstellung zu prüfen
-      const darkModeMediaQuery = window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      );
+	function setActiveStreamingChannel(channel: string) {
+		activeStreamingChannel.value = channel
+	}
 
-      // isDarkMode anhand des System-Darkmode setzen
-      isDarkMode.value = darkModeMediaQuery.matches;
+	function setCurrentHeroContentType(type: string) {
+		currentHeroContentType.value = type
+	}
 
-      // Farben aktualisieren
-      updateColors();
+	function detectSystemDarkMode() {
+		// Prüfen ob im Browser-Kontext
+		if (import.meta.client) {
+			// MediaQueryList-Objekt erstellen, um Systemeinstellung zu prüfen
+			const darkModeMediaQuery = window.matchMedia(
+				'(prefers-color-scheme: dark)'
+			)
 
-      // Auf Änderungen reagieren
-      darkModeMediaQuery.addEventListener("change", (e) => {
-        isDarkMode.value = e.matches;
-        updateColors();
-      });
-    }
-  }
+			// isDarkMode anhand des System-Darkmode setzen
+			isDarkMode.value = darkModeMediaQuery.matches
 
-  function updateColors() {
-    if (isDarkMode.value) {
-      document.documentElement.style.setProperty("--color-bg", "#000");
-      document.documentElement.style.setProperty("--color-text", "#fff");
-      document
-        ?.querySelector(".header .logo")
-        ?.style.setProperty("filter", "invert(1)");
-      document
-        ?.querySelector(".header .text-logo")
-        ?.style.setProperty("filter", "invert(1)");
-    } else {
-      document.documentElement.style.setProperty("--color-bg", "#fff");
-      document.documentElement.style.setProperty("--color-text", "#000");
-      document
-        ?.querySelector(".header .logo")
-        ?.style.setProperty("filter", "invert(0)");
-      document
-        ?.querySelector(".header .text-logo")
-        ?.style.setProperty("filter", "invert(0)");
-    }
-  }
+			// Farben aktualisieren
+			updateColors()
 
-  function toggleDarkMode() {
-    isDarkMode.value = !isDarkMode.value;
-    updateColors();
-  }
+			// Auf Änderungen reagieren
+			darkModeMediaQuery.addEventListener('change', (e) => {
+				isDarkMode.value = e.matches
+				updateColors()
+			})
+		}
+	}
 
-  return {
-    siteCookieBanner,
-    siteNav,
-    siteSettings,
-    siteFallbacks,
-    currentTrack,
-    link,
-    titel,
-    active,
-    isPlayerPlaying,
-    isPlayerVisible,
-    activeScheduleLocation,
-    activeStreamingChannel,
-    currentHeroContentType, // Neue Variable exportieren
-    menuOpen,
-    isDarkMode,
-    detectSystemDarkMode,
-    nuxtServerInit,
-    addToRepro,
-    setPlayerStatus,
-    togglePlayerVisibility,
-    resetSoundCloudPlayer,
-    setActiveScheduleLocation,
-    setCurrentHeroContentType, // Neue Funktion exportieren
-    updateColors,
-    toggleDarkMode,
-    toggleMenu,
-    setActiveStreamingChannel,
-  };
-});
+	function updateColors() {
+		if (isDarkMode.value) {
+			document.documentElement.style.setProperty('--color-bg', '#000')
+			document.documentElement.style.setProperty('--color-text', '#fff')
+			document
+				?.querySelector('.header .logo')
+				?.style.setProperty('filter', 'invert(1)')
+			document
+				?.querySelector('.header .text-logo')
+				?.style.setProperty('filter', 'invert(1)')
+		} else {
+			document.documentElement.style.setProperty('--color-bg', '#fff')
+			document.documentElement.style.setProperty('--color-text', '#000')
+			document
+				?.querySelector('.header .logo')
+				?.style.setProperty('filter', 'invert(0)')
+			document
+				?.querySelector('.header .text-logo')
+				?.style.setProperty('filter', 'invert(0)')
+		}
+	}
+
+	function toggleDarkMode() {
+		isDarkMode.value = !isDarkMode.value
+		updateColors()
+	}
+
+	return {
+		siteCookieBanner,
+		siteNav,
+		siteSettings,
+		siteFallbacks,
+		currentTrack,
+		link,
+		titel,
+		active,
+		isPlayerPlaying,
+		isPlayerVisible,
+		activeScheduleLocation,
+		activeStreamingChannel,
+		currentHeroContentType, // Neue Variable exportieren
+		menuOpen,
+		isDarkMode,
+		detectSystemDarkMode,
+		nuxtServerInit,
+		addToRepro,
+		setPlayerStatus,
+		togglePlayerVisibility,
+		resetSoundCloudPlayer,
+		setActiveScheduleLocation,
+		setCurrentHeroContentType, // Neue Funktion exportieren
+		updateColors,
+		toggleDarkMode,
+		toggleMenu,
+		setActiveStreamingChannel
+	}
+})

@@ -3,187 +3,183 @@ import { getPrerenderRoutes } from "./lib/fetch-prerender-routes";
 export default defineNuxtConfig({
 	// TODO: Remove this once Nuxt 4 has launched
 	future: {
-		compatibilityVersion: 4,
+		compatibilityVersion: 4
 	},
 	site: {
 		debug: false,
-		url: process.env.NUXT_PUBLIC_SITE_URL || "https://callshopradio.com",
+		url: process.env.NUXT_PUBLIC_SITE_URL || 'https://callshopradio.com'
 	},
 
 	sitemap: {
-		sources: ["/api/sitemap"],
+		sources: ['/api/sitemap']
 	},
 	devtools: { enabled: false },
 	ssr: true,
 	// Optimiert für SSG
 	experimental: {
-		payloadExtraction: false,
+		payloadExtraction: false
 	},
 	app: {
-		pageTransition: { name: "page", mode: "out-in" },
+		pageTransition: { name: 'page', mode: 'out-in' }
 	},
 
 	sourcemap: {
 		server: false,
-		client: false,
+		client: false
 	},
 	modules: [
-		"@unocss/nuxt",
-		"@unlazy/nuxt",
-		"@nuxtjs/sanity",
-		"@pinia/nuxt",
-		"@vueuse/nuxt",
-		"nuxt-gtag",
-		"@nuxt/eslint",
-		"@nuxtjs/i18n",
-		"@nuxtjs/sitemap",
+		'@unocss/nuxt',
+		'@unlazy/nuxt',
+		'@nuxtjs/sanity',
+		'@pinia/nuxt',
+		'@vueuse/nuxt',
+		'nuxt-gtag',
+		'@nuxt/eslint',
+		'@nuxtjs/i18n',
+		'@nuxtjs/sitemap'
 	],
 
 	gtag: {
 		id: process.env.NUXT_GTAG_ID,
-		initialConsent: false,
+		initialConsent: false
 	},
 
 	sanity: {
 		projectId: process.env.NUXT_SANITY_PROJECT_ID,
 		dataset: process.env.NUXT_SANITY_DATASET,
-		apiVersion: "2024-01-01",
+		apiVersion: '2024-01-01',
 		useCdn: false,
-		perspective: "published",
+		perspective: 'published',
 		visualEditing: {
-			studioUrl: process.env.NUXT_SANITY_STUDIO_URL || "http://localhost:3333",
+			studioUrl: process.env.NUXT_SANITY_STUDIO_URL || 'http://localhost:3333',
 			token: process.env.NUXT_SANITY_API_READ_TOKEN,
-			stega: false, // activate once FFox problem has been resolved
-		},
+			stega: false // activate once FFox problem has been resolved
+		}
 	},
 
 	components: [
 		{
-			path: "~/components",
-			pathPrefix: false,
-		},
+			path: '~/components',
+			pathPrefix: false
+		}
 	],
 
 	unocss: {
-		nuxtLayers: true,
+		nuxtLayers: true
 	},
 
 	postcss: {
 		plugins: {
-			"postcss-nested": {},
+			'postcss-nested': {},
 			cssnano: {
 				preset: [
-					"default",
+					'default',
 					{
 						discardComments: {
-							removeAll: true,
-						},
-					},
-				],
+							removeAll: true
+						}
+					}
+				]
 			},
-			"@unocss/postcss": {},
-			"postcss-preset-env": {
-				stage: 2,
+			'@unocss/postcss': {},
+			'postcss-preset-env': {
+				stage: 2
 			},
-			autoprefixer: {},
-		},
+			autoprefixer: {}
+		}
 	},
 
 	i18n: {
-		strategy: "prefix_except_default",
+		strategy: 'prefix_except_default',
 		locales: [
 			{
-				code: "en",
-				iso: "en-US",
-				name: "English",
+				code: 'en',
+				iso: 'en-US',
+				name: 'English'
 			},
 			{
-				code: "de",
-				iso: "de-DE",
-				name: "Deutsch",
-			},
+				code: 'de',
+				iso: 'de-DE',
+				name: 'Deutsch'
+			}
 		],
-		defaultLocale: "en",
+		defaultLocale: 'en',
 		detectBrowserLanguage: false,
 		// Bestehende i18n-Konfiguration...
 		bundle: {
-			optimizeTranslationDirective: false, // Explizit deaktivieren, um die Warnung zu beseitigen
-		},
+			optimizeTranslationDirective: false // Explizit deaktivieren, um die Warnung zu beseitigen
+		}
 	},
 
 	nitro: {
 		prerender: {
-			// Kein Crawling – nur vetted Routes aus Sanity (gleiche Logik wie Sitemap)
 			crawlLinks: false,
-			concurrency: 1,
+			concurrency: 2,
 			failOnError: false,
-			routes: ["/", "/sitemap.xml"], // wird im Hook durch Sanity-Liste ersetzt
-			ignore: ["/api/**"],
+			routes: ['/'],
+			ignore: ['/api/**']
 		},
 		experimental: {
-			wasm: true,
+			wasm: true
 		},
 		// Cache-Storage Konfiguration
 		storage: {
 			cache: {
-				driver: "lru-cache",
-				max: 1000,
-			},
+				driver: 'lru-cache',
+				max: 1000
+			}
 		},
 		// Entwicklungs-Storage (Filesystem-basiert)
 		devStorage: {
 			cache: {
-				driver: "fs",
-				base: ".cache/nitro",
-			},
+				driver: 'fs',
+				base: '.cache/nitro'
+			}
 		},
 		rollupConfig: {
-			external: ["framer-motion"],
+			external: ['framer-motion'],
 			output: {
 				globals: {
-					"framer-motion": "FramerMotion",
-				},
-			},
-		},
+					'framer-motion': 'FramerMotion'
+				}
+			}
+		}
 	},
 
-	hooks: {
-		async "nitro:config"(nitroConfig) {
-			if (nitroConfig.dev) return;
-			const routes = await getPrerenderRoutes();
-			nitroConfig.prerender = nitroConfig.prerender || {};
-			nitroConfig.prerender.routes = routes;
-		},
-	},
+	// Prerender-Hook deaktiviert - Hybrid Rendering mit ISR/SWR
+	// hooks: {
+	//   async 'nitro:config'(nitroConfig) { ... }
+	// },
 
 	runtimeConfig: {
 		// Server-only secrets
 		sanityWebhookSecret: process.env.SANITY_WEBHOOK_SECRET,
 		public: {
 			baseUrl: process.env.NUXT_PUBLIC_SITE_URL,
-		},
+			libretimeApiKey: process.env.NUXT_LIBRETIME_API_KEY
+		}
 	},
 
 	// Note: vue-ssr-carousel should be added to modules array if still needed
 
 	build: {
-		transpile: ["rxjs"],
+		transpile: ['rxjs']
 	},
 
 	webpack: {
 		optimization: {
 			splitChunks: {
-				chunks: "all",
+				chunks: 'all',
 				cacheGroups: {
 					vendor: {
 						test: /[\\/]node_modules[\\/]/,
-						name: "vendors",
-						chunks: "all",
-						maxSize: 244000,
-					},
-				},
-			},
-		},
+						name: 'vendors',
+						chunks: 'all',
+						maxSize: 244000
+					}
+				}
+			}
+		}
 	},
 
 	vite: {
@@ -192,65 +188,65 @@ export default defineNuxtConfig({
 			rollupOptions: {
 				output: {
 					manualChunks: (id) => {
-						if (id.includes("node_modules")) {
-							return "vendor";
+						if (id.includes('node_modules')) {
+							return 'vendor'
 						}
-					},
+					}
 				},
 				onwarn(warning, warn) {
 					// Suppress "use client" warnings from framer-motion
 					if (
-						warning.code === "MODULE_LEVEL_DIRECTIVE" &&
-						warning.message.includes("use client")
+						warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
+            warning.message.includes('use client')
 					) {
-						return;
+						return
 					}
-					warn(warning);
-				},
-			},
+					warn(warning)
+				}
+			}
 		},
 		optimizeDeps: {
-			include: ["vue", "vue-router"],
+			include: ['vue', 'vue-router']
 		},
 		ssr: {
 			noExternal: [
 				// Include framer-motion in SSR bundle to avoid directive warnings
-				"framer-motion",
-			],
-		},
+				'framer-motion'
+			]
+		}
 	},
 
 	routeRules: {
 		// === Statische Seiten (bei Build generiert) ===
-		"/": { prerender: true },
-		"/sitemap.xml": {
+		'/': { prerender: true },
+		'/sitemap.xml': {
 			prerender: true,
 			headers: {
-				"content-type": "application/xml; charset=utf-8",
-				"cache-control": "max-age=3600",
-			},
+				'content-type': 'application/xml; charset=utf-8',
+				'cache-control': 'max-age=3600'
+			}
 		},
 
 		// === Übersichtsseiten mit SWR (Stale-While-Revalidate) ===
 		// Cached Version wird sofort geliefert, im Hintergrund aktualisiert
-		"/pool": { swr: 3600 }, // 1 Stunde Cache
-		"/shows": { swr: 3600 }, // 1 Stunde Cache
-		"/words": { swr: 3600 }, // 1 Stunde Cache
-		"/schedule": { swr: 300 }, // 5 Minuten Cache (live content)
+		'/pool': { swr: 3600 }, // 1 Stunde Cache
+		'/shows': { swr: 3600 }, // 1 Stunde Cache
+		'/words': { swr: 3600 }, // 1 Stunde Cache
+		'/schedule': { swr: 300 }, // 5 Minuten Cache (live content)
 
-		// === Detailseiten: prerender + ISR (Permalinks müssen beim Build mit Sanity-Daten gebaut werden)
+		// === Detailseiten mit ISR (Incremental Static Regeneration) ===
 		// Cached bis TTL abläuft oder via Webhook invalidiert
-		"/pool/**": { prerender: true, isr: 86400 },
-		"/shows/**": { prerender: true, isr: 86400 },
-		"/words/**": { prerender: true, isr: 86400 },
+		'/pool/**': { isr: 86400 }, // 24h Cache
+		'/shows/**': { isr: 86400 }, // 24h Cache
+		'/words/**': { isr: 86400 }, // 24h Cache
 
 		// === Dynamische Seiten (immer frisch) ===
-		"/search": { ssr: true },
-		"/de/search": { ssr: true },
+		'/search': { ssr: true },
+		'/de/search': { ssr: true },
 
 		// === API-Routen ===
-		"/api/**": { cors: true },
+		'/api/**': { cors: true }
 	},
 
-	compatibilityDate: "2024-12-19",
-});
+	compatibilityDate: '2024-12-19'
+})

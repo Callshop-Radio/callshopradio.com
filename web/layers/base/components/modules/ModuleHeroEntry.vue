@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useMainStore } from "~/stores/mainStore";
+import type { ContentItem, Tag } from '~/types/sanity'
+import { computed, onMounted, ref } from 'vue'
+import { useMainStore } from '~/stores/mainStore'
 
 // Composables
-const localePath = useLocalePath();
-const router = useRouter();
-const mainStore = useMainStore();
+const localePath = useLocalePath()
+const router = useRouter()
+const mainStore = useMainStore()
 
 // Type Definitions
 interface Image {
@@ -38,11 +39,11 @@ interface ContentReference {
   datetime?: string;
   _updatedAt?: string;
   useTeaserText?: boolean;
-  textTeaser?: any[];
-  text?: any[];
-  description?: any[];
-  bio?: any[];
-  tags?: any[];
+  textTeaser?: unknown[];
+  text?: unknown[];
+  description?: unknown[];
+  bio?: unknown[];
+  tags?: unknown[];
   persons?: Array<{
     _id?: string;
     title?: string;
@@ -61,12 +62,12 @@ interface ContentReference {
 
 interface Link {
   title?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface Module {
   title?: string;
-  text?: any[];
+  text?: unknown[];
   layout?: string;
   contentReference?: ContentReference;
   link?: Link;
@@ -76,392 +77,392 @@ interface Module {
 // Props
 const props = defineProps<{
   module: Module;
-}>();
+}>()
 
 // Route Helper Functions
 function getItemRoute(item: ContentReference): string {
-  if (!item?.slug?.current) return "/";
+	if (!item?.slug?.current) return '/'
 
-  const { _type, slug, parentShow } = item;
+	const { _type, slug, parentShow } = item
 
-  switch (_type) {
-    case "person":
-    case "venue":
-      return localePath(`/pool/${slug.current}`);
+	switch (_type) {
+	case 'person':
+	case 'venue':
+		return localePath(`/pool/${slug.current}`)
 
-    case "set":
-      if (parentShow?.slug?.current) {
-        return localePath(`/shows/${parentShow.slug.current}/${slug.current}`);
-      }
-      return localePath(`/shows/${slug.current}`);
+	case 'set':
+		if (parentShow?.slug?.current) {
+			return localePath(`/shows/${parentShow.slug.current}/${slug.current}`)
+		}
+		return localePath(`/shows/${slug.current}`)
 
-    case "article":
-      return localePath(`/words/${slug.current}`);
+	case 'article':
+		return localePath(`/words/${slug.current}`)
 
-    case "show":
-      return localePath(`/shows/${slug.current}`);
+	case 'show':
+		return localePath(`/shows/${slug.current}`)
 
-    default:
-      return localePath(`/${_type}/${slug.current}`);
-  }
+	default:
+		return localePath(`/${_type}/${slug.current}`)
+	}
 }
 
 // Image Management Composable
 const useImageManagement = () => {
-  function getItemImage(item?: ContentReference): Image | null {
-    if (!item) return null;
+	function getItemImage(item?: ContentReference): Image | null {
+		if (!item) return null
 
-    // Primäres Bild aus dem Item
-    if (item.image || item.mainImage) {
-      return (item.image || item.mainImage) ?? null;
-    }
+		// Primäres Bild aus dem Item
+		if (item.image || item.mainImage) {
+			return (item.image || item.mainImage) ?? null
+		}
 
-    // Fallback-Bilder basierend auf Content-Typ
-    const fallbacks = mainStore?.siteFallbacks as any;
-    if (!fallbacks) return null;
+		// Fallback-Bilder basierend auf Content-Typ
+		const fallbacks = mainStore.siteFallbacks
+		if (!fallbacks) return null
 
-    const fallbackMap: Record<string, Image | undefined> = {
-      person: fallbacks.fallbackPerson?.image,
-      venue: fallbacks.fallbackVenue?.image,
-      show: fallbacks.fallbackShow?.image,
-      set: fallbacks.fallbackSet?.image,
-      word: fallbacks.fallbackArticle?.image,
-      article: fallbacks.fallbackArticle?.image,
-    };
+		const fallbackMap: Record<string, Image | undefined> = {
+			person: fallbacks.fallbackPerson?.image,
+			venue: fallbacks.fallbackVenue?.image,
+			show: fallbacks.fallbackShow?.image,
+			set: fallbacks.fallbackSet?.image,
+			word: fallbacks.fallbackArticle?.image,
+			article: fallbacks.fallbackArticle?.image
+		}
 
-    return (
-      fallbackMap[item._type || ""] || fallbacks.fallbackPerson?.image || null
-    );
-  }
+		return (
+			fallbackMap[item._type || ''] || fallbacks.fallbackPerson?.image || null
+		)
+	}
 
-  function checkImageExists(url: string): Promise<boolean> {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(true);
-      img.onerror = () => resolve(false);
-      img.src = url;
-    });
-  }
+	function checkImageExists(url: string): Promise<boolean> {
+		return new Promise((resolve) => {
+			const img = new Image()
+			img.onload = () => resolve(true)
+			img.onerror = () => resolve(false)
+			img.src = url
+		})
+	}
 
-  return {
-    getItemImage,
-    checkImageExists,
-  };
-};
+	return {
+		getItemImage,
+		checkImageExists
+	}
+}
 
 // SoundCloud Composable
 const useSoundCloud = () => {
-  const artworkUrl = ref<string>("");
-  const { checkImageExists } = useImageManagement();
+	const artworkUrl = ref<string>('')
+	const { checkImageExists: _checkImageExists } = useImageManagement()
 
-  // Non-blocking artwork URL resolution
-  function getSoundcloudArtwork(item?: ContentReference): string {
-    if (!item) return "";
+	// Non-blocking artwork URL resolution
+	function getSoundcloudArtwork(item?: ContentReference): string {
+		if (!item) return ''
 
-    const track = item.soundcloud?.tracks?.[0];
-    const parentShowImageUrl = item.parentShow?.image?.asset?.url;
-    const fallbackUrl = (mainStore?.siteFallbacks as any)?.fallbackSet?.image?.asset?.url;
+		const track = item.soundcloud?.tracks?.[0]
+		const parentShowImageUrl = item.parentShow?.image?.asset?.url
+		const fallbackUrl = mainStore.siteFallbacks?.fallbackSet?.image?.asset?.url
 
-    // Try SoundCloud artwork (use -t500x500 for reliability)
-    if (track?.artwork_url) {
-      return track.artwork_url.replace("-large", "-t500x500");
-    }
+		// Try SoundCloud artwork (use -t500x500 for reliability)
+		if (track?.artwork_url) {
+			return track.artwork_url.replace('-large', '-t500x500')
+		}
 
-    // Fallback chain
-    return parentShowImageUrl || fallbackUrl || "";
-  }
+		// Fallback chain
+		return parentShowImageUrl || fallbackUrl || ''
+	}
 
-  function loadArtworkUrl(): void {
-    const contentRef = props.module?.contentReference;
-    if (!contentRef) return;
-    const url = getSoundcloudArtwork(contentRef);
-    artworkUrl.value = url;
-  }
+	function loadArtworkUrl(): void {
+		const contentRef = props.module?.contentReference
+		if (!contentRef) return
+		const url = getSoundcloudArtwork(contentRef)
+		artworkUrl.value = url
+	}
 
-  function playTrack(): void {
-    const track = props.module?.contentReference?.soundcloud?.tracks?.[0];
-    if (!track) return;
+	function playTrack(): void {
+		const track = props.module?.contentReference?.soundcloud?.tracks?.[0]
+		if (!track) return
 
-    // Stelle sicher, dass permalink_url gesetzt ist
-    if (!track.permalink_url && track.id) {
-      track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
-    }
+		// Stelle sicher, dass permalink_url gesetzt ist
+		if (!track.permalink_url && track.id) {
+			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
+		}
 
-    (mainStore as any).currentTrack = track;
-  }
+		mainStore.currentTrack = track
+	}
 
-  return {
-    artworkUrl,
-    loadArtworkUrl,
-    playTrack,
-  };
-};
+	return {
+		artworkUrl,
+		loadArtworkUrl,
+		playTrack
+	}
+}
 
 // Initialize Composables
-const { getItemImage } = useImageManagement();
-const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
+const { getItemImage } = useImageManagement()
+const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud()
 
 // Computed Properties
 const contentType = computed<string | null>(() => {
-  return props.module?.contentReference?._type || null;
-});
+	return props.module?.contentReference?._type || null
+})
 
 const layoutClass = computed<string>(() => {
-  return `layout-${contentType.value || "default"}`;
-});
+	return `layout-${contentType.value || 'default'}`
+})
 
 const isAudioContent = computed<boolean>(() => {
-  return contentType.value === "set";
-});
+	return contentType.value === 'set'
+})
 
 const contentReference = computed(() => {
-  return props.module?.contentReference;
-});
+	return props.module?.contentReference
+})
 
 const hasParentShow = computed(() => {
-  const parentShow = contentReference.value?.parentShow;
-  return parentShow && parentShow.title !== "No Show";
-});
+	const parentShow = contentReference.value?.parentShow
+	return parentShow && parentShow.title !== 'No Show'
+})
 
 // Lifecycle
 onMounted(() => {
-  if (isAudioContent.value) {
-    loadArtworkUrl();
-  }
-});
+	if (isAudioContent.value) {
+		loadArtworkUrl()
+	}
+})
 
-function navigateToTagSearch(tag: any, item: any, isGenre = false) {
-  // Determine search term
-  let tagName = "";
+function navigateToTagSearch(tag: Tag, item: ContentItem | { _type?: string }, isGenre = false) {
+	// Determine search term
+	let tagName = ''
 
-  if (isGenre) {
-    tagName = tag.name || tag.title;
-  } else {
-    // For standard tags, prefer title for searching as it matches the search index
-    // If title implies an object/array (i18n), we need to extract the string
-    const titleVal = tag.title || tag.name;
+	if (isGenre) {
+		tagName = tag.name || tag.title
+	} else {
+		// For standard tags, prefer title for searching as it matches the search index
+		// If title implies an object/array (i18n), we need to extract the string
+		const titleVal = tag.title || tag.name
 
-    if (Array.isArray(titleVal)) {
-      // Assume portable text / i18n array, take first element value
-      tagName = titleVal[0]?.value || "";
-    } else if (typeof titleVal === "object") {
-      // Fallback for object without array
-      tagName = "";
-    } else {
-      tagName = titleVal || "";
-    }
-  }
+		if (Array.isArray(titleVal)) {
+			// Assume portable text / i18n array, take first element value
+			tagName = titleVal[0]?.value || ''
+		} else if (typeof titleVal === 'object') {
+			// Fallback for object without array
+			tagName = ''
+		} else {
+			tagName = titleVal || ''
+		}
+	}
 
-  if (!tagName) return;
+	if (!tagName) return
 
-  // Determine Category
-  let category = "all";
-  const itemType = item?._type;
+	// Determine Category
+	let category = 'all'
+	const itemType = item?._type
 
-  if (["show", "set"].includes(itemType)) category = "shows";
-  else if (["person", "venue"].includes(itemType)) category = "pool";
-  else if (["article"].includes(itemType)) category = "article";
+	if (['show', 'set'].includes(itemType)) category = 'shows'
+	else if (['person', 'venue'].includes(itemType)) category = 'pool'
+	else if (['article'].includes(itemType)) category = 'article'
 
-  // Navigate
-  router.push({
-    path: localePath("/search"),
-    query: {
-      q: tagName,
-      type: category,
-    },
-  });
+	// Navigate
+	router.push({
+		path: localePath('/search'),
+		query: {
+			q: tagName,
+			type: category
+		}
+	})
 }
 </script>
 
 <template>
-  <div v-if="module" :class="`module-hero-entry ${layoutClass}`">
-    <div class="hero-entry-container">
-      <!-- Bild/Media-Bereich -->
-      <div class="hero-entry-media">
-        <NuxtLink
-          v-if="contentReference?.slug"
-          :to="getItemRoute(contentReference)"
-          class="slide__link"
-        >
-          <MediaImage
-            v-if="getItemImage(contentReference) && !isAudioContent"
-            :image="getItemImage(contentReference) || undefined"
-            class="hero-entry-image"
-          />
-          <img
-            v-else-if="isAudioContent && artworkUrl"
-            :src="artworkUrl"
-            alt="Audio Artwork"
-            class="hero-entry-image track-artwork"
-            loading="lazy"
-          />
-          <div
-            v-else-if="isAudioContent"
-            class="track-artwork-placeholder"
-            @vue:mounted="loadArtworkUrl"
-          />
-        </NuxtLink>
-      </div>
+	<div v-if="module" :class="`module-hero-entry ${layoutClass}`">
+		<div class="hero-entry-container">
+			<!-- Bild/Media-Bereich -->
+			<div class="hero-entry-media">
+				<NuxtLink
+					v-if="contentReference?.slug"
+					:to="getItemRoute(contentReference)"
+					class="slide__link"
+				>
+					<MediaImage
+						v-if="getItemImage(contentReference) && !isAudioContent"
+						:image="getItemImage(contentReference) || undefined"
+						class="hero-entry-image"
+					/>
+					<img
+						v-else-if="isAudioContent && artworkUrl"
+						:src="artworkUrl"
+						alt="Audio Artwork"
+						class="hero-entry-image track-artwork"
+						loading="lazy"
+					>
+					<div
+						v-else-if="isAudioContent"
+						class="track-artwork-placeholder"
+						@vue:mounted="loadArtworkUrl"
+					/>
+				</NuxtLink>
+			</div>
 
-      <!-- Content-Bereich -->
-      <div class="hero-entry-content">
-        <!-- Play-Button für Audio-Inhalte -->
-        <button
-          v-if="isAudioContent"
-          @click="playTrack"
-          class="play-button"
-          aria-label="Play Audio"
-          type="button"
-        >
-          <svg
-            width="16"
-            height="18"
-            viewBox="0 0 9 12"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path
-              d="M9 6L-4.89399e-07 11.1962L-3.51373e-08 0.803847L9 6Z"
-              fill="currentColor"
-            />
-          </svg>
-        </button>
+			<!-- Content-Bereich -->
+			<div class="hero-entry-content">
+				<!-- Play-Button für Audio-Inhalte -->
+				<button
+					v-if="isAudioContent"
+					class="play-button"
+					aria-label="Play Audio"
+					type="button"
+					@click="playTrack"
+				>
+					<svg
+						width="16"
+						height="18"
+						viewBox="0 0 9 12"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+						aria-hidden="true"
+					>
+						<path
+							d="M9 6L-4.89399e-07 11.1962L-3.51373e-08 0.803847L9 6Z"
+							fill="currentColor"
+						/>
+					</svg>
+				</button>
 
-        <div class="hero-entry-content-container">
-          <!-- Titel-Bereich -->
-          <div class="hero-entry-header">
-            <!-- Datum oder Update-Datum -->
-            <div class="hero-entry-meta">
-              <h3 class="hero-date" v-if="contentReference?.datetime">
-                {{ formatDate(contentReference.datetime) }}
-              </h3>
-              <h3 class="hero-date" v-else-if="contentReference?._updatedAt">
-                {{ formatDate(contentReference._updatedAt) }}
-              </h3>
-            </div>
+				<div class="hero-entry-content-container">
+					<!-- Titel-Bereich -->
+					<div class="hero-entry-header">
+						<!-- Datum oder Update-Datum -->
+						<div class="hero-entry-meta">
+							<h3 v-if="contentReference?.datetime" class="hero-date">
+								{{ formatDate(contentReference.datetime) }}
+							</h3>
+							<h3 v-else-if="contentReference?._updatedAt" class="hero-date">
+								{{ formatDate(contentReference._updatedAt) }}
+							</h3>
+						</div>
 
-            <!-- Set-spezifischer Titel-Bereich -->
-            <div
-              class="hero-entry-title"
-              v-if="contentReference?._type === 'set'"
-            >
-              <NuxtLink
-                v-if="hasParentShow"
-                :to="
-                  localePath(
-                    `/shows/${contentReference.parentShow?.slug?.current}`
-                  )
-                "
-              >
-                <h2 class="hero-entry-title">
-                  {{ contentReference.parentShow?.title }}
-                </h2>
-              </NuxtLink>
+						<!-- Set-spezifischer Titel-Bereich -->
+						<div
+							v-if="contentReference?._type === 'set'"
+							class="hero-entry-title"
+						>
+							<NuxtLink
+								v-if="hasParentShow"
+								:to="
+									localePath(
+										`/shows/${contentReference.parentShow?.slug?.current}`
+									)
+								"
+							>
+								<h2 class="hero-entry-title">
+									{{ contentReference.parentShow?.title }}
+								</h2>
+							</NuxtLink>
 
-              <!-- Künstler (für Sets) -->
-              <div
-                v-if="contentReference.persons?.length"
-                class="hero-entry-show-artists"
-              >
-                <h3
-                  v-for="(artist, index) in contentReference.persons"
-                  :key="artist?._id"
-                  class="hero-entry-show-artists-artist"
-                >
-                  <NuxtLink
-                    v-if="artist?.poolVisibility && artist?.slug?.current"
-                    :to="localePath(`/pool/${artist.slug.current}`)"
-                    class="hero-entry-show-artists-artist"
-                  >
-                    {{ artist.title
-                    }}{{
-                      index < contentReference.persons.length - 1 ? "," : ""
-                    }}&nbsp;
-                  </NuxtLink>
-                  <span v-else class="hero-entry-show-artists-artist">
-                    {{ artist?.title
-                    }}{{
-                      index < contentReference.persons.length - 1 ? "," : ""
-                    }}&nbsp;
-                  </span>
-                </h3>
-              </div>
-            </div>
+							<!-- Künstler (für Sets) -->
+							<div
+								v-if="contentReference.persons?.length"
+								class="hero-entry-show-artists"
+							>
+								<h3
+									v-for="(artist, index) in contentReference.persons"
+									:key="artist?._id"
+									class="hero-entry-show-artists-artist"
+								>
+									<NuxtLink
+										v-if="artist?.poolVisibility && artist?.slug?.current"
+										:to="localePath(`/pool/${artist.slug.current}`)"
+										class="hero-entry-show-artists-artist"
+									>
+										{{ artist.title
+										}}{{
+											index < contentReference.persons.length - 1 ? "," : ""
+										}}&nbsp;
+									</NuxtLink>
+									<span v-else class="hero-entry-show-artists-artist">
+										{{ artist?.title
+										}}{{
+											index < contentReference.persons.length - 1 ? "," : ""
+										}}&nbsp;
+									</span>
+								</h3>
+							</div>
+						</div>
 
-            <!-- Standard-Titel -->
-            <h2 v-if="module.title" class="hero-entry-title">
-              {{ module.title }}
-            </h2>
-            <h2
-              v-else-if="
-                contentReference?.title && contentReference._type !== 'set'
-              "
-              class="hero-entry-title"
-            >
-              {{ contentReference.title }}
-            </h2>
-          </div>
+						<!-- Standard-Titel -->
+						<h2 v-if="module.title" class="hero-entry-title">
+							{{ module.title }}
+						</h2>
+						<h2
+							v-else-if="
+								contentReference?.title && contentReference._type !== 'set'
+							"
+							class="hero-entry-title"
+						>
+							{{ contentReference.title }}
+						</h2>
+					</div>
 
-          <!-- Text-Bereich (nicht für Sets) -->
-          <div class="hero-entry-text" v-if="contentReference?._type !== 'set'">
-            <!-- Für Person und Venue -->
-            <RichText
-              v-if="contentReference?.description?.length"
-              :blocks="
-                limitTextBlocks(
-                  parseI18nObj(contentReference.description)?.slice(0, 1)
-                )
-              "
-            />
-            <!-- Für andere Inhaltstypen, die möglicherweise ein bio-Feld haben -->
-            <RichText
-              v-else-if="contentReference?.bio?.length"
-              :blocks="
-                limitTextBlocks(parseI18nObj(contentReference.bio)?.slice(0, 1))
-              "
-            />
-            <RichText
-              v-else-if="contentReference?.text?.length"
-              :blocks="
-                limitTextBlocks(
-                  parseI18nObj(contentReference.text)?.slice(0, 1)
-                )
-              "
-            />
-            <RichText
-              v-else-if="contentReference?.textTeaser?.length"
-              :blocks="
-                limitTextBlocks(
-                  parseI18nObj(contentReference.textTeaser)?.slice(0, 1)
-                )
-              "
-            />
-          </div>
+					<!-- Text-Bereich (nicht für Sets) -->
+					<div v-if="contentReference?._type !== 'set'" class="hero-entry-text">
+						<!-- Für Person und Venue -->
+						<RichText
+							v-if="contentReference?.description?.length"
+							:blocks="
+								limitTextBlocks(
+									parseI18nObj(contentReference.description)?.slice(0, 1)
+								)
+							"
+						/>
+						<!-- Für andere Inhaltstypen, die möglicherweise ein bio-Feld haben -->
+						<RichText
+							v-else-if="contentReference?.bio?.length"
+							:blocks="
+								limitTextBlocks(parseI18nObj(contentReference.bio)?.slice(0, 1))
+							"
+						/>
+						<RichText
+							v-else-if="contentReference?.text?.length"
+							:blocks="
+								limitTextBlocks(
+									parseI18nObj(contentReference.text)?.slice(0, 1)
+								)
+							"
+						/>
+						<RichText
+							v-else-if="contentReference?.textTeaser?.length"
+							:blocks="
+								limitTextBlocks(
+									parseI18nObj(contentReference.textTeaser)?.slice(0, 1)
+								)
+							"
+						/>
+					</div>
 
-          <!-- Tags-Bereich -->
-          <div
-            v-if="contentReference?.tags?.length"
-            class="hero-entry-tags tags"
-          >
-            <button
-              v-for="(tag, tagIndex) in contentReference.tags.slice(0, 3)"
-              :key="tag._id || `tag-${tagIndex}`"
-              class="tag clickable"
-              type="button"
-              @click.prevent="navigateToTagSearch(tag, contentReference)"
-            >
-              {{
-                tag?.title?.[1]?.value
-                  ? parseI18nObj(tag?.title)
-                  : tag?.title[0]?.value ?? tag.title
-              }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+					<!-- Tags-Bereich -->
+					<div
+						v-if="contentReference?.tags?.length"
+						class="hero-entry-tags tags"
+					>
+						<button
+							v-for="(tag, tagIndex) in contentReference.tags.slice(0, 3)"
+							:key="tag._id || `tag-${tagIndex}`"
+							class="tag clickable"
+							type="button"
+							@click.prevent="navigateToTagSearch(tag, contentReference)"
+						>
+							{{
+								tag?.title?.[1]?.value
+									? parseI18nObj(tag?.title)
+									: tag?.title[0]?.value ?? tag.title
+							}}
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </template>
 
 <style lang="postcss" scoped>

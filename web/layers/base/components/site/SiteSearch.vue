@@ -1,229 +1,232 @@
 <script setup>
-import { useSearch } from "~/composables/useSearch";
+import { useSearch } from '~/composables/useSearch'
 
 const props = defineProps({
-  // Whether this is rendered as a modal overlay (quick search) or inline
-  isModal: {
-    type: Boolean,
-    default: false,
-  },
-  // Auto-focus input when mounted/opened
-  autoFocus: {
-    type: Boolean,
-    default: true,
-  },
-});
+	// Whether this is rendered as a modal overlay (quick search) or inline
+	isModal: {
+		type: Boolean,
+		default: false
+	},
+	// Auto-focus input when mounted/opened
+	autoFocus: {
+		type: Boolean,
+		default: true
+	}
+})
 
-const emit = defineEmits(["close", "select"]);
+const emit = defineEmits(['close', 'select'])
 
-const localePath = useLocalePath();
+const localePath = useLocalePath()
 
 const {
-  searchQuery,
-  results,
-  isLoading,
-  hasResults,
-  hasQuery,
-  getResultPath,
-  getTypeLabel,
-  getTypeColor,
-  clearSearch,
-} = useSearch({ maxResults: 20, debounceMs: 150 });
+	searchQuery,
+	results,
+	isLoading,
+	hasResults,
+	hasQuery,
+	getResultPath,
+	getTypeLabel,
+	getTypeColor,
+	clearSearch
+} = useSearch({ maxResults: 20, debounceMs: 150 })
 
-const inputRef = ref(null);
-const activeIndex = ref(-1);
+const inputRef = ref(null)
+const activeIndex = ref(-1)
 
 // Focus input on mount if autoFocus is true
 onMounted(() => {
-  if (props.autoFocus && inputRef.value) {
-    nextTick(() => {
-      inputRef.value?.focus();
-    });
-  }
-});
+	if (props.autoFocus && inputRef.value) {
+		nextTick(() => {
+			inputRef.value?.focus()
+		})
+	}
+})
 
 // Keyboard navigation
 const handleKeydown = (event) => {
-  switch (event.key) {
-    case "ArrowDown":
-      event.preventDefault();
-      if (hasResults.value) {
-        activeIndex.value = Math.min(
-          activeIndex.value + 1,
-          results.value.length - 1
-        );
-      }
-      break;
-    case "ArrowUp":
-      event.preventDefault();
-      if (hasResults.value) {
-        activeIndex.value = Math.max(activeIndex.value - 1, -1);
-      }
-      break;
-    case "Enter":
-      event.preventDefault();
-      if (activeIndex.value >= 0 && results.value[activeIndex.value]) {
-        navigateToResult(results.value[activeIndex.value]);
-      }
-      break;
-    case "Escape":
-      event.preventDefault();
-      handleClose();
-      break;
-  }
-};
+	switch (event.key) {
+	case 'ArrowDown':
+		event.preventDefault()
+		if (hasResults.value) {
+			activeIndex.value = Math.min(
+				activeIndex.value + 1,
+				results.value.length - 1
+			)
+		}
+		break
+	case 'ArrowUp':
+		event.preventDefault()
+		if (hasResults.value) {
+			activeIndex.value = Math.max(activeIndex.value - 1, -1)
+		}
+		break
+	case 'Enter':
+		event.preventDefault()
+		if (activeIndex.value >= 0 && results.value[activeIndex.value]) {
+			navigateToResult(results.value[activeIndex.value])
+		}
+		break
+	case 'Escape':
+		event.preventDefault()
+		handleClose()
+		break
+	}
+}
 
 // Navigate to a search result
 const navigateToResult = (result) => {
-  const path = getResultPath(result);
-  emit("select", result);
-  clearSearch();
-  activeIndex.value = -1;
+	const path = getResultPath(result)
+	emit('select', result)
+	clearSearch()
+	activeIndex.value = -1
 
-  if (props.isModal) {
-    emit("close");
-  }
+	if (props.isModal) {
+		emit('close')
+	}
 
-  navigateTo(localePath(path));
-};
+	navigateTo(localePath(path))
+}
 
 // Handle close
 const handleClose = () => {
-  clearSearch();
-  activeIndex.value = -1;
-  emit("close");
-};
+	clearSearch()
+	activeIndex.value = -1
+	emit('close')
+}
 
 // Navigate to detailed search page
 const goToDetailedSearch = () => {
-  const query = searchQuery.value.trim();
-  handleClose();
-  navigateTo(localePath(`/search${query ? `?q=${encodeURIComponent(query)}` : ''}`));
-};
+	const query = searchQuery.value.trim()
+	handleClose()
+	navigateTo(localePath(`/search${query ? `?q=${encodeURIComponent(query)}` : ''}`))
+}
 
 // Reset active index when results change
 watch(results, () => {
-  activeIndex.value = -1;
-});
+	activeIndex.value = -1
+})
 </script>
 
 <template>
-  <div class="site-search" :class="{ 'is-modal': isModal }">
-    <!-- Search Input -->
-    <div class="search-input-wrapper">
-      <div class="search-icon">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
-        </svg>
-      </div>
-      <input
-        ref="inputRef"
-        v-model="searchQuery"
-        type="text"
-        class="search-input"
-        placeholder="Search shows, people, venues, articles..."
-        autocomplete="off"
-        @keydown="handleKeydown"
-      />
-      <button
-        v-if="hasQuery"
-        class="clear-button"
-        @click="clearSearch"
-        aria-label="Clear search"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M18 6 6 18" />
-          <path d="m6 6 12 12" />
-        </svg>
-      </button>
-      <div v-if="isLoading" class="loading-spinner" />
-    </div>
+	<div class="site-search" :class="{ 'is-modal': isModal }">
+		<!-- Search Input -->
+		<div class="search-input-wrapper">
+			<div class="search-icon">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<circle
+						cx="11"
+						cy="11"
+						r="8" />
+					<path d="m21 21-4.3-4.3" />
+				</svg>
+			</div>
+			<input
+				ref="inputRef"
+				v-model="searchQuery"
+				type="text"
+				class="search-input"
+				placeholder="Search shows, people, venues, articles..."
+				autocomplete="off"
+				@keydown="handleKeydown"
+			>
+			<button
+				v-if="hasQuery"
+				class="clear-button"
+				aria-label="Clear search"
+				@click="clearSearch"
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="18"
+					height="18"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<path d="M18 6 6 18" />
+					<path d="m6 6 12 12" />
+				</svg>
+			</button>
+			<div v-if="isLoading" class="loading-spinner" />
+		</div>
 
-    <!-- Search Results -->
-    <div v-if="hasQuery" class="search-results">
-      <!-- Detailed Search Link -->
-      <button class="detailed-search-link" @click="goToDetailedSearch">
-        <span class="link-text">Detailed search for "{{ searchQuery }}"</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M5 12h14" />
-          <path d="m12 5 7 7-7 7" />
-        </svg>
-      </button>
+		<!-- Search Results -->
+		<div v-if="hasQuery" class="search-results">
+			<!-- Detailed Search Link -->
+			<button class="detailed-search-link" @click="goToDetailedSearch">
+				<span class="link-text">Detailed search for "{{ searchQuery }}"</span>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<path d="M5 12h14" />
+					<path d="m12 5 7 7-7 7" />
+				</svg>
+			</button>
 
-      <div v-if="hasResults" class="results-list">
-        <button
-          v-for="(result, index) in results"
-          :key="result._id"
-          class="autocomplete-item"
-          :class="{
-            'is-selected': index === activeIndex
-          }"
-          @click="navigateToResult(result)"
-          @mouseenter="activeIndex = index"
-        >
-          <span class="autocomplete-title">{{ result.title }}</span>
-          <span
-            class="autocomplete-type"
-            :class="getTypeColor(result._type)"
-            >{{ getTypeLabel(result._type) }}</span
-          >
-        </button>
-      </div>
+			<div v-if="hasResults" class="results-list">
+				<button
+					v-for="(result, index) in results"
+					:key="result._id"
+					class="autocomplete-item"
+					:class="{
+						'is-selected': index === activeIndex
+					}"
+					@click="navigateToResult(result)"
+					@mouseenter="activeIndex = index"
+				>
+					<span class="autocomplete-title">{{ result.title }}</span>
+					<span
+						class="autocomplete-type"
+						:class="getTypeColor(result._type)"
+					>{{ getTypeLabel(result._type) }}</span
+					>
+				</button>
+			</div>
 
-      <!-- No Results -->
-      <div v-else-if="!isLoading" class="no-results">
-        <p>No results found for "{{ searchQuery }}"</p>
-        <span>Try searching for shows, people, venues, or articles</span>
-      </div>
-    </div>
+			<!-- No Results -->
+			<div v-else-if="!isLoading" class="no-results">
+				<p>No results found for "{{ searchQuery }}"</p>
+				<span>Try searching for shows, people, venues, or articles</span>
+			</div>
+		</div>
 
-    <!-- Keyboard Hints (for modal) -->
-    <div v-if="isModal && !hasQuery" class="keyboard-hints">
-      <div class="hint">
-        <kbd>↑</kbd><kbd>↓</kbd>
-        <span>to navigate</span>
-      </div>
-      <div class="hint">
-        <kbd>↵</kbd>
-        <span>to select</span>
-      </div>
-      <div class="hint">
-        <kbd>esc</kbd>
-        <span>to close</span>
-      </div>
-    </div>
-  </div>
+		<!-- Keyboard Hints (for modal) -->
+		<div v-if="isModal && !hasQuery" class="keyboard-hints">
+			<div class="hint">
+				<kbd>↑</kbd><kbd>↓</kbd>
+				<span>to navigate</span>
+			</div>
+			<div class="hint">
+				<kbd>↵</kbd>
+				<span>to select</span>
+			</div>
+			<div class="hint">
+				<kbd>esc</kbd>
+				<span>to close</span>
+			</div>
+		</div>
+	</div>
 </template>
 
 <style lang="postcss" scoped>

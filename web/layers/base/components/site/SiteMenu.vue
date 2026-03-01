@@ -1,32 +1,32 @@
 <script setup>
-import { useMainStore } from "~/stores/mainStore";
-const { locale, locales } = useI18n();
-const localePath = useLocalePath();
+import { useMainStore } from '~/stores/mainStore'
+const { locale: _locale, locales: _locales } = useI18n()
+const _localePath = useLocalePath()
 
-const mainStore = useMainStore();
-const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
+const mainStore = useMainStore()
+const mainMenu = computed(() => mainStore?.siteNav?.mainMenu)
 </script>
 
 <template>
-  <Transition name="menu-fade">
-    <nav class="menu tags" v-if="mainStore?.menuOpen">
-      <ul>
-        <li v-for="item in mainMenu" :key="item?._key">
-          <ElementsLink
-            :type="item?.type"
-            :href="item?.url"
-            :blank="item?.blank"
-            :route="item?.route"
-            :slug="item?.slug"
-            :func="item?.func"
-            :class="`tag ${item?.route ? item?.route : ''}`"
-          >
-            {{ item?.title }}
-          </ElementsLink>
-        </li>
-      </ul>
-    </nav>
-  </Transition>
+	<Transition name="menu-fade">
+		<nav v-if="mainStore?.menuOpen" class="menu tags">
+			<ul>
+				<li v-for="item in mainMenu" :key="item?._key">
+					<ElementsLink
+						:type="item?.type"
+						:href="item?.url"
+						:blank="item?.blank"
+						:route="item?.route"
+						:slug="item?.slug"
+						:func="item?.func"
+						:class="`tag ${item?.route ? item?.route : ''}`"
+					>
+						{{ item?.title }}
+					</ElementsLink>
+				</li>
+			</ul>
+		</nav>
+	</Transition>
 </template>
 
 <style lang="postcss" scoped>

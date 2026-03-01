@@ -2,153 +2,153 @@
 <script setup>
 // Page SEO
 useHead({
-  title: "Search | Callshop Radio",
-  meta: [
-    {
-      name: "description",
-      content:
-        "Search for shows, artists, venues, and articles on Callshop Radio.",
-    },
-  ],
-  bodyAttrs: {
-    class: "search-page",
-  },
-});
+	title: 'Search | Callshop Radio',
+	meta: [
+		{
+			name: 'description',
+			content:
+        'Search for shows, artists, venues, and articles on Callshop Radio.'
+		}
+	],
+	bodyAttrs: {
+		class: 'search-page'
+	}
+})
 
-const localePath = useLocalePath();
+const localePath = useLocalePath()
 
 // ==================== STATE ====================
-const searchQuery = ref("");
-const results = ref([]);
-const isLoading = ref(false);
-const error = ref(null);
-const activeContentTypes = ref(new Set());
+const searchQuery = ref('')
+const results = ref([])
+const isLoading = ref(false)
+const error = ref(null)
+const activeContentTypes = ref(new Set())
 
 // Autocomplete state
-const autocompleteResults = ref([]);
-const showAutocomplete = ref(false);
-const selectedAutocompleteIndex = ref(-1);
-const suggestionsHidden = ref(false);
-const skipAutocompleteReset = ref(false);
+const autocompleteResults = ref([])
+const showAutocomplete = ref(false)
+const selectedAutocompleteIndex = ref(-1)
+const suggestionsHidden = ref(false)
+const skipAutocompleteReset = ref(false)
 
 // Tag filter state
-const activeTagFilters = ref(new Set());
-const expandedTagCategory = ref(null);
-const availableTags = ref(null);
+const activeTagFilters = ref(new Set())
+const expandedTagCategory = ref(null)
+const availableTags = ref(null)
 
-const inputRef = ref(null);
-let autocompleteTimeout = null;
-let searchTimeout = null;
-let hideTimeout = null;
+const inputRef = ref(null)
+let autocompleteTimeout = null
+let searchTimeout = null
+let hideTimeout = null
 
 // Content type options
 const contentTypeOptions = [
-  { value: "all", label: "All" },
-  { value: "shows", label: "Shows" },
-  { value: "pool", label: "Pool" },
-  { value: "article", label: "Words" },
-];
+	{ value: 'all', label: 'All' },
+	{ value: 'shows', label: 'Shows' },
+	{ value: 'pool', label: 'Pool' },
+	{ value: 'article', label: 'Words' }
+]
 
 // ==================== INPUT VALIDATION ====================
 const isValidSearchQuery = (query) => {
-  if (!query) return false;
-  const trimmed = query.trim();
-  // Must have at least 1 non-whitespace character
-  return trimmed.length > 0;
-};
+	if (!query) return false
+	const trimmed = query.trim()
+	// Must have at least 1 non-whitespace character
+	return trimmed.length > 0
+}
 
 // ==================== COMPUTED ====================
-const hasQuery = computed(() => isValidSearchQuery(searchQuery.value));
-const hasResults = computed(() => results.value.length > 0);
+const hasQuery = computed(() => isValidSearchQuery(searchQuery.value))
+const _hasResults = computed(() => results.value.length > 0)
 
 // Filter results by active content types (tag filtering moved to ModuleSearchResults)
 const filteredResults = computed(() => {
-  if (activeContentTypes.value.size === 0) return results.value;
-  return results.value.filter((item) => {
-    if (activeContentTypes.value.has(item._type)) return true;
-    if (
-      activeContentTypes.value.has("pool") &&
-      ["person", "venue"].includes(item._type)
-    )
-      return true;
-    if (
-      activeContentTypes.value.has("shows") &&
-      ["show", "set"].includes(item._type)
-    )
-      return true;
-    return false;
-  });
-});
+	if (activeContentTypes.value.size === 0) return results.value
+	return results.value.filter((item) => {
+		if (activeContentTypes.value.has(item._type)) return true
+		if (
+			activeContentTypes.value.has('pool') &&
+      ['person', 'venue'].includes(item._type)
+		)
+			return true
+		if (
+			activeContentTypes.value.has('shows') &&
+      ['show', 'set'].includes(item._type)
+		)
+			return true
+		return false
+	})
+})
 
 // Determine the primary active content type for visual styling
 const activeContentType = computed(() => {
-  const types = Array.from(activeContentTypes.value);
-  if (types.length === 0) return "all";
-  if (types.length === 1) return types[0];
-  // If multiple types selected, determine the category
-  const hasPool = types.some(
-    (t) => t === "pool" || t === "person" || t === "venue"
-  );
-  const hasShows = types.some(
-    (t) => t === "shows" || t === "show" || t === "set"
-  );
-  const hasWords = types.some((t) => t === "article");
-  if (hasWords && !hasPool && !hasShows) return "article";
-  if (hasPool && !hasShows && !hasWords) return "pool";
-  if (hasShows && !hasPool && !hasWords) return "shows";
-  return "all"; // Mixed types, use default shows style
-});
+	const types = Array.from(activeContentTypes.value)
+	if (types.length === 0) return 'all'
+	if (types.length === 1) return types[0]
+	// If multiple types selected, determine the category
+	const hasPool = types.some(
+		(t) => t === 'pool' || t === 'person' || t === 'venue'
+	)
+	const hasShows = types.some(
+		(t) => t === 'shows' || t === 'show' || t === 'set'
+	)
+	const hasWords = types.some((t) => t === 'article')
+	if (hasWords && !hasPool && !hasShows) return 'article'
+	if (hasPool && !hasShows && !hasWords) return 'pool'
+	if (hasShows && !hasPool && !hasWords) return 'shows'
+	return 'all' // Mixed types, use default shows style
+})
 
 // Extract and categorize tags from search results
 const categorizedTagsFromResults = computed(() => {
-  const showTags = new Map();
-  const poolTags = new Map();
-  const articleTags = new Map();
+	const showTags = new Map()
+	const poolTags = new Map()
+	const articleTags = new Map()
 
-  results.value.forEach((item) => {
-    // Combine tags from item and parentShow (for sets)
-    const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])];
-    allTags.forEach((tag) => {
-      if (!tag || !tag._id) return;
+	results.value.forEach((item) => {
+		// Combine tags from item and parentShow (for sets)
+		const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])]
+		allTags.forEach((tag) => {
+			if (!tag || !tag._id) return
 
-      // Show tags: genres, subGenres, global, mood
-      if (
-        ["tag.genre", "tag.subGenre", "tag.global", "tag.mood"].includes(
-          tag._type
-        )
-      ) {
-        showTags.set(tag._id, tag);
-      }
-      // Pool tags: musician, venue, crafts, service
-      else if (
-        ["tag.musician", "tag.venue", "tag.crafts", "tag.service"].includes(
-          tag._type
-        )
-      ) {
-        poolTags.set(tag._id, tag);
-      }
-      // Article tags
-      else if (tag._type === "tag.article") {
-        articleTags.set(tag._id, tag);
-      }
-    });
-  });
+			// Show tags: genres, subGenres, global, mood
+			if (
+				['tag.genre', 'tag.subGenre', 'tag.global', 'tag.mood'].includes(
+					tag._type
+				)
+			) {
+				showTags.set(tag._id, tag)
+			}
+			// Pool tags: musician, venue, crafts, service
+			else if (
+				['tag.musician', 'tag.venue', 'tag.crafts', 'tag.service'].includes(
+					tag._type
+				)
+			) {
+				poolTags.set(tag._id, tag)
+			}
+			// Article tags
+			else if (tag._type === 'tag.article') {
+				articleTags.set(tag._id, tag)
+			}
+		})
+	})
 
-  return {
-    showTags: Array.from(showTags.values()),
-    poolTags: Array.from(poolTags.values()),
-    articleTags: Array.from(articleTags.values()),
-  };
-});
+	return {
+		showTags: Array.from(showTags.values()),
+		poolTags: Array.from(poolTags.values()),
+		articleTags: Array.from(articleTags.values())
+	}
+})
 
-const hasTagsToShow = computed(() => {
-  const cats = categorizedTagsFromResults.value;
-  return (
-    cats.showTags.length > 0 ||
+const _hasTagsToShow = computed(() => {
+	const cats = categorizedTagsFromResults.value
+	return (
+		cats.showTags.length > 0 ||
     cats.poolTags.length > 0 ||
     cats.articleTags.length > 0
-  );
-});
+	)
+})
 
 // ==================== SEARCH QUERIES ====================
 // Autocomplete query (quick, limited results)
@@ -170,7 +170,7 @@ const AUTOCOMPLETE_QUERY = `
       "slug": slug
     }
   }
-}`;
+}`
 
 // Full search query with substring matching
 const FULL_SEARCH_QUERY = `
@@ -244,452 +244,453 @@ const FULL_SEARCH_QUERY = `
       }
     }
   }
-}`;
+}`
 
 // ==================== METHODS ====================
 const performSearch = async (query) => {
-  if (!isValidSearchQuery(query)) {
-    results.value = [];
-    return;
-  }
+	if (!isValidSearchQuery(query)) {
+		results.value = []
+		return
+	}
 
-  isLoading.value = true;
-  error.value = null;
+	isLoading.value = true
+	error.value = null
 
-  try {
-    const sanity = useSanity();
-    const searchResults = await sanity.fetch(FULL_SEARCH_QUERY, {
-      searchTerm: query.trim(),
-    });
+	try {
+		const sanity = useSanity()
+		const searchResults = await sanity.fetch(FULL_SEARCH_QUERY, {
+			searchTerm: query.trim()
+		})
 
-    results.value = searchResults || [];
-  } catch (err) {
-    console.error("Search error:", err);
-    error.value = "Failed to perform search";
-    results.value = [];
-  } finally {
-    isLoading.value = false;
-  }
-};
+		results.value = searchResults || []
+	} catch (err) {
+		console.error('Search error:', err)
+		error.value = 'Failed to perform search'
+		results.value = []
+	} finally {
+		isLoading.value = false
+	}
+}
 
 // Autocomplete search (faster, fewer results)
 const performAutocomplete = async (query) => {
-  if (!isValidSearchQuery(query)) {
-    autocompleteResults.value = [];
-    return;
-  }
+	if (!isValidSearchQuery(query)) {
+		autocompleteResults.value = []
+		return
+	}
 
-  try {
-    const sanity = useSanity();
-    const suggestions = await sanity.fetch(AUTOCOMPLETE_QUERY, {
-      searchTerm: query.trim(),
-    });
+	try {
+		const sanity = useSanity()
+		const suggestions = await sanity.fetch(AUTOCOMPLETE_QUERY, {
+			searchTerm: query.trim()
+		})
 
-    autocompleteResults.value = suggestions || [];
-    showAutocomplete.value = suggestions && suggestions.length > 0;
-    selectedAutocompleteIndex.value = -1;
+		autocompleteResults.value = suggestions || []
+		showAutocomplete.value = suggestions && suggestions.length > 0
+		selectedAutocompleteIndex.value = -1
 
-    // Auto-hide after 10 seconds
-    if (hideTimeout) clearTimeout(hideTimeout);
-    if (showAutocomplete.value) {
-      hideTimeout = setTimeout(() => {
-        showAutocomplete.value = false;
-      }, 10000);
-    }
-  } catch (err) {
-    console.error("Autocomplete error:", err);
-    autocompleteResults.value = [];
-  }
-};
+		// Auto-hide after 10 seconds
+		if (hideTimeout) clearTimeout(hideTimeout)
+		if (showAutocomplete.value) {
+			hideTimeout = setTimeout(() => {
+				showAutocomplete.value = false
+			}, 10000)
+		}
+	} catch (err) {
+		console.error('Autocomplete error:', err)
+		autocompleteResults.value = []
+	}
+}
 
 // Debounced search with autocomplete
 watch(searchQuery, (newQuery) => {
-  // Clear previous timeouts
-  if (autocompleteTimeout) clearTimeout(autocompleteTimeout);
-  if (searchTimeout) clearTimeout(searchTimeout);
+	// Clear previous timeouts
+	if (autocompleteTimeout) clearTimeout(autocompleteTimeout)
+	if (searchTimeout) clearTimeout(searchTimeout)
 
-  // Check if we should skip resetting the hidden state (e.g. on initial load from URL)
-  if (skipAutocompleteReset.value) {
-    suggestionsHidden.value = true;
-    skipAutocompleteReset.value = false;
-  } else {
-    // Reset hidden state when typing new input
-    suggestionsHidden.value = false;
-  }
+	// Check if we should skip resetting the hidden state (e.g. on initial load from URL)
+	if (skipAutocompleteReset.value) {
+		suggestionsHidden.value = true
+		skipAutocompleteReset.value = false
+	} else {
+		// Reset hidden state when typing new input
+		suggestionsHidden.value = false
+	}
 
-  if (!isValidSearchQuery(newQuery)) {
-    results.value = [];
-    autocompleteResults.value = [];
-    showAutocomplete.value = false;
-    isLoading.value = false;
-    return;
-  }
+	if (!isValidSearchQuery(newQuery)) {
+		results.value = []
+		autocompleteResults.value = []
+		showAutocomplete.value = false
+		isLoading.value = false
+		return
+	}
 
-  isLoading.value = true;
+	isLoading.value = true
 
-  // Quick autocomplete (150ms)
-  autocompleteTimeout = setTimeout(() => {
-    performAutocomplete(newQuery);
-  }, 150);
+	// Quick autocomplete (150ms)
+	autocompleteTimeout = setTimeout(() => {
+		performAutocomplete(newQuery)
+	}, 150)
 
-  // Full search (400ms) - don't hide autocomplete, let user interact with it
-  searchTimeout = setTimeout(() => {
-    performSearch(newQuery);
-  }, 400);
-});
+	// Full search (400ms) - don't hide autocomplete, let user interact with it
+	searchTimeout = setTimeout(() => {
+		performSearch(newQuery)
+	}, 400)
+})
 
 const clearSearch = () => {
-  searchQuery.value = "";
-  results.value = [];
-  autocompleteResults.value = [];
-  showAutocomplete.value = false;
-  error.value = null;
-  activeTagFilters.value.clear();
-};
+	searchQuery.value = ''
+	results.value = []
+	autocompleteResults.value = []
+	showAutocomplete.value = false
+	error.value = null
+	activeTagFilters.value.clear()
+}
 
 // Content type filter toggle
 const toggleContentType = (type) => {
-  if (type === "all") {
-    activeContentTypes.value.clear();
-  } else {
-    if (activeContentTypes.value.has(type)) {
-      activeContentTypes.value.delete(type);
-    } else {
-      activeContentTypes.value.add(type);
-    }
-  }
-};
+	if (type === 'all') {
+		activeContentTypes.value.clear()
+	} else {
+		if (activeContentTypes.value.has(type)) {
+			activeContentTypes.value.delete(type)
+		} else {
+			activeContentTypes.value.add(type)
+		}
+	}
+}
 
 const isContentTypeActive = (type) => {
-  if (type === "all") return activeContentTypes.value.size === 0;
-  return activeContentTypes.value.has(type);
-};
+	if (type === 'all') return activeContentTypes.value.size === 0
+	return activeContentTypes.value.has(type)
+}
 
 // Tag filter methods
-const toggleTagFilter = (tagId) => {
-  if (activeTagFilters.value.has(tagId)) {
-    activeTagFilters.value.delete(tagId);
-  } else {
-    activeTagFilters.value.add(tagId);
-  }
-};
+const _toggleTagFilter = (tagId) => {
+	if (activeTagFilters.value.has(tagId)) {
+		activeTagFilters.value.delete(tagId)
+	} else {
+		activeTagFilters.value.add(tagId)
+	}
+}
 
-const isTagActive = (tagId) => activeTagFilters.value.has(tagId);
+const _isTagActive = (tagId) => activeTagFilters.value.has(tagId)
 
-const toggleTagCategory = (category) => {
-  expandedTagCategory.value =
-    expandedTagCategory.value === category ? null : category;
-};
+const _toggleTagCategory = (category) => {
+	expandedTagCategory.value =
+    expandedTagCategory.value === category ? null : category
+}
 
-const resetTagFilters = () => {
-  activeTagFilters.value.clear();
-};
+const _resetTagFilters = () => {
+	activeTagFilters.value.clear()
+}
 
 // Toggle suggestions visibility
-const hideSuggestions = () => {
-  suggestionsHidden.value = true;
-  showAutocomplete.value = false;
-};
+const _hideSuggestions = () => {
+	suggestionsHidden.value = true
+	showAutocomplete.value = false
+}
 
 // Handle input blur - hide autocomplete after delay
 const handleInputBlur = () => {
-  setTimeout(() => {
-    showAutocomplete.value = false;
-  }, 200);
-};
+	setTimeout(() => {
+		showAutocomplete.value = false
+	}, 200)
+}
 
 // Autocomplete keyboard navigation
 const handleKeydown = (event) => {
-  if (!showAutocomplete.value || autocompleteResults.value.length === 0) {
-    if (event.key === "Escape") {
-      showAutocomplete.value = false;
-    }
-    return;
-  }
+	if (!showAutocomplete.value || autocompleteResults.value.length === 0) {
+		if (event.key === 'Escape') {
+			showAutocomplete.value = false
+		}
+		return
+	}
 
-  switch (event.key) {
-    case "ArrowDown":
-      event.preventDefault();
-      selectedAutocompleteIndex.value = Math.min(
-        selectedAutocompleteIndex.value + 1,
-        autocompleteResults.value.length - 1
-      );
-      break;
-    case "ArrowUp":
-      event.preventDefault();
-      selectedAutocompleteIndex.value = Math.max(
-        selectedAutocompleteIndex.value - 1,
-        -1
-      );
-      break;
-    case "Enter":
-      event.preventDefault();
-      if (selectedAutocompleteIndex.value >= 0) {
-        selectAutocompleteItem(
-          autocompleteResults.value[selectedAutocompleteIndex.value]
-        );
-      } else {
-        showAutocomplete.value = false;
-        performSearch(searchQuery.value);
-      }
-      break;
-    case "Escape":
-      showAutocomplete.value = false;
-      break;
-  }
-};
+	switch (event.key) {
+	case 'ArrowDown':
+		event.preventDefault()
+		selectedAutocompleteIndex.value = Math.min(
+			selectedAutocompleteIndex.value + 1,
+			autocompleteResults.value.length - 1
+		)
+		break
+	case 'ArrowUp':
+		event.preventDefault()
+		selectedAutocompleteIndex.value = Math.max(
+			selectedAutocompleteIndex.value - 1,
+			-1
+		)
+		break
+	case 'Enter':
+		event.preventDefault()
+		if (selectedAutocompleteIndex.value >= 0) {
+			selectAutocompleteItem(
+				autocompleteResults.value[selectedAutocompleteIndex.value]
+			)
+		} else {
+			showAutocomplete.value = false
+			performSearch(searchQuery.value)
+		}
+		break
+	case 'Escape':
+		showAutocomplete.value = false
+		break
+	}
+}
 
 const selectAutocompleteItem = (item) => {
-  showAutocomplete.value = false;
+	showAutocomplete.value = false
 
-  if (item._type.startsWith("tag.")) {
-    searchQuery.value = item.title;
-    performSearch(item.title);
-    return;
-  }
+	if (item._type.startsWith('tag.')) {
+		searchQuery.value = item.title
+		performSearch(item.title)
+		return
+	}
 
-  const path = getResultPath(item);
-  if (path) {
-    // Check if we should use navigateTo (SPA) or open in new tab
-    if (path.startsWith("http")) {
-      window.open(path, "_blank");
-    } else {
-      navigateTo(path);
-    }
-  }
-};
+	const path = getResultPath(item)
+	if (path) {
+		// Check if we should use navigateTo (SPA) or open in new tab
+		if (path.startsWith('http')) {
+			window.open(path, '_blank')
+		} else {
+			navigateTo(path)
+		}
+	}
+}
 
 // Get the URL path for a search result
 const getResultPath = (item) => {
-  if (item._type.startsWith("tag.")) {
-    return localePath(`/search?q=${encodeURIComponent(item.title)}`);
-  }
-  const slug = item.slug?.current || item.slug;
-  if (!slug) return null;
+	if (item._type.startsWith('tag.')) {
+		return localePath(`/search?q=${encodeURIComponent(item.title)}`)
+	}
+	const slug = item.slug?.current || item.slug
+	if (!slug) return null
 
-  switch (item._type) {
-    case "show":
-      return localePath(`/shows/${slug}`);
-    case "set":
-      // Sets need parent show slug
-      const parentSlug =
-        item.parentShow?.slug?.current || item.parentShow?.slug;
-      return parentSlug
-        ? localePath(`/shows/${parentSlug}/${slug}`)
-        : localePath(`/shows/${slug}`);
-    case "person":
-      return localePath(`/pool/${slug}`);
-    case "venue":
-      return localePath(`/pool/${slug}`);
-    case "article":
-      return localePath(`/words/${slug}`);
-    default:
-      return null;
-  }
-};
+	switch (item._type) {
+	case 'show':
+		return localePath(`/shows/${slug}`)
+	case 'set': {
+		// Sets need parent show slug
+		const parentSlug =
+        item.parentShow?.slug?.current || item.parentShow?.slug
+		return parentSlug
+			? localePath(`/shows/${parentSlug}/${slug}`)
+			: localePath(`/shows/${slug}`)
+	}
+	case 'person':
+		return localePath(`/pool/${slug}`)
+	case 'venue':
+		return localePath(`/pool/${slug}`)
+	case 'article':
+		return localePath(`/words/${slug}`)
+	default:
+		return null
+	}
+}
 
-const getTypeIcon = (type) => {
-  const icons = {
-    show: "📻",
-    set: "🎵",
-    person: "👤",
-    venue: "📍",
-    article: "📝",
-  };
-  return icons[type] || "📄";
-};
+const _getTypeIcon = (type) => {
+	const icons = {
+		show: '📻',
+		set: '🎵',
+		person: '👤',
+		venue: '📍',
+		article: '📝'
+	}
+	return icons[type] || '📄'
+}
 
 const getCategoryLabel = (type) => {
-  if (type.startsWith("tag.")) return "Tag";
-  if (["show", "set"].includes(type)) return "Shows";
-  if (["person", "venue"].includes(type)) return "Pool";
-  if (type === "article") return "Words";
-  return type;
-};
+	if (type.startsWith('tag.')) return 'Tag'
+	if (['show', 'set'].includes(type)) return 'Shows'
+	if (['person', 'venue'].includes(type)) return 'Pool'
+	if (type === 'article') return 'Words'
+	return type
+}
 
 const getCategoryClass = (type) => {
-  if (type.startsWith("tag.")) return "type-tag";
-  if (["show", "set"].includes(type)) return "type-shows";
-  if (["person", "venue"].includes(type)) return "type-pool";
-  if (type === "article") return "type-article";
-  return "";
-};
+	if (type.startsWith('tag.')) return 'type-tag'
+	if (['show', 'set'].includes(type)) return 'type-shows'
+	if (['person', 'venue'].includes(type)) return 'type-pool'
+	if (type === 'article') return 'type-article'
+	return ''
+}
 
 // Hide autocomplete on scroll
 const hideAutocompleteOnScroll = () => {
-  if (showAutocomplete.value) {
-    showAutocomplete.value = false;
-  }
-};
+	if (showAutocomplete.value) {
+		showAutocomplete.value = false
+	}
+}
 
 // Focus input on mount and add scroll listener
 onMounted(() => {
-  // Check for query parameters from URL
-  const route = useRoute();
-  const queryParam = route.query.q;
-  const typeParam = route.query.type;
+	// Check for query parameters from URL
+	const route = useRoute()
+	const queryParam = route.query.q
+	const typeParam = route.query.type
 
-  // Handle type filter
-  if (typeParam && typeof typeParam === "string") {
-    if (["shows", "pool", "article"].includes(typeParam)) {
-      activeContentTypes.value.add(typeParam);
-    }
-  }
+	// Handle type filter
+	if (typeParam && typeof typeParam === 'string') {
+		if (['shows', 'pool', 'article'].includes(typeParam)) {
+			activeContentTypes.value.add(typeParam)
+		}
+	}
 
-  // Handle search query
-  if (queryParam && typeof queryParam === "string") {
-    skipAutocompleteReset.value = true;
-    searchQuery.value = queryParam;
-    // Trigger search immediately for URL query
-    performSearch(queryParam);
-  }
+	// Handle search query
+	if (queryParam && typeof queryParam === 'string') {
+		skipAutocompleteReset.value = true
+		searchQuery.value = queryParam
+		// Trigger search immediately for URL query
+		performSearch(queryParam)
+	}
 
-  nextTick(() => {
-    inputRef.value?.focus();
-  });
-  window.addEventListener("scroll", hideAutocompleteOnScroll);
-  document.addEventListener("click", handleClickOutside);
-});
+	nextTick(() => {
+		inputRef.value?.focus()
+	})
+	window.addEventListener('scroll', hideAutocompleteOnScroll)
+	document.addEventListener('click', handleClickOutside)
+})
 
 // Handle click outside to hide suggestions
 const handleClickOutside = (event) => {
-  const searchContainer = document.querySelector(".search-input-wrapper");
-  if (searchContainer && !searchContainer.contains(event.target)) {
-    showAutocomplete.value = false;
-  }
-};
+	const searchContainer = document.querySelector('.search-input-wrapper')
+	if (searchContainer && !searchContainer.contains(event.target)) {
+		showAutocomplete.value = false
+	}
+}
 
 onUnmounted(() => {
-  if (autocompleteTimeout) clearTimeout(autocompleteTimeout);
-  if (searchTimeout) clearTimeout(searchTimeout);
-  if (hideTimeout) clearTimeout(hideTimeout);
-  window.removeEventListener("scroll", hideAutocompleteOnScroll);
-  document.removeEventListener("click", handleClickOutside);
-});
+	if (autocompleteTimeout) clearTimeout(autocompleteTimeout)
+	if (searchTimeout) clearTimeout(searchTimeout)
+	if (hideTimeout) clearTimeout(hideTimeout)
+	window.removeEventListener('scroll', hideAutocompleteOnScroll)
+	document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <template>
-  <div class="search-page">
-    <!-- Search Section -->
-    <section class="search-section">
-      <div class="search-container">
-        <!-- Search Input with Autocomplete -->
-        <div class="search-input-wrapper">
-          <div class="search-icon">
-            <svg
-              width="10"
-              height="10"
-              viewBox="0 0 10 10"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="5.33765"
-                cy="4.59622"
-                r="2.75002"
-                transform="rotate(45 5.33765 4.59622)"
-              />
-              <path
-                d="M0.159881 8.71358C-0.0425288 8.90142 -0.0543383 9.21779 0.133504 9.4202C0.321346 9.62261 0.637709 9.63442 0.840119 9.44657L0.159881 8.71358ZM3.08151 7.3665L3.44801 7.02638L2.76777 6.29339L2.40128 6.6335L3.08151 7.3665ZM0.840119 9.44657L3.08151 7.3665L2.40128 6.6335L0.159881 8.71358L0.840119 9.44657Z"
-              />
-            </svg>
-          </div>
-          <input
-            ref="inputRef"
-            v-model="searchQuery"
-            type="text"
-            class="search-input"
-            placeholder="Start typing to search..."
-            autocomplete="off"
-            @keydown="handleKeydown"
-            @blur="handleInputBlur"
-          />
-          <button
-            v-if="hasQuery"
-            class="clear-button"
-            @click="clearSearch"
-            aria-label="Clear search"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M18 6 6 18" />
-              <path d="m6 6 12 12" />
-            </svg>
-          </button>
-          <div v-if="isLoading" class="loading-spinner" />
+	<div class="search-page">
+		<!-- Search Section -->
+		<section class="search-section">
+			<div class="search-container">
+				<!-- Search Input with Autocomplete -->
+				<div class="search-input-wrapper">
+					<div class="search-icon">
+						<svg
+							width="10"
+							height="10"
+							viewBox="0 0 10 10"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<circle
+								cx="5.33765"
+								cy="4.59622"
+								r="2.75002"
+								transform="rotate(45 5.33765 4.59622)"
+							/>
+							<path
+								d="M0.159881 8.71358C-0.0425288 8.90142 -0.0543383 9.21779 0.133504 9.4202C0.321346 9.62261 0.637709 9.63442 0.840119 9.44657L0.159881 8.71358ZM3.08151 7.3665L3.44801 7.02638L2.76777 6.29339L2.40128 6.6335L3.08151 7.3665ZM0.840119 9.44657L3.08151 7.3665L2.40128 6.6335L0.159881 8.71358L0.840119 9.44657Z"
+							/>
+						</svg>
+					</div>
+					<input
+						ref="inputRef"
+						v-model="searchQuery"
+						type="text"
+						class="search-input"
+						placeholder="Start typing to search..."
+						autocomplete="off"
+						@keydown="handleKeydown"
+						@blur="handleInputBlur"
+					>
+					<button
+						v-if="hasQuery"
+						class="clear-button"
+						aria-label="Clear search"
+						@click="clearSearch"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="20"
+							height="20"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<path d="M18 6 6 18" />
+							<path d="m6 6 12 12" />
+						</svg>
+					</button>
+					<div v-if="isLoading" class="loading-spinner" />
 
-          <!-- Autocomplete Dropdown -->
-          <div
-            v-if="
-              showAutocomplete &&
-              autocompleteResults.length > 0 &&
-              !suggestionsHidden
-            "
-            class="autocomplete-dropdown"
-          >
-            <button
-              v-for="(item, index) in autocompleteResults"
-              :key="item._id"
-              class="autocomplete-item"
-              :class="{ 'is-selected': index === selectedAutocompleteIndex }"
-              @mousedown.prevent="selectAutocompleteItem(item)"
-            >
-              <span class="autocomplete-title">{{ item.title }}</span>
-              <span
-                class="autocomplete-type"
-                :class="getCategoryClass(item._type)"
-                >{{ getCategoryLabel(item._type) }}</span
-              >
-            </button>
-          </div>
-        </div>
+					<!-- Autocomplete Dropdown -->
+					<div
+						v-if="
+							showAutocomplete &&
+								autocompleteResults.length > 0 &&
+								!suggestionsHidden
+						"
+						class="autocomplete-dropdown"
+					>
+						<button
+							v-for="(item, index) in autocompleteResults"
+							:key="item._id"
+							class="autocomplete-item"
+							:class="{ 'is-selected': index === selectedAutocompleteIndex }"
+							@mousedown.prevent="selectAutocompleteItem(item)"
+						>
+							<span class="autocomplete-title">{{ item.title }}</span>
+							<span
+								class="autocomplete-type"
+								:class="getCategoryClass(item._type)"
+							>{{ getCategoryLabel(item._type) }}</span
+							>
+						</button>
+					</div>
+				</div>
 
-        <!-- Type Filters (below search bar) -->
-        <div class="type-filters">
-          <button
-            v-for="type in contentTypeOptions"
-            :key="type.value"
-            class="type-filter-btn"
-            :class="{
-              'is-active': isContentTypeActive(type.value),
-              [`type-${type.value}`]: true,
-            }"
-            @click="toggleContentType(type.value)"
-          >
-            <span class="type-label">{{ type.label }}</span>
-          </button>
-        </div>
-      </div>
-    </section>
+				<!-- Type Filters (below search bar) -->
+				<div class="type-filters">
+					<button
+						v-for="type in contentTypeOptions"
+						:key="type.value"
+						class="type-filter-btn"
+						:class="{
+							'is-active': isContentTypeActive(type.value),
+							[`type-${type.value}`]: true,
+						}"
+						@click="toggleContentType(type.value)"
+					>
+						<span class="type-label">{{ type.label }}</span>
+					</button>
+				</div>
+			</div>
+		</section>
 
-    <!-- Results Section -->
-    <section class="results-section">
-      <template v-if="hasQuery">
-        <ModuleSearchResults
-          :results="filteredResults"
-          :search-query="searchQuery"
-          :is-loading="isLoading"
-          :active-content-type="activeContentType"
-          :available-tags="availableTags"
-        />
-      </template>
+		<!-- Results Section -->
+		<section class="results-section">
+			<template v-if="hasQuery">
+				<ModuleSearchResults
+					:results="filteredResults"
+					:search-query="searchQuery"
+					:is-loading="isLoading"
+					:active-content-type="activeContentType"
+					:available-tags="availableTags"
+				/>
+			</template>
 
-      <!-- Empty State (no query) -->
-      <div v-else class="empty-state">
-        <div class="empty-state-content">
-          <p class="empty-state-text">
-            Type to search for shows, people, venues, or articles
-          </p>
-          <!-- <div class="suggestion-grid">
+			<!-- Empty State (no query) -->
+			<div v-else class="empty-state">
+				<div class="empty-state-content">
+					<p class="empty-state-text">
+						Type to search for shows, people, venues, or articles
+					</p>
+					<!-- <div class="suggestion-grid">
             <NuxtLink :to="localePath('/shows')" class="suggestion-card shows">
               <span class="card-icon">📻</span>
               <span class="card-title">Shows</span>
@@ -711,10 +712,10 @@ onUnmounted(() => {
               <span class="card-desc">See what's playing</span>
             </NuxtLink>
           </div> -->
-        </div>
-      </div>
-    </section>
-  </div>
+				</div>
+			</div>
+		</section>
+	</div>
 </template>
 
 <style lang="postcss" scoped>

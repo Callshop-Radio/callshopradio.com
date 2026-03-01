@@ -1,30 +1,21 @@
 import { ref, computed } from "vue";
 
 export function useScheduleService() {
-  const apiKey = process.env.NUXT_LIBRETIME_API_KEY;
-
   // Data refs
   const weekInfoData = ref({});
   const weekInfoWienData = ref({});
   const scheduleData = ref([]);
 
-  // Helper function for API calls with authorization header
-  const fetcher = async (url) => {
+  // Helper function for API calls via proxy
+  const fetcher = async (url, requiresAuth = false) => {
     try {
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Api-Key ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error fetching data: ${response.statusText}`);
-      }
-
-      return await response.json();
+      // Use the Nitro API proxy to avoid CORS issues
+      const proxyUrl = `/api/libretime-proxy?endpoint=${encodeURIComponent(url)}&auth=${requiresAuth}`;
+      const response = await $fetch(proxyUrl);
+      return response;
     } catch (error) {
-      return null; // Return null on error
+      console.error(`[useScheduleService] Fetch error for ${url}:`, error);
+      return null;
     }
   };
 
@@ -44,35 +35,18 @@ export function useScheduleService() {
   const fetchScheduleData = async () => {
     try {
       const weekInfoUrl = "https://libretime.callshopradio.com/api/week-info";
-      const weekInfoWienUrl = "https://wien.callshopradio.com/api/week-info";
-
-      // Add parameters
-      const weekInfoWienUrlWithParams = weekInfoWienUrl + "?days=7";
+      const weekInfoWienUrl = "https://wien.callshopradio.com/api/week-info?days=7";
 
       // Generate URL for upcoming shows
       const timeWindow = getNextTwoWeeksWindow();
       const scheduleUrl = `https://libretime.callshopradio.com/api/shows?start=${timeWindow.start}&end=${timeWindow.end}`;
 
-      // Fetch Düsseldorf with API key
-      const weekInfo = await fetcher(weekInfoUrl).catch(() => {
-        return {};
-      });
-
-      // Fetch Wien directly without API key
-      let weekInfoWien = {};
-      try {
-        const wienResponse = await fetch(weekInfoWienUrlWithParams);
-        if (wienResponse.ok) {
-          weekInfoWien = await wienResponse.json();
-        }
-      } catch (wienError) {
-        // Error handled silently
-      }
-
-      // Fetch schedule
-      const schedule = await fetcher(scheduleUrl).catch(() => {
-        return [];
-      });
+      // Fetch all data in parallel via proxy
+      const [weekInfo, weekInfoWien, schedule] = await Promise.all([
+        fetcher(weekInfoUrl, true).catch(() => ({})),  // Düsseldorf with auth
+        fetcher(weekInfoWienUrl, false).catch(() => ({})), // Wien without auth
+        fetcher(scheduleUrl, true).catch(() => []) // Schedule with auth
+      ]);
 
       // Set data
       weekInfoData.value = weekInfo || {};

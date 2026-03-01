@@ -1,10 +1,5 @@
-const { creditLog, favicon } = useUtils();
-favicon();
-// creditLog()
-
-const route = useRoute();
-
-
+const { creditLog, favicon } = useUtils(); favicon(); // creditLog() const route
+= useRoute();
 
 <template>
   <div class="site">
@@ -46,9 +41,9 @@ const route = useRoute();
 .words-archive .site {
   main {
     padding: 0 var(--big-margin);
-  }
-  @media screen and (max-width: 900px) {
-    padding: 0 var(--mid-padding);
+    @media screen and (max-width: 900px) {
+      padding: 0 var(--mid-padding);
+    }
   }
 }
 

@@ -1,7 +1,7 @@
 export default defineNuxtPlugin(() => {
-  const router = useRouter();
+	const router = useRouter()
 
-  router.beforeEach((to, from, next) => {
-    next();
-  });
-});
+	router.beforeEach((to, from, next) => {
+		next()
+	})
+})

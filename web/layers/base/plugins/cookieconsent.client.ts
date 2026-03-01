@@ -18,7 +18,8 @@ export default defineNuxtPlugin(async () => {
 
 	function toggleGtag(cookie) {
 		const hasGoogleConsent = cookie?.categories?.includes('analytics')
-		hasGoogleConsent ? grantConsent() : revokeConsent()
+		if (hasGoogleConsent) grantConsent()
+		else revokeConsent()
 	}
 	const config = {
 		// https://cookieconsent.orestbida.com/reference/configuration-reference.html#guioptions

@@ -1,42 +1,42 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useMainStore } from "~/stores/mainStore";
+import { computed } from 'vue'
+import { useMainStore } from '~/stores/mainStore'
 
-const mainStore = useMainStore();
+const mainStore = useMainStore()
 
 // Computed property für den aktuellen Kanalstatus
-const isChannelOne = computed(() => {
-  return mainStore.activeScheduleLocation === "channelOne";
-});
+const _isChannelOne = computed(() => {
+	return mainStore.activeScheduleLocation === 'channelOne'
+})
 </script>
 
 <template>
-  <div class="location-switch">
-    <button
-      @click="mainStore.setActiveStreamingChannel('channelOne')"
-      :class="[
-        'location-switch__btn',
-        {
-          'location-switch__btn--active':
-            mainStore.activeStreamingChannel === 'channelOne',
-        },
-      ]"
-    >
-      1
-    </button>
-    <button
-      @click="mainStore.setActiveStreamingChannel('channelTwo')"
-      :class="[
-        'location-switch__btn',
-        {
-          'location-switch__btn--active':
-            mainStore.activeStreamingChannel === 'channelTwo',
-        },
-      ]"
-    >
-      2
-    </button>
-  </div>
+	<div class="location-switch">
+		<button
+			:class="[
+				'location-switch__btn',
+				{
+					'location-switch__btn--active':
+						mainStore.activeStreamingChannel === 'channelOne',
+				},
+			]"
+			@click="mainStore.setActiveStreamingChannel('channelOne')"
+		>
+			1
+		</button>
+		<button
+			:class="[
+				'location-switch__btn',
+				{
+					'location-switch__btn--active':
+						mainStore.activeStreamingChannel === 'channelTwo',
+				},
+			]"
+			@click="mainStore.setActiveStreamingChannel('channelTwo')"
+		>
+			2
+		</button>
+	</div>
 </template>
 
 <style scoped lang="postcss">
