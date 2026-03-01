@@ -4,7 +4,7 @@
   command = "pnpm run build"
  
  [build.environment]
-   NODE_OPTIONS = "--max-old-space-size=3072"
+   NODE_OPTIONS = "--max-old-space-size=8192"
    NPM_FLAGS = "--legacy-peer-deps"
   NITRO_PRESET = "netlify"
 
