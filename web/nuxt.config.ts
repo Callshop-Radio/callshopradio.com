@@ -1,5 +1,3 @@
-import { getPrerenderRoutes } from "./lib/fetch-prerender-routes";
-
 export default defineNuxtConfig({
 	// TODO: Remove this once Nuxt 4 has launched
 	future: {
@@ -143,15 +141,6 @@ export default defineNuxtConfig({
 					'framer-motion': 'FramerMotion'
 				}
 			}
-		}
-	},
-
-	hooks: {
-		async 'nitro:config'(nitroConfig) {
-			if (nitroConfig.dev) return
-			const routes = await getPrerenderRoutes()
-			nitroConfig.prerender = nitroConfig.prerender || {}
-			nitroConfig.prerender.routes = routes
 		}
 	},
 
