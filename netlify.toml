@@ -75,8 +75,18 @@
   to = "/"
   status = 301
 
-# SSR Fallback - Route alle Anfragen an Nitro Server
+# Nur diese Pfade an den Nitro-Server (SSR) – alles andere wird aus dist bedient (Prerender-Permalinks)
 [[redirects]]
-  from = "/*"
+  from = "/api/*"
+  to = "/.netlify/functions/server"
+  status = 200
+
+[[redirects]]
+  from = "/search"
+  to = "/.netlify/functions/server"
+  status = 200
+
+[[redirects]]
+  from = "/de/search"
   to = "/.netlify/functions/server"
   status = 200
