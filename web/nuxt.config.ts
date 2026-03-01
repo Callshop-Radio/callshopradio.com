@@ -1,3 +1,5 @@
+import { getPrerenderRoutes } from "./lib/fetch-prerender-routes";
+
 export default defineNuxtConfig({
 	// TODO: Remove this once Nuxt 4 has launched
 	future: {
@@ -111,7 +113,7 @@ export default defineNuxtConfig({
 
 	nitro: {
 		prerender: {
-			crawlLinks: true,
+			crawlLinks: false,
 			concurrency: 2,
 			failOnError: false,
 			routes: ['/'],

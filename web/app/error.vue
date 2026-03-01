@@ -5,9 +5,6 @@ import { ERROR_PAGE_QUERY } from '~~/queries/sanity.queries'
 const query = groq`${ERROR_PAGE_QUERY}`
 const { data } = await useSanityQuery(query)
 
-const handleError = async () => {
-	clearError({ redirect: '/' })
-}
 const { favicon } = useUtils()
 favicon()
 useSeoMeta({
@@ -18,12 +15,9 @@ useSeoMeta({
 <template>
 	<div class="error-page">
 		<RichText :blocks="data?.content ?? []" />
-		<button
-			class="link-style"
-			@click="handleError"
-		>
+		<NuxtLink to="/" class="link-style">
 			{{ data?.button }}
-		</button>
+		</NuxtLink>
 	</div>
 </template>
 
