@@ -5,7 +5,7 @@
  
  [build.environment]
    # Increase Node heap to avoid OOM during Nitro server build (2884 prerendered routes)
-   NODE_OPTIONS = "--max-old-space-size=4096"
+   NODE_OPTIONS = "--max-old-space-size=8192"
    NPM_FLAGS = "--legacy-peer-deps"
   NITRO_PRESET = "netlify"
 

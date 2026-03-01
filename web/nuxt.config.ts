@@ -112,6 +112,7 @@ export default defineNuxtConfig({
 	nitro: {
 		prerender: {
 			crawlLinks: true,
+			concurrency: 2,
 			failOnError: false,
 			routes: ['/'],
 			ignore: ['/api/**']
