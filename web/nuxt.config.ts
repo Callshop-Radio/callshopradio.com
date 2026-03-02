@@ -227,11 +227,10 @@ export default defineNuxtConfig({
 		'/words': { swr: 3600 }, // 1 Stunde Cache
 		'/schedule': { swr: 300 }, // 5 Minuten Cache (live content)
 
-		// === Detailseiten mit ISR (Incremental Static Regeneration) ===
-		// Cached bis TTL abläuft oder via Webhook invalidiert
-		'/pool/**': { isr: 86400 }, // 24h Cache
-		'/shows/**': { isr: 86400 }, // 24h Cache
-		'/words/**': { isr: 86400 }, // 24h Cache
+		// === Detailseiten: SSR (kein CDN-Cache, verhindert stale redirects) ===
+		'/pool/**': { ssr: true },
+		'/shows/**': { ssr: true },
+		'/words/**': { ssr: true },
 
 		// === Dynamische Seiten (immer frisch) ===
 		'/search': { ssr: true },

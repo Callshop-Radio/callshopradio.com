@@ -47,21 +47,21 @@
   [headers.values]
     cache-control = "public, max-age=3600"
 
-# Dynamic Pages - SWR Headers
+# Detail Pages - SSR (no CDN caching, prevent stale redirect issues)
 [[headers]]
   for = "/pool/*"
   [headers.values]
-    cache-control = "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800"
+    cache-control = "no-store"
 
 [[headers]]
   for = "/shows/*"
   [headers.values]
-    cache-control = "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800"
+    cache-control = "no-store"
 
 [[headers]]
   for = "/words/*"
   [headers.values]
-    cache-control = "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800"
+    cache-control = "no-store"
 
 # API Routes - No cache
 [[headers]]
