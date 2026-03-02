@@ -69,17 +69,10 @@ export async function getPrerenderRoutes(): Promise<string[]> {
 			return route.loc;
 		});
 
-	const defaultRoutes = [...new Set([...STATIC_ROUTES, ...valid])];
-
-	// i18n prefix_except_default: Deutsche URLs (/de, /de/shows/…) müssen auch geprerendert werden,
-	// sonst liefern Permalinks wie /de/shows/xyz 404
-	const deRoutes = defaultRoutes.flatMap((r) =>
-		r === "/" ? ["/de"] : [`/de${r}`]
-	);
-	const allRoutes = [...defaultRoutes, ...deRoutes];
+	const allRoutes = [...new Set([...STATIC_ROUTES, ...valid])];
 
 	console.log(
-		`[prerender-routes] ${allRoutes.length} Routen (${defaultRoutes.length} en + ${deRoutes.length} de).`
+		`[prerender-routes] ${allRoutes.length} Routen.`
 	);
 	return allRoutes;
 }

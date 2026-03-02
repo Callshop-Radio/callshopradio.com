@@ -117,7 +117,7 @@ export default defineNuxtConfig({
 			concurrency: 5,
 			failOnError: false,
 			routes: ['/', '/sitemap.xml'],
-			ignore: ['/api/**']
+			ignore: ['/api/**', '/de/**', '/de']
 		},
 		experimental: {
 			wasm: true
