@@ -1,3 +1,5 @@
+import { getPrerenderRoutes } from './lib/fetch-prerender-routes'
+
 export default defineNuxtConfig({
 	// TODO: Remove this once Nuxt 4 has launched
 	future: {
@@ -111,8 +113,8 @@ export default defineNuxtConfig({
 
 	nitro: {
 		prerender: {
-			crawlLinks: false,
-			concurrency: 1,
+			crawlLinks: true,
+			concurrency: 5,
 			failOnError: false,
 			routes: ['/', '/sitemap.xml'],
 			ignore: ['/api/**']
@@ -220,25 +222,31 @@ export default defineNuxtConfig({
 			}
 		},
 
-		// === Übersichtsseiten mit SWR (Stale-While-Revalidate) ===
-		// Cached Version wird sofort geliefert, im Hintergrund aktualisiert
-		'/pool': { swr: 3600 }, // 1 Stunde Cache
-		'/shows': { swr: 3600 }, // 1 Stunde Cache
-		'/words': { swr: 3600 }, // 1 Stunde Cache
-		'/schedule': { swr: 300 }, // 5 Minuten Cache (live content)
+		// === Content-Seiten (alle vorgerendert als statisches HTML) ===
+		'/pool': { prerender: true },
+		'/pool/**': { prerender: true },
+		'/shows': { prerender: true },
+		'/shows/**': { prerender: true },
+		'/words': { prerender: true },
+		'/words/**': { prerender: true },
+		'/schedule': { prerender: true },
 
-		// === Detailseiten: SSR (kein CDN-Cache, verhindert stale redirects) ===
-		'/pool/**': { ssr: true },
-		'/shows/**': { ssr: true },
-		'/words/**': { ssr: true },
-
-		// === Dynamische Seiten (immer frisch) ===
-		'/search': { ssr: true },
-		'/de/search': { ssr: true },
+		// === Suche (client-side only, kein Pre-Rendering) ===
+		'/search': { ssr: false },
+		'/de/search': { ssr: false },
 
 		// === API-Routen ===
 		'/api/**': { cors: true }
 	},
 
-	compatibilityDate: '2024-12-19'
+	compatibilityDate: '2024-12-19',
+
+	hooks: {
+		async 'prerender:routes'(ctx) {
+			const routes = await getPrerenderRoutes()
+			for (const route of routes) {
+				ctx.routes.add(route)
+			}
+		}
+	}
 })

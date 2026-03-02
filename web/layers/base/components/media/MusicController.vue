@@ -565,8 +565,6 @@ onBeforeUnmount(() => {
 	}
 })
 
-// Initial call to have data immediately
-updateLiveStatus()
 </script>
 
 <template>

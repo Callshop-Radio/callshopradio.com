@@ -39,12 +39,9 @@ export async function getPrerenderRoutes(): Promise<string[]> {
 		useCdn: false,
 	});
 
-	// Sanity API limitiert standardmäßig (~1000); alle Dokumente holen (z. B. 3074+)
-	const queryWithLimit = `${SITEMAP_QUERY.trimEnd()} | [0...5000]`;
-
 	let data: SitemapEntry[];
 	try {
-		data = (await client.fetch(queryWithLimit)) as SitemapEntry[];
+		data = (await client.fetch(SITEMAP_QUERY)) as SitemapEntry[];
 	} catch (err) {
 		console.warn("[prerender-routes] Sanity-Fetch fehlgeschlagen:", err);
 		return [...STATIC_ROUTES];

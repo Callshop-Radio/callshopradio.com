@@ -47,21 +47,21 @@
   [headers.values]
     cache-control = "public, max-age=3600"
 
-# Detail Pages - SSR (no CDN caching, prevent stale redirect issues)
+# Static Content Pages - revalidate on deploy
 [[headers]]
   for = "/pool/*"
   [headers.values]
-    cache-control = "no-store"
+    cache-control = "public, max-age=0, must-revalidate"
 
 [[headers]]
   for = "/shows/*"
   [headers.values]
-    cache-control = "no-store"
+    cache-control = "public, max-age=0, must-revalidate"
 
 [[headers]]
   for = "/words/*"
   [headers.values]
-    cache-control = "no-store"
+    cache-control = "public, max-age=0, must-revalidate"
 
 # API Routes - No cache
 [[headers]]
@@ -75,8 +75,8 @@
   to = "/"
   status = 301
 
-# SSR Fallback – Nitro-Funktion für alle Anfragen (hat preferStatic: true, bedient statische Dateien zuerst)
+# API Proxy – Netlify Function fuer LibreTime etc.
 [[redirects]]
-  from = "/*"
+  from = "/api/*"
   to = "/.netlify/functions/server"
   status = 200
