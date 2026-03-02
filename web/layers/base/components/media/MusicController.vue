@@ -48,57 +48,42 @@ const fetcher = async (url, requiresAuth = false) => {
 	}
 }
 
-	// Manual status update function
+const deriveOnAirLight = (liveData) => {
+	if (!liveData?.sources) return {}
+	return {
+		on_air_light:
+			liveData.sources.livedj === 'on' ||
+			liveData.sources.masterdj === 'on',
+		live_stream: liveData.sources.livedj === 'on',
+		live_stream_on_air: liveData.sources.livedj === 'on',
+		master_stream: liveData.sources.masterdj === 'on',
+		master_stream_on_air: liveData.sources.masterdj === 'on'
+	}
+}
+
 const updateLiveStatus = async () => {
 	try {
-		// Stream 1
 		const liveInfoUrl1 = 'https://libretime.callshopradio.com/api/live-info-v2'
-		const onAirLightUrl1 = 'https://libretime.callshopradio.com/api/on-air-light/format/json'
 		const icecastUrl = 'https://icecast.callshopradio.com/status-json.xsl'
-
-		// Stream 2
 		const liveInfoUrl2 = 'https://wien.callshopradio.com/api/live-info-v2?days=7'
 
-		const [liveData1, onAirLight1, icecastData, liveData2] = await Promise.all([
-			fetcher(liveInfoUrl1, true),  // requiresAuth = true
-			fetcher(onAirLightUrl1, true), // requiresAuth = true
-			fetcher(icecastUrl, false).catch(() => null), // no auth
-			fetcher(liveInfoUrl2, false) // no auth
+		const [liveData1, icecastData, liveData2] = await Promise.all([
+			fetcher(liveInfoUrl1, true),
+			fetcher(icecastUrl, false).catch(() => null),
+			fetcher(liveInfoUrl2, false)
 		])
 
-		// Adapt format for Stream 2
-		let onAirLight2 = null
-		if (liveData2?.sources) {
-			onAirLight2 = {
-				on_air_light:
-          liveData2.sources.livedj === 'on' ||
-          liveData2.sources.masterdj === 'on',
-				live_stream: liveData2.sources.livedj === 'on',
-				live_stream_on_air: liveData2.sources.livedj === 'on',
-				master_stream: liveData2.sources.masterdj === 'on',
-				master_stream_on_air: liveData2.sources.masterdj === 'on'
-			}
-		}
-
-		// Update status without disturbing audio elements
 		liveStatus.value = {
 			stream1: {
-				onAirLight: onAirLight1 || {},
+				onAirLight: deriveOnAirLight(liveData1),
 				liveData: liveData1 || {},
 				icecastData: icecastData || {}
 			},
 			stream2: {
-				onAirLight: onAirLight2 || {},
+				onAirLight: deriveOnAirLight(liveData2),
 				liveData: liveData2 || {}
 			}
 		}
-
-		// Debug: Log successful update
-		console.log('[MusicController] Live status updated:', {
-			hasLiveData1: !!liveData1,
-			hasOnAirLight1: !!onAirLight1,
-			hasLiveData2: !!liveData2
-		})
 	} catch (error) {
 		console.error('[MusicController] Error updating live status:', error)
 	}

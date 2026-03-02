@@ -6,12 +6,15 @@ export function useScheduleService() {
   const weekInfoWienData = ref({});
   const scheduleData = ref([]);
 
-  // Helper function for API calls via proxy
+  const config = useRuntimeConfig();
+
   const fetcher = async (url, requiresAuth = false) => {
     try {
-      // Use the Nitro API proxy to avoid CORS issues
-      const proxyUrl = `/api/libretime-proxy?endpoint=${encodeURIComponent(url)}&auth=${requiresAuth}`;
-      const response = await $fetch(proxyUrl);
+      const headers = {};
+      if (requiresAuth && config.public.libretimeApiKey) {
+        headers['Authorization'] = `Api-Key ${config.public.libretimeApiKey}`;
+      }
+      const response = await $fetch(url, { headers });
       return response;
     } catch (error) {
       console.error(`[useScheduleService] Fetch error for ${url}:`, error);
