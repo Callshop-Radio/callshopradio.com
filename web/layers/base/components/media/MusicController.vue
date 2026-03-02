@@ -253,6 +253,24 @@ const getCurrentName1 = computed(() => {
 		}
 	}
 
+	if (liveData?.tracks?.current) {
+		if (liveData.tracks.current.metadata) {
+			const artist = liveData.tracks.current.metadata.artist_name || ''
+			const title = liveData.tracks.current.metadata.track_title || ''
+
+			if (artist && artist !== title) {
+				return parseString(`${title} - ${artist}`)
+			}
+			return parseString(title)
+		}
+	}
+
+	if (liveData?.shows?.current) {
+		return parseString(
+			liveData.shows.current.name.replace(' - Live Stream', '')
+		)
+	}
+
 	if (liveData?.shows?.next?.length > 0) {
 		const nextShow = liveData.shows.next[0]
 		const startSplitted = nextShow.starts.split(' ')
