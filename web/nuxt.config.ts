@@ -214,13 +214,7 @@ export default defineNuxtConfig({
 	routeRules: {
 		// === Statische Seiten (bei Build generiert) ===
 		'/': { prerender: true },
-		'/sitemap.xml': {
-			prerender: true,
-			headers: {
-				'content-type': 'application/xml; charset=utf-8',
-				'cache-control': 'max-age=3600'
-			}
-		},
+		'/sitemap.xml': { prerender: true },
 
 		// === Content-Seiten (alle vorgerendert als statisches HTML) ===
 		'/pool': { prerender: true },
