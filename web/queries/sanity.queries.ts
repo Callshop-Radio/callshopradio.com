@@ -3,8 +3,9 @@ import {
 	LINK_QUERY,
 	MODULE_QUERY,
 	RICH_TEXT_QUERY,
-	SEO_QUERY
-} from './sanity.snippets'
+	SEO_QUERY,
+	SOUNDCLOUD_TRACKS_QUERY,
+} from "./sanity.snippets";
 
 export const SITEMAP_QUERY = `
 *[
@@ -73,7 +74,7 @@ export const SITEMAP_QUERY = `
       "slug": slug.current
     }
   }
-}`
+}`;
 
 export const HOMEPAGE_QUERY = `
 *[_type == "home"] | order(_updatedAt desc)[0] {
@@ -81,7 +82,7 @@ export const HOMEPAGE_QUERY = `
   content[] ${RICH_TEXT_QUERY},
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY},
-}`
+}`;
 
 export const SLUG_PAGE_QUERY = `
 *[_type == "page" && slug.current == $slug] | order(_updatedAt desc)[0] {
@@ -92,7 +93,7 @@ export const SLUG_PAGE_QUERY = `
   },
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY}
-}`
+}`;
 
 export const SCHEDULE_QUERY = `
 *[_type == "timetable"] | order(_updatedAt desc)[0] {
@@ -101,7 +102,7 @@ export const SCHEDULE_QUERY = `
   content[] ${RICH_TEXT_QUERY},
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY},
-}`
+}`;
 
 export const POOLARCHIVE_QUERY = `
 *[_type == "pool"] | order(_updatedAt desc)[0] {
@@ -144,7 +145,7 @@ export const POOLARCHIVE_QUERY = `
       }
     ),
   }
-}`
+}`;
 
 export const POOL_PROFILE_QUERY = `
   *[_type in ['person', 'venue'] && slug.current == $slug][0] {
@@ -204,35 +205,7 @@ export const POOL_PROFILE_QUERY = `
                 _type,
                 title,
                 slug,
-                "soundcloud": soundcloud{
-                    _type,
-                    "tracks": tracks[]{
-                        id,
-                        created_at,
-                        duration,
-                        tag_list,
-                        streamable,
-                        purchase_url,
-                        genre,
-                        title,
-                        description,
-                        release_year,
-                        release_month,
-                        release_day,
-                        license,
-                        uri,
-                        "user": user{
-                            id,
-                            username,
-                            permalink_url
-                        },
-                        artwork_url,
-                        waveform_url,
-                        stream_url,
-                        playback_count,
-                        favoritings_count
-                    }
-                },
+                "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
                 persons[]->{
                     ...,
                     _id,
@@ -362,9 +335,7 @@ export const POOL_PROFILE_QUERY = `
       "tracks": tracks[]{
         id,
         artwork_url,
-        waveform_url,
         stream_url,
-        playback_count,
         title
       }
     },
@@ -391,7 +362,7 @@ export const POOL_PROFILE_QUERY = `
   },
     ${SEO_QUERY}
   }
-`
+`;
 
 export const SHOWSARCHIVE_QUERY = `
 *[_type == "showsArchive"] | order(_updatedAt desc)[0] {
@@ -408,35 +379,7 @@ export const SHOWSARCHIVE_QUERY = `
                 _type,
                 title,
                 slug,
-                "soundcloud": soundcloud{
-                    _type,
-                    "tracks": tracks[]{
-                        id,
-                        created_at,
-                        duration,
-                        tag_list,
-                        streamable,
-                        purchase_url,
-                        genre,
-                        title,
-                        description,
-                        release_year,
-                        release_month,
-                        release_day,
-                        license,
-                        uri,
-                        "user": user{
-                            id,
-                            username,
-                            permalink_url
-                        },
-                        artwork_url,
-                        waveform_url,
-                        stream_url,
-                        playback_count,
-                        favoritings_count
-                    }
-                },  
+                "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},  
                 "tags": tags[]->{
                     ...,
                     _id,
@@ -466,35 +409,7 @@ export const SHOWSARCHIVE_QUERY = `
                 _type,
                 title,
                 slug,
-                "soundcloud": soundcloud{
-                    _type,
-                    "tracks": tracks[]{
-                        id,
-                        created_at,
-                        duration,
-                        tag_list,
-                        streamable,
-                        purchase_url,
-                        genre,
-                        title,
-                        description,
-                        release_year,
-                        release_month,
-                        release_day,
-                        license,
-                        uri,
-                        "user": user{
-                            id,
-                            username,
-                            permalink_url
-                        },
-                        artwork_url,
-                        waveform_url,
-                        stream_url,
-                        playback_count,
-                        favoritings_count
-                    }
-                },
+                "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
                 persons[]->{
                     ...,
                     _id,
@@ -515,7 +430,7 @@ export const SHOWSARCHIVE_QUERY = `
             }
         )
   }
-}`
+}`;
 
 export const SHOW_QUERY = `
 *[_type == "show" && slug.current == $slug] | order(_updatedAt desc)[0] {
@@ -535,35 +450,7 @@ export const SHOW_QUERY = `
     slug,
     datetime,
     image ${IMAGE_QUERY},
-    "soundcloud": soundcloud{
-      _type,
-      "tracks": tracks[]{
-        id,
-        created_at,
-        duration,
-        tag_list,
-        streamable,
-        purchase_url,
-        genre,
-        title,
-        description,
-        release_year,
-        release_month,
-        release_day,
-        license,
-        uri,
-        "user": user{
-          id,
-          username,
-          permalink_url
-        },
-        artwork_url,
-        waveform_url,
-        stream_url,
-        playback_count,
-        favoritings_count
-      },
-    },
+    "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
     "parentShow": *[_type == "show" && references(^._id)][0]{
           ...,
           _id,
@@ -624,7 +511,7 @@ export const SHOW_QUERY = `
     web
   },
   ${SEO_QUERY}
-}`
+}`;
 
 export const SET_QUERY = `
 *[_type == 'set' && slug.current == $slug] | order(_updatedAt desc)[0] {
@@ -638,35 +525,7 @@ export const SET_QUERY = `
   image ${IMAGE_QUERY},
   content[] ${RICH_TEXT_QUERY},
   modules[] ${MODULE_QUERY},
-  "soundcloud": soundcloud{
-    _type,
-    "tracks": tracks[]{
-      id,
-      created_at,
-      duration,
-      tag_list,
-      streamable,
-      purchase_url,
-      genre,
-      title,
-      description,
-      release_year,
-      release_month,
-      release_day,
-      license,
-      uri,
-      "user": user{
-        id,
-        username,
-        permalink_url
-      },
-      artwork_url,
-      waveform_url,
-      stream_url,
-      playback_count,
-      favoritings_count
-    }
-  },
+  "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
   "tags": tags[]->{
     ...,
     _id,
@@ -691,35 +550,7 @@ export const SET_QUERY = `
       _type,
       title,
       slug,
-      "soundcloud": soundcloud{
-          _type,
-          "tracks": tracks[]{
-              id,
-              created_at,
-              duration,
-              tag_list,
-              streamable,
-              purchase_url,
-              genre,
-              title,
-              description,
-              release_year,
-              release_month,
-              release_day,
-              license,
-              uri,
-              "user": user{
-                  id,
-                  username,
-                  permalink_url
-              },
-              artwork_url,
-              waveform_url,
-              stream_url,
-              playback_count,
-              favoritings_count
-          }
-      },
+      "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
       persons[]->{
           ...,
           _id,
@@ -763,9 +594,7 @@ export const SET_QUERY = `
       "tracks": tracks[]{
         id,
         artwork_url,
-        waveform_url,
         stream_url,
-        playback_count,
         title
       }
     },
@@ -791,7 +620,7 @@ export const SET_QUERY = `
     "matchingArtistsCount": count((persons[]->._id)[@ in ^.^.persons[]->._id])
   },
   ${SEO_QUERY}
-}`
+}`;
 
 export const WORDS_QUERY = `
 *[_type == "words"] | order(_updatedAt desc)[0] {
@@ -802,7 +631,7 @@ export const WORDS_QUERY = `
     ...,
     count,
     "articles": select(
-            autoLoad == true => *[_type == 'article'] | order(datetime desc) {
+            autoLoad == true => *[_type == 'article'] | order(datetime desc)[0...20] {
                 ...,
                 _id,
                 _type,
@@ -871,7 +700,7 @@ export const WORDS_QUERY = `
             }
         )
   }
-}`
+}`;
 
 export const ENTRY_QUERY = `
 *[_type == "article" && slug.current == $slug] | order(_updatedAt desc)[0] {
@@ -943,7 +772,7 @@ export const ENTRY_QUERY = `
         "matchingTagsCount": count((tags[]->._id)[@ in ^.^.tags[]->._id])
     },
     ${SEO_QUERY}
-}`
+}`;
 
 export const SITE_OPTIONS_QUERY = `{
   "siteCookieBanner" : *[_type == "siteCookieBanner"][0] {
@@ -1011,14 +840,14 @@ export const SITE_OPTIONS_QUERY = `{
         description[] ${RICH_TEXT_QUERY},
     }
   }
-}`
+}`;
 
 export const ERROR_PAGE_QUERY = `
 *[_type == "error"][0] {
   ...,
   content[] ${RICH_TEXT_QUERY},
 }
-`
+`;
 
 // Search autocomplete query - fetches from person, set, show, venue, article
 export const SEARCH_AUTOCOMPLETE_QUERY = `
@@ -1045,5 +874,4 @@ export const SEARCH_AUTOCOMPLETE_QUERY = `
       "slug": slug.current
     }
   }
-}`
-
+}`;

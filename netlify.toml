@@ -41,6 +41,11 @@
   [headers.values]
     cache-control = "public, max-age=31536000, immutable"
 
+[[headers]]
+  for = "/*.woff"
+  [headers.values]
+    cache-control = "public, max-age=31536000, immutable"
+
 # Sitemap - 1 hour cache
 [[headers]]
   for = "/sitemap.xml"

@@ -3,57 +3,54 @@
 export const useUtils = () => {
 	//
 	// Creates a console log credit
-	const creditLog = () => {
-		const _inlineCSS =
-      'padding: 15px; background-color: #f8f8f8; color: black; border-radius: 5px'
-	}
+	const creditLog = () => {};
 
 	//
 	// Uses the favicon provided by the backend / store
 	const favicon = () => {
-		const mainStore = useMainStore()
-		const favicon = mainStore?.siteSettings?.favicon
+		const mainStore = useMainStore();
+		const favicon = mainStore?.siteSettings?.favicon;
 		if (!favicon?.asset) {
-			return
+			return;
 		}
-		const { $urlFor } = useNuxtApp()
+		const { $urlFor } = useNuxtApp();
 
 		useHead({
 			link: [
 				{
-					rel: 'icon',
+					rel: "icon",
 					href: favicon
 						? $urlFor(favicon)
-							.width(32)
-							.height(32)
-							.format('png')
-							.fit('max')
-							.url()
+								.width(32)
+								.height(32)
+								.format("png")
+								.fit("max")
+								.url()
 						: undefined,
-					sizes: '32x32'
+					sizes: "32x32",
 				},
 				{
-					rel: 'icon',
+					rel: "icon",
 					href: favicon ? $urlFor(favicon).url() : undefined,
-					type: favicon ? favicon?.asset?.mimeType : undefined
+					type: favicon ? favicon?.asset?.mimeType : undefined,
 				},
 				{
-					rel: 'apple-touch-icon',
+					rel: "apple-touch-icon",
 					href: favicon
 						? $urlFor(favicon)
-							.width(1024)
-							.height(1024)
-							.format('png')
-							.fit('max')
-							.url()
-						: undefined
-				}
-			]
-		})
-	}
+								.width(1024)
+								.height(1024)
+								.format("png")
+								.fit("max")
+								.url()
+						: undefined,
+				},
+			],
+		});
+	};
 
 	return {
 		creditLog,
-		favicon
-	}
-}
+		favicon,
+	};
+};

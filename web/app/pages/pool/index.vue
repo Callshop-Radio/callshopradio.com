@@ -1,27 +1,21 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-import { POOLARCHIVE_QUERY } from '~~/queries/sanity.queries.ts'
+import { POOLARCHIVE_QUERY } from "~~/queries/sanity.queries.ts";
 
-const query = groq`${POOLARCHIVE_QUERY}`
-const { data } = await useCachedSanityQuery(query)
+const query = groq`${POOLARCHIVE_QUERY}`;
+const { data } = await useCachedSanityQuery(query);
 
-usePageSeo(data?.value?.seo)
+usePageSeo(data?.value?.seo);
 
 useHead({
 	bodyAttrs: {
-		class: 'pool-archive'
-	}
-})
+		class: "pool-archive",
+	},
+});
 </script>
 
 <template>
 	<div class="pool-archive">
-		<!-- <section class="intro-section">
-      <ModuleIntroPoolSlider
-        :poolItems="data?.slider?.pool?.slice(0, data?.slider?.count * 2)"
-        :title="'Pool Content'"
-      />
-    </section> -->
 		<section
 			v-if="data?.modules && data.modules.length > 0"
 			class="module-section"

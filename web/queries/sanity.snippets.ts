@@ -2,7 +2,28 @@ export const IMAGE_QUERY = `{
   ...,
   "alt": asset->altText,
 	asset->,
-}`
+}`;
+
+// Shared SoundCloud projection — only the fields actually consumed by components.
+// Dropped (zero readers): created_at, tag_list, streamable, purchase_url, genre,
+// description, release_year/month/day, license, waveform_url, playback_count,
+// favoritings_count. permalink_url is reconstructed client-side from `id`.
+export const SOUNDCLOUD_TRACKS_QUERY = `soundcloud{
+	_type,
+	"tracks": tracks[]{
+		id,
+		duration,
+		title,
+		uri,
+		"user": user{
+			id,
+			username,
+			permalink_url
+		},
+		artwork_url,
+		stream_url
+	}
+}`;
 
 export const LINK_QUERY = `
 	...,
@@ -39,7 +60,7 @@ export const LINK_QUERY = `
 	_type == "linkCookie" => {
 		"linkType": "linkCookie",
 	},
-`
+`;
 
 export const SINGLE_LINK_QUERY = `{
     ...,
@@ -78,7 +99,7 @@ export const SINGLE_LINK_QUERY = `{
     _type == "none" => {
       "linkType": "none",
     }
-  }`
+  }`;
 
 export const SINGLE_LINK_OPTIONAL_QUERY = `{
     ...,
@@ -111,7 +132,7 @@ export const SINGLE_LINK_OPTIONAL_QUERY = `{
       ...,
       "func": func
     },
-  }`
+  }`;
 
 export const RICH_TEXT_QUERY = `{
 	...,
@@ -135,7 +156,7 @@ export const RICH_TEXT_QUERY = `{
 			video ${IMAGE_QUERY},
 		}
 	},
-}`
+}`;
 export const TAG_QUERY = `
     "availableTags": {
         "genres": *[_type == 'tag.genre']| order(lower(title)) {
@@ -195,7 +216,7 @@ export const TAG_QUERY = `
             _type,
             title
         }
-    }`
+    }`;
 
 export const MODULE_QUERY = `{
     _type == "module.heroSlider" => {
@@ -222,35 +243,7 @@ export const MODULE_QUERY = `{
                 _id,
                 title
             } | order(lower(title)),
-            "soundcloud": soundcloud{
-                    _type,
-                    "tracks": tracks[]{
-                        id,
-                        created_at,
-                        duration,
-                        tag_list,
-                        streamable,
-                        purchase_url,
-                        genre,
-                        title,
-                        description,
-                        release_year,
-                        release_month,
-                        release_day,
-                        license,
-                        uri,
-                        "user": user{
-                            id,
-                            username,
-                            permalink_url
-                        },
-                        artwork_url,
-                        waveform_url,
-                        stream_url,
-                        playback_count,
-                        favoritings_count
-                    }
-            },
+            "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
             persons[]->{
                     ...,
                     _id,
@@ -286,35 +279,7 @@ export const MODULE_QUERY = `{
                 _id,
                 title
             }| order(lower(title)),
-            "soundcloud": soundcloud{
-                    _type,
-                    "tracks": tracks[]{
-                        id,
-                        created_at,
-                        duration,
-                        tag_list,
-                        streamable,
-                        purchase_url,
-                        genre,
-                        title,
-                        description,
-                        release_year,
-                        release_month,
-                        release_day,
-                        license,
-                        uri,
-                        "user": user{
-                            id,
-                            username,
-                            permalink_url
-                        },
-                        artwork_url,
-                        waveform_url,
-                        stream_url,
-                        playback_count,
-                        favoritings_count
-                    }
-            },
+            "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
             persons[]->{
                     ...,
                     _id,
@@ -371,7 +336,7 @@ export const MODULE_QUERY = `{
         "showItems": [],
         "setItems": []
     },
-}`
+}`;
 
 export const SEO_QUERY = `
 	"seo": {
@@ -383,4 +348,4 @@ export const SEO_QUERY = `
 			*[_type == "siteSettings"][0].seo.image.asset->url + "?w=1200&h=630&fit=crop&auto=format&fm=jpg"
 		)
 	}
-`
+`;
