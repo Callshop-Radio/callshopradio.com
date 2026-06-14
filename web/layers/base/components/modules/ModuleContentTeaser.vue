@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { computed, onMounted, ref, watch } from "vue";
+import { useMainStore } from "~/stores/mainStore";
+import type { ContentItem, Tag } from "~/types/sanity";
 import {
 	ARTICLE_COUNT_QUERY,
 	ARTICLE_LIST_QUERY,
@@ -7,612 +10,627 @@ import {
 	SET_COUNT_QUERY,
 	SET_LIST_QUERY,
 	SHOW_COUNT_QUERY,
-	SHOW_LIST_QUERY
-} from '~~/queries/module.queries'
-import type { ContentItem, Tag } from '~/types/sanity'
-import { computed, onMounted, ref, watch } from 'vue'
-import { useMainStore } from '~/stores/mainStore'
+	SHOW_LIST_QUERY,
+} from "~~/queries/module.queries";
 
-const { locale: _locale } = useI18n()
-const localePath = useLocalePath()
-const router = useRouter()
-const mainStore = useMainStore()
+const { locale: _locale } = useI18n();
+const localePath = useLocalePath();
+const router = useRouter();
+const mainStore = useMainStore();
 
 const props = defineProps({
 	module: {
 		type: Object,
-		required: true
-	}
-})
+		required: true,
+	},
+});
 
 // ==================== HYBRID DATA LOADING ====================
 // Determine if we need to load data ourselves (no pre-loaded items in props)
 const needsSelfLoad = computed(() => {
-	if (!props.module) return false
-	const { type, poolItems, setItems, showItems, articleItems } = props.module
+	if (!props.module) return false;
+	const { type, poolItems, setItems, showItems, articleItems } = props.module;
 
 	const hasItems: Record<string, boolean> = {
 		pool: poolItems?.length > 0,
 		sets: setItems?.length > 0,
 		shows: showItems?.length > 0,
-		words: articleItems?.length > 0
-	}
+		words: articleItems?.length > 0,
+	};
 
-	return !hasItems[type]
-})
+	return !hasItems[type];
+});
 
 // Self-loaded items state
-const selfLoadedCount = ref(0)
-const isLoadingSelf = ref(false)
-const selfLoadPage = ref(1)
-const SELF_LOAD_PER_PAGE = 50
+const selfLoadedCount = ref(0);
+const isLoadingSelf = ref(false);
+const selfLoadPage = ref(1);
+const SELF_LOAD_PER_PAGE = 50;
 
 // Map module type to query type
 const getModuleQueryType = computed(() => {
-	if (!props.module) return null
-	const type = props.module.type
-	if (type === 'pool') return 'pool'
-	if (type === 'sets') return 'sets'
-	if (type === 'shows') return 'shows'
-	if (type === 'words') return 'words'
-	return null
-})
+	if (!props.module) return null;
+	const type = props.module.type;
+	if (type === "pool") return "pool";
+	if (type === "sets") return "sets";
+	if (type === "shows") return "shows";
+	if (type === "words") return "words";
+	return null;
+});
 
 // Build query config for SSR
 const buildQueryConfig = () => {
-	const type = getModuleQueryType.value
-	if (!type) return null
+	const type = getModuleQueryType.value;
+	if (!type) return null;
 
-	const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE
-	const end = selfLoadPage.value * SELF_LOAD_PER_PAGE
-	const params: Record<string, unknown> = { start, end }
+	const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
+	const end = selfLoadPage.value * SELF_LOAD_PER_PAGE;
+	const params: Record<string, unknown> = { start, end };
 
 	switch (type) {
-	case 'sets':
-		return { query: SET_LIST_QUERY, countQuery: SET_COUNT_QUERY, params }
-	case 'pool': {
-		const poolType = props.module.poolContentType
-		params.types =
-        poolType === 'all'
-        	? ['person', 'venue']
-        	: poolType === 'persons'
-        		? ['person']
-        		: poolType === 'venues'
-        			? ['venue']
-        			: ['person', 'venue']
-		return { query: POOL_LIST_QUERY, countQuery: POOL_COUNT_QUERY, params }
-	}
-	case 'shows':
-		return { query: SHOW_LIST_QUERY, countQuery: SHOW_COUNT_QUERY, params }
-	case 'words':
-		return {
-			query: ARTICLE_LIST_QUERY,
-			countQuery: ARTICLE_COUNT_QUERY,
-			params
+		case "sets":
+			return { query: SET_LIST_QUERY, countQuery: SET_COUNT_QUERY, params };
+		case "pool": {
+			const poolType = props.module.poolContentType;
+			params.types =
+				poolType === "all"
+					? ["person", "venue"]
+					: poolType === "persons"
+						? ["person"]
+						: poolType === "venues"
+							? ["venue"]
+							: ["person", "venue"];
+			return { query: POOL_LIST_QUERY, countQuery: POOL_COUNT_QUERY, params };
 		}
-	default:
-		return null
+		case "shows":
+			return { query: SHOW_LIST_QUERY, countQuery: SHOW_COUNT_QUERY, params };
+		case "words":
+			return {
+				query: ARTICLE_LIST_QUERY,
+				countQuery: ARTICLE_COUNT_QUERY,
+				params,
+			};
+		default:
+			return null;
 	}
-}
+};
 
 // SSR-compatible data loading
-const { data: selfLoadedItems, pending: _isLoadingInitial } = await useAsyncData(
-	`module-content-teaser-${props.module?._key || props.module?.type}-${
-		props.module?.poolContentType || 'default'
-	}`,
-	async () => {
-		if (!needsSelfLoad.value) return []
+const { data: selfLoadedItems, pending: _isLoadingInitial } =
+	await useAsyncData(
+		`module-content-teaser-${props.module?._key || props.module?.type}-${
+			props.module?.poolContentType || "default"
+		}`,
+		async () => {
+			if (!needsSelfLoad.value) return [];
 
-		const config = buildQueryConfig()
-		if (!config) return []
+			const config = buildQueryConfig();
+			if (!config) return [];
 
-		try {
-			const sanity = useSanity()
-			const [items, count] = await Promise.all([
-				sanity.fetch(config.query, config.params),
-				sanity.fetch(config.countQuery, config.params)
-			])
+			try {
+				const sanity = useSanity();
+				const [items, count] = await Promise.all([
+					sanity.fetch(config.query, config.params),
+					sanity.fetch(config.countQuery, config.params),
+				]);
 
-			if (typeof count === 'number') {
-				selfLoadedCount.value = count
+				if (typeof count === "number") {
+					selfLoadedCount.value = count;
+				}
+
+				return items || [];
+			} catch (error) {
+				console.error("[ModuleContentTeaser] SSR Data Fetch Error:", error);
+				return [];
 			}
-
-			return items || []
-		} catch (error) {
-			console.error('[ModuleContentTeaser] SSR Data Fetch Error:', error)
-			return []
-		}
-	},
-	{
-		default: () => [],
-		lazy: false
-	}
-)
+		},
+		{
+			default: () => [],
+			lazy: false,
+		},
+	);
 
 // Load more content (client-side)
 async function loadMoreSelfContent() {
-	if (isLoadingSelf.value) return
+	if (isLoadingSelf.value) return;
 
-	const config = buildQueryConfig()
-	if (!config) return
+	const config = buildQueryConfig();
+	if (!config) return;
 
-	isLoadingSelf.value = true
+	isLoadingSelf.value = true;
 
 	try {
-		const sanity = useSanity()
-		selfLoadPage.value++
+		const sanity = useSanity();
+		selfLoadPage.value++;
 
-		const newStart = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE
-		const newEnd = selfLoadPage.value * SELF_LOAD_PER_PAGE
-		config.params.start = newStart
-		config.params.end = newEnd
+		const newStart = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
+		const newEnd = selfLoadPage.value * SELF_LOAD_PER_PAGE;
+		config.params.start = newStart;
+		config.params.end = newEnd;
 
-		const items = await sanity.fetch(config.query, config.params)
+		const items = await sanity.fetch(config.query, config.params);
 
 		if (selfLoadedItems.value) {
-			selfLoadedItems.value = [...selfLoadedItems.value, ...items]
+			selfLoadedItems.value = [...selfLoadedItems.value, ...items];
 		}
 	} catch (error) {
-		console.error('[ModuleContentTeaser] Error loading more content:', error)
+		console.error("[ModuleContentTeaser] Error loading more content:", error);
 	} finally {
-		isLoadingSelf.value = false
+		isLoadingSelf.value = false;
 	}
 }
 
 // State für sichtbare Items
-const itemsPerPage = computed(() => (props.module.type === 'words' ? 2 : 3))
-const visibleItemCount = ref(itemsPerPage.value)
-const loadMoreClickCount = ref(0) // Zähler für Load More Klicks
+const itemsPerPage = computed(() => (props.module.type === "words" ? 2 : 3));
+const visibleItemCount = ref(itemsPerPage.value);
+const loadMoreClickCount = ref(0); // Zähler für Load More Klicks
 
 // Sortierungs-Zustand
-const sortMode = ref('new') // Standardmäßig "new" (chronologisch)
-const shuffleSeed = ref(Date.now()) // Zufallsseed für Shuffle
+const sortMode = ref("new"); // Standardmäßig "new" (chronologisch)
+const shuffleSeed = ref(Date.now()); // Zufallsseed für Shuffle
 
 // Funktion zum Ändern des Sortiermodus
 function changeSortMode(mode: string) {
-	if (mode === 'shuffle') {
+	if (mode === "shuffle") {
 		// Bei jedem Klick auf Shuffle einen neuen Seed generieren
-		shuffleSeed.value = Date.now()
+		shuffleSeed.value = Date.now();
 	}
-	sortMode.value = mode
+	sortMode.value = mode;
 	// Nach Sortierung Items zurücksetzen
-	visibleItemCount.value = itemsPerPage.value
-	loadMoreClickCount.value = 0 // Reset des Zählers bei Sortierung
+	visibleItemCount.value = itemsPerPage.value;
+	loadMoreClickCount.value = 0; // Reset des Zählers bei Sortierung
 }
 
 // Hilfsfunktion zur Formatierung von Datum/Zeit
 function formatDate(dateString: string) {
-	if (!dateString) return ''
-	const date = new Date(dateString)
-	if (isNaN(date.getTime())) return ''
-	return date.toLocaleDateString('de-DE', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric'
-	})
+	if (!dateString) return "";
+	const date = new Date(dateString);
+	if (isNaN(date.getTime())) return "";
+	return date.toLocaleDateString("de-DE", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+	});
 }
 
 // Artwork-URLs für SoundCloud-Tracks
-const artworkUrls = ref(new Map())
+const artworkUrls = ref(new Map());
 
 // Funktion zum Laden weiterer Items
 async function loadMoreItems() {
 	// Simple pagination
-	visibleItemCount.value += itemsPerPage.value
-	loadMoreClickCount.value++
+	visibleItemCount.value += itemsPerPage.value;
+	loadMoreClickCount.value++;
 
 	// Check if we need to load more from server
-	const currentItems = selfLoadedItems.value || []
+	const currentItems = selfLoadedItems.value || [];
 	if (
 		needsSelfLoad.value &&
-    visibleItemCount.value >= currentItems.length &&
-    currentItems.length < selfLoadedCount.value
+		visibleItemCount.value >= currentItems.length &&
+		currentItems.length < selfLoadedCount.value
 	) {
-		await loadMoreSelfContent()
+		await loadMoreSelfContent();
 	}
 }
 
 // Funktion zur Navigation zur Übersichtsseite
 function _navigateToOverview() {
-	let route = '/'
+	let route = "/";
 
 	switch (categoryType.value) {
-	case 'Episodes':
-		route = localePath('/shows')
-		break
-	case 'Shows':
-		route = localePath('/shows')
-		break
-	case 'Words':
-		route = localePath('/words')
-		break
-	case 'Pool':
-		route = localePath('/pool')
-		break
-	default:
-		route = localePath('/')
+		case "Episodes":
+			route = localePath("/shows");
+			break;
+		case "Shows":
+			route = localePath("/shows");
+			break;
+		case "Words":
+			route = localePath("/words");
+			break;
+		case "Pool":
+			route = localePath("/pool");
+			break;
+		default:
+			route = localePath("/");
 	}
 
-	router.push(route)
+	router.push(route);
 }
 
 // Bestimmen, ob mehr Items zum Laden verfügbar sind
 const hasMoreItems = computed(() => {
-	return sortedItems.value && sortedItems.value.length > visibleItemCount.value
-})
+	return sortedItems.value && sortedItems.value.length > visibleItemCount.value;
+});
 
 // Bestimmen, ob "Show More" angezeigt werden soll
 const shouldShowMoreButton = computed(() => {
-	return loadMoreClickCount.value >= 2 && hasMoreItems.value
-})
+	return loadMoreClickCount.value >= 2 && hasMoreItems.value;
+});
 
 // Alle verfügbaren Items basierend auf Modultyp
 const allItems = computed(() => {
-	if (!props.module) return []
+	if (!props.module) return [];
 
 	// If we're self-loading, return self-loaded items
 	if (needsSelfLoad.value) {
-		return selfLoadedItems.value
+		return selfLoadedItems.value;
 	}
 
 	// Otherwise use props data (existing behavior)
 	switch (props.module.type) {
-	case 'pool': {
-		let poolItems = props.module.poolItems || []
-		if (props.module.poolContentType) {
-			if (props.module.poolContentType === 'persons') {
-				poolItems = poolItems.filter((item: ContentItem) => item._type === 'person')
-			} else if (props.module.poolContentType === 'venues') {
-				poolItems = poolItems.filter((item: ContentItem) => item._type === 'venue')
-			} else if (props.module.poolContentType === 'all') {
-				poolItems = poolItems.filter(
-					(item: ContentItem) => item._type === 'venue' || item._type === 'person'
-				)
+		case "pool": {
+			let poolItems = props.module.poolItems || [];
+			if (props.module.poolContentType) {
+				if (props.module.poolContentType === "persons") {
+					poolItems = poolItems.filter(
+						(item: ContentItem) => item._type === "person",
+					);
+				} else if (props.module.poolContentType === "venues") {
+					poolItems = poolItems.filter(
+						(item: ContentItem) => item._type === "venue",
+					);
+				} else if (props.module.poolContentType === "all") {
+					poolItems = poolItems.filter(
+						(item: ContentItem) =>
+							item._type === "venue" || item._type === "person",
+					);
+				}
 			}
+			return poolItems;
 		}
-		return poolItems
+		case "sets":
+			return props.module.setItems || [];
+		case "shows":
+			return props.module.showItems || [];
+		case "words":
+			return props.module.articleItems || [];
+		default:
+			return [];
 	}
-	case 'sets':
-		return props.module.setItems || []
-	case 'shows':
-		return props.module.showItems || []
-	case 'words':
-		return props.module.articleItems || []
-	default:
-		return []
-	}
-})
+});
 
 // Sortierte Items basierend auf allItems und sortMode
 const sortedItems = computed(() => {
-	if (!allItems.value || allItems.value.length === 0) return []
+	if (!allItems.value || allItems.value.length === 0) return [];
 
-	const sortedArray = [...allItems.value]
+	const sortedArray = [...allItems.value];
 
 	// Sortierung anwenden
-	if (sortMode.value === 'new') {
+	if (sortMode.value === "new") {
 		// Chronologisch sortieren (neuste zuerst)
 		return sortedArray.sort((a, b) => {
-			const dateA = new Date(a.datetime || a._updatedAt || a._createdAt || 0)
-			const dateB = new Date(b.datetime || b._updatedAt || b._createdAt || 0)
-			return dateB.getTime() - dateA.getTime()
-		})
-	} else if (sortMode.value === 'shuffle') {
+			const dateA = new Date(a.datetime || a._updatedAt || a._createdAt || 0);
+			const dateB = new Date(b.datetime || b._updatedAt || b._createdAt || 0);
+			return dateB.getTime() - dateA.getTime();
+		});
+	} else if (sortMode.value === "shuffle") {
 		// Shuffle mit stabilem Seed für die aktuelle Sitzung
-		return shuffleArray([...sortedArray], shuffleSeed.value)
-	} else if (sortMode.value === 'alpha') {
+		return shuffleArray([...sortedArray], shuffleSeed.value);
+	} else if (sortMode.value === "alpha") {
 		// Alphabetisch nach Titel sortieren
 		return sortedArray.sort((a, b) => {
 			// Bestimme den Titel je nach Content-Typ (nullish coalescing für sichere .toLowerCase()-Nutzung)
-			const rawA = a.title ?? a.name ?? (a.parentShow != null ? a.parentShow.title : '')
-			const rawB = b.title ?? b.name ?? (b.parentShow != null ? b.parentShow.title : '')
-			const titleA = String(rawA ?? '').toLowerCase()
-			const titleB = String(rawB ?? '').toLowerCase()
-			return titleA.localeCompare(titleB)
-		})
+			const rawA =
+				a.title ?? a.name ?? (a.parentShow != null ? a.parentShow.title : "");
+			const rawB =
+				b.title ?? b.name ?? (b.parentShow != null ? b.parentShow.title : "");
+			const titleA = String(rawA ?? "").toLowerCase();
+			const titleB = String(rawB ?? "").toLowerCase();
+			return titleA.localeCompare(titleB);
+		});
 	}
 
-	return sortedArray
-})
+	return sortedArray;
+});
 
 // Sichtbare Items basierend auf sortierten Items und visibleItemCount
 const visibleItems = computed(() => {
-	return sortedItems.value.slice(0, visibleItemCount.value)
-})
+	return sortedItems.value.slice(0, visibleItemCount.value);
+});
 
 // Content-Typ des aktuellen Moduls
 const contentType = computed(() => {
-	if (!props.module) return null
+	if (!props.module) return null;
 
 	// Basis-Typ ist der Modultyp
-	const type = props.module.type || null
+	const type = props.module.type || null;
 
 	// Bei "pool" verwenden wir den spezifischen Pool-Content-Typ
-	if (type === 'pool' && props.module.poolContentType) {
-		return props.module.poolContentType // "persons", "venues" oder "all"
+	if (type === "pool" && props.module.poolContentType) {
+		return props.module.poolContentType; // "persons", "venues" oder "all"
 	}
 
-	return type // "sets", "shows", "words" oder null
-})
+	return type; // "sets", "shows", "words" oder null
+});
 
 // Kategorie-Typ für das UI
-const categoryType = ref('')
+const categoryType = ref("");
 
 // Watcher für den Content-Typ
 watch(
 	contentType,
 	(newValue) => {
-		if (['persons', 'venues', 'all'].includes(newValue)) {
-			categoryType.value = 'Pool'
-		} else if (newValue === 'sets') {
-			categoryType.value = 'Episodes'
-		} else if (newValue === 'shows') {
-			categoryType.value = 'Shows'
-		} else if (newValue === 'words') {
-			categoryType.value = 'Words'
+		if (["persons", "venues", "all"].includes(newValue)) {
+			categoryType.value = "Pool";
+		} else if (newValue === "sets") {
+			categoryType.value = "Episodes";
+		} else if (newValue === "shows") {
+			categoryType.value = "Shows";
+		} else if (newValue === "words") {
+			categoryType.value = "Words";
 		} else {
-			categoryType.value = ''
+			categoryType.value = "";
 		}
 	},
-	{ immediate: true }
-)
+	{ immediate: true },
+);
 
 // Type Class Map für CSS-Klassen
 const typeClassMap: Record<string, string> = {
-	sets: 'sets',
-	shows: 'shows',
-	words: 'words',
-	persons: 'pool',
-	venues: 'pool',
-	pool: 'pool',
-	article: 'words',
-	primary: 'sets',
-	secondary: 'shows',
-	accent: 'pool',
-	blue: 'pool',
-	green: 'words',
-	yellow: 'sets'
-}
+	sets: "sets",
+	shows: "shows",
+	words: "words",
+	persons: "pool",
+	venues: "pool",
+	pool: "pool",
+	article: "words",
+	primary: "sets",
+	secondary: "shows",
+	accent: "pool",
+	blue: "pool",
+	green: "words",
+	yellow: "sets",
+};
 
 // CSS-Klasse entsprechend dem Typ
 const typeClass = computed(() => {
-	return typeClassMap[props.module.type] || 'default'
-})
+	return typeClassMap[props.module.type] || "default";
+});
 // helper function for image fetching and fallbacks
 function getItemImage(item: ContentItem) {
-	const itemType = item._type || ''
+	const itemType = item._type || "";
 
 	if (item.image) {
-		return item.image
+		return item.image;
 	}
 	if (item.mainImage) {
-		return item.mainImage
+		return item.mainImage;
 	}
 
 	switch (itemType) {
-	case 'person':
-		return mainStore.siteFallbacks?.fallbackPerson?.image
-	case 'venue':
-		return mainStore.siteFallbacks?.fallbackVenue?.image
-	case 'show':
-		return mainStore.siteFallbacks?.fallbackShow?.image
-	case 'set':
-		return mainStore.siteFallbacks?.fallbackSet?.image
-	case 'word':
-	case 'article':
-		return mainStore.siteFallbacks?.fallbackArticle?.image
-	default:
-		return mainStore.siteFallbacks?.fallbackPerson?.image
+		case "person":
+			return mainStore.siteFallbacks?.fallbackPerson?.image;
+		case "venue":
+			return mainStore.siteFallbacks?.fallbackVenue?.image;
+		case "show":
+			return mainStore.siteFallbacks?.fallbackShow?.image;
+		case "set":
+			return mainStore.siteFallbacks?.fallbackSet?.image;
+		case "word":
+		case "article":
+			return mainStore.siteFallbacks?.fallbackArticle?.image;
+		default:
+			return mainStore.siteFallbacks?.fallbackPerson?.image;
 	}
 }
 
 function getItemRoute(item: ContentItem) {
-	if (!item || !item?.slug) return '/'
+	if (!item || !item?.slug) return "/";
 
 	switch (item?._type) {
-	case 'person':
-	case 'venue':
-		return localePath(`/pool/${item?.slug?.current}`)
+		case "person":
+		case "venue":
+			return localePath(`/pool/${item?.slug?.current}`);
 
-	case 'set':
-		// Prüfe, ob parentShow vorhanden ist
-		if (item?.parentShow?.slug?.current) {
-			return localePath(
-				`/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
-			)
-		}
+		case "set":
+			// Prüfe, ob parentShow vorhanden ist
+			if (item?.parentShow?.slug?.current) {
+				return localePath(
+					`/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`,
+				);
+			}
 
-		return localePath(`/shows/${item?.slug?.current}`)
+			return localePath(`/shows/${item?.slug?.current}`);
 
-	case 'article':
-		return localePath(`/words/${item?.slug?.current}`)
+		case "article":
+			return localePath(`/words/${item?.slug?.current}`);
 
-	case 'show':
-		return localePath(`/shows/${item?.slug?.current}`)
+		case "show":
+			return localePath(`/shows/${item?.slug?.current}`);
 
 		// Standard-Fallback
-	default:
-		return localePath(`/${item?._type}/${item?.slug?.current}`)
+		default:
+			return localePath(`/${item?._type}/${item?.slug?.current}`);
 	}
 }
 
 // Funktion zum Abrufen und Speichern der Artwork-URL
 function loadArtworkUrl(item: ContentItem) {
-	if (!item) return
-	const url = getSoundcloudArtwork(item)
-	artworkUrls.value.set(item._id ?? '', url)
+	if (!item) return;
+	const url = getSoundcloudArtwork(item);
+	artworkUrls.value.set(item._id ?? "", url);
 }
 
 function _checkImage(url: string) {
 	return new Promise((resolve) => {
-		const img = new Image()
-		img.onload = () => resolve(true)
-		img.onerror = () => resolve(false)
-		img.src = url
-	})
+		const img = new Image();
+		img.onload = () => resolve(true);
+		img.onerror = () => resolve(false);
+		img.src = url;
+	});
 }
 
 // Non-blocking artwork URL resolution - returns URL directly, browser handles 404s
 function getSoundcloudArtwork(item: ContentItem): string {
-	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url as string | undefined
+	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url as
+		| string
+		| undefined;
 	if (artworkUrl) {
-		return artworkUrl.replace('-large', '-t500x500')
+		return artworkUrl.replace("-large", "-t500x500");
 	}
-	const parentShowImageUrl = item?.parentShow?.image?.asset?.url
-	const storeFallbackUrl = mainStore.siteFallbacks?.fallbackSet?.image?.asset?.url
-	return parentShowImageUrl || storeFallbackUrl || ''
+	const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
+	const storeFallbackUrl =
+		mainStore.siteFallbacks?.fallbackSet?.image?.asset?.url;
+	return parentShowImageUrl || storeFallbackUrl || "";
 }
 
 function playTrack(item: ContentItem) {
 	if (item?.soundcloud?.tracks?.[0]) {
-		const track = item.soundcloud.tracks[0] as { id?: number; permalink_url?: string }
+		const track = item.soundcloud.tracks[0] as {
+			id?: number;
+			permalink_url?: string;
+		};
 
 		if (!track.permalink_url && track.id) {
-			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
+			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
 		}
 
-		mainStore.currentTrack = track
+		mainStore.currentTrack = track;
 	}
 }
 
 // Stadt-Tags abrufen
 function getItemCityTags(item: ContentItem) {
-	const cityTags: Tag[] = []
+	const cityTags: Tag[] = [];
 
 	if (item?.tags && Array.isArray(item?.tags)) {
 		item?.tags.forEach((tag: Tag) => {
-			if (tag._type === 'tag.city') {
-				cityTags.push(tag)
+			if (tag._type === "tag.city") {
+				cityTags.push(tag);
 			}
-		})
+		});
 	}
 
 	if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
 		item?.parentShow?.tags.forEach((tag: Tag) => {
-			if (tag._type === 'tag.city') {
+			if (tag._type === "tag.city") {
 				if (!cityTags.some((existingTag) => existingTag._id === tag._id)) {
-					cityTags.push(tag)
+					cityTags.push(tag);
 				}
 			}
-		})
+		});
 	}
 
-	return cityTags
+	return cityTags;
 }
 
 // Nicht-Stadt-Tags abrufen
 function getItemNonCityTags(item: ContentItem) {
-	if (!item?.tags || !Array.isArray(item?.tags)) return []
-	return item?.tags.filter((tag: Tag) => tag._type !== 'tag.city')
+	if (!item?.tags || !Array.isArray(item?.tags)) return [];
+	return item?.tags.filter((tag: Tag) => tag._type !== "tag.city");
 }
 
 // Helper für RichText Blocks
 function getRichTextBlocks(content: unknown): unknown[] {
-	if (!content) return []
-	return Array.isArray(content) ? content : []
+	if (!content) return [];
+	return Array.isArray(content) ? content : [];
 }
 
 function getRichTextBlocksSliced(content: unknown, slice = 1): unknown[] {
-	if (!content) return []
-	return Array.isArray(content) ? content.slice(0, slice) : []
+	if (!content) return [];
+	return Array.isArray(content) ? content.slice(0, slice) : [];
 }
 
 // Fisher-Yates Shuffle-Algorithmus mit Seed
 function shuffleArray(array: ContentItem[], seed: number) {
-	const rng = seededRandom(seed)
-	let currentIndex = array.length
+	const rng = seededRandom(seed);
+	let currentIndex = array.length;
 
 	// Solange noch Elemente vorhanden sind
 	while (currentIndex > 0) {
 		// Ein verbleibendes Element auswählen
-		const randomIndex = Math.floor(rng() * currentIndex)
+		const randomIndex = Math.floor(rng() * currentIndex);
 		currentIndex--;
 
 		// Mit dem aktuellen Element tauschen
 		[array[currentIndex], array[randomIndex]] = [
 			array[randomIndex],
-			array[currentIndex]
-		]
+			array[currentIndex],
+		];
 	}
 
-	return array
+	return array;
 }
 
 // Einfacher seeded Random-Generator
 function seededRandom(seed: number) {
-	return function () {
-		seed = (seed * 9301 + 49297) % 233280
-		return seed / 233280
-	}
+	return () => {
+		seed = (seed * 9301 + 49297) % 233280;
+		return seed / 233280;
+	};
 }
 
 // Watcher für visibleItems, um Artwork-URLs für neue Items zu laden
 watch(
 	visibleItems,
 	(newItems) => {
-		if (props.module.type === 'sets') {
+		if (props.module.type === "sets") {
 			newItems.forEach((item: ContentItem) => {
 				if (!artworkUrls.value.has(item?._id)) {
-					loadArtworkUrl(item)
+					loadArtworkUrl(item);
 				}
-			})
+			});
 		}
 	},
-	{ deep: true }
-)
+	{ deep: true },
+);
 
 // Lifecycle Hooks
 // Lifecycle Hooks
 onMounted(() => {
-	if (props.module.type === 'sets') {
+	if (props.module.type === "sets") {
 		visibleItems.value.forEach((item: ContentItem) => {
-			loadArtworkUrl(item)
-		})
+			loadArtworkUrl(item);
+		});
 	}
-})
+});
 
-function navigateToTagSearch(tag: Tag, item: ContentItem | { _type?: string }, isGenre = false) {
+function navigateToTagSearch(
+	tag: Tag,
+	item: ContentItem | { _type?: string },
+	isGenre = false,
+) {
 	// Determine search term
-	let tagName = ''
+	let tagName = "";
 
 	if (isGenre) {
-		tagName = tag.name || tag.title
+		tagName = tag.name || tag.title;
 	} else {
 		// For standard tags, prefer title for searching as it matches the search index
 		// If title implies an object/array (i18n), we need to extract the string
 		// Since we don't have easy access to parseI18nObj in script scope without import,
 		// we try to extract the first value or use the raw string
-		const titleVal = tag.title || tag.name
+		const titleVal = tag.title || tag.name;
 
 		if (Array.isArray(titleVal)) {
 			// Assume portable text / i18n array, take first element value
-			tagName = titleVal[0]?.value || ''
-		} else if (typeof titleVal === 'object') {
+			tagName = titleVal[0]?.value || "";
+		} else if (typeof titleVal === "object") {
 			// Fallback for object without array
-			tagName = ''
+			tagName = "";
 		} else {
-			tagName = titleVal || ''
+			tagName = titleVal || "";
 		}
 	}
 
-	if (!tagName) return
+	if (!tagName) return;
 
 	// Determine Category
-	let category = 'all'
-	const itemType = item._type
+	let category = "all";
+	const itemType = item._type;
 
-	if (['show', 'set'].includes(itemType)) category = 'shows'
-	else if (['person', 'venue'].includes(itemType)) category = 'pool'
-	else if (['article'].includes(itemType)) category = 'article'
+	if (["show", "set"].includes(itemType)) category = "shows";
+	else if (["person", "venue"].includes(itemType)) category = "pool";
+	else if (["article"].includes(itemType)) category = "article";
 
 	// Navigate
 	router.push({
-		path: localePath('/search'),
+		path: localePath("/search"),
 		query: {
 			q: tagName,
-			type: category
-		}
-	})
+			type: category,
+		},
+	});
 }
 </script>
 

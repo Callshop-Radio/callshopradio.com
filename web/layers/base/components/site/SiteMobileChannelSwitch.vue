@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useMainStore } from '~/stores/mainStore'
+import { computed } from "vue";
+import { useMainStore } from "~/stores/mainStore";
 
-const mainStore = useMainStore()
+const mainStore = useMainStore();
 
 // Computed property für den aktuellen Kanalstatus
 const _isChannelOne = computed(() => {
-	return mainStore.activeScheduleLocation === 'channelOne'
-})
+	return mainStore.activeScheduleLocation === "channelOne";
+});
 </script>
 
 <template>

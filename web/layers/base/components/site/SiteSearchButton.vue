@@ -1,41 +1,41 @@
 <script setup>
-const route = useRoute()
-const isSearchOpen = ref(false)
+const route = useRoute();
+const isSearchOpen = ref(false);
 
 // Check if we are on the search page
 const isOnSearchPage = computed(() => {
-	return route.path.includes('/search')
-})
+	return route.path.includes("/search");
+});
 
 // Button is active when modal is open or on search page
 const isActive = computed(() => {
-	return isSearchOpen.value || isOnSearchPage.value
-})
+	return isSearchOpen.value || isOnSearchPage.value;
+});
 
 const openSearch = () => {
 	// Don't open modal if already on search page
-	if (isOnSearchPage.value) return
-	isSearchOpen.value = true
-}
+	if (isOnSearchPage.value) return;
+	isSearchOpen.value = true;
+};
 
 // Keyboard shortcut (Cmd/Ctrl + K) to open search
 const handleKeydown = (event) => {
-	if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
-		event.preventDefault()
+	if ((event.metaKey || event.ctrlKey) && event.key === "k") {
+		event.preventDefault();
 		// Don't open modal if already on search page
 		if (!isOnSearchPage.value) {
-			openSearch()
+			openSearch();
 		}
 	}
-}
+};
 
 onMounted(() => {
-	document.addEventListener('keydown', handleKeydown)
-})
+	document.addEventListener("keydown", handleKeydown);
+});
 
 onUnmounted(() => {
-	document.removeEventListener('keydown', handleKeydown)
-})
+	document.removeEventListener("keydown", handleKeydown);
+});
 </script>
 
 <template>

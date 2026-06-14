@@ -1,375 +1,396 @@
 <script setup lang="ts">
-import type { ContentItem, Image, Tag } from '~/types/sanity'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useMainStore } from '~/stores/mainStore'
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { useMainStore } from "~/stores/mainStore";
+import type { ContentItem, Image, Tag } from "~/types/sanity";
 
-const { locale: _locale } = useI18n()
-const localePath = useLocalePath()
-const mainStore = useMainStore()
+const { locale: _locale } = useI18n();
+const localePath = useLocalePath();
+const mainStore = useMainStore();
 
 const props = defineProps({
 	results: { type: Array as () => ContentItem[], default: () => [] },
-	searchQuery: { type: String, default: '' },
+	searchQuery: { type: String, default: "" },
 	isLoading: { type: Boolean, default: false },
-	activeContentType: { type: String, default: 'all' },
-	availableTags: { type: Object, default: null }
-})
+	activeContentType: { type: String, default: "all" },
+	availableTags: { type: Object, default: null },
+});
 
 // Compute the category type for CSS class
 const categoryType = computed(() => {
-	const type = props.activeContentType
-	if (type === 'person' || type === 'venue') return 'Pool'
-	if (type === 'set' || type === 'show') return 'sets'
-	if (type === 'article') return 'Words'
-	return 'sets' // Default to shows style for "all"
-})
+	const type = props.activeContentType;
+	if (type === "person" || type === "venue") return "Pool";
+	if (type === "set" || type === "show") return "sets";
+	if (type === "article") return "Words";
+	return "sets"; // Default to shows style for "all"
+});
 
 // ==================== CONSTANTS ====================
-const MAIN_CITIES = ['Vienna', 'Düsseldorf', 'Leipzig']
-const SCROLL_THRESHOLD = 30
+const MAIN_CITIES = ["Vienna", "Düsseldorf", "Leipzig"];
+const SCROLL_THRESHOLD = 30;
 
 // Tag-Typ zu Farbe Mapping
 const TAG_TYPE_COLORS: Record<string, string> = {
-	'tag.genre': 'pink',
-	'tag.subGenre': 'pink',
-	'tag.mood': 'pink',
-	'tag.musician': 'blue',
-	'tag.venue': 'blue',
-	'tag.crafts': 'blue',
-	'tag.article': 'green',
-	'tag.city': 'neutral',
-	'tag.global': 'neutral'
-}
+	"tag.genre": "pink",
+	"tag.subGenre": "pink",
+	"tag.mood": "pink",
+	"tag.musician": "blue",
+	"tag.venue": "blue",
+	"tag.crafts": "blue",
+	"tag.article": "green",
+	"tag.city": "neutral",
+	"tag.global": "neutral",
+};
 
 // Tag-Typ zu Kategorie Mapping
 const _TAG_CATEGORIES = {
-	shows: ['tag.genre', 'tag.subGenre', 'tag.mood'],
-	pool: ['tag.musician', 'tag.venue', 'tag.crafts'],
-	words: ['tag.article']
-}
+	shows: ["tag.genre", "tag.subGenre", "tag.mood"],
+	pool: ["tag.musician", "tag.venue", "tag.crafts"],
+	words: ["tag.article"],
+};
 
 // ==================== STATE ====================
-const activeFilters = ref(new Set<string>())
-const activeGenres = ref(new Set<string>())
-const activeSubGenres = ref(new Set<string>())
-const activeFilterType = ref<string | null>(null)
-const isOtherCitiesActive = ref(false)
-const showFilters = ref(true)
-const lastScrollY = ref(0)
-const sortMode = ref<'new' | 'alpha'>('new')
-const artworkUrls = ref(new Map<string, string>())
-const moduleContainer = ref<HTMLElement | null>(null)
-
+const activeFilters = ref(new Set<string>());
+const activeGenres = ref(new Set<string>());
+const activeSubGenres = ref(new Set<string>());
+const activeFilterType = ref<string | null>(null);
+const isOtherCitiesActive = ref(false);
+const showFilters = ref(true);
+const lastScrollY = ref(0);
+const sortMode = ref<"new" | "alpha">("new");
+const artworkUrls = ref(new Map<string, string>());
+const moduleContainer = ref<HTMLElement | null>(null);
 
 // ==================== COMPUTED: Tags ====================
 
 const getUsedTagIdsInItems = computed(() => {
-	const usedTagIds = new Set<string>()
+	const usedTagIds = new Set<string>();
 	const addTags = (tags: Tag[] | undefined) => {
 		if (Array.isArray(tags)) {
-			tags.forEach((tag) => tag?._id && usedTagIds.add(tag._id))
+			tags.forEach((tag) => tag?._id && usedTagIds.add(tag._id));
 		}
-	}
+	};
 	props.results.forEach((item) => {
-		addTags(item.tags)
-		addTags(item.parentShow?.tags)
-	})
-	return usedTagIds
-})
+		addTags(item.tags);
+		addTags(item.parentShow?.tags);
+	});
+	return usedTagIds;
+});
 
 const categorizedTags = computed(() => {
-	const usedTagIds = getUsedTagIdsInItems.value
-  
+	const usedTagIds = getUsedTagIdsInItems.value;
+
 	// Method 1: Use availableTags (Hierarchy) - Preferred
 	if (props.availableTags) {
 		const filterByUsed = (tags: Tag[] | undefined) =>
-			tags?.filter((t) => usedTagIds.has(t._id)) || []
+			tags?.filter((t) => usedTagIds.has(t._id)) || [];
 
 		const genres = (props.availableTags.genres || [])
 			.map((genre: Tag & { subGenres?: Tag[] }) => {
-				const isUsed = usedTagIds.has(genre._id)
-				const usedSubGenres = genre.subGenres?.filter((t: Tag) => usedTagIds.has(t._id)) || []
+				const isUsed = usedTagIds.has(genre._id);
+				const usedSubGenres =
+					genre.subGenres?.filter((t: Tag) => usedTagIds.has(t._id)) || [];
 				// Keep genre if it is used OR has used subgenres
-				if (!isUsed && !usedSubGenres.length) return null
-				return { ...genre, subGenres: usedSubGenres }
+				if (!isUsed && !usedSubGenres.length) return null;
+				return { ...genre, subGenres: usedSubGenres };
 			})
-			.filter(Boolean)
+			.filter(Boolean);
 
 		return {
 			genres,
 			subGenres: [], // Subgenres are nested in genres
 			cities: filterByUsed(props.availableTags.cities),
 			global: filterByUsed(props.availableTags.global),
-			mood: filterByUsed(props.availableTags.mood)
-		}
+			mood: filterByUsed(props.availableTags.mood),
+		};
 	}
 
 	// Method 2: Extract from results (Fall back)
-	const genres: Tag[] = []
-	const subGenres: Tag[] = []
-	const cities: Tag[] = []
-	const global: Tag[] = []
-	const mood: Tag[] = []
+	const genres: Tag[] = [];
+	const subGenres: Tag[] = [];
+	const cities: Tag[] = [];
+	const global: Tag[] = [];
+	const mood: Tag[] = [];
 
 	const addUnique = (arr: Tag[], tag: Tag) => {
 		if (tag?._id && !arr.some((t) => t._id === tag._id)) {
-			arr.push(tag)
+			arr.push(tag);
 		}
-	}
+	};
 
 	props.results.forEach((item: ContentItem) => {
-		const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])]
+		const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])];
 		allTags.forEach((tag: Tag & { parentGenre?: Tag }) => {
 			// Check for parentGenre (from modified query)
 			if (tag.parentGenre) {
-				addUnique(genres, tag.parentGenre)
+				addUnique(genres, tag.parentGenre);
 			}
 
-			if (!tag?._type) return
+			if (!tag?._type) return;
 			switch (tag._type) {
-			case 'tag.city': addUnique(cities, tag); break
-			case 'tag.genre': addUnique(genres, tag); break
-			case 'tag.subGenre': addUnique(subGenres, tag); break
-			case 'tag.global': addUnique(global, tag); break
-			case 'tag.mood': addUnique(mood, tag); break
+				case "tag.city":
+					addUnique(cities, tag);
+					break;
+				case "tag.genre":
+					addUnique(genres, tag);
+					break;
+				case "tag.subGenre":
+					addUnique(subGenres, tag);
+					break;
+				case "tag.global":
+					addUnique(global, tag);
+					break;
+				case "tag.mood":
+					addUnique(mood, tag);
+					break;
 			}
-		})
-	})
+		});
+	});
 
-	return { genres, subGenres, cities, global, mood }
-})
+	return { genres, subGenres, cities, global, mood };
+});
 
 // Pool-specific tags extracted from results
 const poolTags = computed(() => {
-	const musicians: Tag[] = []
-	const venues: Tag[] = []
-	const crafts: Tag[] = []
-	const articles: Tag[] = []
+	const musicians: Tag[] = [];
+	const venues: Tag[] = [];
+	const crafts: Tag[] = [];
+	const articles: Tag[] = [];
 
 	const addUnique = (arr: Tag[], tag: Tag) => {
 		if (tag?._id && !arr.some((t) => t._id === tag._id)) {
-			arr.push(tag)
+			arr.push(tag);
 		}
-	}
+	};
 
 	props.results.forEach((item: ContentItem) => {
-		const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])]
+		const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])];
 		allTags.forEach((tag: Tag) => {
-			if (!tag?._type) return
+			if (!tag?._type) return;
 			switch (tag._type) {
-			case 'tag.musician': addUnique(musicians, tag); break
-			case 'tag.venue': addUnique(venues, tag); break
-			case 'tag.crafts': addUnique(crafts, tag); break
-			case 'tag.service': addUnique(venues, tag); break // Service tags also for venues
-			case 'tag.article': addUnique(articles, tag); break
+				case "tag.musician":
+					addUnique(musicians, tag);
+					break;
+				case "tag.venue":
+					addUnique(venues, tag);
+					break;
+				case "tag.crafts":
+					addUnique(crafts, tag);
+					break;
+				case "tag.service":
+					addUnique(venues, tag);
+					break; // Service tags also for venues
+				case "tag.article":
+					addUnique(articles, tag);
+					break;
 			}
-		})
-	})
+		});
+	});
 
-	return { musicians, venues, crafts, articles }
-})
-
-
+	return { musicians, venues, crafts, articles };
+});
 
 // Get color for a tag based on its type
 function _getTagColor(tag: Tag): string {
-	if (!tag?._type) return 'neutral'
-	return TAG_TYPE_COLORS[tag._type] || 'neutral'
+	if (!tag?._type) return "neutral";
+	return TAG_TYPE_COLORS[tag._type] || "neutral";
 }
 
 // Group all tags by content type/color for unified filter display
 const groupedTagsByColor = computed(() => {
 	// Shows/Sets tags (pink)
 	// Handle both hierarchical (from availableTags) and flat (fallback) structures
-	const flattenedSubGenres = categorizedTags.value.subGenres?.length 
-		? categorizedTags.value.subGenres 
-		: categorizedTags.value.genres.flatMap((g: Tag & { subGenres?: Tag[] }) => g.subGenres || [])
+	const flattenedSubGenres = categorizedTags.value.subGenres?.length
+		? categorizedTags.value.subGenres
+		: categorizedTags.value.genres.flatMap(
+				(g: Tag & { subGenres?: Tag[] }) => g.subGenres || [],
+			);
 
 	const showsTags = [
 		...categorizedTags.value.genres,
 		...flattenedSubGenres,
-		...categorizedTags.value.mood
-	]
-  
+		...categorizedTags.value.mood,
+	];
+
 	// Pool tags (blue) - flatten musician, venue, crafts
 	const poolTagsFlat = [
 		...poolTags.value.musicians,
 		...poolTags.value.venues,
-		...poolTags.value.crafts
-	]
-  
-	const wordsTags = poolTags.value.articles || []
+		...poolTags.value.crafts,
+	];
+
+	const wordsTags = poolTags.value.articles || [];
 
 	return {
-		shows: { 
-			tags: showsTags, 
+		shows: {
+			tags: showsTags,
 			genres: categorizedTags.value.genres,
 			subGenres: flattenedSubGenres,
 			mood: categorizedTags.value.mood,
-			color: 'pink', 
-			label: 'Shows/Sets',
-			hasContent: showsTags.length > 0
+			color: "pink",
+			label: "Shows/Sets",
+			hasContent: showsTags.length > 0,
 		},
-		pool: { 
-			tags: poolTagsFlat, 
+		pool: {
+			tags: poolTagsFlat,
 			musicians: poolTags.value.musicians,
 			venues: poolTags.value.venues,
 			crafts: poolTags.value.crafts,
-			color: 'blue', 
-			label: 'Pool',
-			hasContent: poolTagsFlat.length > 0
+			color: "blue",
+			label: "Pool",
+			hasContent: poolTagsFlat.length > 0,
 		},
-		words: { 
-			tags: wordsTags, 
+		words: {
+			tags: wordsTags,
 			articles: poolTags.value.articles,
-			color: 'green', 
-			label: 'Words',
-			hasContent: wordsTags.length > 0
-		}
-	}
-})
+			color: "green",
+			label: "Words",
+			hasContent: wordsTags.length > 0,
+		},
+	};
+});
 
 // Helper for accessing pool tags by type name (avoids TypeScript casting in template)
 function getPoolTagsByType(typeName: string): Tag[] {
-	const pool = groupedTagsByColor.value.pool
-	if (typeName === 'musicians') return pool.musicians
-	if (typeName === 'venues') return pool.venues
-	if (typeName === 'crafts') return pool.crafts
-	return []
+	const pool = groupedTagsByColor.value.pool;
+	if (typeName === "musicians") return pool.musicians;
+	if (typeName === "venues") return pool.venues;
+	if (typeName === "crafts") return pool.crafts;
+	return [];
 }
-
 
 // ==================== TAG HELPERS ====================
 function getItemTags(item: ContentItem, type?: string): Tag[] {
-	const tags: Tag[] = []
+	const tags: Tag[] = [];
 	const addTags = (source: Tag[] | undefined) => {
-		if (!Array.isArray(source)) return
+		if (!Array.isArray(source)) return;
 		source.forEach((tag) => {
 			if (
 				tag &&
-        (!type || tag._type === type) &&
-        !tags.some((t) => t._id === tag._id)
+				(!type || tag._type === type) &&
+				!tags.some((t) => t._id === tag._id)
 			) {
-				tags.push(tag)
+				tags.push(tag);
 			}
-		})
-	}
-	addTags(item.tags)
-	addTags(item.parentShow?.tags)
-	return tags
+		});
+	};
+	addTags(item.tags);
+	addTags(item.parentShow?.tags);
+	return tags;
 }
 
-const getItemCityTags = (item: ContentItem) => getItemTags(item, 'tag.city')
+const getItemCityTags = (item: ContentItem) => getItemTags(item, "tag.city");
 const _getItemNonCityTags = (item: ContentItem) =>
-	(item.tags || []).filter((t: Tag) => t._type !== 'tag.city')
+	(item.tags || []).filter((t: Tag) => t._type !== "tag.city");
 
-function getTagTitle(title: Tag['title']): string {
-	if (!title) return ''
-	if (typeof title === 'string') return title
+function getTagTitle(title: Tag["title"]): string {
+	if (!title) return "";
+	if (typeof title === "string") return title;
 	if (Array.isArray(title)) {
-		return parseI18nObj(title) || title[0]?.value || ''
+		return parseI18nObj(title) || title[0]?.value || "";
 	}
-	if (typeof title === 'object') {
-		return title.de || title.en || Object.values(title)[0] || ''
+	if (typeof title === "object") {
+		return title.de || title.en || Object.values(title)[0] || "";
 	}
-	return String(title)
+	return String(title);
 }
 
 function _isMainCity(cityTag: Tag): boolean {
-	if (!cityTag?.title) return false
-	const cityName = getTagTitle(cityTag.title)
-	return MAIN_CITIES.includes(cityName)
+	if (!cityTag?.title) return false;
+	const cityName = getTagTitle(cityTag.title);
+	return MAIN_CITIES.includes(cityName);
 }
 
 function getTagNameById(tagId: string): string {
-	if (tagId === 'others') return 'Elsewhere'
-  
+	if (tagId === "others") return "Elsewhere";
+
 	// Check city tags
-	const city = categorizedTags.value.cities.find((t: Tag) => t._id === tagId)
-	if (city) return getTagTitle(city.title)
-  
+	const city = categorizedTags.value.cities.find((t: Tag) => t._id === tagId);
+	if (city) return getTagTitle(city.title);
+
 	// Check genre tags
-	const genre = categorizedTags.value.genres.find((t: Tag) => t._id === tagId)
-	if (genre) return genre.title || 'Genre'
-  
+	const genre = categorizedTags.value.genres.find((t: Tag) => t._id === tagId);
+	if (genre) return genre.title || "Genre";
+
 	// Check subgenre tags
-	const subGenre = categorizedTags.value.subGenres.find((t: Tag) => t._id === tagId)
-	if (subGenre) return subGenre.title || 'SubGenre'
-  
+	const subGenre = categorizedTags.value.subGenres.find(
+		(t: Tag) => t._id === tagId,
+	);
+	if (subGenre) return subGenre.title || "SubGenre";
+
 	// Check pool tags (musicians, venues, crafts)
 	const poolTagArrays = [
 		poolTags.value.musicians,
 		poolTags.value.venues,
 		poolTags.value.crafts,
-		poolTags.value.articles
-	]
+		poolTags.value.articles,
+	];
 	for (const arr of poolTagArrays) {
-		const found = arr.find((t: Tag) => t._id === tagId)
-		if (found) return found.title || 'Tag'
+		const found = arr.find((t: Tag) => t._id === tagId);
+		if (found) return found.title || "Tag";
 	}
-  
+
 	// Check if it's a main city name (string filter)
-	if (MAIN_CITIES.includes(tagId)) return tagId
-  
-	return 'Unknown Filter'
+	if (MAIN_CITIES.includes(tagId)) return tagId;
+
+	return "Unknown Filter";
 }
 
 // ==================== FILTER LOGIC ====================
 function toggleFilter(tagId: string) {
-	const isActive = activeFilters.value.has(tagId)
+	const isActive = activeFilters.value.has(tagId);
 
 	if (isActive) {
-		activeFilters.value.delete(tagId)
-		if (tagId === 'others') isOtherCitiesActive.value = false
+		activeFilters.value.delete(tagId);
+		if (tagId === "others") isOtherCitiesActive.value = false;
 	} else {
-		activeFilters.value.add(tagId)
-		if (tagId === 'others') isOtherCitiesActive.value = true
+		activeFilters.value.add(tagId);
+		if (tagId === "others") isOtherCitiesActive.value = true;
 	}
 }
 
 function toggleGenreFilter(genreId: string) {
 	if (activeGenres.value.has(genreId)) {
-		activeGenres.value.delete(genreId)
+		activeGenres.value.delete(genreId);
 		// Clear subgenres for this genre (if we had genre->subgenre mapping we'd use it)
 	} else {
-		activeGenres.value.add(genreId)
+		activeGenres.value.add(genreId);
 	}
 }
 
 function toggleSubGenreFilter(subGenreId: string) {
 	if (activeSubGenres.value.has(subGenreId)) {
-		activeSubGenres.value.delete(subGenreId)
-		activeFilters.value.delete(subGenreId)
+		activeSubGenres.value.delete(subGenreId);
+		activeFilters.value.delete(subGenreId);
 	} else {
-		activeSubGenres.value.add(subGenreId)
-		activeFilters.value.add(subGenreId)
+		activeSubGenres.value.add(subGenreId);
+		activeFilters.value.add(subGenreId);
 	}
 }
 
 function toggleFilterType(type: string) {
-	activeFilterType.value = activeFilterType.value === type ? null : type
+	activeFilterType.value = activeFilterType.value === type ? null : type;
 }
 
 function resetFilters() {
-	activeFilters.value.clear()
-	activeGenres.value.clear()
-	activeSubGenres.value.clear()
-	activeFilterType.value = null
-	isOtherCitiesActive.value = false
+	activeFilters.value.clear();
+	activeGenres.value.clear();
+	activeSubGenres.value.clear();
+	activeFilterType.value = null;
+	isOtherCitiesActive.value = false;
 }
 
 // ==================== ITEM MATCHING ====================
 function itemHasTag(item: ContentItem, tagId: string): boolean {
-	return getItemTags(item).some((t) => t._id === tagId)
+	return getItemTags(item).some((t) => t._id === tagId);
 }
 
 // Check if item has a city tag matching the city name
 function itemHasCityByName(item: ContentItem, cityName: string): boolean {
-	const cityTags = getItemCityTags(item)
+	const cityTags = getItemCityTags(item);
 	return cityTags.some((t) => {
-		const tagTitle = parseI18nObj(t.title) || t.title || t.short || ''
-		return tagTitle.toLowerCase() === cityName.toLowerCase()
-	})
+		const tagTitle = parseI18nObj(t.title) || t.title || t.short || "";
+		return tagTitle.toLowerCase() === cityName.toLowerCase();
+	});
 }
 
 function itemMatchesFilters(item: ContentItem): boolean {
@@ -378,131 +399,131 @@ function itemMatchesFilters(item: ContentItem): boolean {
 		if (activeSubGenres.value.size > 0) {
 			// SubGenres selected: item must have ALL selected subgenres
 			for (const subGenreId of activeSubGenres.value) {
-				if (!itemHasTag(item, subGenreId)) return false
+				if (!itemHasTag(item, subGenreId)) return false;
 			}
 		} else {
 			// Only genres selected: item must have at least one genre or its subgenres
-			const itemTags = getItemTags(item)
-			const itemTagIds = new Set(itemTags.map((t) => t._id))
-      
+			const itemTags = getItemTags(item);
+			const itemTagIds = new Set(itemTags.map((t) => t._id));
+
 			// Check if item has any of the selected genres or related subGenres
-			let matchesGenre = false
+			let matchesGenre = false;
 			for (const genreId of activeGenres.value) {
 				if (itemTagIds.has(genreId)) {
-					matchesGenre = true
-					break
+					matchesGenre = true;
+					break;
 				}
 				// Also check if item has any subgenre (by checking _type)
-				if (itemTags.some((t) => t._type === 'tag.subGenre')) {
-					matchesGenre = true
-					break
+				if (itemTags.some((t) => t._type === "tag.subGenre")) {
+					matchesGenre = true;
+					break;
 				}
 			}
-			if (!matchesGenre) return false
+			if (!matchesGenre) return false;
 		}
 	}
 
 	// Normal filters check (AND logic - cities and other tags)
-	if (activeFilters.value.size === 0) return true
+	if (activeFilters.value.size === 0) return true;
 
 	for (const filterId of activeFilters.value) {
-		if (filterId === 'others') {
+		if (filterId === "others") {
 			// Elsewhere: item must NOT have any main city tag
-			const hasMainCity = MAIN_CITIES.some((city) => itemHasCityByName(item, city))
-			if (hasMainCity) return false
+			const hasMainCity = MAIN_CITIES.some((city) =>
+				itemHasCityByName(item, city),
+			);
+			if (hasMainCity) return false;
 		} else if (MAIN_CITIES.includes(filterId)) {
 			// City filter: check by city name
-			if (!itemHasCityByName(item, filterId)) return false
+			if (!itemHasCityByName(item, filterId)) return false;
 		} else if (!itemHasTag(item, filterId)) {
 			// Regular tag filter
-			return false
+			return false;
 		}
 	}
-	return true
+	return true;
 }
 
 // ==================== SORTING ====================
-function changeSortMode(mode: 'new' | 'alpha') {
-	sortMode.value = mode
+function changeSortMode(mode: "new" | "alpha") {
+	sortMode.value = mode;
 }
 
 const filteredItems = computed(() => {
-	const items = props.results.filter(itemMatchesFilters)
+	const items = props.results.filter(itemMatchesFilters);
 
 	const sortFns = {
 		new: (a: ContentItem, b: ContentItem) =>
 			new Date(b.datetime || b._updatedAt || b._createdAt || 0).getTime() -
 			new Date(a.datetime || a._updatedAt || a._createdAt || 0).getTime(),
 		alpha: (a: ContentItem, b: ContentItem) =>
-			(a.title || a.name || a.parentShow?.title || '')
+			(a.title || a.name || a.parentShow?.title || "")
 				.toLowerCase()
 				.localeCompare(
-					(b.title || b.name || b.parentShow?.title || '').toLowerCase()
-				)
-	}
+					(b.title || b.name || b.parentShow?.title || "").toLowerCase(),
+				),
+	};
 
-	return items.sort(sortFns[sortMode.value])
-})
+	return items.sort(sortFns[sortMode.value]);
+});
 
 // Group filtered items by content type for sectioned display
 const groupedResults = computed(() => {
-	const pool: ContentItem[] = []
-	const shows: ContentItem[] = []
-	const words: ContentItem[] = []
+	const pool: ContentItem[] = [];
+	const shows: ContentItem[] = [];
+	const words: ContentItem[] = [];
 
 	filteredItems.value.forEach((item: ContentItem) => {
 		switch (item._type) {
-		case 'person':
-		case 'venue':
-			pool.push(item)
-			break
-		case 'show':
-		case 'set':
-			shows.push(item)
-			break
-		case 'article':
-			words.push(item)
-			break
+			case "person":
+			case "venue":
+				pool.push(item);
+				break;
+			case "show":
+			case "set":
+				shows.push(item);
+				break;
+			case "article":
+				words.push(item);
+				break;
 		}
-	})
-  
-	return { pool, shows, words }
-})
+	});
 
-
+	return { pool, shows, words };
+});
 
 // Show all filtered items (no pagination limit) - keep for backward compatibility
-const _visibleItems = computed(() => filteredItems.value)
+const _visibleItems = computed(() => filteredItems.value);
 
 // ==================== UI HELPERS ====================
 function toggleFiltersVisibility() {
-	showFilters.value = !showFilters.value
+	showFilters.value = !showFilters.value;
 }
 
 function handleScroll() {
-	const scrollY = window.scrollY
-	const scrollDiff = scrollY - lastScrollY.value
+	const scrollY = window.scrollY;
+	const scrollDiff = scrollY - lastScrollY.value;
 	if (scrollDiff > SCROLL_THRESHOLD && showFilters.value)
-		showFilters.value = false
-	else if (scrollDiff < -20 && !showFilters.value) showFilters.value = true
-	lastScrollY.value = scrollY
+		showFilters.value = false;
+	else if (scrollDiff < -20 && !showFilters.value) showFilters.value = true;
+	lastScrollY.value = scrollY;
 }
 
 function _formatDate(dateString: string): string {
-	if (!dateString) return ''
-	const date = new Date(dateString)
-	if (isNaN(date.getTime())) return ''
-	return date.toLocaleDateString('de-DE', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric'
-	})
+	if (!dateString) return "";
+	const date = new Date(dateString);
+	if (isNaN(date.getTime())) return "";
+	return date.toLocaleDateString("de-DE", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+	});
 }
 
 // ==================== ROUTING ====================
 function _getItemRoute(item: ContentItem): string {
-	if (!item?.slug) return '/'
-	const slug = item.slug.current
+	if (!item?.slug) return "/";
+	const slug = item.slug.current;
 	const routes: Record<string, string> = {
 		person: `/pool/${slug}`,
 		venue: `/pool/${slug}`,
@@ -510,91 +531,96 @@ function _getItemRoute(item: ContentItem): string {
 			? `/shows/${item.parentShow.slug.current}/${slug}`
 			: `/shows/${slug}`,
 		article: `/words/${slug}`,
-		show: `/shows/${slug}`
-	}
-	return localePath(routes[item._type] || `/${item._type}/${slug}`)
+		show: `/shows/${slug}`,
+	};
+	return localePath(routes[item._type] || `/${item._type}/${slug}`);
 }
 
 // ==================== IMAGE HANDLING ====================
 function _getItemImage(item: ContentItem) {
-	if (item.image || item.mainImage) return item.image || item.mainImage
+	if (item.image || item.mainImage) return item.image || item.mainImage;
 
-	const fallbacks = mainStore.siteFallbacks
+	const fallbacks = mainStore.siteFallbacks;
 	const fallbackMap: Record<string, Image | undefined> = {
 		person: fallbacks?.fallbackPerson?.image,
 		venue: fallbacks?.fallbackVenue?.image,
 		show: fallbacks?.fallbackShow?.image,
 		set: fallbacks?.fallbackSet?.image,
 		word: fallbacks?.fallbackArticle?.image,
-		article: fallbacks?.fallbackArticle?.image
-	}
-	return fallbackMap[item._type ?? ''] ?? fallbacks?.fallbackPerson?.image
+		article: fallbacks?.fallbackArticle?.image,
+	};
+	return fallbackMap[item._type ?? ""] ?? fallbacks?.fallbackPerson?.image;
 }
 
 async function _checkImage(url: string): Promise<boolean> {
 	return new Promise((resolve) => {
-		const img = new Image()
-		img.onload = () => resolve(true)
-		img.onerror = () => resolve(false)
-		img.src = url
-	})
+		const img = new Image();
+		img.onload = () => resolve(true);
+		img.onerror = () => resolve(false);
+		img.src = url;
+	});
 }
 
 // Non-blocking artwork URL resolution
 function getSoundcloudArtwork(item: ContentItem): string {
-	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url as string | undefined
+	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url as
+		| string
+		| undefined;
 	if (artworkUrl) {
-		return artworkUrl.replace('-large', '-t500x500')
+		return artworkUrl.replace("-large", "-t500x500");
 	}
-	const fallbacks = mainStore.siteFallbacks
+	const fallbacks = mainStore.siteFallbacks;
 	return (
 		item?.parentShow?.image?.asset?.url ||
 		fallbacks?.fallbackSet?.image?.asset?.url ||
-		''
-	)
+		""
+	);
 }
 
 function loadArtworkUrl(item: ContentItem) {
-	if (!item) return
-	const url = getSoundcloudArtwork(item)
-	artworkUrls.value.set(item._id, url)
+	if (!item) return;
+	const url = getSoundcloudArtwork(item);
+	artworkUrls.value.set(item._id, url);
 }
 
 function _playTrack(item: ContentItem) {
-	const track = item?.soundcloud?.tracks?.[0]
-	if (!track) return
+	const track = item?.soundcloud?.tracks?.[0];
+	if (!track) return;
 	if (!track.permalink_url && track.id) {
-		track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
+		track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
 	}
-	mainStore.currentTrack = track
+	mainStore.currentTrack = track;
 }
 
 // ==================== LIFECYCLE ====================
 onMounted(() => {
 	// Load artwork for sets
 	props.results.forEach((item) => {
-		if (item._type === 'set') {
-			loadArtworkUrl(item)
+		if (item._type === "set") {
+			loadArtworkUrl(item);
 		}
-	})
+	});
 
-	lastScrollY.value = window.scrollY
-	window.addEventListener('scroll', handleScroll, { passive: true })
-})
+	lastScrollY.value = window.scrollY;
+	window.addEventListener("scroll", handleScroll, { passive: true });
+});
 
 onUnmounted(() => {
-	window.removeEventListener('scroll', handleScroll)
-})
+	window.removeEventListener("scroll", handleScroll);
+});
 
 // Reload artwork when results change
-watch(() => props.results, () => {
-	// Load artwork for new set items
-	props.results.forEach((item) => {
-		if (item._type === 'set' && !artworkUrls.value.has(item._id)) {
-			loadArtworkUrl(item)
-		}
-	})
-})
+watch(
+	() => props.results,
+	() => {
+		// Load artwork for new set items
+		props.results.forEach((item) => {
+			if (item._type === "set" && !artworkUrls.value.has(item._id)) {
+				loadArtworkUrl(item);
+			}
+		});
+	},
+);
 </script>
 
 <template>

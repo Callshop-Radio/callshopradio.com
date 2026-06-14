@@ -1,75 +1,75 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { useMainStore } from '~/stores/mainStore'
-import { useSwipe } from '@vueuse/core'
+import { useSwipe } from "@vueuse/core";
+import { computed, onMounted, ref, watch } from "vue";
+import { useMainStore } from "~/stores/mainStore";
 
-const mainStore = useMainStore()
+const mainStore = useMainStore();
 
 const props = defineProps({
 	module: {
 		type: Object,
-		required: true
-	}
-})
+		required: true,
+	},
+});
 
 // State
-const currentIndex = ref(0)
-const sliderRef = ref<HTMLElement | null>(null)
+const currentIndex = ref(0);
+const sliderRef = ref<HTMLElement | null>(null);
 
 // Slides
 const slides = computed(() => {
-	return props.module?.slides || []
-})
+	return props.module?.slides || [];
+});
 
 // Navigation
 const scrollNext = () => {
-	if (slides.value.length === 0) return
-	currentIndex.value = (currentIndex.value + 1) % slides.value.length
-}
+	if (slides.value.length === 0) return;
+	currentIndex.value = (currentIndex.value + 1) % slides.value.length;
+};
 
 const scrollPrev = () => {
-	if (slides.value.length === 0) return
+	if (slides.value.length === 0) return;
 	currentIndex.value =
-    (currentIndex.value - 1 + slides.value.length) % slides.value.length
-}
+		(currentIndex.value - 1 + slides.value.length) % slides.value.length;
+};
 
 const scrollTo = (index: number) => {
-	currentIndex.value = index
-}
+	currentIndex.value = index;
+};
 
 // Swipe Support
 const { isSwiping: _isSwiping, direction: _direction } = useSwipe(sliderRef, {
 	onSwipeEnd(e, direction) {
-		if (direction === 'left') scrollNext()
-		if (direction === 'right') scrollPrev()
-	}
-})
+		if (direction === "left") scrollNext();
+		if (direction === "right") scrollPrev();
+	},
+});
 
 // Funktion zum Aktualisieren des aktuellen Content-Typs im Store
 const updateCurrentContentType = () => {
 	if (
 		!slides.value ||
-    slides.value.length === 0 ||
-    currentIndex.value >= slides.value.length
+		slides.value.length === 0 ||
+		currentIndex.value >= slides.value.length
 	)
-		return
+		return;
 
-	const currentSlide = slides.value[currentIndex.value]
-	const contentType = currentSlide?.contentReference?._type || ''
+	const currentSlide = slides.value[currentIndex.value];
+	const contentType = currentSlide?.contentReference?._type || "";
 
 	// Aktualisiere den Content-Typ im Store
-	mainStore.setCurrentHeroContentType(contentType)
-}
+	mainStore.setCurrentHeroContentType(contentType);
+};
 
 // Überwache Änderungen des currentIndex und aktualisiere den Content-Typ
 watch(currentIndex, () => {
-	updateCurrentContentType()
-})
+	updateCurrentContentType();
+});
 
 // Initial update
 onMounted(() => {
-	updateCurrentContentType()
-})
+	updateCurrentContentType();
+});
 </script>
 
 <template>

@@ -8,27 +8,27 @@ export const useCachedSanityQuery = async <_T = unknown>(
 	query: string,
 	params?: Record<string, unknown>,
 	options?: {
-		key?: string
-	}
+		key?: string;
+	},
 ) => {
-	const nuxtApp = useNuxtApp()
+	const nuxtApp = useNuxtApp();
 
 	// Generate a unique key based on query and params
 	const queryKey =
 		options?.key ||
-		`sanity-${btoa(query + JSON.stringify(params || {})).slice(0, 32)}`
+		`sanity-${btoa(query + JSON.stringify(params || {})).slice(0, 32)}`;
 
 	return useSanityQuery(query, params, {
 		getCachedData: (key: string) => {
-			const cachedData = nuxtApp.payload.data[key]
+			const cachedData = nuxtApp.payload.data[key];
 
 			if (cachedData) {
-				return cachedData
+				return cachedData;
 			}
 
 			// Return undefined to trigger a fresh fetch
-			return undefined
+			return undefined;
 		},
-		key: queryKey
-	})
-}
+		key: queryKey,
+	});
+};

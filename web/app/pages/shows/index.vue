@@ -1,15 +1,15 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-import { SHOWSARCHIVE_QUERY } from '~~/queries/sanity.queries.ts'
+import { SHOWSARCHIVE_QUERY } from "~~/queries/sanity.queries.ts";
 
-const query = groq`${SHOWSARCHIVE_QUERY}`
-const { data } = await useCachedSanityQuery(query)
+const query = groq`${SHOWSARCHIVE_QUERY}`;
+const { data } = await useCachedSanityQuery(query);
 
 useHead({
 	bodyAttrs: {
-		class: 'shows-archive'
-	}
-})
+		class: "shows-archive",
+	},
+});
 </script>
 
 <template>

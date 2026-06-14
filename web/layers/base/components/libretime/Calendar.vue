@@ -1,27 +1,27 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-  
+import { onMounted, ref } from "vue";
+
 const props = defineProps({
 	liveShows: {
 		type: Array,
-		default: () => []
+		default: () => [],
 	},
 	liveShowsWien: {
 		type: Array,
-		default: () => []
+		default: () => [],
 	},
 	instances: {
 		type: Array,
-		default: () => []
-	}
-})
-  
-const events = ref([])
-  
+		default: () => [],
+	},
+});
+
+const events = ref([]);
+
 // Events kombinieren
 onMounted(() => {
-	events.value = [...props.liveShows, ...props.liveShowsWien]
-})
+	events.value = [...props.liveShows, ...props.liveShowsWien];
+});
 </script>
   
 <template>

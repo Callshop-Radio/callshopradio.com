@@ -1,90 +1,92 @@
-import {CodeBlockIcon, StackIcon, ThLargeIcon} from '@sanity/icons'
+import { CodeBlockIcon, StackIcon, ThLargeIcon } from "@sanity/icons";
+import { defineType } from "sanity";
+import { defaultCookieSections } from "@/utils/defaultCookieSections";
 
-import {defaultCookieSections} from '@/utils/defaultCookieSections'
-import { defineType } from 'sanity'
-const TITLE = 'Cookie Banner'
+const TITLE = "Cookie Banner";
 
 export const siteCookieBanner = defineType({
-  name: 'siteCookieBanner',
-  type: 'document',
+  name: "siteCookieBanner",
+  type: "document",
   title: TITLE,
   icon: CodeBlockIcon,
 
   fields: [
     {
-      title: 'Use Cookie Banner',
-      name: 'useCookieBanner',
-      type: 'boolean',
+      title: "Use Cookie Banner",
+      name: "useCookieBanner",
+      type: "boolean",
       initialValue: false,
     },
     {
-      title: 'Consent Modal Texts',
-      name: 'consentModal',
-      type: 'object',
+      title: "Consent Modal Texts",
+      name: "consentModal",
+      type: "object",
       fields: [
         {
-          title: 'Description',
-          name: 'description',
-          type: 'string',
+          title: "Description",
+          name: "description",
+          type: "string",
           initialValue:
-            'Our website uses essential cookies to ensure its proper operation and tracking cookies to understand how you interact with it. The latter will be set only after consent.',
+            "Our website uses essential cookies to ensure its proper operation and tracking cookies to understand how you interact with it. The latter will be set only after consent.",
         },
         {
-          title: 'Accept All Button',
-          name: 'acceptAllBtn',
-          type: 'string',
-          initialValue: 'Accept',
+          title: "Accept All Button",
+          name: "acceptAllBtn",
+          type: "string",
+          initialValue: "Accept",
         },
         {
-          title: 'Accept Necessary Button',
-          name: 'acceptNecessaryBtn',
-          type: 'string',
-          initialValue: 'Reject',
+          title: "Accept Necessary Button",
+          name: "acceptNecessaryBtn",
+          type: "string",
+          initialValue: "Reject",
         },
         {
-          title: 'Show Preferences Button',
-          name: 'showPreferencesBtn',
-          type: 'string',
-          initialValue: 'Manage preferences',
+          title: "Show Preferences Button",
+          name: "showPreferencesBtn",
+          type: "string",
+          initialValue: "Manage preferences",
         },
       ],
     },
     {
-      title: 'Preferences Modal Texts',
-      name: 'preferencesModal',
-      type: 'object',
+      title: "Preferences Modal Texts",
+      name: "preferencesModal",
+      type: "object",
       fields: [
         {
-          title: 'Title',
-          name: 'title',
-          type: 'string',
-          initialValue: 'Cookie preferences',
+          title: "Title",
+          name: "title",
+          type: "string",
+          initialValue: "Cookie preferences",
         },
         {
-          title: 'Accept All Button',
-          name: 'acceptAllBtn',
-          type: 'string',
-          initialValue: 'Accept all',
+          title: "Accept All Button",
+          name: "acceptAllBtn",
+          type: "string",
+          initialValue: "Accept all",
         },
         {
-          title: 'Accept Necessary Button',
-          name: 'acceptNecessaryBtn',
-          type: 'string',
-          initialValue: 'Reject all',
+          title: "Accept Necessary Button",
+          name: "acceptNecessaryBtn",
+          type: "string",
+          initialValue: "Reject all",
         },
         {
-          title: 'Save Preferences Button',
-          name: 'savePreferencesBtn',
-          type: 'string',
-          initialValue: 'Save preferences',
+          title: "Save Preferences Button",
+          name: "savePreferencesBtn",
+          type: "string",
+          initialValue: "Save preferences",
         },
         {
-          title: 'Sections',
-          name: 'sections',
-          type: 'code',
+          title: "Sections",
+          name: "sections",
+          type: "code",
           options: {
-            language: 'json',
-            languageAlternatives: [{title: 'JSON', value: 'json', mode: 'json'}],
+            language: "json",
+            languageAlternatives: [
+              { title: "JSON", value: "json", mode: "json" },
+            ],
           },
           initialValue: defaultCookieSections,
         },
@@ -190,7 +192,7 @@ export const siteCookieBanner = defineType({
     prepare() {
       return {
         title: TITLE,
-      }
+      };
     },
   },
-})
+});

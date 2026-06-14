@@ -1,25 +1,25 @@
-import {defineType} from 'sanity'
+import { defineType } from "sanity";
 
-import {annotations} from './text/annotations'
-import {decorators} from './text/decorators'
+import { annotations } from "./text/annotations";
+import { decorators } from "./text/decorators";
 
 export const richTextMedia = defineType({
-  title: 'Editor',
-  name: 'richTextMedia',
-  type: 'array',
+  title: "Editor",
+  name: "richTextMedia",
+  type: "array",
   of: [
     {
-      type: 'block',
+      type: "block",
       lists: [
-        {title: 'Bullet', value: 'bullet'},
-        {title: 'Number', value: 'number'},
+        { title: "Bullet", value: "bullet" },
+        { title: "Number", value: "number" },
       ],
       marks: {
         decorators,
         annotations,
       },
     },
-    {type: 'module.media'},
-    {type: 'module.carousel'},
+    { type: "module.media" },
+    { type: "module.carousel" },
   ],
-})
+});

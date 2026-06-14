@@ -1,48 +1,48 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useMainStore } from '~/stores/mainStore'
-import { useSwipe } from '@vueuse/core'
+import { useSwipe } from "@vueuse/core";
+import { computed, ref } from "vue";
+import { useMainStore } from "~/stores/mainStore";
 
-const _mainStore = useMainStore()
+const _mainStore = useMainStore();
 
 const props = defineProps({
 	articles: {
 		type: Array,
-		required: true
-	}
-})
+		required: true,
+	},
+});
 
 // State
-const currentIndex = ref(0)
-const sliderRef = ref<HTMLElement | null>(null)
+const currentIndex = ref(0);
+const sliderRef = ref<HTMLElement | null>(null);
 
 // Slides
 const slides = computed(() => {
 	// Jeder Artikel bekommt sein eigenes Slide
-	return props.articles.map((article) => [article])
-})
+	return props.articles.map((article) => [article]);
+});
 
 // Navigation
 const scrollNext = () => {
-	currentIndex.value = (currentIndex.value + 1) % slides.value.length
-}
+	currentIndex.value = (currentIndex.value + 1) % slides.value.length;
+};
 
 const scrollPrev = () => {
 	currentIndex.value =
-    (currentIndex.value - 1 + slides.value.length) % slides.value.length
-}
+		(currentIndex.value - 1 + slides.value.length) % slides.value.length;
+};
 
 const scrollTo = (index: number) => {
-	currentIndex.value = index
-}
+	currentIndex.value = index;
+};
 
 // Swipe Support
 const { isSwiping: _isSwiping, direction: _direction } = useSwipe(sliderRef, {
 	onSwipeEnd(e, direction) {
-		if (direction === 'left') scrollNext()
-		if (direction === 'right') scrollPrev()
-	}
-})
+		if (direction === "left") scrollNext();
+		if (direction === "right") scrollPrev();
+	},
+});
 </script>
 
 <template>

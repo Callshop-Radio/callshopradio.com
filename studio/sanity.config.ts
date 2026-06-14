@@ -1,27 +1,26 @@
-import {codeInput} from '@sanity/code-input'
-import {dashboardTool} from '@sanity/dashboard'
-import {visionTool} from '@sanity/vision'
-import {defineConfig, isDev} from 'sanity'
-import {presentationTool} from 'sanity/presentation'
-import {structureTool} from 'sanity/structure'
-import {netlifyWidget} from 'sanity-plugin-dashboard-widget-netlify'
-import {media} from 'sanity-plugin-media'
-import {muxInput} from 'sanity-plugin-mux-input'
-import {internationalizedArray} from 'sanity-plugin-internationalized-array'
-import {colorInput} from '@sanity/color-input'
-import {Logo} from './components/icons/Logo'
-import {initialValueTemplates} from './config/initialValueTemplates'
-import {structure} from './config/structure'
-import {resolveProductionUrl} from './config/views'
-import {schemaTypes} from './schemas'
+import { soundcloudInput } from "@damianrosellen/sanity-plugin-soundcloud-input";
+import { codeInput } from "@sanity/code-input";
+import { colorInput } from "@sanity/color-input";
+import { dashboardTool } from "@sanity/dashboard";
+import { visionTool } from "@sanity/vision";
+import { defineConfig, isDev } from "sanity";
+import { presentationTool } from "sanity/presentation";
+import { structureTool } from "sanity/structure";
+import { netlifyWidget } from "sanity-plugin-dashboard-widget-netlify";
+import { internationalizedArray } from "sanity-plugin-internationalized-array";
+import { media } from "sanity-plugin-media";
+import { muxInput } from "sanity-plugin-mux-input";
+import { Logo } from "./components/icons/Logo";
+import { initialValueTemplates } from "./config/initialValueTemplates";
+import { structure } from "./config/structure";
+import { resolveProductionUrl } from "./config/views";
+import { schemaTypes } from "./schemas";
 
-import {soundcloudInput} from '@damianrosellen/sanity-plugin-soundcloud-input'
-
-const devPlugins = [visionTool()]
+const devPlugins = [visionTool()];
 
 export default defineConfig({
-  name: 'default',
-  title: 'Callshop Radio',
+  name: "default",
+  title: "Callshop Radio",
 
   projectId: process.env.SANITY_STUDIO_PROJECT_ID,
   dataset: process.env.SANITY_STUDIO_DATASET,
@@ -36,12 +35,12 @@ export default defineConfig({
     presentationTool({
       previewUrl: {
         origin: isDev
-          ? 'http://localhost:3000'
-          : process.env.SANITY_STUDIO_PREVIEW_URL || 'http://localhost:3000',
+          ? "http://localhost:3000"
+          : process.env.SANITY_STUDIO_PREVIEW_URL || "http://localhost:3000",
       },
     }),
     media(),
-    muxInput({mp4_support: 'standard'}),
+    muxInput({ mp4_support: "standard" }),
     soundcloudInput({
       clientId: process.env.SANITY_STUDIO_SOUNDCLOUD_CLIENT_ID,
       clientSecret: process.env.SANITY_STUDIO_SOUNDCLOUD_CLIENT_SECRET,
@@ -50,10 +49,10 @@ export default defineConfig({
     dashboardTool({
       widgets: [
         netlifyWidget({
-          title: 'Netlify deploys',
+          title: "Netlify deploys",
           sites: [
             {
-              title: 'Website (Live)',
+              title: "Website (Live)",
               apiId: process.env.SANITY_STUDIO_NETLIFY_API_ID,
               buildHookId: process.env.SANITY_STUDIO_NETLIFY_BUILD_HOOK_ID,
               name: process.env.SANITY_STUDIO_NETLIFY_NAME,
@@ -66,13 +65,13 @@ export default defineConfig({
     colorInput(),
     internationalizedArray({
       languages: [
-        {id: 'de', title: 'Deutsch'},
-        {id: 'en', title: 'English'}
+        { id: "de", title: "Deutsch" },
+        { id: "en", title: "English" },
       ],
-      defaultLanguages: ['en'],
-      fieldTypes: ['string', 'richText', 'richTextMedia'],
+      defaultLanguages: ["en"],
+      fieldTypes: ["string", "richText", "richTextMedia"],
       buttonAddAll: false,
-      languageDisplay: 'codeOnly'
+      languageDisplay: "codeOnly",
     }),
     ...(isDev ? devPlugins : []),
   ],
@@ -87,13 +86,13 @@ export default defineConfig({
       resolveProductionUrl({
         context,
       }),
-    newDocumentOptions: (prev, {creationContext}) => {
+    newDocumentOptions: (prev, { creationContext }) => {
       // currentUser available as second param if needed
-      const {type, schemaType} = creationContext
-      if (type === 'structure' && schemaType === 'set') {
-        return []
+      const { type, schemaType } = creationContext;
+      if (type === "structure" && schemaType === "set") {
+        return [];
       }
-      return prev
+      return prev;
     },
   },
 
@@ -101,9 +100,9 @@ export default defineConfig({
     image: {
       assetSources: (previousAssetSources) => {
         return previousAssetSources.filter((assetSource) => {
-          return assetSource.name === 'media'
-        })
+          return assetSource.name === "media";
+        });
       },
     },
   },
-})
+});

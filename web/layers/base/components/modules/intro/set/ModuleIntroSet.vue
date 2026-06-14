@@ -1,171 +1,172 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { useMainStore } from '~/stores/mainStore'
+import { onMounted, ref } from "vue";
+import { useMainStore } from "~/stores/mainStore";
 
-const { locale: _locale, setLocale: _setLocale } = useI18n()
-const localePath = useLocalePath()
+const { locale: _locale, setLocale: _setLocale } = useI18n();
+const localePath = useLocalePath();
 
 // Typdefinitionen
 interface Image {
-  asset?: {
-    url?: string;
-  };
+	asset?: {
+		url?: string;
+	};
 }
 
 interface Person {
-  _key?: string;
-  title?: string;
+	_key?: string;
+	title?: string;
 }
 
 interface Set {
-  _id?: string;
-  _type?: string;
-  title?: string;
-  image?: Image;
-  mainImage?: Image;
-  parentShow?: {
-    title?: string;
-    image?: Image;
-  };
-  datetime?: string;
-  _updatedAt?: string;
-  persons?: Person[];
-  tags?: import('~/types/sanity').Tag[];
-  soundcloud?: {
-    tracks?: Array<{
-      id?: string;
-      artwork_url?: string;
-      permalink_url?: string;
-    }>;
-  };
+	_id?: string;
+	_type?: string;
+	title?: string;
+	image?: Image;
+	mainImage?: Image;
+	parentShow?: {
+		title?: string;
+		image?: Image;
+	};
+	datetime?: string;
+	_updatedAt?: string;
+	persons?: Person[];
+	tags?: import("~/types/sanity").Tag[];
+	soundcloud?: {
+		tracks?: Array<{
+			id?: string;
+			artwork_url?: string;
+			permalink_url?: string;
+		}>;
+	};
 }
 
 // Props
 const props = defineProps<{
-  set: Set;
-}>()
+	set: Set;
+}>();
 
 // Store
-const mainStore = useMainStore()
+const mainStore = useMainStore();
 
 // Composable für Bild-Management
 const useImageManagement = () => {
 	// Helper-Funktion für Bild-Fetching und Fallbacks
 	function _getItemImage(item?: Set): Image | null {
-		if (!item) return null
+		if (!item) return null;
 
 		// Bild aus dem Item selbst
 		if (item.image || item.mainImage) {
-			return item.image || item.mainImage
+			return item.image || item.mainImage;
 		}
 
 		// Fallback für Sets
-		return mainStore?.siteFallbacks?.fallbackSet?.image
+		return mainStore?.siteFallbacks?.fallbackSet?.image;
 	}
 
 	function checkImage(url: string): Promise<boolean> {
 		return new Promise((resolve) => {
-			const img = new Image()
-			img.onload = () => resolve(true)
-			img.onerror = () => resolve(false)
-			img.src = url
-		})
+			const img = new Image();
+			img.onload = () => resolve(true);
+			img.onerror = () => resolve(false);
+			img.src = url;
+		});
 	}
 
 	return {
 		getItemImage: _getItemImage,
-		checkImage
-	}
-}
+		checkImage,
+	};
+};
 
 // Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
 function getItemRoute(item) {
-	if (!item || !item?.slug) return '/'
+	if (!item || !item?.slug) return "/";
 
 	switch (item?._type) {
-	case 'person':
-	case 'venue':
-		return localePath(`/pool/${item?.slug?.current}`)
+		case "person":
+		case "venue":
+			return localePath(`/pool/${item?.slug?.current}`);
 
-	case 'set':
-		// Prüfe, ob parentShow vorhanden ist
-		if (item?.parentShow?.slug?.current) {
-			return localePath(
-				`/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
-			)
-		}
-		// Fallback falls parentShow nicht verfügbar ist
-		return localePath(`/shows/${item?.slug?.current}`)
+		case "set":
+			// Prüfe, ob parentShow vorhanden ist
+			if (item?.parentShow?.slug?.current) {
+				return localePath(
+					`/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`,
+				);
+			}
+			// Fallback falls parentShow nicht verfügbar ist
+			return localePath(`/shows/${item?.slug?.current}`);
 
-	case 'article':
-		return localePath(`/words/${item?.slug?.current}`)
+		case "article":
+			return localePath(`/words/${item?.slug?.current}`);
 
-	case 'show':
-		return localePath(`/shows/${item?.slug?.current}`)
+		case "show":
+			return localePath(`/shows/${item?.slug?.current}`);
 
 		// Standard-Fallback
-	default:
-		return localePath(`/${item?._type}/${item?.slug?.current}`)
+		default:
+			return localePath(`/${item?._type}/${item?.slug?.current}`);
 	}
 }
 
 // Composable für SoundCloud-Funktionalität
 const useSoundCloud = () => {
-	const artworkUrl = ref('')
-	const { checkImage: _checkImage } = useImageManagement()
+	const artworkUrl = ref("");
+	const { checkImage: _checkImage } = useImageManagement();
 
 	// Non-blocking artwork URL resolution
 	function getSoundcloudArtwork(item?: Set): string {
-		if (!item) return ''
+		if (!item) return "";
 
 		// Try SoundCloud artwork first
-		const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url
+		const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
 		if (artworkUrl) {
-			return artworkUrl.replace('-large', '-t500x500')
+			return artworkUrl.replace("-large", "-t500x500");
 		}
 
 		// Fallback chain
-		const parentShowImageUrl = item?.parentShow?.image?.asset?.url
-		const storeFallbackUrl = mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
-		return parentShowImageUrl || storeFallbackUrl || ''
+		const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
+		const storeFallbackUrl =
+			mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
+		return parentShowImageUrl || storeFallbackUrl || "";
 	}
 
 	function loadArtworkUrl() {
-		if (!props.set) return
-		const url = getSoundcloudArtwork(props.set)
-		artworkUrl.value = url
+		if (!props.set) return;
+		const url = getSoundcloudArtwork(props.set);
+		artworkUrl.value = url;
 	}
 
 	function playTrack() {
-		const item = props.set
-		if (!item?.soundcloud?.tracks?.[0]) return
+		const item = props.set;
+		if (!item?.soundcloud?.tracks?.[0]) return;
 
-		const track = item.soundcloud.tracks[0]
+		const track = item.soundcloud.tracks[0];
 
 		// Sicherstellen, dass permalink_url gesetzt ist
 		if (!track.permalink_url && track.id) {
-			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
+			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
 		}
 
 		// Track im Store speichern
-		mainStore.currentTrack = track
+		mainStore.currentTrack = track;
 	}
 
 	return {
 		artworkUrl,
 		loadArtworkUrl,
-		playTrack
-	}
-}
+		playTrack,
+	};
+};
 
 // Anwendung der Composables
-const { getItemImage: _getItemImage } = useImageManagement()
-const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud()
+const { getItemImage: _getItemImage } = useImageManagement();
+const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
 
 // Lebenszyklus-Hooks
 onMounted(() => {
-	loadArtworkUrl()
-})
+	loadArtworkUrl();
+});
 </script>
 
 <template>

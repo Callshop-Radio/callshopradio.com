@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 export const Logo = () => (
   <svg
     width="100%"
@@ -9,4 +9,4 @@ export const Logo = () => (
   >
     <rect width="100%" height="100%" fill="#EC5446"></rect>
   </svg>
-)
+);

@@ -1,34 +1,40 @@
-import {TagIcon, SearchIcon, StarIcon, TextIcon, EyeOpenIcon} from '@sanity/icons'
-import {validateSlug} from '@/utils/validateSlug'
-import { defineType } from 'sanity'
+import {
+  EyeOpenIcon,
+  SearchIcon,
+  StarIcon,
+  TagIcon,
+  TextIcon,
+} from "@sanity/icons";
+import { defineType } from "sanity";
+import { validateSlug } from "@/utils/validateSlug";
 
 export const tagGenre = defineType({
-  name: 'tag.genre',
-  type: 'document',
-  title: 'Genre',
+  name: "tag.genre",
+  type: "document",
+  title: "Genre",
   icon: TagIcon,
   groups: [
     {
-      title: 'SEO',
-      name: 'seo',
+      title: "SEO",
+      name: "seo",
       icon: SearchIcon,
     },
   ],
   fields: [
     {
-      title: 'Title',
-      name: 'title',
-      type: 'string',
+      title: "Title",
+      name: "title",
+      type: "string",
     },
     {
-      title: 'Sub Genres',
-      name: 'subGenres',
-      type: 'array',
+      title: "Sub Genres",
+      name: "subGenres",
+      type: "array",
       of: [
         {
-          title: 'Sub Genre',
-          type: 'reference',
-          to: [{type: 'tag.subGenre'}],
+          title: "Sub Genre",
+          type: "reference",
+          to: [{ type: "tag.subGenre" }],
           options: {
             disableNew: false,
           },
@@ -39,13 +45,13 @@ export const tagGenre = defineType({
   ],
   preview: {
     select: {
-      title: 'title',
+      title: "title",
     },
     prepare(selection) {
-      const {title} = selection
+      const { title } = selection;
       return {
         title: title,
-      }
+      };
     },
   },
-})
+});

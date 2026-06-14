@@ -1,12 +1,12 @@
-import React from 'react'
-import {defineType} from 'sanity'
+import React from "react";
+import { defineType } from "sanity";
 
-import PlaceholderStringInput from '@/components/inputs/PlaceholderString'
+import PlaceholderStringInput from "@/components/inputs/PlaceholderString";
 
 export const placeholderString = defineType({
-  name: 'placeholderString',
-  title: 'Title',
-  type: 'string',
+  name: "placeholderString",
+  title: "Title",
+  type: "string",
   components: {
     input: PlaceholderStringInput,
   },
@@ -15,4 +15,4 @@ export const placeholderString = defineType({
       If empty, displays the document title (<code>title</code>)
     </>
   ),
-})
+});

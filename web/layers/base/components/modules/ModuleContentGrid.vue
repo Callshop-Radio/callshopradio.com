@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { useMainStore } from "~/stores/mainStore";
+import type { ContentItem, Image, Tag } from "~/types/sanity";
 import {
 	ARTICLE_COUNT_QUERY,
 	ARTICLE_LIST_QUERY,
@@ -7,159 +10,156 @@ import {
 	SET_COUNT_QUERY,
 	SET_LIST_QUERY,
 	SHOW_COUNT_QUERY,
-	SHOW_LIST_QUERY
-} from '~~/queries/module.queries'
-import type { ContentItem, Image, Tag } from '~/types/sanity'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useMainStore } from '~/stores/mainStore'
+	SHOW_LIST_QUERY,
+} from "~~/queries/module.queries";
 
-const { locale: _locale } = useI18n()
-const localePath = useLocalePath()
-const mainStore = useMainStore()
+const { locale: _locale } = useI18n();
+const localePath = useLocalePath();
+const mainStore = useMainStore();
 
 const props = defineProps({
-	module: { type: Object, required: true }
-})
+	module: { type: Object, required: true },
+});
 
 // ==================== CONSTANTS ====================
-const MAIN_CITIES = ['Düsseldorf', 'Leipzig', 'Vienna']
-const ITEMS_PER_PAGE = 9
-const SCROLL_THRESHOLD = 30
+const MAIN_CITIES = ["Düsseldorf", "Leipzig", "Vienna"];
+const ITEMS_PER_PAGE = 9;
+const SCROLL_THRESHOLD = 30;
 
 // Color mapping for different content types
 const CONTENT_TYPE_COLORS = {
-	sets: 'pink',
-	shows: 'pink',
-	words: 'green',
-	pool: 'blue',
-	persons: 'blue',
-	venues: 'blue',
-	all: 'blue'
-} as const
+	sets: "pink",
+	shows: "pink",
+	words: "green",
+	pool: "blue",
+	persons: "blue",
+	venues: "blue",
+	all: "blue",
+} as const;
 
 // ==================== STATE ====================
-const activeFilters = ref(new Set<string>())
-const activeGenres = ref(new Set<string>())
-const activeSubGenres = ref(new Set<string>())
-const isOtherCitiesActive = ref(false)
-const activeFilterType = ref<string | null>(null)
-const showFilters = ref(true)
-const showMobileFilters = ref(false)
-const lastScrollY = ref(0)
-const sortMode = ref<'new' | 'shuffle' | 'alpha'>('new')
-const shuffleSeed = ref(Date.now())
-const visibleItemCount = ref(ITEMS_PER_PAGE)
-const artworkUrls = ref(new Map<string, string>())
-const moduleContainer = ref<HTMLElement | null>(null)
-const filterSection = ref<HTMLElement | null>(null)
+const activeFilters = ref(new Set<string>());
+const activeGenres = ref(new Set<string>());
+const activeSubGenres = ref(new Set<string>());
+const isOtherCitiesActive = ref(false);
+const activeFilterType = ref<string | null>(null);
+const showFilters = ref(true);
+const showMobileFilters = ref(false);
+const lastScrollY = ref(0);
+const sortMode = ref<"new" | "shuffle" | "alpha">("new");
+const shuffleSeed = ref(Date.now());
+const visibleItemCount = ref(ITEMS_PER_PAGE);
+const artworkUrls = ref(new Map<string, string>());
+const moduleContainer = ref<HTMLElement | null>(null);
+const filterSection = ref<HTMLElement | null>(null);
 
 // ==================== COMPUTED: Content Type ====================
 const contentType = computed(() => {
-	if (!props.module) return null
-	const type = props.module.type || null
-	if (type === 'pool' && props.module.poolContentType) {
-		return props.module.poolContentType
+	if (!props.module) return null;
+	const type = props.module.type || null;
+	if (type === "pool" && props.module.poolContentType) {
+		return props.module.poolContentType;
 	}
-	return type
-})
+	return type;
+});
 
 const categoryType = computed(() => {
-	const type = contentType.value
-	if (['persons', 'venues', 'all'].includes(type)) return 'Pool'
-	if (type === 'sets') return 'sets'
-	if (type === 'shows') return 'Shows'
-	if (type === 'words') return 'Words'
-	return ''
-})
+	const type = contentType.value;
+	if (["persons", "venues", "all"].includes(type)) return "Pool";
+	if (type === "sets") return "sets";
+	if (type === "shows") return "Shows";
+	if (type === "words") return "Words";
+	return "";
+});
 
 const _themeColor = computed(
-	() => CONTENT_TYPE_COLORS[contentType.value] || 'pink'
-)
+	() => CONTENT_TYPE_COLORS[contentType.value] || "pink",
+);
 
 // ==================== HYBRID DATA LOADING ====================
 // Determine if we need to load data ourselves (no pre-loaded items in props)
 // Determine if we need to load data ourselves (no pre-loaded items in props OR filtering active)
-const forceSelfLoad = ref(false)
+const forceSelfLoad = ref(false);
 
 const needsSelfLoad = computed(() => {
-	if (forceSelfLoad.value) return true
-	if (!props.module) return false
-	const { type, poolItems, setItems, showItems, articleItems } = props.module
+	if (forceSelfLoad.value) return true;
+	if (!props.module) return false;
+	const { type, poolItems, setItems, showItems, articleItems } = props.module;
 
 	const hasItems = {
 		pool: poolItems?.length > 0,
 		sets: setItems?.length > 0,
 		shows: showItems?.length > 0,
-		words: articleItems?.length > 0
-	}
+		words: articleItems?.length > 0,
+	};
 
-	return !hasItems[type]
-})
+	return !hasItems[type];
+});
 
 // Self-loaded items state
-const selfLoadedCount = ref(0)
-const isLoadingSelf = ref(false)
-const selfLoadPage = ref(1)
-const SELF_LOAD_PER_PAGE = 50
+const selfLoadedCount = ref(0);
+const isLoadingSelf = ref(false);
+const selfLoadPage = ref(1);
+const SELF_LOAD_PER_PAGE = 50;
 
 // Map module type to query type
 const getModuleQueryType = computed(() => {
-	if (!props.module) return null
-	const type = props.module.type
-	if (type === 'pool') return 'pool'
-	if (type === 'sets') return 'sets'
-	if (type === 'shows') return 'shows'
-	if (type === 'words') return 'words'
-	return null
-})
+	if (!props.module) return null;
+	const type = props.module.type;
+	if (type === "pool") return "pool";
+	if (type === "sets") return "sets";
+	if (type === "shows") return "shows";
+	if (type === "words") return "words";
+	return null;
+});
 
 // Build query config for SSR-compatible data fetching
 // Build query config for SSR-compatible data fetching
 const buildQueryConfig = () => {
-	const type = getModuleQueryType.value
-	if (!type) return null
+	const type = getModuleQueryType.value;
+	if (!type) return null;
 
-	const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE
-	const end = selfLoadPage.value * SELF_LOAD_PER_PAGE
+	const start = (selfLoadPage.value - 1) * SELF_LOAD_PER_PAGE;
+	const end = selfLoadPage.value * SELF_LOAD_PER_PAGE;
 
 	// Prepare filters
-	const filterTags: string[] = []
-	const filterOrTags: string[][] = []
+	const filterTags: string[] = [];
+	const filterOrTags: string[][] = [];
 
 	// 1. Handle Active Filters (AND logic, but "others" is special)
 	if (activeFilters.value.size > 0) {
 		activeFilters.value.forEach((tagId) => {
-			if (tagId === 'others') {
+			if (tagId === "others") {
 				// Special "Others" logic: OR of all non-main cities
 				// Find all city tags that are NOT main cities
 				const otherCityIds = categorizedTags.value.cities
 					.filter((c: Tag) => !isMainCity({ title: c.title }))
-					.map((c: Tag) => c._id)
+					.map((c: Tag) => c._id);
 
 				if (otherCityIds.length > 0) {
-					filterOrTags.push(otherCityIds)
+					filterOrTags.push(otherCityIds);
 				}
 			} else {
-				filterTags.push(tagId)
+				filterTags.push(tagId);
 			}
-		})
+		});
 	}
 
 	// 2. Handle Genres/Subgenres
 	// If subgenres are active, they are already in activeFilters (handled above).
 	// If only top-level genres are active, we need OR logic for them and their subgenres.
 	if (activeGenres.value.size > 0 && activeSubGenres.value.size === 0) {
-		const genreOrGroup: string[] = []
+		const genreOrGroup: string[] = [];
 		activeGenres.value.forEach((genreId) => {
-			genreOrGroup.push(genreId)
+			genreOrGroup.push(genreId);
 			// Add subgenres of this genre
 			const genre = categorizedTags.value.genres.find(
-				(g: Tag & { subGenres?: Tag[] }) => g._id === genreId
-			)
-			genre?.subGenres?.forEach((sg: Tag) => genreOrGroup.push(sg._id))
-		})
+				(g: Tag & { subGenres?: Tag[] }) => g._id === genreId,
+			);
+			genre?.subGenres?.forEach((sg: Tag) => genreOrGroup.push(sg._id));
+		});
 		if (genreOrGroup.length > 0) {
-			filterOrTags.push(genreOrGroup)
+			filterOrTags.push(genreOrGroup);
 		}
 	}
 
@@ -167,93 +167,93 @@ const buildQueryConfig = () => {
 		start,
 		end,
 		filterTags,
-		filterOrTags
-	}
+		filterOrTags,
+	};
 
 	switch (type) {
-	case 'sets':
-		return { query: SET_LIST_QUERY, countQuery: SET_COUNT_QUERY, params }
-	case 'pool': {
-		const poolType = props.module.poolContentType
-		params.types =
-        poolType === 'all'
-        	? ['person', 'venue']
-        	: poolType === 'persons'
-        		? ['person']
-        		: poolType === 'venues'
-        			? ['venue']
-        			: ['person', 'venue']
-		return { query: POOL_LIST_QUERY, countQuery: POOL_COUNT_QUERY, params }
-	}
-	case 'shows':
-		return { query: SHOW_LIST_QUERY, countQuery: SHOW_COUNT_QUERY, params }
-	case 'words':
-		return {
-			query: ARTICLE_LIST_QUERY,
-			countQuery: ARTICLE_COUNT_QUERY,
-			params
+		case "sets":
+			return { query: SET_LIST_QUERY, countQuery: SET_COUNT_QUERY, params };
+		case "pool": {
+			const poolType = props.module.poolContentType;
+			params.types =
+				poolType === "all"
+					? ["person", "venue"]
+					: poolType === "persons"
+						? ["person"]
+						: poolType === "venues"
+							? ["venue"]
+							: ["person", "venue"];
+			return { query: POOL_LIST_QUERY, countQuery: POOL_COUNT_QUERY, params };
 		}
-	default:
-		return null
+		case "shows":
+			return { query: SHOW_LIST_QUERY, countQuery: SHOW_COUNT_QUERY, params };
+		case "words":
+			return {
+				query: ARTICLE_LIST_QUERY,
+				countQuery: ARTICLE_COUNT_QUERY,
+				params,
+			};
+		default:
+			return null;
 	}
-}
+};
 
 // SSR-compatible data loading with useAsyncData
 const { data: selfLoadedItems, pending: isLoadingInitial } = await useAsyncData(
 	`module-content-grid-${props.module?._key || props.module?.type}-${
-		props.module?.poolContentType || 'default'
+		props.module?.poolContentType || "default"
 	}`,
 	async () => {
-		if (!needsSelfLoad.value) return []
+		if (!needsSelfLoad.value) return [];
 
 		// Safety check for query config
-		const config = buildQueryConfig()
-		if (!config) return []
+		const config = buildQueryConfig();
+		if (!config) return [];
 
 		try {
-			const sanity = useSanity()
+			const sanity = useSanity();
 			// Increase timeout or handle slow connections if needed, but default fetch should be okay.
 			// We wrap in try/catch to ensure page doesn't crash on one module failure.
 			const [items, count] = await Promise.all([
 				sanity.fetch(config.query, config.params),
-				sanity.fetch(config.countQuery, config.params)
-			])
+				sanity.fetch(config.countQuery, config.params),
+			]);
 
-			if (typeof count === 'number') {
-				selfLoadedCount.value = count
+			if (typeof count === "number") {
+				selfLoadedCount.value = count;
 			}
 
-			return items || []
+			return items || [];
 		} catch (error) {
-			console.error('[ModuleContentGrid] SSR Data Fetch Error:', error)
+			console.error("[ModuleContentGrid] SSR Data Fetch Error:", error);
 			// Return empty array on error so page can still render other parts
-			return []
+			return [];
 		}
 	},
 	{
 		default: () => [],
-		lazy: true // Enable lazy loading to unblock navigation
+		lazy: true, // Enable lazy loading to unblock navigation
 		// server: true // explicit
-	}
-)
+	},
+);
 
 // Function to load more content (client-side only for pagination)
 // Function to load content based on current filters/page
 async function fetchActiveContent(reset = false) {
-	const config = buildQueryConfig()
-	if (!config) return
+	const config = buildQueryConfig();
+	if (!config) return;
 
-	isLoadingSelf.value = true
+	isLoadingSelf.value = true;
 	if (reset) {
-		selfLoadPage.value = 1
-		config.params.start = 0
-		config.params.end = SELF_LOAD_PER_PAGE
+		selfLoadPage.value = 1;
+		config.params.start = 0;
+		config.params.end = SELF_LOAD_PER_PAGE;
 		// We are entering filtered mode
-		forceSelfLoad.value = true
+		forceSelfLoad.value = true;
 	}
 
 	try {
-		const sanity = useSanity()
+		const sanity = useSanity();
 		// Use the dynamic buildModuleQuery from queries file to construct the final query
 		// Note: We need to import buildModuleQuery logic or use the strings provided.
 		// However, buildQueryConfig currently returns static strings.
@@ -264,44 +264,47 @@ async function fetchActiveContent(reset = false) {
 		// NO, the updated module queries rely on `buildModuleQuery` to assemble the GROQ.
 
 		// RE-IMPORT from module.queries.ts
-		const { buildModuleQuery } = await import('~~/queries/module.queries')
+		const { buildModuleQuery } = await import("~~/queries/module.queries");
 
-		const queryData = buildModuleQuery(getModuleQueryType.value as 'sets' | 'pool' | 'shows' | 'words', {
-			start: config.params.start,
-			end: config.params.end,
-			contentType: config.params.types,
-			filterTags: config.params.filterTags,
-			filterOrTags: config.params.filterOrTags
-		})
+		const queryData = buildModuleQuery(
+			getModuleQueryType.value as "sets" | "pool" | "shows" | "words",
+			{
+				start: config.params.start,
+				end: config.params.end,
+				contentType: config.params.types,
+				filterTags: config.params.filterTags,
+				filterOrTags: config.params.filterOrTags,
+			},
+		);
 
 		const [items, count] = await Promise.all([
 			sanity.fetch(queryData.query, queryData.params),
-			sanity.fetch(queryData.countQuery, queryData.params)
-		])
+			sanity.fetch(queryData.countQuery, queryData.params),
+		]);
 
-		if (typeof count === 'number') {
-			selfLoadedCount.value = count
+		if (typeof count === "number") {
+			selfLoadedCount.value = count;
 		}
 
 		if (reset) {
-			selfLoadedItems.value = items || []
+			selfLoadedItems.value = items || [];
 		} else {
 			if (selfLoadedItems.value) {
-				selfLoadedItems.value = [...selfLoadedItems.value, ...(items || [])]
+				selfLoadedItems.value = [...selfLoadedItems.value, ...(items || [])];
 			}
 		}
 	} catch (error) {
-		console.error('[ModuleContentGrid] Error fetching content:', error)
+		console.error("[ModuleContentGrid] Error fetching content:", error);
 	} finally {
-		isLoadingSelf.value = false
+		isLoadingSelf.value = false;
 	}
 }
 
 // Function to load more content (client-side only for pagination)
 async function loadMoreSelfContent() {
-	if (isLoadingSelf.value) return
-	selfLoadPage.value++
-	await fetchActiveContent(false)
+	if (isLoadingSelf.value) return;
+	selfLoadPage.value++;
+	await fetchActiveContent(false);
 }
 
 // Watchers for filtering
@@ -309,27 +312,27 @@ watch(
 	[activeFilters, activeGenres, activeSubGenres],
 	() => {
 		// Debounce could be added here if needed
-		fetchActiveContent(true)
+		fetchActiveContent(true);
 	},
-	{ deep: true }
-)
+	{ deep: true },
+);
 
 // Load more self-loaded items (renamed for clarity)
 async function _loadMoreSelfItems() {
-	if (isLoadingSelf.value) return
-	const currentItems = selfLoadedItems.value || []
-	if (currentItems.length >= selfLoadedCount.value) return
-	await loadMoreSelfContent()
+	if (isLoadingSelf.value) return;
+	const currentItems = selfLoadedItems.value || [];
+	if (currentItems.length >= selfLoadedCount.value) return;
+	await loadMoreSelfContent();
 }
 
 // ==================== COMPUTED: Items ====================
 // ==================== COMPUTED: Items ====================
 const allItems = computed(() => {
-	if (!props.module) return []
+	if (!props.module) return [];
 
 	// If we're self-loading (either initial empty or filtered), return self-loaded items
 	if (needsSelfLoad.value) {
-		return selfLoadedItems.value
+		return selfLoadedItems.value;
 	}
 
 	// Otherwise use props data (existing behavior)
@@ -339,33 +342,33 @@ const allItems = computed(() => {
 		setItems,
 		showItems,
 		articleItems,
-		poolContentType
-	} = props.module
+		poolContentType,
+	} = props.module;
 
 	const itemsMap = {
 		pool: () => filterPoolItems(poolItems || [], poolContentType),
 		sets: () => setItems || [],
 		shows: () => showItems || [],
-		words: () => articleItems || []
-	}
+		words: () => articleItems || [],
+	};
 
-	return itemsMap[type]?.() || []
-})
+	return itemsMap[type]?.() || [];
+});
 
 function filterPoolItems(items: ContentItem[], contentType: string) {
-	if (!items?.length) return []
+	if (!items?.length) return [];
 	const typeMap = {
-		persons: 'person',
-		venues: 'venue',
-		all: ['venue', 'person']
-	}
-	const allowedTypes = typeMap[contentType]
-	if (!allowedTypes) return items
+		persons: "person",
+		venues: "venue",
+		all: ["venue", "person"],
+	};
+	const allowedTypes = typeMap[contentType];
+	if (!allowedTypes) return items;
 	return items.filter((item) =>
 		Array.isArray(allowedTypes)
 			? allowedTypes.includes(item._type)
-			: item._type === allowedTypes
-	)
+			: item._type === allowedTypes,
+	);
 }
 
 // ==================== COMPUTED: Tags ====================
@@ -374,260 +377,264 @@ const _getUsedTagIdsInItems = computed(() => {
 	// DEPRECATED: We now show all available tags regardless of content
 	// Keeping this function only if other logic needed it, but clearing it out
 	// to avoid confusion.
-	return new Set<string>()
-})
+	return new Set<string>();
+});
 
 function _collectTagIds(tags: Tag[] | undefined, set: Set<string>) {
-	if (!Array.isArray(tags)) return
-	tags.forEach((tag) => tag?._id && set.add(tag._id))
+	if (!Array.isArray(tags)) return;
+	tags.forEach((tag) => tag?._id && set.add(tag._id));
 }
 
 const categorizedTags = computed(() => {
-	const availableTags = props.module?.availableTags
-	if (!availableTags) return { genres: [], cities: [], global: [], mood: [] }
+	const availableTags = props.module?.availableTags;
+	if (!availableTags) return { genres: [], cities: [], global: [], mood: [] };
 
 	// Return full available tags without filtering
-	const genres = (availableTags.genres || []).map((genre: Tag & { subGenres?: Tag[] }) => {
-		// Always include subgenres
-		return { ...genre, subGenres: genre.subGenres || [] }
-	})
+	const genres = (availableTags.genres || []).map(
+		(genre: Tag & { subGenres?: Tag[] }) => {
+			// Always include subgenres
+			return { ...genre, subGenres: genre.subGenres || [] };
+		},
+	);
 
 	return {
 		genres,
 		cities: availableTags.cities || [],
 		global: availableTags.global || [],
-		mood: availableTags.mood || []
-	}
-})
+		mood: availableTags.mood || [],
+	};
+});
 
 const availableTags = computed(() => {
-	if (!props.module?.availableTags) return []
+	if (!props.module?.availableTags) return [];
 	// Return all tags flattened
 	return Object.values(props.module.availableTags)
 		.flat()
-		.filter((tag: Tag) => tag?._id)
-})
+		.filter((tag: Tag) => tag?._id);
+});
 
 const poolTags = computed(() => {
-	const tags = availableTags.value
-	const byType = (type: string) => tags.filter((t: Tag) => t._type === type)
+	const tags = availableTags.value;
+	const byType = (type: string) => tags.filter((t: Tag) => t._type === type);
 	return {
-		musicians: byType('tag.musician'),
-		venues: byType('tag.venue'),
-		crafts: byType('tag.crafts'),
-		articles: byType('tag.article')
-	}
-})
+		musicians: byType("tag.musician"),
+		venues: byType("tag.venue"),
+		crafts: byType("tag.crafts"),
+		articles: byType("tag.article"),
+	};
+});
 
 const getContentTypeSpecificTags = computed(() =>
-	availableTags.value.filter((tag: Tag) => tag._type !== 'tag.city')
-)
+	availableTags.value.filter((tag: Tag) => tag._type !== "tag.city"),
+);
 
 // ==================== TAG HELPERS ====================
 function getItemTags(item: ContentItem, type?: string): Tag[] {
-	const tags: Tag[] = []
+	const tags: Tag[] = [];
 	const addTags = (source: Tag[] | undefined) => {
-		if (!Array.isArray(source)) return
+		if (!Array.isArray(source)) return;
 		source.forEach((tag) => {
 			if (
 				tag &&
-        (!type || tag._type === type) &&
-        !tags.some((t) => t._id === tag._id)
+				(!type || tag._type === type) &&
+				!tags.some((t) => t._id === tag._id)
 			) {
-				tags.push(tag)
+				tags.push(tag);
 			}
-		})
-	}
-	addTags(item.tags)
-	addTags(item.parentShow?.tags)
-	return tags
+		});
+	};
+	addTags(item.tags);
+	addTags(item.parentShow?.tags);
+	return tags;
 }
 
-const getItemCityTags = (item: ContentItem) => getItemTags(item, 'tag.city')
+const getItemCityTags = (item: ContentItem) => getItemTags(item, "tag.city");
 const getItemNonCityTags = (item: ContentItem) =>
-	(item.tags || []).filter((t: Tag) => t._type !== 'tag.city')
+	(item.tags || []).filter((t: Tag) => t._type !== "tag.city");
 
-function getTagTitle(title: Tag['title']): string {
+function getTagTitle(title: Tag["title"]): string {
 	// Handle both string and i18n array formats
-	if (!title) return ''
-	if (typeof title === 'string') return title
+	if (!title) return "";
+	if (typeof title === "string") return title;
 	if (Array.isArray(title)) {
-		return parseI18nObj(title) || title[0]?.value || ''
+		return parseI18nObj(title) || title[0]?.value || "";
 	}
 	// Handle object format like { de: "...", en: "..." }
-	if (typeof title === 'object') {
-		return title.de || title.en || Object.values(title)[0] || ''
+	if (typeof title === "object") {
+		return title.de || title.en || Object.values(title)[0] || "";
 	}
-	return String(title)
+	return String(title);
 }
 
 function isMainCity(cityTag: Tag): boolean {
-	if (!cityTag?.title) return false
-	const cityName = getTagTitle(cityTag.title)
-	return MAIN_CITIES.includes(cityName)
+	if (!cityTag?.title) return false;
+	const cityName = getTagTitle(cityTag.title);
+	return MAIN_CITIES.includes(cityName);
 }
 
 function getTagCategory(tagId: string): string {
-	if (tagId === 'others') return 'city'
-	const { cities, genres, mood } = categorizedTags.value
-	if (cities.some((t: Tag) => t._id === tagId)) return 'city'
-	if (genres.some((t: Tag) => t._id === tagId)) return 'genre'
+	if (tagId === "others") return "city";
+	const { cities, genres, mood } = categorizedTags.value;
+	if (cities.some((t: Tag) => t._id === tagId)) return "city";
+	if (genres.some((t: Tag) => t._id === tagId)) return "genre";
 	for (const genre of genres) {
-		if (genre.subGenres?.some((t: Tag) => t._id === tagId)) return 'subGenre'
+		if (genre.subGenres?.some((t: Tag) => t._id === tagId)) return "subGenre";
 	}
-	if (mood?.some((t: Tag) => t._id === tagId)) return 'mood'
+	if (mood?.some((t: Tag) => t._id === tagId)) return "mood";
 
-	const tag = availableTags.value.find((t: Tag) => t._id === tagId)
+	const tag = availableTags.value.find((t: Tag) => t._id === tagId);
 	const typeMap: Record<string, string> = {
-		'tag.musician': 'musician',
-		'tag.venue': 'venue',
-		'tag.crafts': 'crafts',
-		'tag.article': 'article'
-	}
-	return typeMap[tag?._type] || 'global'
+		"tag.musician": "musician",
+		"tag.venue": "venue",
+		"tag.crafts": "crafts",
+		"tag.article": "article",
+	};
+	return typeMap[tag?._type] || "global";
 }
 
 function getTagNameById(tagId: string): string {
-	if (tagId === 'others') return 'Elsewhere'
+	if (tagId === "others") return "Elsewhere";
 
 	const searchSources = [
 		categorizedTags.value.cities,
 		categorizedTags.value.genres,
 		categorizedTags.value.mood,
 		categorizedTags.value.global,
-		...categorizedTags.value.genres.map((g: Tag & { subGenres?: Tag[] }) => g.subGenres || []),
-		availableTags.value
-	]
+		...categorizedTags.value.genres.map(
+			(g: Tag & { subGenres?: Tag[] }) => g.subGenres || [],
+		),
+		availableTags.value,
+	];
 
 	for (const source of searchSources) {
-		const found = source?.find?.((t: Tag) => t._id === tagId)
-		if (found) return getTagTitle(found.title)
+		const found = source?.find?.((t: Tag) => t._id === tagId);
+		if (found) return getTagTitle(found.title);
 	}
-	return 'Unknown Filter'
+	return "Unknown Filter";
 }
 
 // ==================== FILTER LOGIC ====================
 // History to track the order of applied filters for "Remove last filter" functionality
-type FilterAction = { type: 'filter' | 'genre' | 'subGenre'; id: string }
-const filterHistory = ref<FilterAction[]>([])
+type FilterAction = { type: "filter" | "genre" | "subGenre"; id: string };
+const filterHistory = ref<FilterAction[]>([]);
 
-function addToHistory(type: 'filter' | 'genre' | 'subGenre', id: string) {
+function addToHistory(type: "filter" | "genre" | "subGenre", id: string) {
 	// Remove if exists to ensure unique and move to end (though usually we toggle off before re-adding)
 	const index = filterHistory.value.findIndex(
-		(f) => f.type === type && f.id === id
-	)
-	if (index > -1) filterHistory.value.splice(index, 1)
-	filterHistory.value.push({ type, id })
+		(f) => f.type === type && f.id === id,
+	);
+	if (index > -1) filterHistory.value.splice(index, 1);
+	filterHistory.value.push({ type, id });
 }
 
-function removeFromHistory(type: 'filter' | 'genre' | 'subGenre', id: string) {
+function removeFromHistory(type: "filter" | "genre" | "subGenre", id: string) {
 	const index = filterHistory.value.findIndex(
-		(f) => f.type === type && f.id === id
-	)
-	if (index > -1) filterHistory.value.splice(index, 1)
+		(f) => f.type === type && f.id === id,
+	);
+	if (index > -1) filterHistory.value.splice(index, 1);
 }
 
 function removeLastFilter() {
 	// Try to remove from activeFilters (Tags) first
 	if (activeFilters.value.size > 0) {
-		const lastFilter = [...activeFilters.value].pop()
-		if (lastFilter) toggleFilter(lastFilter)
-		return
+		const lastFilter = [...activeFilters.value].pop();
+		if (lastFilter) toggleFilter(lastFilter);
+		return;
 	}
 
 	// Then SubGenres
 	if (activeSubGenres.value.size > 0) {
-		const lastSub = [...activeSubGenres.value].pop()
-		if (lastSub) toggleSubGenreFilter(lastSub)
-		return
+		const lastSub = [...activeSubGenres.value].pop();
+		if (lastSub) toggleSubGenreFilter(lastSub);
+		return;
 	}
 
 	// Then Genres
 	if (activeGenres.value.size > 0) {
-		const lastGenre = [...activeGenres.value].pop()
-		if (lastGenre) toggleGenreFilter(lastGenre)
-		return
+		const lastGenre = [...activeGenres.value].pop();
+		if (lastGenre) toggleGenreFilter(lastGenre);
+		return;
 	}
 
 	// Fallback cleanup
 	if (filterHistory.value.length > 0) {
-		filterHistory.value = []
+		filterHistory.value = [];
 	}
 }
 
 function toggleFilter(tagId: string) {
-	const isActive = activeFilters.value.has(tagId)
+	const isActive = activeFilters.value.has(tagId);
 
 	if (isActive) {
-		activeFilters.value.delete(tagId)
-		removeFromHistory('filter', tagId)
+		activeFilters.value.delete(tagId);
+		removeFromHistory("filter", tagId);
 
-		if (getTagCategory(tagId) === 'subGenre') {
-			activeSubGenres.value.delete(tagId)
-			removeFromHistory('subGenre', tagId)
+		if (getTagCategory(tagId) === "subGenre") {
+			activeSubGenres.value.delete(tagId);
+			removeFromHistory("subGenre", tagId);
 		}
-		if (tagId === 'others') isOtherCitiesActive.value = false
+		if (tagId === "others") isOtherCitiesActive.value = false;
 	} else {
-		activeFilters.value.add(tagId)
-		addToHistory('filter', tagId)
+		activeFilters.value.add(tagId);
+		addToHistory("filter", tagId);
 
-		if (tagId === 'others') isOtherCitiesActive.value = true
+		if (tagId === "others") isOtherCitiesActive.value = true;
 	}
 
-	visibleItemCount.value = ITEMS_PER_PAGE
+	visibleItemCount.value = ITEMS_PER_PAGE;
 }
 
 function toggleGenreFilter(genreId: string) {
 	if (activeGenres.value.has(genreId)) {
-		activeGenres.value.delete(genreId)
-		removeFromHistory('genre', genreId)
+		activeGenres.value.delete(genreId);
+		removeFromHistory("genre", genreId);
 
 		const genre = categorizedTags.value.genres.find(
-			(g: Tag & { subGenres?: Tag[] }) => g._id === genreId
-		)
+			(g: Tag & { subGenres?: Tag[] }) => g._id === genreId,
+		);
 		genre?.subGenres?.forEach((sg: Tag) => {
-			activeSubGenres.value.delete(sg._id)
-			activeFilters.value.delete(sg._id)
-			removeFromHistory('subGenre', sg._id)
-			removeFromHistory('filter', sg._id)
-		})
+			activeSubGenres.value.delete(sg._id);
+			activeFilters.value.delete(sg._id);
+			removeFromHistory("subGenre", sg._id);
+			removeFromHistory("filter", sg._id);
+		});
 	} else {
-		activeGenres.value.add(genreId)
-		addToHistory('genre', genreId)
+		activeGenres.value.add(genreId);
+		addToHistory("genre", genreId);
 	}
-	visibleItemCount.value = ITEMS_PER_PAGE
+	visibleItemCount.value = ITEMS_PER_PAGE;
 }
 
 function toggleSubGenreFilter(subGenreId: string) {
 	if (activeSubGenres.value.has(subGenreId)) {
-		activeSubGenres.value.delete(subGenreId)
-		removeFromHistory('subGenre', subGenreId)
-		activeFilters.value.delete(subGenreId)
-		removeFromHistory('filter', subGenreId)
+		activeSubGenres.value.delete(subGenreId);
+		removeFromHistory("subGenre", subGenreId);
+		activeFilters.value.delete(subGenreId);
+		removeFromHistory("filter", subGenreId);
 	} else {
-		activeSubGenres.value.add(subGenreId)
-		addToHistory('subGenre', subGenreId)
-		activeFilters.value.add(subGenreId)
-		addToHistory('filter', subGenreId)
+		activeSubGenres.value.add(subGenreId);
+		addToHistory("subGenre", subGenreId);
+		activeFilters.value.add(subGenreId);
+		addToHistory("filter", subGenreId);
 	}
-	visibleItemCount.value = ITEMS_PER_PAGE
+	visibleItemCount.value = ITEMS_PER_PAGE;
 }
 
 function toggleFilterType(type: string) {
-	activeFilterType.value = activeFilterType.value === type ? null : type
+	activeFilterType.value = activeFilterType.value === type ? null : type;
 }
 
 function resetFilters() {
-	activeFilters.value.clear()
-	activeGenres.value.clear()
-	activeSubGenres.value.clear()
-	filterHistory.value = []
-	isOtherCitiesActive.value = false
+	activeFilters.value.clear();
+	activeGenres.value.clear();
+	activeSubGenres.value.clear();
+	filterHistory.value = [];
+	isOtherCitiesActive.value = false;
 }
 
 // ==================== ITEM MATCHING ====================
 function itemHasTag(item: ContentItem, tagId: string): boolean {
-	return getItemTags(item).some((t) => t._id === tagId)
+	return getItemTags(item).some((t) => t._id === tagId);
 }
 
 function itemMatchesFilters(item: ContentItem): boolean {
@@ -636,18 +643,18 @@ function itemMatchesFilters(item: ContentItem): boolean {
 		if (activeSubGenres.value.size > 0) {
 			// SubGenres selected: item must have ALL selected subgenres
 			for (const subGenreId of activeSubGenres.value) {
-				if (!itemHasTag(item, subGenreId)) return false
+				if (!itemHasTag(item, subGenreId)) return false;
 			}
 		} else {
 			// Only genres selected: item must have at least one genre or its subgenres
-			const allowedIds = new Set<string>()
+			const allowedIds = new Set<string>();
 			activeGenres.value.forEach((gId) => {
-				allowedIds.add(gId)
+				allowedIds.add(gId);
 				categorizedTags.value.genres
 					.find((g) => g._id === gId)
-					?.subGenres?.forEach((sg) => allowedIds.add(sg._id))
-			})
-			if (!getItemTags(item).some((t) => allowedIds.has(t._id))) return false
+					?.subGenres?.forEach((sg) => allowedIds.add(sg._id));
+			});
+			if (!getItemTags(item).some((t) => allowedIds.has(t._id))) return false;
 		}
 	}
 
@@ -661,65 +668,65 @@ function itemMatchesFilters(item: ContentItem): boolean {
 	// BUT: if we are in server-side mode (forceSelfLoad), we should TRUST the server result?
 	// If we run 'itemMatchesFilters' on server-fetched data, we might accidentally hide items
 	// if our client-side logic is stricter or different.
-	if (forceSelfLoad.value) return true
+	if (forceSelfLoad.value) return true;
 
-	if (activeFilters.value.size === 0) return true
+	if (activeFilters.value.size === 0) return true;
 
 	for (const filterId of activeFilters.value) {
-		if (filterId === 'others') {
-			const cityTags = getItemCityTags(item)
+		if (filterId === "others") {
+			const cityTags = getItemCityTags(item);
 			if (cityTags.length > 0 && !cityTags.every((t) => !isMainCity(t)))
-				return false
+				return false;
 		} else if (!itemHasTag(item, filterId)) {
-			return false
+			return false;
 		}
 	}
-	return true
+	return true;
 }
 
 // ==================== SORTING ====================
-function changeSortMode(mode: 'new' | 'shuffle' | 'alpha') {
-	if (mode === 'shuffle') shuffleSeed.value = Date.now()
-	sortMode.value = mode
+function changeSortMode(mode: "new" | "shuffle" | "alpha") {
+	if (mode === "shuffle") shuffleSeed.value = Date.now();
+	sortMode.value = mode;
 }
 
 function seededRandom(seed: number) {
 	return () => {
-		seed = (seed * 9301 + 49297) % 233280
-		return seed / 233280
-	}
+		seed = (seed * 9301 + 49297) % 233280;
+		return seed / 233280;
+	};
 }
 
 function shuffleArray<T>(array: T[], seed: number): T[] {
-	const arr = [...array]
-	const rng = seededRandom(seed)
+	const arr = [...array];
+	const rng = seededRandom(seed);
 	for (let i = arr.length - 1; i > 0; i--) {
 		const j = Math.floor(rng() * (i + 1));
-		[arr[i], arr[j]] = [arr[j], arr[i]]
+		[arr[i], arr[j]] = [arr[j], arr[i]];
 	}
-	return arr
+	return arr;
 }
 
 const filteredItems = computed(() => {
-	const items = allItems.value.filter(itemMatchesFilters)
+	const items = allItems.value.filter(itemMatchesFilters);
 
 	const sortFns = {
 		new: (a, b) =>
 			new Date(b.datetime || b._updatedAt || b._createdAt || 0).getTime() -
-      new Date(a.datetime || a._updatedAt || a._createdAt || 0).getTime(),
+			new Date(a.datetime || a._updatedAt || a._createdAt || 0).getTime(),
 		alpha: (a, b) =>
-			(a.title || a.name || a.parentShow?.title || '')
+			(a.title || a.name || a.parentShow?.title || "")
 				.toLowerCase()
 				.localeCompare(
-					(b.title || b.name || b.parentShow?.title || '').toLowerCase()
+					(b.title || b.name || b.parentShow?.title || "").toLowerCase(),
 				),
-		shuffle: null
-	}
+		shuffle: null,
+	};
 
-	if (sortMode.value === 'shuffle')
-		return shuffleArray(items, shuffleSeed.value)
-	return items.sort(sortFns[sortMode.value])
-})
+	if (sortMode.value === "shuffle")
+		return shuffleArray(items, shuffleSeed.value);
+	return items.sort(sortFns[sortMode.value]);
+});
 
 const visibleItems = computed(() => {
 	// If we are filtering/server-loading, we show all loaded items
@@ -728,76 +735,76 @@ const visibleItems = computed(() => {
 	// If we fetch 50 items server side, we can just show them all,
 	// or implement client-side pagination on top of server-side chunks?
 	// Let's rely on slice.
-	return filteredItems.value.slice(0, visibleItemCount.value)
-})
+	return filteredItems.value.slice(0, visibleItemCount.value);
+});
 const hasMoreItems = computed(
-	() => visibleItems.value.length < filteredItems.value.length
-)
+	() => visibleItems.value.length < filteredItems.value.length,
+);
 
 function loadMoreItems() {
-	visibleItemCount.value += ITEMS_PER_PAGE
+	visibleItemCount.value += ITEMS_PER_PAGE;
 }
 
 // ==================== UI HELPERS ====================
 function toggleFiltersVisibility() {
-	showFilters.value = !showFilters.value
+	showFilters.value = !showFilters.value;
 }
 
 function toggleMobileFilters() {
-	showMobileFilters.value = !showMobileFilters.value
+	showMobileFilters.value = !showMobileFilters.value;
 	// Prevent body scroll when overlay is open
 	if (showMobileFilters.value) {
-		document.body.style.overflow = 'hidden'
+		document.body.style.overflow = "hidden";
 	} else {
-		document.body.style.overflow = ''
+		document.body.style.overflow = "";
 	}
 }
 
 function handleScroll() {
-	const scrollY = window.scrollY
-	const scrollDiff = scrollY - lastScrollY.value
+	const scrollY = window.scrollY;
+	const scrollDiff = scrollY - lastScrollY.value;
 
-	let isStuck = false
+	let isStuck = false;
 	if (filterSection.value) {
-		const rect = filterSection.value.getBoundingClientRect()
-		const style = window.getComputedStyle(filterSection.value)
-		const stickyTop = parseInt(style.top)
+		const rect = filterSection.value.getBoundingClientRect();
+		const style = window.getComputedStyle(filterSection.value);
+		const stickyTop = parseInt(style.top);
 
 		// Check if the element is currently stuck (top position matches sticky offset)
 		if (!isNaN(stickyTop) && Math.abs(rect.top - stickyTop) <= 2) {
-			isStuck = true
+			isStuck = true;
 		}
 	}
 
 	if (isStuck) {
 		if (scrollDiff > SCROLL_THRESHOLD && showFilters.value) {
-			showFilters.value = false
+			showFilters.value = false;
 		} else if (scrollDiff < -20 && !showFilters.value) {
-			showFilters.value = true
+			showFilters.value = true;
 		}
 	} else {
 		// If not stuck (e.g. at/near top of page), ensure filters are visible
-		if (!showFilters.value) showFilters.value = true
+		if (!showFilters.value) showFilters.value = true;
 	}
 
-	lastScrollY.value = scrollY
+	lastScrollY.value = scrollY;
 }
 
 function formatDate(dateString: string): string {
-	if (!dateString) return ''
-	const date = new Date(dateString)
-	if (isNaN(date.getTime())) return ''
-	return date.toLocaleDateString('de-DE', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric'
-	})
+	if (!dateString) return "";
+	const date = new Date(dateString);
+	if (isNaN(date.getTime())) return "";
+	return date.toLocaleDateString("de-DE", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+	});
 }
 
 // ==================== ROUTING ====================
 function getItemRoute(item: ContentItem): string {
-	if (!item?.slug) return '/'
-	const slug = item.slug.current
+	if (!item?.slug) return "/";
+	const slug = item.slug.current;
 	const routes = {
 		person: `/pool/${slug}`,
 		venue: `/pool/${slug}`,
@@ -805,95 +812,95 @@ function getItemRoute(item: ContentItem): string {
 			? `/shows/${item.parentShow.slug.current}/${slug}`
 			: `/shows/${slug}`,
 		article: `/words/${slug}`,
-		show: `/shows/${slug}`
-	}
-	return localePath(routes[item._type] || `/${item._type}/${slug}`)
+		show: `/shows/${slug}`,
+	};
+	return localePath(routes[item._type] || `/${item._type}/${slug}`);
 }
 
 // ==================== IMAGE HANDLING ====================
 function getItemImage(item: ContentItem) {
-	if (item.image || item.mainImage) return item.image || item.mainImage
+	if (item.image || item.mainImage) return item.image || item.mainImage;
 
-	const fallbacks = mainStore?.siteFallbacks
+	const fallbacks = mainStore?.siteFallbacks;
 	const fallbackMap = {
 		person: fallbacks?.fallbackPerson?.image,
 		venue: fallbacks?.fallbackVenue?.image,
 		show: fallbacks?.fallbackShow?.image,
 		set: fallbacks?.fallbackSet?.image,
 		word: fallbacks?.fallbackArticle?.image,
-		article: fallbacks?.fallbackArticle?.image
-	}
-	return fallbackMap[item._type] || fallbacks?.fallbackPerson?.image
+		article: fallbacks?.fallbackArticle?.image,
+	};
+	return fallbackMap[item._type] || fallbacks?.fallbackPerson?.image;
 }
 
 async function _checkImage(url: string): Promise<boolean> {
 	return new Promise((resolve) => {
-		const img = new Image()
-		img.onload = () => resolve(true)
-		img.onerror = () => resolve(false)
-		img.src = url
-	})
+		const img = new Image();
+		img.onload = () => resolve(true);
+		img.onerror = () => resolve(false);
+		img.src = url;
+	});
 }
 
 // Non-blocking artwork URL resolution - returns URL directly, browser handles 404s
 function getSoundcloudArtwork(item: ContentItem): string {
 	// Try SoundCloud artwork first (use -t500x500 for better quality without -original issues)
-	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url
+	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
 	if (artworkUrl) {
 		// Use t500x500 instead of original - more reliable
-		return artworkUrl.replace('-large', '-t500x500')
+		return artworkUrl.replace("-large", "-t500x500");
 	}
 	// Fallback chain
 	return (
 		item?.parentShow?.image?.asset?.url ||
-    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url ||
-    ''
-	)
+		mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url ||
+		""
+	);
 }
 
 function loadArtworkUrl(item: ContentItem) {
-	if (!item) return
-	const url = getSoundcloudArtwork(item)
-	artworkUrls.value.set(item._id, url)
+	if (!item) return;
+	const url = getSoundcloudArtwork(item);
+	artworkUrls.value.set(item._id, url);
 }
 
 function playTrack(item: ContentItem) {
-	const track = item?.soundcloud?.tracks?.[0]
-	if (!track) return
+	const track = item?.soundcloud?.tracks?.[0];
+	if (!track) return;
 	if (!track.permalink_url && track.id) {
-		track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
+		track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
 	}
-	mainStore.currentTrack = track
+	mainStore.currentTrack = track;
 }
 
 // ==================== LIFECYCLE ====================
 // Client-side only setup (scroll handling, artwork loading)
 onMounted(() => {
 	// Load artwork URLs for initially visible items (client-only)
-	if (contentType.value === 'sets') {
-		visibleItems.value.forEach(loadArtworkUrl)
+	if (contentType.value === "sets") {
+		visibleItems.value.forEach(loadArtworkUrl);
 	}
 
-	lastScrollY.value = window.scrollY
-	window.addEventListener('scroll', handleScroll, { passive: true })
-})
+	lastScrollY.value = window.scrollY;
+	window.addEventListener("scroll", handleScroll, { passive: true });
+});
 
 // Load artwork URLs when more items become visible
 watch(visibleItemCount, () => {
-	if (contentType.value === 'sets') {
+	if (contentType.value === "sets") {
 		visibleItems.value.forEach((item: ContentItem) => {
 			if (!artworkUrls.value.has(item._id)) {
-				loadArtworkUrl(item)
+				loadArtworkUrl(item);
 			}
-		})
+		});
 	}
-})
+});
 
 onUnmounted(() => {
-	window.removeEventListener('scroll', handleScroll)
+	window.removeEventListener("scroll", handleScroll);
 	// Reset body overflow on unmount
-	document.body.style.overflow = ''
-})
+	document.body.style.overflow = "";
+});
 </script>
 <template>
 	<div v-if="isLoadingInitial && needsSelfLoad" class="module-loading">

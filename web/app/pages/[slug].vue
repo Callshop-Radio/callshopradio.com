@@ -1,29 +1,29 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-import { SLUG_PAGE_QUERY } from '~~/queries/sanity.queries'
+import { SLUG_PAGE_QUERY } from "~~/queries/sanity.queries";
 
-const query = groq`${SLUG_PAGE_QUERY}`
+const query = groq`${SLUG_PAGE_QUERY}`;
 
-const route = useRoute()
+const route = useRoute();
 
 const { data } = await useCachedSanityQuery(query, {
-	slug: route?.params?.slug
-})
+	slug: route?.params?.slug,
+});
 
 if (!data?.value) {
 	throw createError({
 		statusCode: 404,
-		statusMessage: 'Page Not Found'
-	})
+		statusMessage: "Page Not Found",
+	});
 }
 
-usePageSeo(data?.value?.seo)
+usePageSeo(data?.value?.seo);
 
 useHead({
 	bodyAttrs: {
-		class: 'page--default'
-	}
-})
+		class: "page--default",
+	},
+});
 </script>
 
 <template>

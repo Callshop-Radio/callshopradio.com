@@ -2,13 +2,13 @@
 const props = defineProps({
 	style: {
 		type: String,
-		default: () => ''
+		default: () => "",
 	},
 	children: {
 		type: Object,
-		default: () => {}
-	}
-})
+		default: () => {},
+	},
+});
 </script>
 
 <template>

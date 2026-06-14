@@ -1,18 +1,18 @@
-import {DashboardIcon} from '@sanity/icons'
-import {defineType} from 'sanity'
+import { DashboardIcon } from "@sanity/icons";
+import { defineType } from "sanity";
 
 export const animationsPage = defineType({
-  title: 'Animations',
-  name: 'animations.page',
-  type: 'object',
+  title: "Animations",
+  name: "animations.page",
+  type: "object",
   icon: DashboardIcon,
   fields: [
     {
-      title: 'Animations active',
-      type: 'boolean',
-      name: 'active',
+      title: "Animations active",
+      type: "boolean",
+      name: "active",
       initialValue: true,
-      options: {layout: 'checkbox'},
+      options: { layout: "checkbox" },
     },
   ],
-})
+});

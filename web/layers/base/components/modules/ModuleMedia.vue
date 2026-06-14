@@ -2,28 +2,28 @@
 const props = defineProps({
 	type: {
 		type: String,
-		default: 'image',
+		default: "image",
 		validator(value) {
-			return ['image', 'video'].includes(value)
-		}
+			return ["image", "video"].includes(value);
+		},
 	},
 	image: {
 		type: Object,
-		default: () => undefined
+		default: () => undefined,
 	},
 	video: {
 		type: Object,
-		default: () => undefined
+		default: () => undefined,
 	},
 	videoSettings: {
 		type: Object,
-		default: () => undefined
+		default: () => undefined,
 	},
 	caption: {
 		type: String,
-		default: ''
-	}
-})
+		default: "",
+	},
+});
 </script>
 
 <template>

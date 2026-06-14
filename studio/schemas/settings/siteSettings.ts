@@ -1,43 +1,43 @@
-import { CogIcon, DesktopIcon, SearchIcon} from '@sanity/icons'
-import { defineType } from 'sanity'
+import { CogIcon, DesktopIcon, SearchIcon } from "@sanity/icons";
+import { defineType } from "sanity";
 
-const TITLE = 'Settings'
+const TITLE = "Settings";
 
 export const siteSettings = defineType({
-  name: 'siteSettings',
-  type: 'document',
+  name: "siteSettings",
+  type: "document",
   title: TITLE,
   icon: CogIcon,
   groups: [
     {
-      title: 'Site Settings',
-      name: 'site',
+      title: "Site Settings",
+      name: "site",
       icon: DesktopIcon,
     },
     {
-      title: 'Settings',
-      name: 'settings',
+      title: "Settings",
+      name: "settings",
       icon: CogIcon,
     },
     {
-      title: 'SEO',
-      name: 'seo',
+      title: "SEO",
+      name: "seo",
       icon: SearchIcon,
     },
   ],
   fields: [
     {
-      title: 'Site Title',
-      name: 'title',
-      type: 'string',
+      title: "Site Title",
+      name: "title",
+      type: "string",
       validation: (Rule) => Rule.required(),
-      group: 'site',
+      group: "site",
     },
     {
-      title: 'Favicon',
-      name: 'favicon',
-      type: 'image',
-      group: 'site',
+      title: "Favicon",
+      name: "favicon",
+      type: "image",
+      group: "site",
     },
     // {
     //   title: 'Animations Global',
@@ -47,17 +47,17 @@ export const siteSettings = defineType({
     //   group: 'settings',
     // },
     {
-      title: 'SEO',
-      name: 'seo',
-      type: 'seo.fallback',
-      group: 'seo',
+      title: "SEO",
+      name: "seo",
+      type: "seo.fallback",
+      group: "seo",
     },
   ],
   preview: {
     prepare() {
       return {
         title: TITLE,
-      }
+      };
     },
   },
-})
+});

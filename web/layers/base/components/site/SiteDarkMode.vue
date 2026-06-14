@@ -1,22 +1,22 @@
 
 <script setup>
-import { computed } from 'vue'
-import { useMainStore } from '@/stores/mainStore'
+import { computed } from "vue";
+import { useMainStore } from "@/stores/mainStore";
 
-const mainStore = useMainStore()
-const _isDarkMode = computed(() => mainStore?.isDarkMode)
+const mainStore = useMainStore();
+const _isDarkMode = computed(() => mainStore?.isDarkMode);
 
 const detectSystemDarkMode = () => {
-	mainStore.detectSystemDarkMode()
-}
+	mainStore.detectSystemDarkMode();
+};
 
 const toggleDarkMode = () => {
-	mainStore.toggleDarkMode()
-}
+	mainStore.toggleDarkMode();
+};
 
 onMounted(() => {
-	detectSystemDarkMode()
-})
+	detectSystemDarkMode();
+});
 </script>
           
 <template>

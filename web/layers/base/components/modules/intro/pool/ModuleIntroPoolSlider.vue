@@ -1,105 +1,105 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import emblaCarouselVue from 'embla-carousel-vue'
-import { useMainStore } from '~/stores/mainStore'
-import { useThrottleFn } from '@vueuse/core'
+import { useThrottleFn } from "@vueuse/core";
+import emblaCarouselVue from "embla-carousel-vue";
+import { computed, onMounted, ref } from "vue";
+import { useMainStore } from "~/stores/mainStore";
 
-const _mainStore = useMainStore()
+const _mainStore = useMainStore();
 
 const props = defineProps({
 	poolItems: {
 		type: Array,
-		required: true
-	}
-})
+		required: true,
+	},
+});
 
 // Init Embla Carousel
 const [emblaNode, emblaApi] = emblaCarouselVue({
-	align: 'start',
-	loop: true
-})
+	align: "start",
+	loop: true,
+});
 
 // Dots nav
-const selectedIndex = ref(0)
+const selectedIndex = ref(0);
 // Aktuelle Slide-Position
-const currentIndex = ref(0)
-const scrollSnaps = ref<number[]>([])
+const currentIndex = ref(0);
+const scrollSnaps = ref<number[]>([]);
 
 // Save position for smooth transitions
 const saveTranslatePositions = useThrottleFn(() => {
-	if (!emblaContainer.value) return
-	containerStyle = emblaContainer.value.style.transform
-}, 100)
+	if (!emblaContainer.value) return;
+	containerStyle = emblaContainer.value.style.transform;
+}, 100);
 
-const emblaContainer = ref<HTMLElement>()
-let containerStyle: string = ''
+const emblaContainer = ref<HTMLElement>();
+let containerStyle: string = "";
 
 async function restoreTranslatePositions() {
-	if (!emblaContainer.value) return
-	emblaContainer.value.style.transform = containerStyle
+	if (!emblaContainer.value) return;
+	emblaContainer.value.style.transform = containerStyle;
 }
 
 // Dots functions
 const onSelect = () => {
-	if (!emblaApi.value) return
-	selectedIndex.value = emblaApi.value.selectedScrollSnap()
-	currentIndex.value = selectedIndex.value // Aktualisiere currentIndex, wenn sich der Slide ändert
-}
+	if (!emblaApi.value) return;
+	selectedIndex.value = emblaApi.value.selectedScrollSnap();
+	currentIndex.value = selectedIndex.value; // Aktualisiere currentIndex, wenn sich der Slide ändert
+};
 
 const scrollTo = (index: number) => {
-	if (!emblaApi.value) return
-	emblaApi.value.scrollTo(index)
-	currentIndex.value = index // Aktualisiere currentIndex beim manuellen Scrollen
-}
+	if (!emblaApi.value) return;
+	emblaApi.value.scrollTo(index);
+	currentIndex.value = index; // Aktualisiere currentIndex beim manuellen Scrollen
+};
 
 const scrollPrev = () => {
-	if (!emblaApi.value) return
-	emblaApi.value.scrollPrev()
-}
+	if (!emblaApi.value) return;
+	emblaApi.value.scrollPrev();
+};
 
 const scrollNext = () => {
-	if (!emblaApi.value) return
-	emblaApi.value.scrollNext()
-}
+	if (!emblaApi.value) return;
+	emblaApi.value.scrollNext();
+};
 
 const setupDots = () => {
-	if (!emblaApi.value) return
+	if (!emblaApi.value) return;
 
 	// Scroll snaps für Navigation
-	scrollSnaps.value = emblaApi.value.scrollSnapList()
+	scrollSnaps.value = emblaApi.value.scrollSnapList();
 
 	// Set current index
-	selectedIndex.value = emblaApi.value.selectedScrollSnap()
-	currentIndex.value = selectedIndex.value // Initialisiere currentIndex
+	selectedIndex.value = emblaApi.value.selectedScrollSnap();
+	currentIndex.value = selectedIndex.value; // Initialisiere currentIndex
 
 	// Event-Listener für Aktualisierung des ausgewählten Index
-	emblaApi.value.on('select', onSelect)
-}
+	emblaApi.value.on("select", onSelect);
+};
 
 // Event-Listener nach dem Mounting
 onMounted(() => {
 	if (emblaApi.value) {
-		emblaApi.value.on('scroll', saveTranslatePositions)
-		emblaApi.value.on('destroy', restoreTranslatePositions)
+		emblaApi.value.on("scroll", saveTranslatePositions);
+		emblaApi.value.on("destroy", restoreTranslatePositions);
 
-		setupDots()
+		setupDots();
 	}
-})
+});
 
 // Verwende die Pool-Items aus den Props
 const slides = computed(() => {
-	const result = []
+	const result = [];
 	// Gruppiere Pool-Items in Paare (2 pro Slide)
 	for (let i = 0; i < props.poolItems.length; i += 2) {
-		const pair = [props.poolItems[i]]
+		const pair = [props.poolItems[i]];
 		// Füge das zweite Pool-Item hinzu, wenn verfügbar
 		if (i + 1 < props.poolItems.length) {
-			pair.push(props.poolItems[i + 1])
+			pair.push(props.poolItems[i + 1]);
 		}
-		result.push(pair)
+		result.push(pair);
 	}
-	return result
-})
+	return result;
+});
 </script>
 
 <template>

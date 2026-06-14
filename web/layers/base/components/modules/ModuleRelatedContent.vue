@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import type { ContentItem, Tag } from '~/types/sanity'
-import { computed, onMounted, ref, watch } from 'vue'
-import { useMainStore } from '~/stores/mainStore'
-const { locale: _locale } = useI18n()
-const localePath = useLocalePath()
-const router = useRouter()
+import { computed, onMounted, ref, watch } from "vue";
+import { useMainStore } from "~/stores/mainStore";
+import type { ContentItem, Tag } from "~/types/sanity";
 
-const mainStore = useMainStore()
+const { locale: _locale } = useI18n();
+const localePath = useLocalePath();
+const router = useRouter();
+
+const mainStore = useMainStore();
 
 const props = defineProps({
 	// Daten-Array (z.B. data?.parentShow?.sets)
 	items: {
 		type: Array,
-		default: () => []
+		default: () => [],
 	},
 	// Inhaltstyp (sets, shows, persons, venues, words)
 	type: {
@@ -20,338 +21,342 @@ const props = defineProps({
 		required: true,
 		validator: (value) => {
 			return [
-				'sets',
-				'shows',
-				'words',
-				'persons',
-				'venues',
-				'pool',
-				'article',
-				'primary',
-				'secondary',
-				'accent',
-				'blue',
-				'green',
-				'yellow'
-			].includes(value)
-		}
+				"sets",
+				"shows",
+				"words",
+				"persons",
+				"venues",
+				"pool",
+				"article",
+				"primary",
+				"secondary",
+				"accent",
+				"blue",
+				"green",
+				"yellow",
+			].includes(value);
+		},
 	},
 	// Optionaler Titel
 	title: {
 		type: String,
-		default: ''
+		default: "",
 	},
 	// Anzahl der ANFÄNGLICH anzuzeigenden Items pro Reihe
 	limit: {
 		type: Number,
-		default: 3
+		default: 3,
 	},
 	// Anzahl der Items pro Reihe (Standard: 3)
 	itemsPerRow: {
 		type: Number,
-		default: 3
+		default: 3,
 	},
 	// Anzeige-Stil
 	style: {
 		type: String,
-		default: 'default'
-	}
-})
+		default: "default",
+	},
+});
 
 // State für sichtbare Items
-const itemsPerPage = props.itemsPerRow || 3
-const visibleItemCount = ref(props.limit || itemsPerPage)
+const itemsPerPage = props.itemsPerRow || 3;
+const visibleItemCount = ref(props.limit || itemsPerPage);
 
 // Computeds und Hooks
 const typeClassMap = {
-	sets: 'sets',
-	shows: 'shows',
-	words: 'words',
-	persons: 'pool',
-	venues: 'pool',
-	pool: 'pool',
-	article: 'words',
-	primary: 'sets',
-	secondary: 'shows',
-	accent: 'pool',
-	blue: 'pool',
-	green: 'words',
-	yellow: 'sets'
-}
+	sets: "sets",
+	shows: "shows",
+	words: "words",
+	persons: "pool",
+	venues: "pool",
+	pool: "pool",
+	article: "words",
+	primary: "sets",
+	secondary: "shows",
+	accent: "pool",
+	blue: "pool",
+	green: "words",
+	yellow: "sets",
+};
 
 // CSS-Klasse entsprechend dem Typ
 const typeClass = computed(() => {
-	return typeClassMap[props.type] || 'default'
-})
+	return typeClassMap[props.type] || "default";
+});
 
 // Gefilterte Items basierend auf visibleItemCount
 const visibleItems = computed(() => {
-	if (!props.items || !Array.isArray(props.items)) return []
-	return props.items.slice(0, visibleItemCount.value)
-})
+	if (!props.items || !Array.isArray(props.items)) return [];
+	return props.items.slice(0, visibleItemCount.value);
+});
 
 // Funktion zum Laden weiterer Items
 function loadMoreItems() {
-	visibleItemCount.value += itemsPerPage
+	visibleItemCount.value += itemsPerPage;
 
 	// Wichtig: Nach dem Laden neuer Items müssen wir die Artwork-URLs für die neuen Items laden
 	nextTick(() => {
-		if (props.type === 'sets') {
+		if (props.type === "sets") {
 			// Lade alle neu hinzugekommenen Items
 			const newItems = props.items.slice(
 				visibleItemCount.value - itemsPerPage,
-				visibleItemCount.value
-			)
+				visibleItemCount.value,
+			);
 			newItems.forEach((item) => {
 				if (!artworkUrls.value.has(item?._id)) {
-					loadArtworkUrl(item)
+					loadArtworkUrl(item);
 				}
-			})
+			});
 		}
-	})
+	});
 }
 
 // Bestimmen, ob mehr Items zum Laden verfügbar sind
 const hasMoreItems = computed(() => {
-	return props.items && props.items.length > visibleItemCount.value
-})
+	return props.items && props.items.length > visibleItemCount.value;
+});
 
 // Artwork-URLs für SoundCloud-Tracks
-const artworkUrls = ref(new Map())
+const artworkUrls = ref(new Map());
 
 // Hilfsfunktion zur Formatierung von Datum/Zeit
 function formatDate(dateString) {
-	if (!dateString) return ''
-	const date = new Date(dateString)
-	if (isNaN(date.getTime())) return ''
-	return date.toLocaleDateString('de-DE', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric'
-	})
+	if (!dateString) return "";
+	const date = new Date(dateString);
+	if (isNaN(date.getTime())) return "";
+	return date.toLocaleDateString("de-DE", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+	});
 }
 
 // Funktionen für Bild-Handling
 function getItemImage(item) {
 	// Wenn kein Item existiert, sofort ein Fallback-Bild zurückgeben
-	if (!item) return mainStore?.siteFallbacks?.fallbackSet?.image
+	if (!item) return mainStore?.siteFallbacks?.fallbackSet?.image;
 
 	// Fallbacks je nach Content-Typ
-	const itemType = item?._type || ''
-	let image = null
+	const itemType = item?._type || "";
+	let image = null;
 
 	// Bild aus dem Item selbst
 	if (item?.image && item?.image.asset) {
-		image = item?.image
+		image = item?.image;
 	} else if (item?.mainImage && item?.mainImage.asset) {
-		image = item?.mainImage
+		image = item?.mainImage;
 	} else {
 		// Fallback-Bilder je nach Typ
 		switch (itemType) {
-		case 'person':
-			image = mainStore?.siteFallbacks?.fallbackPerson?.image
-			break
-		case 'venue':
-			image = mainStore?.siteFallbacks?.fallbackVenue?.image
-			break
-		case 'show':
-			image = mainStore?.siteFallbacks?.fallbackShow?.image
-			break
-		case 'set':
-			// Versuche zuerst das parentShow Bild
-			if (item?.parentShow?.image?.asset?.url) {
-				image = item?.parentShow?.image
-			} else {
-				image = mainStore?.siteFallbacks?.fallbackSet?.image
-			}
-			break
-		case 'word':
-		case 'article':
-			image = mainStore?.siteFallbacks?.fallbackArticle?.image
-			break
-		default:
-			// Allgemeines Fallback-Bild
-			image = mainStore?.siteFallbacks?.fallbackSet?.image
+			case "person":
+				image = mainStore?.siteFallbacks?.fallbackPerson?.image;
+				break;
+			case "venue":
+				image = mainStore?.siteFallbacks?.fallbackVenue?.image;
+				break;
+			case "show":
+				image = mainStore?.siteFallbacks?.fallbackShow?.image;
+				break;
+			case "set":
+				// Versuche zuerst das parentShow Bild
+				if (item?.parentShow?.image?.asset?.url) {
+					image = item?.parentShow?.image;
+				} else {
+					image = mainStore?.siteFallbacks?.fallbackSet?.image;
+				}
+				break;
+			case "word":
+			case "article":
+				image = mainStore?.siteFallbacks?.fallbackArticle?.image;
+				break;
+			default:
+				// Allgemeines Fallback-Bild
+				image = mainStore?.siteFallbacks?.fallbackSet?.image;
 		}
 	}
 
-	return image
+	return image;
 }
 
 // SoundCloud-Artwork laden (synchron ohne checkImage)
 function loadArtworkUrl(item) {
-	if (!item) return
+	if (!item) return;
 	// Prüfen, ob die URL bereits im Cache ist
-	if (artworkUrls.value.has(item?._id)) return
-	const url = getSoundcloudArtwork(item)
-	artworkUrls.value.set(item?._id, url)
+	if (artworkUrls.value.has(item?._id)) return;
+	const url = getSoundcloudArtwork(item);
+	artworkUrls.value.set(item?._id, url);
 }
 
 function _checkImage(url) {
 	return new Promise((resolve) => {
-		const img = new Image()
-		img.onload = () => resolve(true)
-		img.onerror = () => resolve(false)
-		img.src = url
-	})
+		const img = new Image();
+		img.onload = () => resolve(true);
+		img.onerror = () => resolve(false);
+		img.src = url;
+	});
 }
 
 // Non-blocking artwork URL resolution - returns URL directly, browser handles 404s
 function getSoundcloudArtwork(item) {
 	// Try SoundCloud artwork first (use -t500x500 for better quality)
-	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url
+	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
 	if (artworkUrl) {
-		return artworkUrl.replace('-large', '-t500x500')
+		return artworkUrl.replace("-large", "-t500x500");
 	}
 	// Fallback chain
-	const parentShowImageUrl = item?.parentShow?.image?.asset?.url
+	const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
 	const storeFallbackUrl =
-    mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
-	return parentShowImageUrl || storeFallbackUrl || ''
+		mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
+	return parentShowImageUrl || storeFallbackUrl || "";
 }
 
 // Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
 function getItemRoute(item) {
-	if (!item || !item?.slug) return '/'
+	if (!item || !item?.slug) return "/";
 
 	switch (item?._type) {
-	case 'person':
-	case 'venue':
-		return localePath(`/pool/${item?.slug?.current}`)
+		case "person":
+		case "venue":
+			return localePath(`/pool/${item?.slug?.current}`);
 
-	case 'set':
-		// Prüfe, ob parentShow vorhanden ist
-		if (item?.parentShow?.slug?.current) {
-			return localePath(
-				`/shows/${item?.parentShow?.slug?.current}/${item?.slug?.current}`
-			)
-		}
-		// Fallback falls parentShow nicht verfügbar ist
-		return localePath(`/shows/${item?.slug?.current}`)
+		case "set":
+			// Prüfe, ob parentShow vorhanden ist
+			if (item?.parentShow?.slug?.current) {
+				return localePath(
+					`/shows/${item?.parentShow?.slug?.current}/${item?.slug?.current}`,
+				);
+			}
+			// Fallback falls parentShow nicht verfügbar ist
+			return localePath(`/shows/${item?.slug?.current}`);
 
-	case 'article':
-		return localePath(`/words/${item?.slug?.current}`)
+		case "article":
+			return localePath(`/words/${item?.slug?.current}`);
 
-	case 'show':
-		return localePath(`/shows/${item?.slug?.current}`)
+		case "show":
+			return localePath(`/shows/${item?.slug?.current}`);
 
 		// Standard-Fallback
-	default:
-		return localePath(`/${item?._type}/${item?.slug?.current}`)
+		default:
+			return localePath(`/${item?._type}/${item?.slug?.current}`);
 	}
 }
 
 // SoundCloud-Track abspielen
 function playTrack(item) {
 	if (item?.soundcloud?.tracks?.[0]) {
-		const track = item?.soundcloud.tracks[0]
+		const track = item?.soundcloud.tracks[0];
 		if (!track.permalink_url && track.id) {
-			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
+			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
 		}
-		mainStore.currentTrack = track
+		mainStore.currentTrack = track;
 	}
 }
 
 // Stadt-Tags abrufen (used in template)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- used in template
 function getItemCityTags(item) {
-	const cityTags = []
+	const cityTags = [];
 
 	// Direkte City-Tags
 	if (item?.tags && Array.isArray(item?.tags)) {
 		item?.tags.forEach((tag) => {
-			if (tag._type === 'tag.city') {
-				cityTags.push(tag)
+			if (tag._type === "tag.city") {
+				cityTags.push(tag);
 			}
-		})
+		});
 	}
 
 	// City-Tags aus parentShow
 	if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
 		item?.parentShow?.tags.forEach((tag) => {
-			if (tag._type === 'tag.city') {
+			if (tag._type === "tag.city") {
 				if (!cityTags.some((existingTag) => existingTag._id === tag._id)) {
-					cityTags.push(tag)
+					cityTags.push(tag);
 				}
 			}
-		})
+		});
 	}
 
-	return cityTags
+	return cityTags;
 }
 
 // Nicht-Stadt-Tags abrufen
 function getItemNonCityTags(item) {
-	if (!item?.tags || !Array.isArray(item?.tags)) return []
-	return item?.tags.filter((tag) => tag._type !== 'tag.city')
+	if (!item?.tags || !Array.isArray(item?.tags)) return [];
+	return item?.tags.filter((tag) => tag._type !== "tag.city");
 }
 
 // Watcher für visibleItems, um Artwork-URLs für neue Items zu laden
 watch(
 	visibleItems,
 	(newItems) => {
-		if (props.type === 'sets') {
+		if (props.type === "sets") {
 			newItems.forEach((item) => {
 				if (!artworkUrls.value.has(item?._id)) {
-					loadArtworkUrl(item)
+					loadArtworkUrl(item);
 				}
-			})
+			});
 		}
 	},
-	{ deep: true }
-)
+	{ deep: true },
+);
 
 // Lifecycle Hooks
 onMounted(() => {
 	// Beim ersten Laden die Artworks für sichtbare Items laden
-	if (props.type === 'sets') {
+	if (props.type === "sets") {
 		visibleItems.value.forEach((item) => {
-			loadArtworkUrl(item)
-		})
+			loadArtworkUrl(item);
+		});
 	}
 	// Note: Watcher handles additional items when loadMore is called
-})
+});
 
-function navigateToTagSearch(tag: Tag, item: ContentItem | { _type?: string }, isGenre = false) {
+function navigateToTagSearch(
+	tag: Tag,
+	item: ContentItem | { _type?: string },
+	isGenre = false,
+) {
 	// Determine search term
-	let tagName = ''
+	let tagName = "";
 
 	if (isGenre) {
-		tagName = tag.name || tag.title
+		tagName = tag.name || tag.title;
 	} else {
 		// For standard tags, prefer title for searching as it matches the search index
 		// If title implies an object/array (i18n), we need to extract the string
-		const titleVal = tag.title || tag.name
+		const titleVal = tag.title || tag.name;
 
 		if (Array.isArray(titleVal)) {
 			// Assume portable text / i18n array, take first element value
-			tagName = titleVal[0]?.value || ''
-		} else if (typeof titleVal === 'object') {
+			tagName = titleVal[0]?.value || "";
+		} else if (typeof titleVal === "object") {
 			// Fallback for object without array
-			tagName = ''
+			tagName = "";
 		} else {
-			tagName = titleVal || ''
+			tagName = titleVal || "";
 		}
 	}
 
-	if (!tagName) return
+	if (!tagName) return;
 
 	// Determine Category
-	let category = 'all'
-	const itemType = item?._type
+	let category = "all";
+	const itemType = item?._type;
 
-	if (['show', 'set'].includes(itemType)) category = 'shows'
-	else if (['person', 'venue'].includes(itemType)) category = 'pool'
-	else if (['article'].includes(itemType)) category = 'article'
+	if (["show", "set"].includes(itemType)) category = "shows";
+	else if (["person", "venue"].includes(itemType)) category = "pool";
+	else if (["article"].includes(itemType)) category = "article";
 
 	// Navigate
 	router.push({
-		path: localePath('/search'),
+		path: localePath("/search"),
 		query: {
 			q: tagName,
-			type: category
-		}
-	})
+			type: category,
+		},
+	});
 }
 </script>
 

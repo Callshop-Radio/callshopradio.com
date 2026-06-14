@@ -1,11 +1,11 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-import { WORDS_QUERY } from '~~/queries/sanity.queries.ts'
+import { WORDS_QUERY } from "~~/queries/sanity.queries.ts";
 
-const query = groq`${WORDS_QUERY}`
-const { data } = await useCachedSanityQuery(query)
+const query = groq`${WORDS_QUERY}`;
+const { data } = await useCachedSanityQuery(query);
 
-usePageSeo(data?.value?.seo)
+usePageSeo(data?.value?.seo);
 </script>
 
 <template>

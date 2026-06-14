@@ -27,7 +27,7 @@ export async function getPrerenderRoutes(): Promise<string[]> {
 
 	if (!projectId || !dataset) {
 		console.warn(
-			"[prerender-routes] NUXT_SANITY_PROJECT_ID/DATASET fehlt – nur statische Routen."
+			"[prerender-routes] NUXT_SANITY_PROJECT_ID/DATASET fehlt – nur statische Routen.",
 		);
 		return [...STATIC_ROUTES];
 	}
@@ -71,8 +71,6 @@ export async function getPrerenderRoutes(): Promise<string[]> {
 
 	const allRoutes = [...new Set([...STATIC_ROUTES, ...valid])];
 
-	console.log(
-		`[prerender-routes] ${allRoutes.length} Routen.`
-	);
+	console.log(`[prerender-routes] ${allRoutes.length} Routen.`);
 	return allRoutes;
 }

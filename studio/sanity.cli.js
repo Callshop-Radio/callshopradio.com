@@ -1,4 +1,4 @@
-import {defineCliConfig} from 'sanity/cli'
+import { defineCliConfig } from "sanity/cli";
 
 export default defineCliConfig({
   api: {
@@ -12,9 +12,9 @@ export default defineCliConfig({
         ...prevConfig.resolve,
         alias: {
           ...prevConfig.resolve?.alias,
-          '@': __dirname,
+          "@": __dirname,
         },
       },
-    }
+    };
   },
-})
+});
