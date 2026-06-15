@@ -35,28 +35,7 @@ useHead({
 			v-if="data?.modules && data.modules.length > 0"
 			class="default__module-section"
 		>
-			<div
-				v-for="module in data.modules"
-				:key="module._key || index"
-				class="module"
-			>
-				<ModuleContentGrid
-					v-if="module._type == 'module.contentReferenceGrid'"
-					:module="module"
-				/>
-				<ModuleContentTeaser
-					v-if="module._type == 'module.contentReferenceSlider'"
-					:module="module"
-				/>
-				<ModuleHeroEntrySolo
-					v-if="module._type == 'module.heroEntry'"
-					:module="module"
-				/>
-				<ModuleHeroSlider
-					v-if="module._type == 'module.heroSlider'"
-					:module="module"
-				/>
-			</div>
+			<ModuleRenderer :modules="data?.modules" />
 		</section>
 	</div>
 </template>

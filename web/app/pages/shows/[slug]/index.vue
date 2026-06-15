@@ -30,28 +30,7 @@ usePageSeo(data?.value?.seo);
 			v-if="data?.modules && data?.modules.length > 0"
 			class="module-section"
 		>
-			<div
-				v-for="module in data.modules"
-				:key="module._key || index"
-				class="module"
-			>
-				<ModuleContentGrid
-					v-if="module._type == 'module.contentReferenceGrid'"
-					:module="module"
-				/>
-				<ModuleContentTeaser
-					v-if="module._type == 'module.contentReferenceSlider'"
-					:module="module"
-				/>
-				<ModuleHeroEntrySolo
-					v-if="module._type == 'module.heroEntry'"
-					:module="module"
-				/>
-				<ModuleHeroSlider
-					v-if="module._type == 'module.heroSlider'"
-					:module="module"
-				/>
-			</div>
+			<ModuleRenderer :modules="data?.modules" />
 		</section>
 		<section v-if="data?.sets?.length > 0" class="show-detail__related-content">
 			<div class="inner">
