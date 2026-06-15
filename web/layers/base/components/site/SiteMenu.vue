@@ -26,6 +26,11 @@ const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 					</ElementsLink>
 				</li>
 			</ul>
+			<div class="menu__actions">
+				<SiteSearchButton />
+				<SiteDiscordButton v-if="mainStore?.siteNav?.discordLink" />
+				<SiteScheduleButton v-if="mainStore?.siteNav?.schedulePage" />
+			</div>
 		</nav>
 	</Transition>
 </template>
@@ -132,6 +137,33 @@ nav {
         border: 0.09325rem solid var(--color-green);
       }
     }
+  }
+}
+
+/* Mobile: the hamburger menu is the primary nav below 900px */
+.menu__actions {
+  display: none;
+}
+
+@media screen and (max-width: 900px) {
+  nav {
+    flex-flow: column;
+    align-items: stretch;
+
+    ul {
+      flex-flow: column;
+      align-items: flex-start;
+    }
+  }
+
+  .menu__actions {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    gap: var(--base-padding);
+    width: 100%;
+    max-width: var(--page-max-width);
+    padding: var(--base-padding) 0 0;
   }
 }
 </style>

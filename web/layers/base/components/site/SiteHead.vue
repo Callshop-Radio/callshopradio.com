@@ -63,10 +63,10 @@ const togglePlayerVisibility = () => {
 					v-if="mainStore?.siteNav?.schedulePage"
 					class="mobile-hidden"
 				/>
-				<SiteMenuButton class="mobile-hidden" />
+				<SiteMenuButton />
 			</div>
 		</section>
-		<SiteMenu class="mobile-hidden" />
+		<SiteMenu />
 		<section class="header__audio-player-section">
 			<MusicController />
 		</section>
