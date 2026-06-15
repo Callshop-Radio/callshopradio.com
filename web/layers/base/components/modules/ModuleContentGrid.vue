@@ -756,11 +756,10 @@ function toggleFiltersVisibility() {
 
 function toggleMobileFilters() {
 	showMobileFilters.value = !showMobileFilters.value;
-	// Prevent body scroll when overlay is open
+	// When opening on mobile, also expand the desktop-style category panel
+	// so all available filters are visible immediately.
 	if (showMobileFilters.value) {
-		document.body.style.overflow = "hidden";
-	} else {
-		document.body.style.overflow = "";
+		showFilters.value = true;
 	}
 }
 
@@ -902,185 +901,13 @@ onUnmounted(() => {
 			</button>
 		</div>
 
-		<!-- Mobile Filter Overlay -->
-		<Transition name="filter-overlay">
-			<div v-if="showMobileFilters" class="mobile-filter-overlay" @click.self="toggleMobileFilters">
-				<div class="mobile-filter-content">
-					<div class="mobile-filter-header">
-						<h3>Filters</h3>
-						<button class="close-button" @click="toggleMobileFilters">
-							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-							</svg>
-						</button>
-					</div>
-
-					<!-- Active Filters -->
-					<div v-if="activeFilters.size > 0" class="mobile-active-filters">
-						<div class="mobile-active-filters__header">
-							<h4>Active Filters</h4>
-							<button class="clear-all" @click="resetFilters">Clear All</button>
-						</div>
-						<div class="mobile-active-filters__list">
-							<button
-								v-for="filterId in activeFilters"
-								:key="filterId"
-								class="tag active"
-								@click="toggleFilter(filterId)"
-							>
-								{{ getTagNameById(filterId) }}
-								<svg width="12" height="12" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path d="M6 2L2 6M2 2L6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-								</svg>
-							</button>
-						</div>
-					</div>
-
-					<!-- Cities Filter -->
-					<div v-if="categorizedTags.cities?.length > 0" class="mobile-filter-section">
-						<h4 class="mobile-filter-section__title">City</h4>
-						<div class="mobile-filter-tags">
-							<button
-								v-for="tag in categorizedTags.cities.filter(isMainCity)"
-								:key="tag._id"
-								class="tag"
-								:class="{ active: activeFilters.has(tag._id) }"
-								@click="toggleFilter(tag._id)"
-							>
-								{{ parseI18nObj(tag.title) }}
-							</button>
-							<button
-								v-if="categorizedTags.cities.some((tag) => !isMainCity(tag))"
-								class="tag"
-								:class="{ active: isOtherCitiesActive }"
-								@click="toggleFilter('others')"
-							>
-								Elsewhere
-							</button>
-						</div>
-					</div>
-
-					<!-- Sets: Genre Filter -->
-					<template v-if="contentType === 'sets' && categorizedTags.genres?.length > 0">
-						<div class="mobile-filter-section">
-							<h4 class="mobile-filter-section__title">Genres</h4>
-							<div class="mobile-filter-tags">
-								<button
-									v-for="genre in categorizedTags.genres"
-									:key="genre._id"
-									class="tag"
-									:class="{ active: activeGenres.has(genre._id) }"
-									@click="toggleGenreFilter(genre._id)"
-								>
-									{{ genre.title }}
-								</button>
-							</div>
-						</div>
-
-						<!-- SubGenres -->
-						<div v-if="activeGenres.size > 0" class="mobile-filter-section">
-							<h4 class="mobile-filter-section__title">Sub-Genres</h4>
-							<div class="mobile-filter-tags">
-								<template
-									v-for="genre in categorizedTags.genres.filter((g) => activeGenres.has(g._id))"
-									:key="genre._id"
-								>
-									<button
-										v-for="subGenre in genre.subGenres || []"
-										:key="subGenre._id"
-										class="tag"
-										:class="{ active: activeSubGenres.has(subGenre._id) }"
-										@click="toggleSubGenreFilter(subGenre._id)"
-									>
-										{{ subGenre.title }}
-									</button>
-								</template>
-							</div>
-						</div>
-					</template>
-
-					<!-- Words: Article Tags -->
-					<template v-else-if="contentType === 'words' && poolTags.articles.length > 0">
-						<div class="mobile-filter-section">
-							<h4 class="mobile-filter-section__title">Tags</h4>
-							<div class="mobile-filter-tags">
-								<button
-									v-for="tag in poolTags.articles"
-									:key="tag._id"
-									class="tag"
-									:class="{ active: activeFilters.has(tag._id) }"
-									@click="toggleFilter(tag._id)"
-								>
-									{{ tag.title }}
-								</button>
-							</div>
-						</div>
-					</template>
-
-					<!-- Pool: Type Filters -->
-					<template v-else-if="getContentTypeSpecificTags.length > 0">
-						<div class="mobile-filter-section">
-							<h4 class="mobile-filter-section__title">Type</h4>
-							<div class="mobile-filter-tags">
-								<button
-									v-if="poolTags.musicians.length > 0"
-									class="tag"
-									:class="{ active: activeFilterType === 'musicians' }"
-									@click="toggleFilterType('musicians')"
-								>
-									Musicians
-								</button>
-								<button
-									v-if="poolTags.venues.length > 0"
-									class="tag"
-									:class="{ active: activeFilterType === 'venues' }"
-									@click="toggleFilterType('venues')"
-								>
-									Venues
-								</button>
-								<button
-									v-if="poolTags.crafts.length > 0"
-									class="tag"
-									:class="{ active: activeFilterType === 'crafts' }"
-									@click="toggleFilterType('crafts')"
-								>
-									Crafts
-								</button>
-							</div>
-						</div>
-
-						<!-- Sub-Tags for Pool -->
-						<div
-							v-if="activeFilterType && poolTags[activeFilterType]?.length > 0"
-							class="mobile-filter-section"
-						>
-							<h4 class="mobile-filter-section__title">{{ activeFilterType }}</h4>
-							<div class="mobile-filter-tags">
-								<button
-									v-for="tag in poolTags[activeFilterType]"
-									:key="tag._id"
-									class="tag"
-									:class="{ active: activeFilters.has(tag._id) }"
-									@click="toggleFilter(tag._id)"
-								>
-									{{ tag.title }}
-								</button>
-							</div>
-						</div>
-					</template>
-
-					<!-- Apply Button -->
-					<div class="mobile-filter-footer">
-						<button class="apply-button" @click="toggleMobileFilters">
-							Apply Filters
-						</button>
-					</div>
-				</div>
-			</div>
-		</Transition>
 
 		<!-- Desktop Filter Panel -->
-		<div ref="filterSection" class="content-grid__filter-section">
+		<div
+			ref="filterSection"
+			class="content-grid__filter-section"
+			:class="{ 'is-mobile-open': showMobileFilters }"
+		>
 			<div class="content-grid__filter-bar">
 				<!-- Active Filters -->
 				<div class="active-filters">
@@ -2365,26 +2192,38 @@ onUnmounted(() => {
 /* Tablet: 2 Spalten */
 @media (max-width: 1100px) {
   .content-grid {
-    /* Hide desktop filter section */
+    /* On mobile the desktop filter bar is hidden by default; the "Filters"
+       button in the mobile header toggles `is-mobile-open` to reveal it
+       in place. The bar is sticky so it stays accessible while scrolling. */
     &__filter-section {
-      display: none !important;
+      display: none;
+
+      &.is-mobile-open {
+        display: block;
+        position: sticky;
+        top: var(--nav-height);
+        z-index: 9999;
+        margin-bottom: var(--big-margin);
+      }
     }
 
     /* Show mobile header */
     &__mobile-header {
       display: flex;
+      flex-flow: row wrap;
       justify-content: space-between;
       align-items: center;
       margin-bottom: var(--big-margin);
       padding: var(--mid-padding);
       background-color: var(--color-text);
-      border-radius: 100px;
+      border-radius: 1.5rem;
       gap: var(--mid-padding);
 
       .mobile-sort-options {
         display: flex;
         gap: var(--mid-padding);
-        flex: 1;
+        flex: 1 1 auto;
+        min-width: 0;
 
         .sort-button {
           display: flex;
