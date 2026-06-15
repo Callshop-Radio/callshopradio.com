@@ -1,5 +1,7 @@
-const { creditLog, favicon } = useUtils(); favicon(); // creditLog() const route
-= useRoute();
+<script setup lang="ts">
+const { favicon } = useUtils();
+favicon();
+</script>
 
 <template>
   <div class="site">
@@ -16,6 +18,7 @@ const { creditLog, favicon } = useUtils(); favicon(); // creditLog() const route
 .site {
   @apply min-h-[100svh] flex flex-col items-stretch;
   max-width: 100svw;
+  overflow-x: clip;
 
   main {
     @apply flex-grow-1;
