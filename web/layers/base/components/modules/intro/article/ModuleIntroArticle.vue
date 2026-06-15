@@ -1,17 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useMainStore } from "~/stores/mainStore";
+import type { Image, Tag } from "~/types/sanity";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
 const localePath = useLocalePath();
 
 // Typdefinitionen für Artikel
-interface Image {
-	asset?: {
-		url?: string;
-	};
-}
-
 interface Article {
 	_id?: string;
 	_type?: string;
@@ -25,7 +20,7 @@ interface Article {
 	text?: unknown[];
 	useTeaserText?: boolean;
 	textTeaser?: unknown[];
-	tags?: import("~/types/sanity").Tag[];
+	tags?: Tag[];
 	socials?: {
 		instagram?: string;
 		soundcloud?: string;

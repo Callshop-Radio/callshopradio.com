@@ -68,8 +68,17 @@ pnpm format   # biome check --write . (apply safe fixes + format + organize impo
   `getSoundcloudArtwork`/`playTrack` are copy-pasted across many components;
   the orphaned `useTagNavigation.ts` should be adopted in place of inlined
   `navigateToTagSearch`.
-- **Centralize types** — remove the local `Image`/`Tag`/content interfaces in the
-  intro/hero components in favour of `web/types/sanity.ts`.
+- **Fix the shared-types alias (type-safety blocker)** — shared types are imported
+  as `~/types/sanity`, but Nuxt maps `~/*` → `web/app/*`, so the path doesn't
+  resolve and every shared-type import silently falls back to `any` (type imports
+  are erased at runtime, so the app still works). The real fix is `~~/types/sanity`
+  (project root) repo-wide — but expect it to surface many genuine type errors,
+  i.e. it's a dedicated typed-cleanup effort, not a quick change.
+- **Centralize types** — continue removing local `Image`/`Tag`/content interfaces
+  in the intro/hero components in favour of `web/types/sanity.ts` (most valuable
+  once the alias above is fixed). A few were left local where a type-only `Image`
+  import would shadow the DOM `Image` constructor, or where local `Tag` shapes
+  differ from the shared one.
 - **Biome warnings** — `pnpm lint` currently reports warnings (unused
   vars/imports, `any`, a few softened correctness/a11y rules). Chip away at them;
   do not let the error count regress above 0.

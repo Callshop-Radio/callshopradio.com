@@ -1,19 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useMainStore } from "~/stores/mainStore";
+import type { Image } from "~/types/sanity";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
 const localePath = useLocalePath();
 
 // Typdefinitionen
-interface Image {
-	asset?: {
-		url?: string;
-		altText?: string;
-	};
-	alt?: string;
-}
-
 interface Tag {
 	_id?: string;
 	_type?: string;

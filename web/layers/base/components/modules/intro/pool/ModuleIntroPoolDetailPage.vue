@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
+import type { Image } from "~/types/sanity";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
 const localePath = useLocalePath();
@@ -12,14 +13,6 @@ const poolMainHeight = ref(0);
 const windowWidth = ref(0);
 
 // Typdefinitionen
-interface Image {
-	asset?: {
-		url?: string;
-		altText?: string;
-	};
-	alt?: string;
-}
-
 interface Tag {
 	_id?: string;
 	_type?: string;
