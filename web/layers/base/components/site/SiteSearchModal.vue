@@ -72,8 +72,13 @@ onUnmounted(() => {
 <style lang="postcss" scoped>
 .search-modal-overlay {
   position: fixed;
-  inset: 0;
-  z-index: 999999;
+  /* Start below the sticky navbar so the header (and the search toggle) stays
+     visible and clickable while the modal is open. */
+  top: var(--nav-height);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999998;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -81,8 +86,8 @@ onUnmounted(() => {
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
 
-  @media (max-width: 768px) {
-    padding-top: 5vh;
+  @media (max-width: 900px) {
+    padding-top: var(--base-padding);
     padding-left: var(--base-padding);
     padding-right: var(--base-padding);
   }

@@ -12,10 +12,10 @@ const isActive = computed(() => {
 	return isSearchOpen.value || isOnSearchPage.value;
 });
 
-const openSearch = () => {
-	// Don't open modal if already on search page
+const toggleSearch = () => {
+	// Don't toggle the modal if already on the search page
 	if (isOnSearchPage.value) return;
-	isSearchOpen.value = true;
+	isSearchOpen.value = !isSearchOpen.value;
 };
 
 // Keyboard shortcut (Cmd/Ctrl + K) to open search
@@ -24,7 +24,7 @@ const handleKeydown = (event) => {
 		event.preventDefault();
 		// Don't open modal if already on search page
 		if (!isOnSearchPage.value) {
-			openSearch();
+			toggleSearch();
 		}
 	}
 };
@@ -44,8 +44,8 @@ onUnmounted(() => {
 			class="search-button tag"
 			:class="{ 'is-active': isActive, 'is-disabled': isOnSearchPage }"
 			:disabled="isOnSearchPage"
-			aria-label="Open search"
-			@click="openSearch"
+			aria-label="Toggle search"
+			@click="toggleSearch"
 		>
 			<svg
 				width="10"
@@ -94,6 +94,16 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.15s ease;
 
+  /* On mobile the button collapses to a round icon matching the menu button */
+  @media (max-width: 900px) {
+    width: calc(var(--base-font-size) + var(--small-padding) * 2);
+    height: calc(var(--base-font-size) + var(--small-padding) * 2);
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+    aspect-ratio: 1;
+  }
+
   &:hover:not(.is-disabled),
   &.is-active {
     border-color: var(--color-text);
@@ -115,7 +125,7 @@ onUnmounted(() => {
   }
 
   .button-text {
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
       display: none;
     }
   }
