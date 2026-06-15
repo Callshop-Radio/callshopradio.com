@@ -18,6 +18,11 @@ const localePath = useLocalePath();
 const router = useRouter();
 const mainStore = useMainStore();
 
+const { getItemImage } = useContentImage();
+const { getItemRoute } = useContentRoute();
+const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
+const { navigateToTagSearch } = useTagNavigation();
+
 const props = defineProps({
 	module: {
 		type: Object,
@@ -386,64 +391,6 @@ const typeClassMap: Record<string, string> = {
 const typeClass = computed(() => {
 	return typeClassMap[props.module.type] || "default";
 });
-// helper function for image fetching and fallbacks
-function getItemImage(item: ContentItem) {
-	const itemType = item._type || "";
-
-	if (item.image) {
-		return item.image;
-	}
-	if (item.mainImage) {
-		return item.mainImage;
-	}
-
-	switch (itemType) {
-		case "person":
-			return mainStore.siteFallbacks?.fallbackPerson?.image;
-		case "venue":
-			return mainStore.siteFallbacks?.fallbackVenue?.image;
-		case "show":
-			return mainStore.siteFallbacks?.fallbackShow?.image;
-		case "set":
-			return mainStore.siteFallbacks?.fallbackSet?.image;
-		case "word":
-		case "article":
-			return mainStore.siteFallbacks?.fallbackArticle?.image;
-		default:
-			return mainStore.siteFallbacks?.fallbackPerson?.image;
-	}
-}
-
-function getItemRoute(item: ContentItem) {
-	if (!item || !item?.slug) return "/";
-
-	switch (item?._type) {
-		case "person":
-		case "venue":
-			return localePath(`/pool/${item?.slug?.current}`);
-
-		case "set":
-			// Prüfe, ob parentShow vorhanden ist
-			if (item?.parentShow?.slug?.current) {
-				return localePath(
-					`/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`,
-				);
-			}
-
-			return localePath(`/shows/${item?.slug?.current}`);
-
-		case "article":
-			return localePath(`/words/${item?.slug?.current}`);
-
-		case "show":
-			return localePath(`/shows/${item?.slug?.current}`);
-
-		// Standard-Fallback
-		default:
-			return localePath(`/${item?._type}/${item?.slug?.current}`);
-	}
-}
-
 // Funktion zum Abrufen und Speichern der Artwork-URL
 function loadArtworkUrl(item: ContentItem) {
 	if (!item) return;
@@ -458,35 +405,6 @@ function _checkImage(url: string) {
 		img.onerror = () => resolve(false);
 		img.src = url;
 	});
-}
-
-// Non-blocking artwork URL resolution - returns URL directly, browser handles 404s
-function getSoundcloudArtwork(item: ContentItem): string {
-	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url as
-		| string
-		| undefined;
-	if (artworkUrl) {
-		return artworkUrl.replace("-large", "-t500x500");
-	}
-	const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-	const storeFallbackUrl =
-		mainStore.siteFallbacks?.fallbackSet?.image?.asset?.url;
-	return parentShowImageUrl || storeFallbackUrl || "";
-}
-
-function playTrack(item: ContentItem) {
-	if (item?.soundcloud?.tracks?.[0]) {
-		const track = item.soundcloud.tracks[0] as {
-			id?: number;
-			permalink_url?: string;
-		};
-
-		if (!track.permalink_url && track.id) {
-			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
-		}
-
-		mainStore.currentTrack = track;
-	}
 }
 
 // Stadt-Tags abrufen
@@ -584,54 +502,6 @@ onMounted(() => {
 		});
 	}
 });
-
-function navigateToTagSearch(
-	tag: Tag,
-	item: ContentItem | { _type?: string },
-	isGenre = false,
-) {
-	// Determine search term
-	let tagName = "";
-
-	if (isGenre) {
-		tagName = tag.name || tag.title;
-	} else {
-		// For standard tags, prefer title for searching as it matches the search index
-		// If title implies an object/array (i18n), we need to extract the string
-		// Since we don't have easy access to parseI18nObj in script scope without import,
-		// we try to extract the first value or use the raw string
-		const titleVal = tag.title || tag.name;
-
-		if (Array.isArray(titleVal)) {
-			// Assume portable text / i18n array, take first element value
-			tagName = titleVal[0]?.value || "";
-		} else if (typeof titleVal === "object") {
-			// Fallback for object without array
-			tagName = "";
-		} else {
-			tagName = titleVal || "";
-		}
-	}
-
-	if (!tagName) return;
-
-	// Determine Category
-	let category = "all";
-	const itemType = item._type;
-
-	if (["show", "set"].includes(itemType)) category = "shows";
-	else if (["person", "venue"].includes(itemType)) category = "pool";
-	else if (["article"].includes(itemType)) category = "article";
-
-	// Navigate
-	router.push({
-		path: localePath("/search"),
-		query: {
-			q: tagName,
-			type: category,
-		},
-	});
-}
 </script>
 
 <template>

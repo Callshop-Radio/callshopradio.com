@@ -17,6 +17,10 @@ const { locale: _locale } = useI18n();
 const localePath = useLocalePath();
 const mainStore = useMainStore();
 
+const { getItemImage } = useContentImage();
+const { getItemRoute } = useContentRoute();
+const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
+
 const props = defineProps({
 	module: { type: Object, required: true },
 });
@@ -801,38 +805,6 @@ function formatDate(dateString: string): string {
 	});
 }
 
-// ==================== ROUTING ====================
-function getItemRoute(item: ContentItem): string {
-	if (!item?.slug) return "/";
-	const slug = item.slug.current;
-	const routes = {
-		person: `/pool/${slug}`,
-		venue: `/pool/${slug}`,
-		set: item.parentShow?.slug?.current
-			? `/shows/${item.parentShow.slug.current}/${slug}`
-			: `/shows/${slug}`,
-		article: `/words/${slug}`,
-		show: `/shows/${slug}`,
-	};
-	return localePath(routes[item._type] || `/${item._type}/${slug}`);
-}
-
-// ==================== IMAGE HANDLING ====================
-function getItemImage(item: ContentItem) {
-	if (item.image || item.mainImage) return item.image || item.mainImage;
-
-	const fallbacks = mainStore?.siteFallbacks;
-	const fallbackMap = {
-		person: fallbacks?.fallbackPerson?.image,
-		venue: fallbacks?.fallbackVenue?.image,
-		show: fallbacks?.fallbackShow?.image,
-		set: fallbacks?.fallbackSet?.image,
-		word: fallbacks?.fallbackArticle?.image,
-		article: fallbacks?.fallbackArticle?.image,
-	};
-	return fallbackMap[item._type] || fallbacks?.fallbackPerson?.image;
-}
-
 async function _checkImage(url: string): Promise<boolean> {
 	return new Promise((resolve) => {
 		const img = new Image();
@@ -842,35 +814,10 @@ async function _checkImage(url: string): Promise<boolean> {
 	});
 }
 
-// Non-blocking artwork URL resolution - returns URL directly, browser handles 404s
-function getSoundcloudArtwork(item: ContentItem): string {
-	// Try SoundCloud artwork first (use -t500x500 for better quality without -original issues)
-	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
-	if (artworkUrl) {
-		// Use t500x500 instead of original - more reliable
-		return artworkUrl.replace("-large", "-t500x500");
-	}
-	// Fallback chain
-	return (
-		item?.parentShow?.image?.asset?.url ||
-		mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url ||
-		""
-	);
-}
-
 function loadArtworkUrl(item: ContentItem) {
 	if (!item) return;
 	const url = getSoundcloudArtwork(item);
 	artworkUrls.value.set(item._id, url);
-}
-
-function playTrack(item: ContentItem) {
-	const track = item?.soundcloud?.tracks?.[0];
-	if (!track) return;
-	if (!track.permalink_url && track.id) {
-		track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
-	}
-	mainStore.currentTrack = track;
 }
 
 // ==================== LIFECYCLE ====================

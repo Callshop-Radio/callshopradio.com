@@ -17,6 +17,9 @@ const { locale: _locale } = useI18n();
 const localePath = useLocalePath();
 const mainStore = useMainStore();
 
+const { getItemRoute } = useContentRoute();
+const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
+
 const props = defineProps({
 	items: {
 		type: Array as () => ContentItem[],
@@ -108,29 +111,6 @@ function getItemImage(item: ContentItem): Image | undefined {
 	);
 }
 
-function getItemRoute(item: ContentItem) {
-	if (!item || !item?.slug) return "/";
-
-	switch (item?._type) {
-		case "person":
-		case "venue":
-			return localePath(`/pool/${item?.slug?.current}`);
-		case "set":
-			if (item?.parentShow?.slug?.current) {
-				return localePath(
-					`/shows/${item.parentShow.slug.current}/${item?.slug?.current}`,
-				);
-			}
-			return localePath(`/shows/${item?.slug?.current}`);
-		case "article":
-			return localePath(`/words/${item?.slug?.current}`);
-		case "show":
-			return localePath(`/shows/${item?.slug?.current}`);
-		default:
-			return localePath(`/${item?._type}/${item?.slug?.current}`);
-	}
-}
-
 function getItemCityTags(item: ContentItem) {
 	const cityTags: Tag[] = [];
 
@@ -184,37 +164,10 @@ function _checkImage(url: string): Promise<boolean> {
 	});
 }
 
-// Non-blocking artwork URL resolution
-function getSoundcloudArtwork(item: ContentItem): string {
-	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url as
-		| string
-		| undefined;
-	if (artworkUrl) {
-		return artworkUrl.replace("-large", "-t500x500");
-	}
-	const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-	const storeFallbackUrl =
-		mainStore.siteFallbacks?.fallbackSet?.image?.asset?.url;
-	return parentShowImageUrl || storeFallbackUrl || "";
-}
-
 function loadArtworkUrl(item: ContentItem) {
 	if (!item) return;
 	const url = getSoundcloudArtwork(item);
 	artworkUrls.value.set(item._id ?? "", url);
-}
-
-function playTrack(item: ContentItem) {
-	if (item?.soundcloud?.tracks?.[0]) {
-		const track = item.soundcloud.tracks[0] as {
-			id?: number;
-			permalink_url?: string;
-		};
-		if (!track.permalink_url && track.id) {
-			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
-		}
-		mainStore.currentTrack = track;
-	}
 }
 
 // Lifecycle

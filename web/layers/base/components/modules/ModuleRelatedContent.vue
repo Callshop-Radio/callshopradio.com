@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
-import type { ContentItem, Tag } from "~/types/sanity";
 
 const { locale: _locale } = useI18n();
 const localePath = useLocalePath();
-const router = useRouter();
 
 const mainStore = useMainStore();
+
+const { getItemRoute } = useContentRoute();
+const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
+const { navigateToTagSearch } = useTagNavigation();
 
 const props = defineProps({
 	// Daten-Array (z.B. data?.parentShow?.sets)
@@ -197,62 +199,6 @@ function _checkImage(url) {
 	});
 }
 
-// Non-blocking artwork URL resolution - returns URL directly, browser handles 404s
-function getSoundcloudArtwork(item) {
-	// Try SoundCloud artwork first (use -t500x500 for better quality)
-	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
-	if (artworkUrl) {
-		return artworkUrl.replace("-large", "-t500x500");
-	}
-	// Fallback chain
-	const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-	const storeFallbackUrl =
-		mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
-	return parentShowImageUrl || storeFallbackUrl || "";
-}
-
-// Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
-function getItemRoute(item) {
-	if (!item || !item?.slug) return "/";
-
-	switch (item?._type) {
-		case "person":
-		case "venue":
-			return localePath(`/pool/${item?.slug?.current}`);
-
-		case "set":
-			// Prüfe, ob parentShow vorhanden ist
-			if (item?.parentShow?.slug?.current) {
-				return localePath(
-					`/shows/${item?.parentShow?.slug?.current}/${item?.slug?.current}`,
-				);
-			}
-			// Fallback falls parentShow nicht verfügbar ist
-			return localePath(`/shows/${item?.slug?.current}`);
-
-		case "article":
-			return localePath(`/words/${item?.slug?.current}`);
-
-		case "show":
-			return localePath(`/shows/${item?.slug?.current}`);
-
-		// Standard-Fallback
-		default:
-			return localePath(`/${item?._type}/${item?.slug?.current}`);
-	}
-}
-
-// SoundCloud-Track abspielen
-function playTrack(item) {
-	if (item?.soundcloud?.tracks?.[0]) {
-		const track = item?.soundcloud.tracks[0];
-		if (!track.permalink_url && track.id) {
-			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
-		}
-		mainStore.currentTrack = track;
-	}
-}
-
 // Stadt-Tags abrufen (used in template)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- used in template
 function getItemCityTags(item) {
@@ -312,52 +258,6 @@ onMounted(() => {
 	}
 	// Note: Watcher handles additional items when loadMore is called
 });
-
-function navigateToTagSearch(
-	tag: Tag,
-	item: ContentItem | { _type?: string },
-	isGenre = false,
-) {
-	// Determine search term
-	let tagName = "";
-
-	if (isGenre) {
-		tagName = tag.name || tag.title;
-	} else {
-		// For standard tags, prefer title for searching as it matches the search index
-		// If title implies an object/array (i18n), we need to extract the string
-		const titleVal = tag.title || tag.name;
-
-		if (Array.isArray(titleVal)) {
-			// Assume portable text / i18n array, take first element value
-			tagName = titleVal[0]?.value || "";
-		} else if (typeof titleVal === "object") {
-			// Fallback for object without array
-			tagName = "";
-		} else {
-			tagName = titleVal || "";
-		}
-	}
-
-	if (!tagName) return;
-
-	// Determine Category
-	let category = "all";
-	const itemType = item?._type;
-
-	if (["show", "set"].includes(itemType)) category = "shows";
-	else if (["person", "venue"].includes(itemType)) category = "pool";
-	else if (["article"].includes(itemType)) category = "article";
-
-	// Navigate
-	router.push({
-		path: localePath("/search"),
-		query: {
-			q: tagName,
-			type: category,
-		},
-	});
-}
 </script>
 
 <template>

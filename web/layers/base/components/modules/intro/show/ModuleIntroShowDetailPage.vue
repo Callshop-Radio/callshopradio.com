@@ -4,7 +4,7 @@ import { useMainStore } from "~/stores/mainStore";
 import type { Image } from "~/types/sanity";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-const localePath = useLocalePath();
+const { getItemRoute } = useContentRoute();
 
 // Typdefinitionen
 interface Tag {
@@ -32,37 +32,6 @@ interface ShowItem {
 const props = defineProps<{
 	showItem: ShowItem;
 }>();
-
-// Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
-function getItemRoute(item) {
-	if (!item || !item?.slug) return "/";
-
-	switch (item?._type) {
-		case "person":
-		case "venue":
-			return localePath(`/pool/${item.slug.current}`);
-
-		case "set":
-			// Prüfe, ob parentShow vorhanden ist
-			if (item?.parentShow?.slug?.current) {
-				return localePath(
-					`/shows/${item.parentShow?.slug.current}/${item.slug.current}`,
-				);
-			}
-			// Fallback falls parentShow nicht verfügbar ist
-			return localePath(`/shows/${item?.slug?.current}`);
-
-		case "article":
-			return localePath(`/words/${item?.slug?.current}`);
-
-		case "show":
-			return localePath(`/shows/${item?.slug?.current}`);
-
-		// Standard-Fallback
-		default:
-			return localePath(`/${item?._type}/${item?.slug?.current}`);
-	}
-}
 
 // Store
 const mainStore = useMainStore();

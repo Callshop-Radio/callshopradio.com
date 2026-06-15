@@ -6,6 +6,7 @@ import type { ContentItem, Image, Tag } from "~/types/sanity";
 const { locale: _locale } = useI18n();
 const localePath = useLocalePath();
 const mainStore = useMainStore();
+const { getSoundcloudArtwork, playTrack: _playTrack } = useSoundcloudArtwork();
 
 const props = defineProps({
 	results: { type: Array as () => ContentItem[], default: () => [] },
@@ -561,35 +562,10 @@ async function _checkImage(url: string): Promise<boolean> {
 	});
 }
 
-// Non-blocking artwork URL resolution
-function getSoundcloudArtwork(item: ContentItem): string {
-	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url as
-		| string
-		| undefined;
-	if (artworkUrl) {
-		return artworkUrl.replace("-large", "-t500x500");
-	}
-	const fallbacks = mainStore.siteFallbacks;
-	return (
-		item?.parentShow?.image?.asset?.url ||
-		fallbacks?.fallbackSet?.image?.asset?.url ||
-		""
-	);
-}
-
 function loadArtworkUrl(item: ContentItem) {
 	if (!item) return;
 	const url = getSoundcloudArtwork(item);
 	artworkUrls.value.set(item._id, url);
-}
-
-function _playTrack(item: ContentItem) {
-	const track = item?.soundcloud?.tracks?.[0];
-	if (!track) return;
-	if (!track.permalink_url && track.id) {
-		track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
-	}
-	mainStore.currentTrack = track;
 }
 
 // ==================== LIFECYCLE ====================
