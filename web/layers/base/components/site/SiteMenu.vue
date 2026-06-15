@@ -2,7 +2,7 @@
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, locales: _locales } = useI18n();
-const _localePath = useLocalePath();
+const localePath = useLocalePath();
 
 const mainStore = useMainStore();
 const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
@@ -11,6 +11,11 @@ const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 <template>
 	<Transition name="menu-fade">
 		<nav v-if="mainStore?.menuOpen" class="menu tags">
+			<div class="menu__primary">
+				<NuxtLink :to="localePath('/shows')" class="tag shows">Shows</NuxtLink>
+				<NuxtLink :to="localePath('/pool')" class="tag pool">Pool</NuxtLink>
+				<NuxtLink :to="localePath('/words')" class="tag words">Words</NuxtLink>
+			</div>
 			<ul>
 				<li v-for="item in mainMenu" :key="item?._key">
 					<ElementsLink
@@ -26,11 +31,6 @@ const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 					</ElementsLink>
 				</li>
 			</ul>
-			<div class="menu__actions">
-				<SiteSearchButton />
-				<SiteDiscordButton v-if="mainStore?.siteNav?.discordLink" />
-				<SiteScheduleButton v-if="mainStore?.siteNav?.schedulePage" />
-			</div>
 		</nav>
 	</Transition>
 </template>
@@ -140,8 +140,9 @@ nav {
   }
 }
 
-/* Mobile: the hamburger menu is the primary nav below 900px */
-.menu__actions {
+/* The Shows/Pool/Words quick-links live in the header on desktop; on mobile
+   they move into the opened menu as the first row. */
+.menu__primary {
   display: none;
 }
 
@@ -149,21 +150,21 @@ nav {
   nav {
     flex-flow: column;
     align-items: stretch;
+    gap: var(--base-padding);
 
     ul {
-      flex-flow: column;
-      align-items: flex-start;
+      flex-flow: row wrap;
+      justify-content: flex-start;
     }
   }
 
-  .menu__actions {
+  .menu__primary {
     display: flex;
     flex-flow: row wrap;
     align-items: center;
     gap: var(--base-padding);
     width: 100%;
     max-width: var(--page-max-width);
-    padding: var(--base-padding) 0 0;
   }
 }
 </style>
