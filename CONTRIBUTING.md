@@ -8,9 +8,12 @@ After `pnpm install`, husky git hooks are installed automatically (via the root
 
 ## Branching & PRs
 
-- `main` — production; deploys to Netlify.
-- `dev` — integration branch.
-- `feature/<kebab-case>` — one branch per task, branched off `dev`.
+- `main` — the active trunk; deploys to Netlify. Branch from it and open PRs back
+  into it.
+- `feature/<kebab-case>` — one branch per task, branched off `main`.
+
+> Note: `dev` and the legacy `*-static` branches are stale (far behind `main`).
+> `main` is the de-facto trunk — don't branch off `dev`.
 
 Keep PRs small and focused. Before opening a PR:
 
