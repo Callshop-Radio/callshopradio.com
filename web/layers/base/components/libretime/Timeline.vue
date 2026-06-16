@@ -112,7 +112,7 @@ const initWien = () => {
 };
 
 // Kalenderoptionen
-const _calendarOptions = computed(() => ({
+const calendarOptions = computed(() => ({
 	plugins: [timeGridPlugin],
 	initialView: windowSize.width < 900 ? "timeGridDay" : "timeGridWeek",
 	allDaySlot: false,

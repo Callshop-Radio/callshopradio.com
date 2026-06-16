@@ -9,7 +9,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { formatScheduleLabel } from "~/composables/useShowFormatters";
 import { useMainStore } from "~/stores/mainStore";
 
-const _mainStore = useMainStore();
+const mainStore = useMainStore();
 
 /** Minimal show shape for schedule (LibreTime/schedule API) */
 interface ScheduleShow {
@@ -376,7 +376,7 @@ const getMobileDayGridLayout = (date: string | Date): DayGridLayout => {
 	};
 };
 
-const _getEventsGridStyle = (date: string | Date) => {
+const getEventsGridStyle = (date: string | Date) => {
 	if (!isMobile.value) return {};
 
 	const { rowCount } = getMobileDayGridLayout(date);
@@ -387,7 +387,7 @@ const _getEventsGridStyle = (date: string | Date) => {
 	};
 };
 
-const _getCurrentTimeMarkerStyleForDate = (date: string | Date) => {
+const getCurrentTimeMarkerStyleForDate = (date: string | Date) => {
 	if (!shouldShowTimeMarkerForDate(date)) {
 		return { display: "none" };
 	}
@@ -437,7 +437,7 @@ const _getCurrentTimeMarkerStyleForDate = (date: string | Date) => {
 };
 
 // Grid-based position calculation
-const _getItemGridPosition = (item: ProcessedItem) => {
+const getItemGridPosition = (item: ProcessedItem) => {
 	const startSegment = timeToGridSegment(item.startTime);
 	const durationSegments = calculateItemDurationInSegments(item);
 
@@ -467,9 +467,9 @@ const _getItemGridPosition = (item: ProcessedItem) => {
 };
 
 // Navigation
-const _scrollPrev = () => emblaApi.value?.scrollPrev();
-const _scrollNext = () => emblaApi.value?.scrollNext();
-const _scrollTo = (index: number) => emblaApi.value?.scrollTo(index);
+const scrollPrev = () => emblaApi.value?.scrollPrev();
+const scrollNext = () => emblaApi.value?.scrollNext();
+const scrollTo = (index: number) => emblaApi.value?.scrollTo(index);
 
 // Throttled save function
 const _saveTranslatePositions = useThrottleFn(() => {

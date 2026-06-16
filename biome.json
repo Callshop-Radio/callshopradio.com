@@ -61,6 +61,17 @@
 				"indentStyle": "space",
 				"indentWidth": 2
 			}
+		},
+		{
+			"includes": ["**/*.vue"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedVariables": "off",
+						"noUnusedImports": "off"
+					}
+				}
+			}
 		}
 	]
 }

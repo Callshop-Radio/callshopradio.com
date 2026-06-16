@@ -1,5 +1,5 @@
 <script setup>
-const _props = defineProps({
+const props = defineProps({
 	style: {
 		type: String,
 		default: () => "",

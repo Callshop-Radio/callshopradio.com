@@ -14,7 +14,7 @@ import { useMainStore } from "~/stores/mainStore";
 import type { ContentItem, Image, Tag } from "~/types/sanity";
 
 const { locale: _locale } = useI18n();
-const _localePath = useLocalePath();
+const localePath = useLocalePath();
 const mainStore = useMainStore();
 
 const { getItemRoute } = useContentRoute();
@@ -41,7 +41,7 @@ const visibleItemCount = ref(ITEMS_PER_PAGE);
 const artworkUrls = ref(new Map<string, string>());
 
 // Color and styling based on type
-const _typeConfig = computed(() => {
+const typeConfig = computed(() => {
 	const configs: Record<
 		string,
 		{ color: string; label: string; cssClass: string }

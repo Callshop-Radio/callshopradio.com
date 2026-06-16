@@ -2,15 +2,15 @@
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, locales: _locales } = useI18n();
-const _localePath = useLocalePath();
+const localePath = useLocalePath();
 
 const mainStore = useMainStore();
 const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 
 // Computed-Properties für den Track
 const currentTrack = computed(() => mainStore.currentTrack);
-const _trackTitle = computed(() => currentTrack.value?.title || "");
-const _trackDuration = computed(() => {
+const trackTitle = computed(() => currentTrack.value?.title || "");
+const trackDuration = computed(() => {
 	if (!currentTrack.value?.duration) return "";
 	// Umwandlung von Millisekunden in MM:SS Format
 	const totalSeconds = Math.floor(currentTrack.value.duration / 1000);
@@ -20,11 +20,11 @@ const _trackDuration = computed(() => {
 });
 
 // Status und Sichtbarkeit des Players
-const _isPlaying = computed(() => mainStore.isPlayerPlaying);
-const _isVisible = computed(() => mainStore.isPlayerVisible);
+const isPlaying = computed(() => mainStore.isPlayerPlaying);
+const isVisible = computed(() => mainStore.isPlayerVisible);
 
 // Methode zum Umschalten der Player-Sichtbarkeit
-const _togglePlayerVisibility = () => {
+const togglePlayerVisibility = () => {
 	mainStore.togglePlayerVisibility();
 };
 </script>

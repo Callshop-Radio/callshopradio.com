@@ -3,7 +3,7 @@ import { computed, nextTick, onMounted, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-const _localePath = useLocalePath();
+const localePath = useLocalePath();
 const { getItemRoute } = useContentRoute();
 
 // Template-Referenzen
@@ -155,7 +155,7 @@ const useSoundCloud = () => {
 };
 
 // Computed property für die Höhe von set-main
-const _computedSetMainHeight = computed(() => {
+const computedSetMainHeight = computed(() => {
 	// Unter 900px Bildschirmbreite soll die Höhe 100% sein
 	if (windowWidth.value <= 900) {
 		return "100%";

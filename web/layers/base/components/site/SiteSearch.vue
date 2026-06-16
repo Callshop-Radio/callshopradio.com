@@ -43,7 +43,7 @@ onMounted(() => {
 });
 
 // Keyboard navigation
-const _handleKeydown = (event) => {
+const handleKeydown = (event) => {
 	switch (event.key) {
 		case "ArrowDown":
 			event.preventDefault();
@@ -95,7 +95,7 @@ const handleClose = () => {
 };
 
 // Navigate to detailed search page
-const _goToDetailedSearch = () => {
+const goToDetailedSearch = () => {
 	const query = searchQuery.value.trim();
 	handleClose();
 	navigateTo(

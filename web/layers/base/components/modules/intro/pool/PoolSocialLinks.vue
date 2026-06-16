@@ -15,7 +15,7 @@ const props = defineProps<{
 	contactHref?: string;
 }>();
 
-const _hasLinks = computed(() =>
+const hasLinks = computed(() =>
 	Boolean(
 		props.contact ||
 			props.socials?.nina ||

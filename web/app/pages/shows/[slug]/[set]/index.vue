@@ -17,7 +17,7 @@ if (!data.value) {
 	console.error("Set nicht gefunden:", route.params.set);
 }
 
-const _relatedSets = computed(() => {
+const relatedSets = computed(() => {
 	if (
 		!data.value?.parentShow?.sets ||
 		!Array.isArray(data.value.parentShow?.sets)

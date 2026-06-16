@@ -72,7 +72,7 @@ const useImageManagement = () => {
 const { itemImage } = useImageManagement();
 
 // Formatierte Daten
-const _itemTitle = computed(() => {
+const itemTitle = computed(() => {
 	return props.showItem?.title || props.showItem?.name || "";
 });
 
@@ -84,7 +84,7 @@ const _itemLocation = computed(() => {
 	return props.showItem?.location || "";
 });
 
-const _contactLink = computed(() => {
+const contactLink = computed(() => {
 	const contact = props.showItem?.contact;
 	if (!contact) return "#";
 

@@ -206,7 +206,7 @@ const contentType = computed<string | null>(() => {
 	return props.module?.contentReference?._type || null;
 });
 
-const _layoutClass = computed<string>(() => {
+const layoutClass = computed<string>(() => {
 	return `layout-${contentType.value || "default"}`;
 });
 
@@ -218,7 +218,7 @@ const contentReference = computed(() => {
 	return props.module?.contentReference;
 });
 
-const _hasParentShow = computed(() => {
+const hasParentShow = computed(() => {
 	const parentShow = contentReference.value?.parentShow;
 	return parentShow && parentShow.title !== "No Show";
 });

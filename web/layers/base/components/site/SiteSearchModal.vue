@@ -18,7 +18,7 @@ const handleClose = () => {
 	emit("close");
 };
 
-const _handleSelect = (_result) => {
+const handleSelect = (_result) => {
 	handleClose();
 };
 

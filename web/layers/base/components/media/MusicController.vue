@@ -92,7 +92,7 @@ const updateLiveStatus = async () => {
 // Function to play and stop stream for Track 1
 
 // Function to play and stop stream for Track 1
-const _togglePlay1 = () => {
+const togglePlay1 = () => {
 	if (!audioEl1) return;
 
 	if (isPlaying1.value) {
@@ -141,7 +141,7 @@ const _togglePlay1 = () => {
 };
 
 // Function to play and stop stream for Track 2
-const _togglePlay2 = () => {
+const togglePlay2 = () => {
 	if (!audioEl2) return;
 
 	if (isPlaying2.value) {
@@ -219,12 +219,12 @@ const isCurrentShowLive2 = computed(() => {
 });
 
 // Helper functions to determine the correct live status
-const _getActualLiveStatus1 = computed(() => {
+const getActualLiveStatus1 = computed(() => {
 	const { onAirLight } = liveStatus.value.stream1;
 	return onAirLight?.on_air_light && isCurrentShowLive1.value;
 });
 
-const _getActualLiveStatus2 = computed(() => {
+const getActualLiveStatus2 = computed(() => {
 	const { onAirLight } = liveStatus.value.stream2;
 	return onAirLight?.on_air_light && isCurrentShowLive2.value;
 });

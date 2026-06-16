@@ -8,7 +8,7 @@ const isOnSearchPage = computed(() => {
 });
 
 // Button is active when modal is open or on search page
-const _isActive = computed(() => {
+const isActive = computed(() => {
 	return isSearchOpen.value || isOnSearchPage.value;
 });
 

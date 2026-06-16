@@ -17,7 +17,7 @@ const props = defineProps({
 });
 
 // Compute the category type for CSS class
-const _categoryType = computed(() => {
+const categoryType = computed(() => {
 	const type = props.activeContentType;
 	if (type === "person" || type === "venue") return "Pool";
 	if (type === "set" || type === "show") return "sets";
@@ -59,7 +59,7 @@ const showFilters = ref(true);
 const lastScrollY = ref(0);
 const sortMode = ref<"new" | "alpha">("new");
 const artworkUrls = ref(new Map<string, string>());
-const _moduleContainer = ref<HTMLElement | null>(null);
+const moduleContainer = ref<HTMLElement | null>(null);
 
 // ==================== COMPUTED: Tags ====================
 

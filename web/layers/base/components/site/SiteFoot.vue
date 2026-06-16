@@ -2,7 +2,7 @@
 import { useMainStore } from "~/stores/mainStore";
 
 const mainStore = useMainStore();
-const _footerMenu = computed(() => mainStore?.siteNav?.footerMenu);
+const footerMenu = computed(() => mainStore?.siteNav?.footerMenu);
 </script>
 
 <template>

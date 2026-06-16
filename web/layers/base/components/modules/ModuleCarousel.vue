@@ -13,7 +13,7 @@ interface Slide {
 	};
 }
 
-const _props = defineProps({
+const props = defineProps({
 	slides: {
 		type: Array as () => Slide[],
 		default: () => [],

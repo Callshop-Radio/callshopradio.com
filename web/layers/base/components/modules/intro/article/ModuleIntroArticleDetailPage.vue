@@ -175,7 +175,7 @@ onMounted(() => {
 	loadArticleImageUrl();
 });
 
-const _cityTags = computed(() => {
+const cityTags = computed(() => {
 	return (
 		props.article?.tags?.filter(
 			(tag: import("~/types/sanity").Tag) => tag._type === "tag.city",
@@ -183,7 +183,7 @@ const _cityTags = computed(() => {
 	);
 });
 
-const _otherTags = computed(() => {
+const otherTags = computed(() => {
 	return (
 		props.article?.tags?.filter(
 			(tag: import("~/types/sanity").Tag) => tag._type !== "tag.city",
@@ -198,14 +198,14 @@ watch(locale, (newVal: string) => {
 	articleLocale.value = newVal;
 });
 
-const _availableLocales = computed(() => {
+const availableLocales = computed(() => {
 	if (Array.isArray(props.article?.text)) {
 		return props.article.text.map((t: { _key?: string }) => t._key);
 	}
 	return [];
 });
 
-const _currentArticleText = computed(() => {
+const currentArticleText = computed(() => {
 	if (!props.article?.text || !Array.isArray(props.article.text)) return null;
 	return props.article.text.find(
 		(t: { _key?: string; value?: string }) => t._key === articleLocale.value,

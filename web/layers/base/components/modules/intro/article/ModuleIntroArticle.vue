@@ -75,14 +75,14 @@ function _getItemRoute(item) {
 const { getItemImage } = useImageManagement();
 
 // Computed properties
-const _articleImage = computed(() => {
+const articleImage = computed(() => {
 	const image = getItemImage(props.article);
 	return image?.asset?.url || "";
 });
 
 const COVER_FLOW_TEASER_MAX_WORDS = 40;
 
-const _coverFlowTeaserBlocks = computed(() => {
+const coverFlowTeaserBlocks = computed(() => {
 	if (props.layout !== "cover-flow" || !props.article) return [];
 
 	if (props.article.useTeaserText && props.article.textTeaser?.length) {

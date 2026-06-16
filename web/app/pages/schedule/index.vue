@@ -187,19 +187,19 @@ const dusseldorfShows = computed(() => {
 const wienShows = computed(() => getWienShows());
 
 // Gruppierte Shows für Düsseldorf und Wien
-const _groupedDusseldorfShows = computed(() =>
+const groupedDusseldorfShows = computed(() =>
 	groupShowsByDay(dusseldorfShows.value),
 );
 
-const _groupedWienShows = computed(() => groupShowsByDay(wienShows.value));
+const groupedWienShows = computed(() => groupShowsByDay(wienShows.value));
 
 // Computed Property für die Sichtbarkeit basierend auf dem aktiven Standort
-const _isLocationVisible = (location) => {
+const isLocationVisible = (location) => {
 	return mainStore.activeScheduleLocation === location;
 };
 
 // Neulade-Funktion für manuelles Aktualisieren
-const _refreshData = () => {
+const refreshData = () => {
 	loadData();
 };
 

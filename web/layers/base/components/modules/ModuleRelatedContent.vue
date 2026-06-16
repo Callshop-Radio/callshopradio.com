@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale } = useI18n();
-const _localePath = useLocalePath();
+const localePath = useLocalePath();
 
 const mainStore = useMainStore();
 
@@ -89,7 +89,7 @@ const typeClassMap = {
 };
 
 // CSS-Klasse entsprechend dem Typ
-const _typeClass = computed(() => {
+const typeClass = computed(() => {
 	return typeClassMap[props.type] || "default";
 });
 
@@ -121,7 +121,7 @@ function _loadMoreItems() {
 }
 
 // Bestimmen, ob mehr Items zum Laden verfügbar sind
-const _hasMoreItems = computed(() => {
+const hasMoreItems = computed(() => {
 	return props.items && props.items.length > visibleItemCount.value;
 });
 

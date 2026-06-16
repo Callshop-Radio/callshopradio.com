@@ -1,5 +1,5 @@
 <script setup>
-const _route = useRoute();
+const route = useRoute();
 const { enabled: previewEnabled, inFrame } = useSanityVisualEditingState();
 </script>
 

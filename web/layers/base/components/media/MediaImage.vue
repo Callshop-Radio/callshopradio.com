@@ -45,7 +45,7 @@ const props = defineProps({
 	},
 });
 
-const _placeholderSrc = computed(() => {
+const placeholderSrc = computed(() => {
 	const svgColor = "rgb(230,230,230)";
 	if (props.svgPlaceholder) {
 		return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${cropWidth.value} ${cropHeight.value}'%3E%3Crect width='${cropWidth.value}' height='${cropHeight.value}' fill='${svgColor}' /%3E%3C/svg%3E`;
@@ -56,7 +56,7 @@ const _placeholderSrc = computed(() => {
 	return "";
 });
 
-const _srcSet = computed(() => {
+const srcSet = computed(() => {
 	let srcSet = "";
 	const widths = [400, 750, 1200, 1800, 2400];
 	widths.forEach((width, index) => {
@@ -97,7 +97,7 @@ const cropHeight = computed(() => {
 	return Number.isNaN(calculatedHeight) ? 1080 : calculatedHeight; // Schutz vor NaN
 });
 
-const _orientation = computed(() => {
+const orientation = computed(() => {
 	if (!cropWidth.value || !cropHeight.value) return undefined;
 
 	return cropWidth.value > cropHeight.value
@@ -107,13 +107,13 @@ const _orientation = computed(() => {
 			: "square";
 });
 
-const _altText = computed(() => props.alt ?? props.image?.asset?.altText);
+const altText = computed(() => props.alt ?? props.image?.asset?.altText);
 const isLoaded = ref(false);
-const _onLoad = () => {
+const onLoad = () => {
 	isLoaded.value = true;
 };
 
-const _hasValidImage = computed(() => {
+const hasValidImage = computed(() => {
 	return props.image?.asset;
 });
 

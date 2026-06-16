@@ -46,18 +46,18 @@ const onSelect = () => {
 	currentIndex.value = selectedIndex.value; // Aktualisiere currentIndex, wenn sich der Slide ändert
 };
 
-const _scrollTo = (index: number) => {
+const scrollTo = (index: number) => {
 	if (!emblaApi.value) return;
 	emblaApi.value.scrollTo(index);
 	currentIndex.value = index; // Aktualisiere currentIndex beim manuellen Scrollen
 };
 
-const _scrollPrev = () => {
+const scrollPrev = () => {
 	if (!emblaApi.value) return;
 	emblaApi.value.scrollPrev();
 };
 
-const _scrollNext = () => {
+const scrollNext = () => {
 	if (!emblaApi.value) return;
 	emblaApi.value.scrollNext();
 };
@@ -87,7 +87,7 @@ onMounted(() => {
 });
 
 // Verwende die Pool-Items aus den Props
-const _slides = computed(() => {
+const slides = computed(() => {
 	const result = [];
 	// Gruppiere Pool-Items in Paare (2 pro Slide)
 	for (let i = 0; i < props.poolItems.length; i += 2) {

@@ -65,7 +65,7 @@ function measureUniformCardHeight() {
 	});
 }
 
-const _stageStyle = computed(() => {
+const stageStyle = computed(() => {
 	if (!props.equalizeCardHeights || !uniformCardHeight.value) return undefined;
 
 	return {

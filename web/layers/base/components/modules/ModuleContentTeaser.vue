@@ -16,7 +16,7 @@ import {
 const { locale: _locale } = useI18n();
 const localePath = useLocalePath();
 const router = useRouter();
-const _mainStore = useMainStore();
+const mainStore = useMainStore();
 
 const { getItemImage } = useContentImage();
 const { getItemRoute } = useContentRoute();
@@ -253,7 +253,7 @@ const hasMoreItems = computed(() => {
 });
 
 // Bestimmen, ob "Show More" angezeigt werden soll
-const _shouldShowMoreButton = computed(() => {
+const shouldShowMoreButton = computed(() => {
 	return loadMoreClickCount.value >= 2 && hasMoreItems.value;
 });
 
@@ -393,7 +393,7 @@ const typeClassMap: Record<string, string> = {
 };
 
 // CSS-Klasse entsprechend dem Typ
-const _typeClass = computed(() => {
+const typeClass = computed(() => {
 	return typeClassMap[props.module.type] || "default";
 });
 // Funktion zum Abrufen und Speichern der Artwork-URL

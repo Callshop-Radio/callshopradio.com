@@ -75,14 +75,14 @@ const videoHeight = computed(() => {
 	);
 	return videoTrack ? videoTrack.max_height : undefined;
 });
-const _aspectRatioStyle = computed(() =>
+const aspectRatioStyle = computed(() =>
 	videoWidth.value && videoHeight
 		? { "aspect-ratio": `${videoWidth.value} / ${videoHeight.value}` }
 		: {},
 );
 
 const { $urlFor } = useNuxtApp();
-const _posterSrc = computed(() => {
+const posterSrc = computed(() => {
 	if (props.posterImage) {
 		return $urlFor(props.posterImage)
 			.width(videoWidth.value ?? 1920)

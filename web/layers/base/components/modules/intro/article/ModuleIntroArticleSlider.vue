@@ -40,7 +40,7 @@ const scrollPrev = () => {
 		(currentIndex.value - 1 + slides.value.length) % slides.value.length;
 };
 
-const _scrollTo = (index: number) => {
+const scrollTo = (index: number) => {
 	currentIndex.value = index;
 };
 

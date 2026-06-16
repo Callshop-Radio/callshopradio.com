@@ -100,7 +100,7 @@ const useImageManagement = () => {
 const { itemImage } = useImageManagement();
 
 // Formatierte Daten
-const _itemTitle = computed(() => {
+const itemTitle = computed(() => {
 	return props.poolItem?.title || props.poolItem?.name || "";
 });
 
@@ -112,17 +112,17 @@ const _itemLocation = computed(() => {
 	return props.poolItem?.location || "";
 });
 
-const _cityTags = computed(() =>
+const cityTags = computed(() =>
 	(props.poolItem?.tags ?? []).filter((tag) => tag._type === "tag.city"),
 );
 
-const _otherTags = computed(() =>
+const otherTags = computed(() =>
 	(props.poolItem?.tags ?? []).filter((tag) => tag._type !== "tag.city"),
 );
 
 const COVER_FLOW_DESCRIPTION_MAX_WORDS = 20;
 
-const _coverFlowDescriptionBlocks = computed(() => {
+const coverFlowDescriptionBlocks = computed(() => {
 	const item = props.poolItem;
 	if (!item) return [];
 

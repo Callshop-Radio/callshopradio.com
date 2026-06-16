@@ -1,5 +1,5 @@
 <script setup>
-const _props = defineProps({
+const props = defineProps({
 	type: {
 		type: String,
 		default: "image",

@@ -55,7 +55,7 @@ const sortMode = ref<"new" | "shuffle" | "alpha">("new");
 const shuffleSeed = ref(Date.now());
 const visibleItemCount = ref(ITEMS_PER_PAGE);
 const artworkUrls = ref(new Map<string, string>());
-const _moduleContainer = ref<HTMLElement | null>(null);
+const moduleContainer = ref<HTMLElement | null>(null);
 const filterSection = ref<HTMLElement | null>(null);
 
 // ==================== COMPUTED: Content Type ====================
@@ -68,7 +68,7 @@ const contentType = computed(() => {
 	return type;
 });
 
-const _categoryType = computed(() => {
+const categoryType = computed(() => {
 	const type = contentType.value;
 	if (["persons", "venues", "all"].includes(type)) return "Pool";
 	if (type === "sets") return "sets";

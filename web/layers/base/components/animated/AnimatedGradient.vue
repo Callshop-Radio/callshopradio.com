@@ -10,7 +10,7 @@ const props = defineProps({
 	},
 });
 
-const _gradientColor = computed(() => {
+const gradientColor = computed(() => {
 	switch (props.type) {
 		case "sets":
 			return "var(--color-pink)";

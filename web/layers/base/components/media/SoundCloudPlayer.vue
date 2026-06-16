@@ -84,7 +84,7 @@ const trackUrl = computed(() => {
 });
 
 // Track ID for tracking and comparison
-const _trackId = computed(() => {
+const trackId = computed(() => {
 	return (
 		localTrack.value?.id ||
 		localTrack.value?.track_id ||
