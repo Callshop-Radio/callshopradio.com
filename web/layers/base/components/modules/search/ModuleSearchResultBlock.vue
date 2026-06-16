@@ -760,4 +760,11 @@ watch(
     grid-template-columns: 1fr;
   }
 }
+
+@media screen and (max-width: 900px) {
+  .search-result-block .teaser-item__content {
+    margin: var(--card-content-padding-y) 0 0 0;
+    gap: var(--card-content-gap);
+  }
+}
 </style>

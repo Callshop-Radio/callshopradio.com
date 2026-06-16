@@ -1,25 +1,32 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
+import { computed } from "vue";
 import { SHOWSARCHIVE_QUERY } from "~~/queries/sanity.queries.ts";
+
+definePageMeta({
+	bodyClass: "shows-archive",
+});
 
 const query = groq`${SHOWSARCHIVE_QUERY}`;
 const { data } = await useCachedSanityQuery(query);
 
-useHead({
-	bodyAttrs: {
-		class: "shows-archive",
-	},
+const slider = computed(() => data.value?.slider);
+const { featured: featuredSets } = useCoverFlowSliderItems(slider, "sets", {
+	contentType: "sets",
 });
+
+usePageSeo(data?.value?.seo);
 </script>
 
 <template>
 	<div class="shows-archive">
-		<!-- <section class="intro-section">
-      <ModuleIntroSetSlider
-        :sets="data?.slider?.sets?.slice(0, data?.slider?.count * 2)"
-        :title="'Featured Shows'"
-      />
-    </section> -->
+		<section v-if="featuredSets.length > 0" class="intro-section">
+			<ModuleIntroCoverFlow :items="featuredSets" nav-label="Set">
+				<template #default="{ item, mediaActive }">
+					<ModuleIntroSet layout="cover-flow" :set="item" :media-active="mediaActive" />
+				</template>
+			</ModuleIntroCoverFlow>
+		</section>
 		<section
 			v-if="data?.modules && data?.modules?.length > 0"
 			class="module-section"
@@ -38,4 +45,3 @@ useHead({
   align-items: center;
 }
 </style>
-

@@ -1,7 +1,10 @@
 export const IMAGE_QUERY = `{
   ...,
   "alt": asset->altText,
-	asset->,
+	asset->{
+		...,
+		metadata
+	},
 }`;
 
 // Shared SoundCloud projection — only the fields actually consumed by components.
@@ -157,6 +160,72 @@ export const RICH_TEXT_QUERY = `{
 		}
 	},
 }`;
+/** Slim set projection for archive cover-flow slider (autoLoad). */
+export const SET_COVER_FLOW_SLIDER_ITEM_QUERY = `{
+	_id,
+	_type,
+	title,
+	slug,
+	datetime,
+	_updatedAt,
+	"soundcloud": soundcloud{
+		"tracks": tracks[0]{ id, artwork_url }
+	},
+	persons[]->{
+		_id,
+		_key,
+		title,
+		slug,
+		poolVisibility
+	},
+	"tags": tags[]->{
+		_id,
+		title
+	} | order(lower(title)),
+	"parentShow": *[_type == "show" && references(^._id)][0]{
+		_id,
+		title,
+		slug,
+		image { asset-> }
+	}
+}`;
+
+/** Slim article projection for archive cover-flow slider (autoLoad). */
+export const ARTICLE_COVER_FLOW_SLIDER_ITEM_QUERY = `{
+	_id,
+	_type,
+	title,
+	slug,
+	image ${IMAGE_QUERY},
+	datetime,
+	useTeaserText,
+	textTeaser[] ${RICH_TEXT_QUERY},
+	"tags": tags[]->{
+		_id,
+		title
+	} | order(lower(title))
+}`;
+
+/** Slim pool profile projection for archive cover-flow slider (autoLoad). */
+export const POOL_COVER_FLOW_SLIDER_ITEM_QUERY = `{
+	_id,
+	_type,
+	title,
+	name,
+	slug,
+	image ${IMAGE_QUERY},
+	"tags": tags[]->{
+		_id,
+		_type,
+		title
+	} | order(lower(title)),
+	location,
+	useTeaserText,
+	textTeaser[] ${RICH_TEXT_QUERY},
+	text[] ${RICH_TEXT_QUERY},
+	description[] ${RICH_TEXT_QUERY}
+}`;
+
 export const TAG_QUERY = `
     "availableTags": {
         "genres": *[_type == 'tag.genre']| order(lower(title)) {

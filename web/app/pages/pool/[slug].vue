@@ -2,6 +2,10 @@
 <script setup>
 import { POOL_PROFILE_QUERY } from "~~/queries/sanity.queries.ts";
 
+definePageMeta({
+	bodyClass: "pool-detail",
+});
+
 const route = useRoute();
 
 // Den "set"-Parameter aus der URL-Route extrahieren

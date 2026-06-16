@@ -47,16 +47,18 @@ const props = defineProps({
 
 const placeholderSrc = computed(() => {
 	const svgColor = "rgb(230,230,230)";
-	return props.svgPlaceholder
-		? `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${cropWidth.value} ${cropHeight.value}'%3E%3Crect width='${cropWidth.value}' height='${cropHeight.value}' fill='${svgColor}' /%3E%3C/svg%3E`
-		: props.lqipPlaceholder
-			? $urlFor(props.image).width(100).auto(props.auto).fit(props.fit).url()
-			: "";
+	if (props.svgPlaceholder) {
+		return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${cropWidth.value} ${cropHeight.value}'%3E%3Crect width='${cropWidth.value}' height='${cropHeight.value}' fill='${svgColor}' /%3E%3C/svg%3E`;
+	}
+	if (props.lqipPlaceholder) {
+		return props.image?.asset?.metadata?.lqip ?? "";
+	}
+	return "";
 });
 
 const srcSet = computed(() => {
 	let srcSet = "";
-	const widths = [250, 375, 500, 750, 1000, 1400, 1800, 2400, 3000];
+	const widths = [400, 750, 1200, 1800, 2400];
 	widths.forEach((width, index) => {
 		if (!props.image?.asset) {
 			return false;

@@ -233,6 +233,18 @@ function getItemNonCityTags(item) {
 	return item?.tags.filter((tag) => tag._type !== "tag.city");
 }
 
+function getTagTitle(title) {
+	if (!title) return "";
+	if (typeof title === "string") return title;
+	if (Array.isArray(title)) {
+		return parseI18nObj(title) || title[0]?.value || "";
+	}
+	if (typeof title === "object") {
+		return title.de || title.en || Object.values(title)[0] || "";
+	}
+	return String(title);
+}
+
 // Watcher für visibleItems, um Artwork-URLs für neue Items zu laden
 watch(
 	visibleItems,
@@ -274,16 +286,28 @@ onMounted(() => {
 				:key="item?._id"
 				:class="`related-item related-item--${style} ${typeClass}`"
 			>
-				<!-- Stadt-Tags falls vorhanden -->
-				<!-- <div class="related-item__tags city-tags">
-          <span
-            v-for="tag in getItemCityTags(item)"
-            :key="tag._id"
-            class="tag city"
-          >
-            {{ parseI18nObj(tag?.short) }}
-          </span>
-        </div> -->
+				<!-- Words: all tags combined top-right -->
+				<div
+					v-if="
+						type === 'words' &&
+							(getItemCityTags(item).length > 0 ||
+								getItemNonCityTags(item).length > 0)
+					"
+					class="related-item__tags tags city-tags related-item__tags--words"
+				>
+					<span
+						v-for="tag in getItemCityTags(item)"
+						:key="tag._id"
+						class="tag city"
+					>{{ parseI18nObj(tag?.short) }}</span
+					>
+					<span
+						v-for="tag in getItemNonCityTags(item)"
+						:key="tag._id"
+						class="tag"
+					>{{ getTagTitle(tag.title) }}</span
+					>
+				</div>
 
 				<!-- Bild -->
 				<NuxtLink
@@ -342,7 +366,7 @@ onMounted(() => {
 				<div class="related-item__content">
 					<!-- Interaktiver Bereich mit Datum und Play-Button -->
 					<section
-						v-if="type !== 'pool'"
+						v-if="type !== 'pool' && type !== 'words'"
 						class="related-item__content__interactive"
 					>
 						<!-- Datum (falls vorhanden) -->
@@ -443,6 +467,15 @@ onMounted(() => {
 						</div>
 					</div>
 
+					<!-- Words: Read More -->
+					<div v-if="type === 'words'" class="tags read-more">
+						<NuxtLink
+							:to="getItemRoute(item)"
+							class="related-item__link"
+						><h3 class="tag">Read More</h3></NuxtLink
+						>
+					</div>
+
 					<!-- Titel für alle anderen Content-Typen -->
 					<NuxtLink
 						v-if="type !== 'sets'"
@@ -477,7 +510,7 @@ onMounted(() => {
 
 					<!-- Nicht-City Tags anzeigen -->
 					<div
-						v-if="getItemNonCityTags(item).length > 0"
+						v-if="type !== 'words' && getItemNonCityTags(item).length > 0"
 						class="related-item__tags tags"
 					>
 						<button
@@ -739,6 +772,78 @@ onMounted(() => {
   }
 
   &.words {
+    .related-content__grid {
+      gap: calc(var(--big-padding) * 3);
+    }
+
+    .related-item {
+      position: relative;
+      flex: 1 1 50%;
+      max-width: calc(50% - var(--big-padding) * 1.5);
+      background-color: var(--color-text);
+      border-radius: 12px;
+      border: 1px solid var(--color-text);
+      overflow: hidden;
+      padding: 0;
+
+      &__tags--words {
+        position: absolute;
+        top: var(--base-padding);
+        right: var(--base-padding);
+        z-index: 2;
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-end;
+        align-items: flex-start;
+        gap: var(--small-padding);
+        flex-grow: 0;
+        height: auto;
+        margin: 0;
+      }
+
+      &__image img {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 3 / 1.5 !important;
+        object-fit: cover;
+      }
+
+      &__content {
+        position: relative;
+        gap: var(--big-padding);
+        margin: 0;
+        padding: var(--base-margin) var(--mid-padding);
+
+        .read-more {
+          position: absolute;
+          transform: translate(0, calc(var(--base-margin) * -1 - 50%));
+          .tag {
+            border: 1px solid var(--color-text);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+          }
+        }
+
+        .related-item__title {
+          padding-top: var(--big-padding);
+          font-size: var(--large-font-size);
+          font-weight: 400;
+          font-family: var(--font-text-regular);
+          color: var(--color-bg);
+          text-transform: none;
+        }
+
+        .rich-text {
+          padding-bottom: var(--big-padding);
+          color: var(--color-bg);
+        }
+
+        .related-item__tags {
+          flex-grow: 0;
+        }
+      }
+    }
+
     .tag {
       &.city {
         background-color: var(--color-green);
@@ -790,6 +895,32 @@ onMounted(() => {
 /* Responsive Anpassungen */
 @media (max-width: 900px) {
   .related-content {
+    &__grid {
+      min-width: 0;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      gap: calc(var(--big-padding) * 2);
+    }
+
+    &.words .related-item {
+      flex: 1 1 100%;
+      max-width: 100%;
+      width: 100%;
+
+      &__content {
+        gap: var(--card-content-gap);
+        padding: var(--card-content-padding-y) var(--card-content-padding-x);
+
+        .read-more {
+          transform: translate(
+            0,
+            calc(var(--card-content-padding-y) * -1 - 50%)
+          );
+        }
+      }
+    }
+
     .related-item {
       max-width: 100%;
       width: 100%;

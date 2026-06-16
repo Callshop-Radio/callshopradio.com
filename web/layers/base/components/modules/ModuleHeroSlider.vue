@@ -178,8 +178,9 @@ onMounted(() => {
   max-width: clamp(100%, 100%, var(--page-max-width));
   position: relative;
 
-  @media screen and (max-width: 1100px) {
+  @media screen and (max-width: 1099px) {
     margin-top: var(--base-margin);
+    padding-bottom: var(--mid-padding);
   }
 
   &__title {
@@ -355,6 +356,17 @@ onMounted(() => {
     width: 100%;
     height: 100%;
     position: relative;
+
+    @media screen and (max-width: 1099px) {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: var(--mid-padding);
+      z-index: 20;
+      pointer-events: none;
+      height: auto;
+    }
     
     .slider__nav {
       @apply flex row items-center justify-space-between;
@@ -365,19 +377,32 @@ onMounted(() => {
       shape-rendering: crispEdges;
       z-index: 10;
       
-      /* Mobile: Unterhalb des Bildes */
-      position: absolute;
-      top: calc(80svw + var(--big-margin));
-      right: calc(var(--big-margin));
-      width: calc(100% - var(--big-margin) * 2);
-      
-      @media screen and (min-width: 600px) {
-        /* Tablet: Unterhalb eines kleineren Bildes */
-        top: calc(50svw + var(--big-margin));
+      @media screen and (max-width: 600px) {
+        position: absolute;
+        top: auto;
+        bottom: 0;
+        left: 50%;
+        right: auto;
+        width: calc(100% - var(--page-gutter) * 2 - var(--mid-margin) * 2);
+        max-width: none;
+        transform: translate(-50%, 50%);
+        pointer-events: auto;
+      }
+
+      @media screen and (min-width: 601px) and (max-width: 1099px) {
+        position: absolute;
+        top: auto;
+        bottom: 0;
+        left: calc(var(--page-gutter) + var(--big-margin) / 2);
+        right: auto;
+        width: max-content;
+        max-width: calc(100% - var(--page-gutter) * 2 - var(--big-margin));
+        transform: translateY(50%);
+        pointer-events: auto;
       }
       
       @media screen and (min-width: 1100px) {
-        /* Desktop: Feste Position am unteren rechten Rand */
+        position: absolute;
         top: calc(35.3125rem - var(--big-margin) * 2);
         right: var(--big-margin);
         width: max-content;
@@ -418,8 +443,12 @@ onMounted(() => {
       }
 
       .slider__nav__dots {
-        @apply flex row items-center justify-center flex-grow-1;
+        @apply flex row items-center justify-center;
         gap: 0 var(--small-padding);
+
+        @media screen and (max-width: 600px) {
+          flex-grow: 1;
+        }
 
         .slider__dot {
           @apply rounded-full transition-colors;
@@ -448,7 +477,10 @@ onMounted(() => {
     grid-template-columns: 1fr;
     width: 100%;
     position: relative;
-    /* max-width: calc(var(--page-max-width)); */
+
+    @media screen and (max-width: 900px) {
+      z-index: 1;
+    }
   }
 
   .slide {

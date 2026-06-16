@@ -7,7 +7,9 @@ favicon();
   <div class="site">
     <SiteHead />
     <main>
-      <NuxtPage />
+      <div class="page-content">
+        <NuxtPage />
+      </div>
     </main>
     <SiteFoot class="footer" />
     <ElementsPreviewMode />
@@ -22,42 +24,26 @@ favicon();
 
   main {
     @apply flex-grow-1;
-    padding: 0 var(--big-margin);
     display: flex;
-    flex-direction: column wrap;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 0 var(--page-gutter);
+    box-sizing: border-box;
+  }
+
+  .page-content {
+    width: 100%;
+    min-height: calc(100svh - var(--nav-height));
+    display: flex;
+    flex-direction: column;
     align-items: flex-start;
-    @media screen and (max-width: 900px) {
-      padding: 0 var(--mid-padding);
-    }
   }
 
   .menu,
   main,
   .footer {
     @apply flex-shrink-0;
-  }
-}
-
-.shows-archive .site,
-.pool-archive .site,
-.words-archive .site {
-  main {
-    padding: 0 var(--big-margin);
-    @media screen and (max-width: 900px) {
-      padding: 0 var(--mid-padding);
-    }
-  }
-}
-
-.schedule .site {
-  main {
-    padding: 0;
-  }
-}
-.page--article-detail .site {
-  main {
-    padding: 0;
   }
 }
 </style>

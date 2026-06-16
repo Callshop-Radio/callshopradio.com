@@ -31,9 +31,17 @@ interface Article {
 }
 
 // Props
-const props = defineProps<{
-	article: Article;
-}>();
+const props = withDefaults(
+	defineProps<{
+		article: Article;
+		layout?: "default" | "cover-flow";
+		mediaActive?: boolean;
+	}>(),
+	{
+		layout: "default",
+		mediaActive: true,
+	},
+);
 
 // Store
 const mainStore = useMainStore();
@@ -71,16 +79,43 @@ const articleImage = computed(() => {
 	const image = getItemImage(props.article);
 	return image?.asset?.url || "";
 });
+
+const COVER_FLOW_TEASER_MAX_WORDS = 40;
+
+const coverFlowTeaserBlocks = computed(() => {
+	if (props.layout !== "cover-flow" || !props.article) return [];
+
+	if (props.article.useTeaserText && props.article.textTeaser?.length) {
+		return limitTextBlocksByWords(
+			parseI18nObj(props.article.textTeaser || []),
+			COVER_FLOW_TEASER_MAX_WORDS,
+		);
+	}
+
+	if (props.article.text?.length) {
+		const blocks = parseI18nObj(props.article.text || []);
+		return limitTextBlocksByWords(
+			Array.isArray(blocks) ? blocks.slice(0, 1) : [],
+			COVER_FLOW_TEASER_MAX_WORDS,
+		);
+	}
+
+	return [];
+});
 </script>
 
 <template>
-	<div v-if="article" class="article-content">
+	<div
+		v-if="article"
+		class="article-content"
+		:class="`article-content--${props.layout}`"
+	>
 		<div class="article-container">
 			<!-- Bild/Media-Bereich -->
 			<div class="article-media">
 				<NuxtLink :to="getItemRoute(article)" class="grid-item__link">
 					<img
-						v-if="articleImage"
+						v-if="mediaActive && articleImage"
 						:src="articleImage"
 						alt="Article Image"
 						class="article-image"
@@ -90,8 +125,30 @@ const articleImage = computed(() => {
 				</NuxtLink>
 			</div>
 
+			<!-- Tags auf dem Bild -->
+			<div v-if="article?.tags?.length" class="article-tags tags">
+				<button
+					v-for="tag in article?.tags.slice(0, 3)"
+					:key="tag._id"
+					class="tag"
+					type="button"
+				>
+					{{
+						tag?.title?.[1]?.value
+							? parseI18nObj(tag?.title)
+							: tag?.title[0]?.value ?? tag.title
+					}}
+				</button>
+			</div>
+
 			<!-- Content-Bereich -->
 			<div class="article-info">
+				<div v-if="article.useTeaserText || article.text" class="tags read-more">
+					<NuxtLink :to="getItemRoute(article)" class="tag">
+						Read More
+					</NuxtLink>
+				</div>
+
 				<div class="article-info-container">
 					<!-- Titel-Bereich -->
 					<div class="article-header">
@@ -117,12 +174,17 @@ const articleImage = computed(() => {
 					</div>
 
 					<!-- Artikel-Teaser -->
-					<div v-if="article.useTeaserText" class="article-teaser">
-						<div class="tags read-more">
-							<NuxtLink :to="getItemRoute(article)" class="tag">
-								Read More
-							</NuxtLink>
-						</div>
+					<div
+						v-if="props.layout === 'cover-flow' && coverFlowTeaserBlocks.length"
+						class="article-teaser"
+					>
+						<RichText
+							:value="article.textTeaser || article.text"
+							class="rich-text"
+							:blocks="coverFlowTeaserBlocks"
+						/>
+					</div>
+					<div v-else-if="article.useTeaserText" class="article-teaser">
 						<RichText
 							v-if="article.textTeaser"
 							:value="article.textTeaser"
@@ -134,11 +196,6 @@ const articleImage = computed(() => {
 						v-else-if="!article.useTeaserText && article.text"
 						class="article-teaser"
 					>
-						<div class="tags read-more">
-							<NuxtLink :to="getItemRoute(article)" class="tag">
-								Read More
-							</NuxtLink>
-						</div>
 						<RichText
 							v-if="article.textTeaser"
 							:value="article.textTeaser"
@@ -150,22 +207,6 @@ const articleImage = computed(() => {
 								)
 							"
 						/>
-					</div>
-
-					<!-- Tags -->
-					<div v-if="article?.tags?.length" class="article-tags tags">
-						<button
-							v-for="tag in article?.tags.slice(0, 3)"
-							:key="tag._id"
-							class="tag"
-							type="button"
-						>
-							{{
-								tag?.title?.[1]?.value
-									? parseI18nObj(tag?.title)
-									: tag?.title[0]?.value ?? tag.title
-							}}
-						</button>
 					</div>
 				</div>
 			</div>
@@ -189,6 +230,7 @@ const articleImage = computed(() => {
   height: auto;
 
   .article-container {
+    position: relative;
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -212,11 +254,38 @@ const articleImage = computed(() => {
         transition: transform 0.2s ease;
         max-width: none;
         max-height: none;
+
+        @media (max-width: 900px) {
+          aspect-ratio: 3 / 2 !important;
+        }
+      }
+    }
+
+    .article-tags {
+      position: absolute;
+      top: var(--base-padding);
+      right: var(--base-padding);
+      left: auto;
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-end;
+      align-items: flex-start;
+      gap: var(--small-padding);
+      z-index: 10;
+      pointer-events: none;
+      max-width: calc(100% - var(--base-padding) * 2);
+
+      .tag {
+        pointer-events: all;
+        flex-shrink: 0;
+        background-color: var(--color-text);
+        color: var(--color-bg);
       }
     }
   }
 
   .article-info {
+    position: relative;
     width: 100%;
     background-color: var(--color-text);
     display: flex;
@@ -233,37 +302,23 @@ const articleImage = computed(() => {
 
     .read-more {
       position: absolute;
-      right: calc(17% - var(--base-margin));
-      transform: translate(0%, -100%);
+      top: 0;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 20;
+
       .tag {
+        border: 1px solid var(--color-text);
         background-color: var(--color-bg);
         color: var(--color-text);
-        padding: calc(var(--small-padding) / 2) var(--big-padding);
+        padding: calc(var(--small-padding) / 2) var(--base-padding);
         font-size: var(--base-font-size);
+
         &:hover {
           background-color: var(--color-green);
           color: var(--color-bg);
           text-decoration: none;
         }
-      }
-    }
-
-    .article-tags {
-      position: absolute;
-      top: var(--big-padding);
-      right: var(--big-padding);
-      display: flex;
-      flex-flow: row wrap;
-      justify-content: flex-start;
-      align-items: flex-end;
-      align-content: flex-end;
-      gap: var(--small-margin);
-      flex-grow: 1;
-      z-index: 10;
-
-      .tag {
-        background-color: var(--color-text);
-        color: var(--color-bg);
       }
     }
 
@@ -274,6 +329,10 @@ const articleImage = computed(() => {
       flex-flow: column wrap;
       justify-content: flex-start;
       align-items: flex-start;
+
+      @media (max-width: 900px) {
+        width: 100%;
+      }
     }
 
     .article-header {
@@ -305,6 +364,134 @@ const articleImage = computed(() => {
 
     .article-teaser {
       color: var(--color-bg);
+    }
+  }
+}
+
+.article-content--cover-flow {
+  width: 100%;
+  max-width: 100%;
+  min-height: var(--cover-flow-uniform-height, auto);
+  height: var(--cover-flow-uniform-height, auto);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+
+  .article-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    justify-content: flex-start;
+
+    .article-media {
+      flex-shrink: 0;
+
+      .article-image,
+      .article-image-placeholder {
+        width: 100%;
+        max-width: 100%;
+        aspect-ratio: 3 / 2 !important;
+        height: auto;
+        max-height: none;
+        object-fit: cover;
+        object-position: top;
+      }
+    }
+
+    .article-tags {
+      top: var(--base-padding);
+      right: var(--base-padding);
+      max-width: calc(100% - var(--base-padding) * 2);
+    }
+  }
+
+  .article-info {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    padding: var(--base-margin) var(--mid-padding);
+    gap: var(--mid-padding);
+
+    &-container {
+      width: 100%;
+      flex: 0 0 auto;
+      gap: var(--mid-padding);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .article-header {
+      gap: var(--mid-padding);
+      flex-shrink: 0;
+
+      .article-title-container a h2,
+      .article-title {
+        font-size: var(--base-font-size);
+        font-family: var(--font-text-semibold);
+        font-weight: 500;
+        text-transform: uppercase;
+        margin: 0;
+      }
+    }
+
+    .article-teaser {
+      flex: 0 0 auto;
+      font-size: var(--base-font-size);
+      line-height: 1.4;
+
+      & > *,
+      :deep(.rich-text),
+      :deep(p),
+      :deep(span) {
+        margin: 0;
+        font-size: inherit;
+        line-height: inherit;
+      }
+    }
+
+    .read-more .tag {
+      font-size: var(--base-font-size);
+    }
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .article-content .article-info {
+    gap: var(--card-content-gap);
+    padding: var(--card-content-padding-y) var(--card-content-padding-x);
+
+    .article-info-container,
+    .article-header {
+      gap: var(--card-content-gap);
+    }
+  }
+
+  .article-content--cover-flow {
+    .article-tags {
+      top: var(--small-padding);
+      right: var(--small-padding);
+      max-width: calc(100% - var(--small-padding) * 2);
+    }
+
+    .article-info {
+      padding: var(--card-content-padding-y) var(--card-content-padding-x);
+      gap: var(--card-content-gap);
+
+      .read-more .tag {
+        font-size: var(--small-font-size);
+        padding: calc(var(--small-padding) / 2) var(--small-padding);
+      }
+
+      &-container,
+      .article-header {
+        gap: var(--card-content-gap);
+      }
+
+      .article-teaser {
+        font-size: var(--small-font-size);
+      }
     }
   }
 }

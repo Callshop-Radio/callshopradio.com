@@ -1,20 +1,36 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
+import { computed } from "vue";
 import { WORDS_QUERY } from "~~/queries/sanity.queries.ts";
+
+definePageMeta({
+	bodyClass: "words-archive",
+});
 
 const query = groq`${WORDS_QUERY}`;
 const { data } = await useCachedSanityQuery(query);
+
+function hasTeaserText(article) {
+	return Boolean(article?.useTeaserText && article?.textTeaser?.length);
+}
+
+const slider = computed(() => data.value?.slider);
+const { featured: featuredArticles } = useCoverFlowSliderItems(
+	slider,
+	"articles",
+	{
+		contentType: "articles",
+		filter: hasTeaserText,
+	},
+);
 
 usePageSeo(data?.value?.seo);
 </script>
 
 <template>
 	<div class="words">
-		<section class="intro-section">
-			<ModuleIntroArticleSlider
-				:articles="data?.slider?.articles?.slice(0, data?.slider?.count * 2)"
-				:title="'Featured Articles'"
-			/>
+		<section v-if="featuredArticles.length > 0" class="intro-section">
+			<ModuleIntroArticleCoverFlow :articles="featuredArticles" />
 		</section>
 		<section
 			v-if="data?.modules && data.modules.length > 0"
@@ -29,7 +45,6 @@ usePageSeo(data?.value?.seo);
 .words {
   display: flex;
   align-items: center;
-
   flex-flow: column wrap;
   justify-content: flex-start;
   width: 100%;

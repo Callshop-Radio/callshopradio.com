@@ -1,5 +1,9 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
+definePageMeta({
+	bodyClass: "search-page",
+});
+
 // Page SEO
 useHead({
 	title: "Search | Callshop Radio",
@@ -10,9 +14,6 @@ useHead({
 				"Search for shows, artists, venues, and articles on Callshop Radio.",
 		},
 	],
-	bodyAttrs: {
-		class: "search-page",
-	},
 });
 
 const localePath = useLocalePath();

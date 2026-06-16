@@ -3,6 +3,10 @@ import { computed, onMounted, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 import { SCHEDULE_QUERY } from "~~/queries/sanity.queries.ts";
 
+definePageMeta({
+	bodyClass: "schedule",
+});
+
 const query = groq`${SCHEDULE_QUERY}`;
 const { data } = await useCachedSanityQuery(query);
 
@@ -200,16 +204,10 @@ const refreshData = () => {
 };
 
 usePageSeo(data?.value?.seo);
-
-useHead({
-	bodyAttrs: {
-		class: "schedule",
-	},
-});
 </script>
 
 <template>
-	<div class="schedule">
+	<div class="schedule page-full-bleed">
 		<div class="schedule__background">
 			<MediaImage
 				v-if="data?.backgroundImage"
@@ -255,9 +253,6 @@ useHead({
 </template>
 
 <style lang="postcss" scoped>
-main {
-  margin: 0 0 0 0 !important;
-}
 .schedule {
   position: relative;
   min-height: max-content;

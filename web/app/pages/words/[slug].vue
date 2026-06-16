@@ -2,6 +2,10 @@
 <script setup>
 import { ENTRY_QUERY } from "~~/queries/sanity.queries.ts";
 
+definePageMeta({
+	bodyClass: "page--article-detail",
+});
+
 const route = useRoute();
 
 const query = groq`${ENTRY_QUERY}`;
@@ -14,16 +18,10 @@ if (!data.value) {
 }
 
 usePageSeo(data?.value?.seo);
-
-useHead({
-	bodyAttrs: {
-		class: "page--article-detail",
-	},
-});
 </script>
 
 <template>
-	<div class="entry-detail">
+	<div class="entry-detail page-full-bleed">
 		<section v-if="data" class="entry-detail__intro-section">
 			<ModuleIntroArticleDetailPage :article="data" />
 			<section
@@ -72,11 +70,11 @@ section {
     width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 0 var(--big-margin);
+    align-items: stretch;
+    padding: 0 var(--mid-padding);
+    box-sizing: border-box;
     h3 {
       width: 100%;
-      max-width: var(--page-max-width);
       font-size: var(--h3-size);
       text-transform: uppercase;
       span {
@@ -89,9 +87,38 @@ section {
     &.last {
       padding: 0 0 var(--huge-margin) 0;
     }
+
+    :deep(.related-content) {
+      max-width: none;
+      margin: var(--mid-margin) 0 0;
+
+      .related-content__grid {
+        min-width: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    }
   }
   .module-section {
     padding: 0 var(--big-margin);
+
+    @media screen and (max-width: 900px) {
+      padding: 0 var(--page-gutter);
+    }
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .entry-detail {
+    &__intro-section {
+      gap: var(--big-margin);
+    }
+
+    &__related-content,
+    &__more-content {
+      padding: 0 var(--mid-padding);
+    }
   }
 }
 </style>

@@ -2,6 +2,10 @@
 <script setup>
 import { SLUG_PAGE_QUERY } from "~~/queries/sanity.queries";
 
+definePageMeta({
+	bodyClass: "page--default",
+});
+
 const query = groq`${SLUG_PAGE_QUERY}`;
 
 const route = useRoute();
@@ -18,12 +22,6 @@ if (!data?.value) {
 }
 
 usePageSeo(data?.value?.seo);
-
-useHead({
-	bodyAttrs: {
-		class: "page--default",
-	},
-});
 </script>
 
 <template>

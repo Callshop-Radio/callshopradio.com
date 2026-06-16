@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { useDocumentVisibility, useThrottleFn } from "@vueuse/core";
+import {
+	useDocumentVisibility,
+	useMediaQuery,
+	useThrottleFn,
+} from "@vueuse/core";
 import emblaCarouselVue from "embla-carousel-vue";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { formatScheduleLabel } from "~/composables/useShowFormatters";
 import { useMainStore } from "~/stores/mainStore";
 
 const mainStore = useMainStore();
@@ -58,7 +63,7 @@ const props = defineProps<{
 // Carousel setup
 const [emblaNode, emblaApi] = emblaCarouselVue({
 	align: "start",
-	containScroll: false,
+	containScroll: "trimSnaps",
 });
 
 const currentSlideIndex = ref(0);
@@ -69,48 +74,18 @@ const canScrollNext = ref(true);
 const currentTime = ref(new Date());
 const timeUpdateInterval = ref<NodeJS.Timeout | null>(null);
 const visibility = useDocumentVisibility();
+const isMobile = useMediaQuery("(max-width: 900px)");
+
+interface DayGridLayout {
+	rowCount: number;
+	segmentToRow: Map<number, number>;
+}
 
 // Current time formatting and positioning
 const _currentTimeFormatted = computed(() => {
 	const hours = currentTime.value.getHours().toString().padStart(2, "0");
 	const minutes = currentTime.value.getMinutes().toString().padStart(2, "0");
 	return `${hours}:${minutes}`;
-});
-
-const currentTimeIndicatorStyle = computed(() => {
-	const now = currentTime.value;
-	const hours = now.getHours();
-	const minutes = now.getMinutes();
-
-	// Check if current time is within our grid range (7-24h)
-	if (hours < GRID_START_HOUR || hours >= GRID_END_HOUR) {
-		return { display: "none" };
-	}
-
-	// Use the same calculation as timeToGridSegment for consistency
-	const decimalHours = hours - GRID_START_HOUR + minutes / 60;
-	const segments = decimalHours * GRID_SEGMENTS_PER_HOUR;
-
-	// Calculate grid row position (1-indexed for CSS Grid)
-	const gridRow = Math.floor(segments) + 1;
-
-	// Calculate offset within the current grid cell
-	const segmentFraction = segments - Math.floor(segments);
-	const offsetPercentage = segmentFraction * 100;
-
-	return {
-		gridRow: `${gridRow}`,
-		gridColumn: "1",
-		position: "relative" as const,
-		top: `${offsetPercentage}%`,
-		display: "flex",
-		alignItems: "center",
-		justifyContent: "flex-start",
-		width: "100%",
-		zIndex: 20,
-		pointerEvents: "none" as const,
-		marginLeft: "var(--small-padding)",
-	};
 });
 
 // Check if current time marker should be shown for a specific date
@@ -310,7 +285,7 @@ const processedItems = computed(() => {
 				items.push({
 					type: "show",
 					id: show.id || `show-${show.name}-${props.getShowStart(show)}`,
-					title: props.getShowTitle(show),
+					title: formatScheduleLabel(show.name || show.title || ""),
 					startTime: showStartTime,
 					endTime: showEndTime,
 					formattedTime: props.formatTimeRange(
@@ -335,8 +310,11 @@ const processedItems = computed(() => {
 						items.push({
 							type: "track",
 							id: track.id || `track-${track.title}-${startTime.getTime()}`,
-							title: track.title,
-							artist: track.artist || track.creator || track.performer || null,
+							title: formatScheduleLabel(track.title),
+							artist:
+								formatScheduleLabel(
+									track.artist || track.creator || track.performer || "",
+								) || null,
 							startTime,
 							endTime: endTime || startTime,
 							formattedTime: getTrackTimeRange(track),
@@ -373,18 +351,119 @@ const getItemsForDay = (date: string | Date): ProcessedItem[] => {
 	return processedItems.value.get(dateKey) || [];
 };
 
+const getMobileDayGridLayout = (date: string | Date): DayGridLayout => {
+	const occupiedSegments = new Set<number>();
+
+	for (const item of getItemsForDay(date)) {
+		const startSegment = timeToGridSegment(item.startTime);
+		const durationSegments = calculateItemDurationInSegments(item);
+
+		for (let i = startSegment; i < startSegment + durationSegments; i++) {
+			occupiedSegments.add(i);
+		}
+	}
+
+	const sortedSegments = [...occupiedSegments].sort((a, b) => a - b);
+	const segmentToRow = new Map<number, number>();
+
+	for (const [index, segment] of sortedSegments.entries()) {
+		segmentToRow.set(segment, index + 1);
+	}
+
+	return {
+		rowCount: sortedSegments.length,
+		segmentToRow,
+	};
+};
+
+const getEventsGridStyle = (date: string | Date) => {
+	if (!isMobile.value) return {};
+
+	const { rowCount } = getMobileDayGridLayout(date);
+	if (rowCount === 0) return {};
+
+	return {
+		gridTemplateRows: `repeat(${rowCount}, var(--schedule-block-height))`,
+	};
+};
+
+const getCurrentTimeMarkerStyleForDate = (date: string | Date) => {
+	if (!shouldShowTimeMarkerForDate(date)) {
+		return { display: "none" };
+	}
+
+	const now = currentTime.value;
+	const hours = now.getHours();
+	const minutes = now.getMinutes();
+
+	if (hours < GRID_START_HOUR || hours >= GRID_END_HOUR) {
+		return { display: "none" };
+	}
+
+	const decimalHours = hours - GRID_START_HOUR + minutes / 60;
+	const segments = decimalHours * GRID_SEGMENTS_PER_HOUR;
+	const segment = Math.floor(segments);
+	const segmentFraction = segments - segment;
+	const offsetPercentage = segmentFraction * 100;
+
+	let gridRow: number;
+
+	if (isMobile.value) {
+		const { segmentToRow } = getMobileDayGridLayout(date);
+		const compressedRow = segmentToRow.get(segment);
+
+		if (!compressedRow) {
+			return { display: "none" };
+		}
+
+		gridRow = compressedRow;
+	} else {
+		gridRow = segment + 1;
+	}
+
+	return {
+		gridRow: `${gridRow}`,
+		gridColumn: "1",
+		position: "relative" as const,
+		top: `${offsetPercentage}%`,
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "flex-start",
+		width: "100%",
+		zIndex: 20,
+		pointerEvents: "none" as const,
+		marginLeft: "var(--small-padding)",
+	};
+};
+
 // Grid-based position calculation
 const getItemGridPosition = (item: ProcessedItem) => {
 	const startSegment = timeToGridSegment(item.startTime);
 	const durationSegments = calculateItemDurationInSegments(item);
 
-	const gridPosition = {
-		gridRowStart: startSegment + 1, // CSS Grid ist 1-indexed
+	if (isMobile.value) {
+		const { segmentToRow } = getMobileDayGridLayout(item.date);
+		const startRow = segmentToRow.get(startSegment);
+
+		if (!startRow) {
+			return { display: "none" };
+		}
+
+		const endSegment = startSegment + durationSegments - 1;
+		const endRow = segmentToRow.get(endSegment) ?? startRow;
+
+		return {
+			gridRowStart: startRow,
+			gridRowEnd: endRow + 1,
+			gridColumn: 1,
+		};
+	}
+
+	return {
+		gridRowStart: startSegment + 1,
 		gridRowEnd: startSegment + durationSegments + 1,
 		gridColumn: 1,
 	};
-
-	return gridPosition;
 };
 
 // Navigation
@@ -565,12 +644,15 @@ watch(
 								<div class="day-content__events-column">
 									<!-- Events Grid -->
 									<div class="events">
-										<div class="events-grid">
+										<div
+											class="events-grid"
+											:style="getEventsGridStyle(group.date)"
+										>
 											<!-- Current Time Marker - only show for today -->
 											<div
 												v-if="shouldShowTimeMarkerForDate(group.date)"
 												class="current-time-marker"
-												:style="currentTimeIndicatorStyle"
+												:style="getCurrentTimeMarkerStyleForDate(group.date)"
 											>
 												<div class="current-time-marker__pulse" />
 											</div>
@@ -632,6 +714,11 @@ watch(
   max-height: calc(100svh - var(--nav-height));
   overflow-y: scroll;
   overflow-x: hidden;
+  --schedule-edge-inset: max(
+    var(--base-padding),
+    calc((100svw - var(--page-max-width)) / 2)
+  );
+  --schedule-block-gap: var(--small-padding);
 }
 
 .schedule__content {
@@ -655,13 +742,14 @@ watch(
     var(--page-max-width) + (100vw - var(--page-max-width)) / 2 + 2.75rem
   ); */
   position: relative;
-  padding: 0 0 0 calc((100svw - var(--page-max-width)) / 2);
+  padding: 0 var(--schedule-edge-inset);
+  box-sizing: border-box;
 
   &__container {
     @apply flex backface-hidden touch-pan-y;
     height: 100%;
     width: max-content;
-    margin: 0 0 0 calc(var(--small-padding) * -1);
+    margin: 0;
   }
 
   &__slide {
@@ -681,8 +769,7 @@ watch(
   gap: 0 var(--mid-padding);
   height: calc(var(--base-font-size) + var(--small-padding) * 2);
   z-index: 999;
-  margin: var(--base-margin) 0 var(--base-margin)
-    calc((100svw - var(--page-max-width)) / 2);
+  margin: var(--base-margin) var(--schedule-edge-inset);
 }
 
 .location-switch {
@@ -825,6 +912,7 @@ watch(
   align-items: flex-start;
   gap: 0;
   width: 100%;
+  text-transform: none;
 
   &__time-column {
     width: var(--big-margin);
@@ -850,7 +938,7 @@ watch(
       var(--schedule-block-height)
     ); /* Maximal 35 half-hour segments - fixed height */
     grid-template-columns: 1fr;
-    gap: var(--small-padding); /* No gap for precise grid alignment */
+    gap: var(--schedule-block-gap); /* No gap for precise grid alignment */
     position: relative;
     padding: 0;
     margin: 0 0 0 var(--small-padding);
@@ -861,6 +949,7 @@ watch(
   background: transparent;
   z-index: 2;
   position: relative;
+  text-transform: none;
 
   &__content {
     background-color: var(--color-grey-transparent);
@@ -1006,6 +1095,85 @@ watch(
   100% {
     opacity: 0.5;
     transform: translate(-50%, -50%) scale(0.8);
+  }
+}
+
+@media (max-width: 900px) {
+  .module-schedule-slider {
+    /* Match horizontal day gap to vertical gap between schedule blocks */
+    --schedule-mobile-day-gap: var(--schedule-block-gap);
+    --schedule-mobile-slide-width: calc(
+      (100% - var(--schedule-mobile-day-gap)) / 1.5
+    );
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .navigation-controls {
+    top: 0;
+    width: auto;
+    margin: var(--big-padding) var(--schedule-edge-inset);
+    padding: 0;
+    box-sizing: border-box;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0 var(--mid-padding);
+    height: calc(var(--base-font-size) + var(--small-padding) * 2);
+  }
+
+  .location-switch,
+  .dot-navigation,
+  .arrow-navigation {
+    flex-shrink: 0;
+    height: calc(var(--base-font-size) + var(--small-padding) * 2);
+  }
+
+  .schedule__content {
+    width: 100%;
+  }
+
+  .embla {
+    width: 100%;
+    padding: 0 var(--schedule-edge-inset);
+    overflow: hidden;
+
+    &__container {
+      width: 100%;
+      margin: 0;
+      gap: 0 var(--schedule-mobile-day-gap);
+    }
+
+    &__slide {
+      flex: 0 0 var(--schedule-mobile-slide-width);
+      max-width: var(--schedule-mobile-slide-width);
+      min-width: 0;
+      box-sizing: border-box;
+    }
+  }
+
+  .show-day {
+    width: 100%;
+
+    &__heading {
+      margin-left: 0;
+    }
+  }
+
+  .day-content {
+    width: 100%;
+
+    &__events-column {
+      width: 100%;
+    }
+  }
+
+  .events {
+    width: 100%;
+
+    &-grid {
+      margin-left: 0;
+    }
   }
 }
 </style>

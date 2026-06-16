@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
@@ -42,9 +42,17 @@ interface Set {
 }
 
 // Props
-const props = defineProps<{
-	set: Set;
-}>();
+const props = withDefaults(
+	defineProps<{
+		set: Set;
+		layout?: "default" | "cover-flow";
+		mediaActive?: boolean;
+	}>(),
+	{
+		layout: "default",
+		mediaActive: true,
+	},
+);
 
 // Store
 const mainStore = useMainStore();
@@ -134,13 +142,25 @@ const { getItemImage: _getItemImage } = useImageManagement();
 const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
 
 // Lebenszyklus-Hooks
+watch(
+	() => [props.mediaActive, props.set?._id] as const,
+	([active]) => {
+		if (active) loadArtworkUrl();
+	},
+	{ immediate: true },
+);
+
 onMounted(() => {
-	loadArtworkUrl();
+	if (props.mediaActive) loadArtworkUrl();
 });
 </script>
 
 <template>
-	<div v-if="set" class="set-content">
+	<div
+		v-if="set"
+		class="set-content"
+		:class="`set-content--${props.layout}`"
+	>
 		<div class="set-main">
 			<!-- Bild/Media-Bereich -->
 			<div class="set-media">
@@ -149,17 +169,18 @@ onMounted(() => {
 					:to="getItemRoute(set)"
 					class="grid-item__link">
 					<img
-						v-if="artworkUrl"
+						v-if="mediaActive && artworkUrl"
 						:src="artworkUrl"
 						alt="Audio Artwork"
 						class="set-image track-artwork"
 						loading="lazy"
 					>
 					<div
-						v-else
+						v-else-if="mediaActive"
 						class="track-artwork-placeholder"
 						@vue:mounted="loadArtworkUrl"
 					/>
+					<div v-else class="track-artwork-placeholder" />
 				</NuxtLink>
 			</div>
 
@@ -395,6 +416,86 @@ onMounted(() => {
           text-transform: uppercase;
         }
       }
+    }
+  }
+}
+
+.set-content--cover-flow {
+  width: 100%;
+  max-width: 100%;
+
+  .set-main {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 1.5625rem;
+  }
+
+  .set-info {
+    order: 1;
+    flex: 0 0 auto;
+    width: 100%;
+    border-bottom: none;
+    border-radius: 1.5625rem 1.5625rem 0 0;
+    position: relative;
+    z-index: 2;
+    margin-bottom: -1.25rem;
+    padding-bottom: calc(var(--mid-padding) + 1.25rem);
+
+    &-container {
+      width: calc(100% - 4rem - var(--mid-margin));
+    }
+  }
+
+  .set-media {
+    order: 2;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    flex-shrink: 0;
+    border-radius: 0 0 1.5625rem 1.5625rem;
+    overflow: hidden;
+
+    .track-artwork,
+    .track-artwork-placeholder {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: none;
+      aspect-ratio: 1 / 1;
+    }
+  }
+
+  .set-tags {
+    flex-wrap: wrap;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .set-content--cover-flow .set-info {
+    padding-bottom: calc(var(--card-content-padding-y) + 1.25rem);
+
+    .play-button {
+      width: 2rem;
+      height: 2rem;
+
+      svg {
+        width: calc(2rem - var(--base-padding));
+        height: calc(2rem - var(--base-padding));
+      }
+    }
+
+    &-container {
+      width: calc(100% - 2rem - var(--mid-margin));
+    }
+  }
+
+  .set-content .set-info {
+    padding: var(--card-content-padding-y) var(--card-content-padding-x);
+
+    .set-info-container,
+    .set-header {
+      gap: var(--card-content-gap);
     }
   }
 }

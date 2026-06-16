@@ -1,3 +1,30 @@
+export function decodeHtmlEntities(text) {
+	if (!text) return "";
+	if (typeof text !== "string") return String(text);
+
+	let decoded = text;
+	let previous = "";
+
+	while (decoded !== previous) {
+		previous = decoded;
+		decoded = decoded
+			.replace(/&amp;/gi, "&")
+			.replace(/&lt;/gi, "<")
+			.replace(/&gt;/gi, ">")
+			.replace(/&quot;/gi, '"')
+			.replace(/&#0*39;/g, "'")
+			.replace(/&#0*38;/g, "&")
+			.replace(/&#x0*26;/gi, "&")
+			.replace(/&apos;/gi, "'");
+	}
+
+	return decoded;
+}
+
+export function formatScheduleLabel(text) {
+	return decodeHtmlEntities(text).toLocaleUpperCase("de-DE");
+}
+
 export function useShowFormatters() {
 	// Hilfsfunktionen zum Extrahieren von Show-Eigenschaften
 	const getShowStart = (show) => {
@@ -9,7 +36,7 @@ export function useShowFormatters() {
 	};
 
 	const getShowTitle = (show) => {
-		return show.name || show.title || "Unbekannter Titel";
+		return decodeHtmlEntities(show.name || show.title || "Unbekannter Titel");
 	};
 
 	const getShowDescription = (show) => {

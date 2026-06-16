@@ -150,6 +150,8 @@ const contactLink = computed(() => {
 							class="show-intro-text"
 						/>
 					</div>
+
+					<div class="show-intro-bottom">
 					<!-- Referenzierte Shows -->
 					<div
 						v-if="showItem.shows && showItem.shows.length > 0"
@@ -399,6 +401,7 @@ const contactLink = computed(() => {
 							</a>
 						</div>
 					</div>
+					</div>
 				</div>
 			</div>
 			<!-- Bild/Media-Bereich -->
@@ -421,22 +424,32 @@ const contactLink = computed(() => {
 
 <style lang="postcss" scoped>
 .show-intro-content {
-  width: 100%;
+  width: var(--page-max-width);
+  max-width: 100%;
+  margin: var(--big-margin) auto 0;
   display: flex;
-  flex-flow: row wrap;
+  flex-flow: column wrap;
   justify-content: center;
   position: relative;
-  margin: var(--big-margin) 0 0 0;
+
   @media screen and (max-width: 900px) {
-    margin: 0 0 var(--content-gap) 0;
+    margin: 0 auto 0;
+    padding-top: calc(var(--city-tag-height) + var(--base-margin));
   }
+
   .city-tags {
     top: 0;
-    transform: translate(0, -100%);
+    left: 1.5625rem;
+    transform: translate(0, calc(-100% - 0.0625rem));
     position: absolute;
     display: flex;
     flex-flow: row wrap;
     justify-content: flex-start;
+
+    @media screen and (max-width: 900px) {
+      left: var(--base-margin);
+    }
+
     .tag {
       background-color: var(--color-pink);
     }
@@ -447,29 +460,40 @@ const contactLink = computed(() => {
     flex-flow: row wrap;
     justify-content: space-between;
     align-items: stretch;
-    @media screen and (max-width: 900px) {
-      flex-flow: column-reverse wrap;
-      justify-content: center;
-    }
     gap: 0;
+    width: 100%;
     max-width: var(--page-max-width);
     background-color: var(--color-text);
-    width: 100%;
+    border: 0.0625rem solid var(--color-text);
+    border-radius: 1.5625rem;
+    overflow: hidden;
+
+    @media screen and (max-width: 900px) {
+      flex-flow: column wrap;
+      justify-content: flex-start;
+    }
 
     .show-intro-media {
       aspect-ratio: 1 / 1;
       width: 50%;
+      flex-shrink: 0;
+      overflow: hidden;
+
       @media screen and (max-width: 900px) {
+        order: -1;
         width: 100%;
-        order: 2;
+        border-bottom: 0.0625rem solid var(--color-text);
       }
 
       .show-intro-image,
-      .show-intro-image-placeholder {
+      .show-intro-image-placeholder,
+      :deep(img) {
         object-fit: cover;
         z-index: 0;
         height: 100%;
         width: 100%;
+        display: block;
+        aspect-ratio: 1 / 1;
       }
     }
   }
@@ -478,8 +502,11 @@ const contactLink = computed(() => {
     width: 50%;
     shape-rendering: crispEdges;
     z-index: 10;
+    border-right: 0.0625rem solid var(--color-text);
+
     @media screen and (max-width: 900px) {
       width: 100%;
+      border-right: none;
     }
 
     .show-intro-type-icon {
@@ -503,13 +530,28 @@ const contactLink = computed(() => {
     }
 
     &-container {
-      height: 100%;
+      min-height: 100%;
       display: flex;
-      flex-flow: column wrap;
+      flex-direction: column;
       justify-content: flex-start;
       gap: var(--mid-margin);
       background-color: var(--color-text);
       padding: var(--big-margin);
+
+      @media screen and (max-width: 900px) {
+        min-height: 0;
+        height: auto;
+        padding: var(--base-margin) var(--base-margin) var(--big-margin);
+      }
+    }
+
+    .show-intro-bottom {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--mid-padding);
+      flex-shrink: 0;
     }
 
     .show-intro-header {
@@ -555,11 +597,12 @@ const contactLink = computed(() => {
     }
     .show-intro-contact-section,
     .show-intro-references-section {
-      margin: auto 0 0 0;
+      margin: 0;
       display: flex;
       flex-flow: row wrap;
       justify-content: flex-start;
       align-items: center;
+      flex-shrink: 0;
 
       h3 {
         font-size: var(--h3-size);
