@@ -1,5 +1,54 @@
-/node_modules
+# ── OS ────────────────────────────────────────────────────────────────────
 .DS_Store
-*.pem
+Thumbs.db
+desktop.ini
+
+# ── Dependencies ──────────────────────────────────────────────────────────
+node_modules/
+
+# ── Build outputs (sub-projects also gitignore these; root is the safety net) ──
+.output/
+.nuxt/
+.nitro/
+.cache/
+dist/
+coverage/
+.netlify/functions-internal/
+
+# ── Logs ──────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── IDE / editor scratch ──────────────────────────────────────────────────
+.idea/
+.fleet/
+*.swp
+*.swo
+
+# ── TypeScript build info ─────────────────────────────────────────────────
+*.tsbuildinfo
+
+# ── Local-only files (config.local.js, notes.local.md, etc.) ──────────────
 *.local
-*.env
+
+# ── Environment files — broad catch, only `.env.example` ever committed ──
+.env
+.env.*
+!.env.example
+
+# ── Private keys / certificates ───────────────────────────────────────────
+*.pem
+*.key
+*.p12
+*.pfx
+*.cer
+*.crt
+
+# ── Credential file shapes (defense-in-depth — push-protection catches the
+#    actual tokens, this catches the containers people often paste them into) ─
+secrets/
+secrets.*
+credentials.*
+*-credentials.json
+service-account*.json
+auth.json
