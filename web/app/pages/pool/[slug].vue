@@ -44,7 +44,11 @@ usePageSeo(data?.value?.seo);
 		>
 			<div class="inner">
 				<h3>Related</h3>
-				<ModuleRelatedContent :items="data?.relatedContent" type="pool" />
+				<ModuleRelatedContent
+					:items="data?.relatedContent"
+					type="pool"
+					image-aspect="portrait"
+				/>
 			</div>
 		</section>
 		<section

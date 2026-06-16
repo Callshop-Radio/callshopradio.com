@@ -15,13 +15,13 @@ const props = withDefaults(
 		items: Array<{ _id?: string }>;
 		navLabel?: string;
 		equalizeCardHeights?: boolean;
-		/** Area accent for dots and arrow hover — e.g. var(--color-blue) for pool */
-		accentColor?: string;
+		/** Content area — drives accent color for dots and arrow hover */
+		area?: "show" | "pool" | "words";
 	}>(),
 	{
 		navLabel: "Slide",
 		equalizeCardHeights: false,
-		accentColor: "var(--color-pink)",
+		area: "show",
 	},
 );
 
@@ -105,7 +105,7 @@ onUnmounted(() => {
 	<div
 		v-if="total > 0"
 		class="intro-cover-flow"
-		:style="{ '--cover-flow-accent': accentColor }"
+		:class="`intro-cover-flow--${area}`"
 	>
 		<div class="cover-flow">
 			<button
@@ -200,6 +200,19 @@ onUnmounted(() => {
   --cover-flow-card-width: 27rem;
   --cover-flow-arrow-gutter: 2.5rem;
   --cover-flow-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --cover-flow-accent: var(--color-pink);
+
+  &--pool {
+    --cover-flow-accent: var(--color-blue);
+  }
+
+  &--words {
+    --cover-flow-accent: var(--color-green);
+  }
+
+  &--show {
+    --cover-flow-accent: var(--color-pink);
+  }
 
   width: 100%;
   max-width: var(--page-max-width);
@@ -248,6 +261,7 @@ onUnmounted(() => {
   color: var(--color-text);
   transform: translateY(-50%);
   padding: var(--small-padding);
+  transition: color var(--transition-fast);
 
   &:disabled {
     opacity: 0.35;
@@ -259,9 +273,14 @@ onUnmounted(() => {
     height: 1.25rem;
   }
 
-  &:hover:not(:disabled) svg path {
+  svg path {
+    fill: currentColor;
+    transition: fill var(--transition-fast);
+  }
+
+  &:hover:not(:disabled) {
     @media (min-width: 1024px) {
-      fill: var(--cover-flow-accent);
+      color: var(--cover-flow-accent);
     }
   }
 

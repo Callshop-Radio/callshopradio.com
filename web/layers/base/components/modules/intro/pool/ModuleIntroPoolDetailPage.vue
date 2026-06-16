@@ -186,37 +186,34 @@ onMounted(() => {
             </div>
           </div>
 
-          <div class="pool-meta-bubbles">
+          <div class="pool-meta-bottom">
             <section
               v-if="poolItem.shows && poolItem.shows.length > 0"
               class="pool-references-section"
             >
-              <div class="pool-references-stack">
+              <div class="pool-refs-list tags">
                 <div
                   v-for="show in poolItem.shows"
                   :key="show._id"
-                  class="pool-ref-row"
+                  class="pool-ref-item"
                 >
-                  <svg
-                    width="22"
-                    height="22"
-                    viewBox="0 0 22 22"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                    class="pool-ref-icon"
-                  >
-                    <circle cx="11" cy="11" r="11" fill="#F794B3" />
-                    <path
-                      d="M16.7617 11.0002L8.11886 15.9901L8.11886 6.01023L16.7617 11.0002Z"
-                      fill="white"
-                    />
-                  </svg>
-                  <NuxtLink
-                    :to="getItemRoute(show)"
-                    class="pool-ref-link pool__artist"
-                  >
-                    <h4 class="tag">{{ show.title }}</h4>
+                  <NuxtLink :to="getItemRoute(show)" class="pool-ref-link">
+                    <div class="pool-ref-info">
+                      <svg
+                        viewBox="0 0 22 22"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                        class="detail-ref-icon detail-ref-icon--show"
+                      >
+                        <circle cx="11" cy="11" r="11" fill="#F794B3" />
+                        <path
+                          d="M16.7617 11.0002L8.11886 15.9901L8.11886 6.01023L16.7617 11.0002Z"
+                          fill="white"
+                        />
+                      </svg>
+                      <h4 class="tag">{{ show.title }}</h4>
+                    </div>
                   </NuxtLink>
                 </div>
               </div>
@@ -231,34 +228,26 @@ onMounted(() => {
               "
               class="pool-references-section"
             >
-              <div class="pool-references-stack">
+              <div class="pool-refs-list">
+                <svg
+                  viewBox="0 0 22 22"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                  class="detail-ref-icon detail-ref-icon--pool"
+                >
+                  <circle cx="11" cy="11" r="11" fill="#557FB9" />
+                  <path
+                    d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
+                    fill="white"
+                  />
+                </svg>
                 <div
                   v-for="person in poolItem.persons"
                   :key="person._id"
-                  class="pool-ref-row"
+                  class="pool-ref-item tags"
                 >
-                  <svg
-                    width="22"
-                    height="22"
-                    viewBox="0 0 22 22"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                    class="pool-ref-icon"
-                  >
-                    <circle cx="11" cy="11" r="11" fill="#557FB9" />
-                    <path
-                      d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
-                      fill="white"
-                    />
-                  </svg>
-                  <NuxtLink
-                    :to="getItemRoute(person)"
-                    class="pool-ref-link pool__artist"
-                  >
-                    <div v-if="person.image" class="pool-ref-image">
-                      <MediaImage :image="person.image" :alt="person.title" />
-                    </div>
+                  <NuxtLink :to="getItemRoute(person)" class="pool-ref-link">
                     <h4 class="tag">{{ person.title }}</h4>
                   </NuxtLink>
                 </div>
@@ -273,31 +262,26 @@ onMounted(() => {
               "
               class="pool-references-section"
             >
-              <div class="pool-references-stack">
+              <div class="pool-refs-list">
+                <svg
+                  viewBox="0 0 22 22"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                  class="detail-ref-icon detail-ref-icon--pool"
+                >
+                  <circle cx="11" cy="11" r="11" fill="#557FB9" />
+                  <path
+                    d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
+                    fill="white"
+                  />
+                </svg>
                 <div
                   v-for="venue in poolItem.venues"
                   :key="venue._id"
-                  class="pool-ref-row"
+                  class="pool-ref-item tags"
                 >
-                  <svg
-                    width="22"
-                    height="22"
-                    viewBox="0 0 22 22"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                    class="pool-ref-icon"
-                  >
-                    <circle cx="11" cy="11" r="11" fill="#557FB9" />
-                    <path
-                      d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
-                      fill="white"
-                    />
-                  </svg>
-                  <NuxtLink
-                    :to="getItemRoute(venue)"
-                    class="pool-ref-link pool__artist"
-                  >
+                  <NuxtLink :to="getItemRoute(venue)" class="pool-ref-link">
                     <h4 class="tag">{{ venue.title }}</h4>
                   </NuxtLink>
                 </div>
@@ -344,6 +328,10 @@ onMounted(() => {
 
 <style lang="postcss" scoped>
 .pool-intro {
+  --detail-chip-size: calc(
+    var(--small-font-size) + var(--small-padding) * 2 + 0.2rem
+  );
+
   width: var(--page-max-width);
   margin: var(--big-margin) auto 0;
   display: flex;
@@ -498,8 +486,8 @@ onMounted(() => {
           flex-flow: row wrap;
           justify-content: flex-start;
           gap: var(--base-padding);
-          margin-bottom: var(--base-margin);
-		  
+          margin-bottom: var(--big-margin);
+
 		  .tag {
 			background-color: var(--color-blue);
 			border-color: var(--color-blue);
@@ -507,63 +495,66 @@ onMounted(() => {
         }
       }
 
-      .pool-meta-bubbles {
+      .pool-meta-bottom {
         display: flex;
         flex-flow: column;
-        gap: var(--base-margin);
+        align-items: flex-start;
+        gap: var(--big-padding);
         width: 100%;
-        margin-bottom: var(--base-margin);
       }
 
       .pool-references-section {
         display: flex;
-        flex-flow: column;
+        flex-flow: row wrap;
+        align-items: center;
         width: 100%;
+        margin: 0;
       }
 
-      .pool-references-stack {
+      .pool-refs-list {
         display: flex;
-        flex-flow: column;
-        gap: var(--base-padding);
-        width: 100%;
-      }
-
-      .pool-ref-row {
-        display: flex;
-        flex-flow: row nowrap;
+        flex-flow: row wrap;
         align-items: center;
         gap: var(--base-padding);
         width: 100%;
 
-        .pool-ref-icon {
+        .detail-ref-icon {
+          width: var(--detail-chip-size);
+          height: var(--detail-chip-size);
           flex-shrink: 0;
+        }
+
+        .pool-ref-item {
+          display: flex;
+          align-items: center;
         }
 
         .pool-ref-link {
-          display: flex;
-          align-items: center;
-          gap: var(--base-padding);
+          display: block;
           text-decoration: none;
-          color: var(--color-text);
-
-          h4.tag {
-            font-size: var(--small-font-size);
-            margin: 0;
-          }
+          color: inherit;
         }
 
-        .pool-ref-image {
-          aspect-ratio: 1 / 1;
-          overflow: hidden;
-          border-radius: 4px;
-          width: 2rem;
-          height: 2rem;
-          flex-shrink: 0;
+        .pool-ref-info {
+          display: flex;
+          flex-flow: row wrap;
+          align-items: center;
+          gap: var(--base-padding);
+        }
 
-          img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        h4.tag {
+          margin: 0;
+          font-size: var(--small-font-size);
+          background-color: var(--color-grey);
+          color: var(--color-black);
+          border-color: var(--color-grey);
+
+          &:hover {
+            @media (min-width: 1024px) {
+              background-color: var(--color-blue);
+              border-color: var(--color-blue);
+              color: var(--color-white);
+            }
           }
         }
       }

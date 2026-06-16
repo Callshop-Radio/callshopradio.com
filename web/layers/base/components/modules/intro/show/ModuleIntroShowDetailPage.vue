@@ -166,11 +166,11 @@ const contactLink = computed(() => {
 								<NuxtLink :to="getItemRoute(show)" class="show-intro-ref-link">
 									<div class="show-intro-ref-info">
 										<svg
-											width="22"
-											height="22"
 											viewBox="0 0 22 22"
 											fill="none"
 											xmlns="http://www.w3.org/2000/svg"
+											class="detail-ref-icon"
+											aria-hidden="true"
 										>
 											<circle
 												cx="11"
@@ -197,11 +197,11 @@ const contactLink = computed(() => {
 					>
 						<div class="show-intro-refs-list">
 							<svg
-								width="22"
-								height="22"
 								viewBox="0 0 22 22"
 								fill="none"
 								xmlns="http://www.w3.org/2000/svg"
+								class="detail-ref-icon"
+								aria-hidden="true"
 							>
 								<circle
 									cx="11"
@@ -255,11 +255,11 @@ const contactLink = computed(() => {
 					>
 						<div class="show-intro-refs-list">
 							<svg
-								width="22"
-								height="22"
 								viewBox="0 0 22 22"
 								fill="none"
 								xmlns="http://www.w3.org/2000/svg"
+								class="detail-ref-icon"
+								aria-hidden="true"
 							>
 								<circle
 									cx="11"
@@ -304,11 +304,11 @@ const contactLink = computed(() => {
 								rel="noopener noreferrer"
 								aria-label="Instagram"
 							><svg
-								width="22"
-								height="22"
 								viewBox="0 0 22 22"
 								fill="none"
 								xmlns="http://www.w3.org/2000/svg"
+								class="detail-ref-icon"
+								aria-hidden="true"
 							>
 								<circle
 									cx="11.1062"
@@ -337,11 +337,11 @@ const contactLink = computed(() => {
 								aria-label="Soundcloud"
 							>
 								<svg
-									width="22"
-									height="22"
 									viewBox="0 0 22 22"
 									fill="none"
 									xmlns="http://www.w3.org/2000/svg"
+									class="detail-ref-icon"
+									aria-hidden="true"
 								>
 									<path
 										d="M11 22C17.0751 22 22 17.0751 22 11C22 4.92487 17.0751 0 11 0C4.92487 0 0 4.92487 0 11C0 17.0751 4.92487 22 11 22Z"
@@ -378,11 +378,11 @@ const contactLink = computed(() => {
 								rel="noopener noreferrer"
 								aria-label="Website"
 							><svg
-								width="22"
-								height="22"
 								viewBox="0 0 22 22"
 								fill="none"
 								xmlns="http://www.w3.org/2000/svg"
+								class="detail-ref-icon"
+								aria-hidden="true"
 							>
 								<circle
 									cx="11"
@@ -424,6 +424,10 @@ const contactLink = computed(() => {
 
 <style lang="postcss" scoped>
 .show-intro-content {
+  --detail-chip-size: calc(
+    var(--small-font-size) + var(--small-padding) * 2 + 0.2rem
+  );
+
   width: var(--page-max-width);
   max-width: 100%;
   margin: var(--big-margin) auto 0;
@@ -550,7 +554,7 @@ const contactLink = computed(() => {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: var(--mid-padding);
+      gap: var(--big-padding);
       flex-shrink: 0;
     }
 
@@ -631,25 +635,36 @@ const contactLink = computed(() => {
       flex-flow: row wrap;
       justify-content: flex-start;
       align-items: center;
-
       gap: var(--base-padding);
 
       a {
         text-decoration: none;
+        line-height: 0;
 
         .social-icon,
         .contact-icon {
-          display: inline-block;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: var(--detail-chip-size);
           font-size: var(--small-font-size);
           color: var(--color-white);
           background-color: var(--color-darker-grey);
+          border-color: var(--color-darker-grey);
           text-decoration: none;
           &:hover {
             @media (min-width: 1024px) {
               background-color: var(--color-blue);
+              border-color: var(--color-blue);
               color: var(--color-white);
             }
           }
+        }
+
+        > svg,
+        .detail-ref-icon {
+          width: var(--detail-chip-size);
+          height: var(--detail-chip-size);
         }
       }
     }
@@ -660,6 +675,12 @@ const contactLink = computed(() => {
       justify-content: flex-start;
       align-items: center;
       gap: var(--base-padding);
+
+      > .detail-ref-icon {
+        width: var(--detail-chip-size);
+        height: var(--detail-chip-size);
+        flex-shrink: 0;
+      }
 
       .show-intro-ref-item {
         border-radius: 8px;
@@ -682,6 +703,13 @@ const contactLink = computed(() => {
             justify-content: flex-start;
             align-items: center;
             gap: var(--base-padding);
+
+            .detail-ref-icon {
+              width: var(--detail-chip-size);
+              height: var(--detail-chip-size);
+              flex-shrink: 0;
+            }
+
             h4 {
               font-size: var(--small-font-size);
               background-color: var(--color-grey);

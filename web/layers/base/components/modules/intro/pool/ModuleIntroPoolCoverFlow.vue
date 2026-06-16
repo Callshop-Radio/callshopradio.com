@@ -5,11 +5,7 @@ defineProps<{
 </script>
 
 <template>
-	<ModuleIntroCoverFlow
-		:items="profiles"
-		nav-label="Profil"
-		accent-color="var(--color-blue)"
-	>
+	<ModuleIntroCoverFlow :items="profiles" nav-label="Profil" area="pool">
 		<template #default="{ item, mediaActive }">
 			<ModuleIntroPool layout="cover-flow" :pool-item="item" :media-active="mediaActive" />
 		</template>

@@ -59,6 +59,12 @@ const props = defineProps({
 		type: String,
 		default: "default",
 	},
+	// Square everywhere except explicit portrait (e.g. pool Related)
+	imageAspect: {
+		type: String,
+		default: "square",
+		validator: (value: string) => ["square", "portrait"].includes(value),
+	},
 });
 
 // State für sichtbare Items
@@ -264,7 +270,8 @@ onMounted(() => {
 	<div
 		v-if="items && items.length > 0"
 		class="related-content"
-		:class="type">
+		:class="[type, { 'related-content--portrait': imageAspect === 'portrait' }]"
+	>
 		<h2 v-if="title" class="related-content__title">{{ title }}</h2>
 
 		<div class="related-content__grid">
@@ -604,6 +611,7 @@ onMounted(() => {
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
+    flex: 1 1 calc(100% / 3 - var(--big-margin) * 1.325);
     max-width: calc(100% / 3 - var(--big-margin) * 1.325);
     width: 100%;
     /* border-bottom: 0.09325rem solid var(--color-text); */
@@ -660,10 +668,10 @@ onMounted(() => {
     &__content {
       width: 100%;
       display: flex;
-      flex-flow: column wrap;
+      flex-flow: column nowrap;
       justify-content: flex-start;
       align-items: stretch;
-      flex-grow: 1;
+      flex: 1 1 auto;
       margin: var(--mid-padding) 0 0 0;
       gap: var(--mid-padding);
 
@@ -727,9 +735,9 @@ onMounted(() => {
         flex-flow: row wrap;
         justify-content: flex-start;
         align-items: flex-start;
-        align-content: flex-start;
+        align-content: flex-end;
         gap: var(--small-margin);
-        flex-grow: 1;
+        margin-top: auto;
       }
     }
 
@@ -827,6 +835,7 @@ onMounted(() => {
           right: var(--base-padding);
           color: var(--color-bg);
           flex-grow: 0;
+          margin-top: 0;
 
           .tag {
             background-color: transparent;
@@ -856,32 +865,19 @@ onMounted(() => {
         color: var(--color-white);
       }
     }
-    .related-content__grid {
-      .related-item {
-        &__image {
-          position: relative;
-          overflow: hidden;
-          width: 100%;
 
-          img {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 3/4 !important;
-            object-fit: cover;
-            transition: transform 0.2s ease;
-          }
-
-          &:hover img {
-            @media (min-width: 1024px) {
-              transform: scale(1.05);
+    &.related-content--portrait {
+      .related-content__grid {
+        .related-item {
+          &__image {
+            img {
+              aspect-ratio: 3/4 !important;
             }
-          }
 
-          .track-artwork-placeholder,
-          .image-placeholder {
-            width: 100%;
-            aspect-ratio: 1/1;
-            background-color: var(--color-grey);
+            .track-artwork-placeholder,
+            .image-placeholder {
+              aspect-ratio: 3/4;
+            }
           }
         }
       }

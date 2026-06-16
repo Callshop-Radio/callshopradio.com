@@ -21,7 +21,7 @@ usePageSeo(data?.value?.seo);
 <template>
 	<div class="shows-archive">
 		<section v-if="featuredSets.length > 0" class="intro-section">
-			<ModuleIntroCoverFlow :items="featuredSets" nav-label="Set">
+			<ModuleIntroCoverFlow :items="featuredSets" nav-label="Set" area="show">
 				<template #default="{ item, mediaActive }">
 					<ModuleIntroSet layout="cover-flow" :set="item" :media-active="mediaActive" />
 				</template>
