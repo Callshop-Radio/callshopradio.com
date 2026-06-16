@@ -426,6 +426,10 @@ onMounted(() => {
 .module-hero-entry {
   min-height: 5.3125rem;
 
+  @media screen and (max-width: 900px) {
+    min-height: 0;
+  }
+
   @media screen and (min-width: 900px) {
     width: 100%;
     max-width: var(--page-max-width);
@@ -435,13 +439,16 @@ onMounted(() => {
   /* Einheitliches Layout für alle Content-Typen */
   .hero-entry-container {
     position: relative;
-    height: 100%;
-    min-height: 35.3125rem;
     width: 100%;
     display: flex;
     flex-flow: row wrap;
     justify-content: center;
     align-items: center;
+
+    @media screen and (min-width: 901px) {
+      height: 100%;
+      min-height: 35.3125rem;
+    }
 
     @media screen and (min-width: 1800px) {
       min-height: 43.3625rem;
@@ -459,6 +466,9 @@ onMounted(() => {
       justify-content: center;
       align-items: flex-start;
       position: relative;
+      min-height: 0;
+      height: auto;
+      padding-bottom: 12.5%;
     }
   }
 
@@ -518,10 +528,14 @@ onMounted(() => {
     transform: translate(0, 50%);
     z-index: 10;
 
+	 @media screen and (min-width: 1800px) {
+		transform: translate(25%, 90%);
+	 }
+
     @media screen and (max-width: 900px) {
       min-width: calc(100svw - var(--big-margin) * 4);
       width: 100%;
-      transform: translate(calc(var(--big-margin) / 4), 0);
+      transform: translate(calc(var(--big-margin) / 4), -25%);
     }
     .play-button {
       display: flex;

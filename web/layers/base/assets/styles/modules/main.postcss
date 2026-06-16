@@ -440,27 +440,30 @@
   }
 }
 
-.content-grid {
+.content-grid,
+.related-content {
   &.shows,
   &.episodes,
   &.sets {
     .city-tags {
-      .tag {
+      .tag.city {
         background-color: var(--color-pink);
       }
     }
   }
   &.pool {
     .city-tags {
-      .tag {
+      .tag.city {
         background-color: var(--color-blue);
       }
     }
   }
   &.words {
     .city-tags {
-      .tag {
+      .tag.city {
         background-color: var(--color-green);
+        color: var(--color-white);
+        border-color: var(--color-green);
       }
     }
   }

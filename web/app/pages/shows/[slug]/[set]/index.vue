@@ -2,6 +2,10 @@
 <script setup>
 import { SET_QUERY } from "~~/queries/sanity.queries.ts";
 
+definePageMeta({
+	bodyClass: "set-detail",
+});
+
 const route = useRoute();
 
 const query = groq`${SET_QUERY}`;
@@ -80,6 +84,8 @@ section {
 }
 .set-detail {
   width: var(--page-max-width);
+  max-width: 100%;
+  margin-inline: auto;
   display: flex;
   flex-flow: column wrap;
   justify-content: flex-start;

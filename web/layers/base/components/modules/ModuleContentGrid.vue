@@ -20,6 +20,7 @@ const mainStore = useMainStore();
 const { getItemImage } = useContentImage();
 const { getItemRoute } = useContentRoute();
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
+const { navigateToTagSearch } = useTagNavigation();
 
 const props = defineProps({
 	module: { type: Object, required: true },
@@ -101,10 +102,16 @@ const needsSelfLoad = computed(() => {
 });
 
 // Self-loaded items state
-const selfLoadedCount = ref(0);
+// selfLoadedCount uses useState so the SSR-computed count survives
+// hydration (a plain ref(0) would reset on the client and cause hydration
+// mismatches in the `hasMoreItems` template branch).
+const selfLoadedCountKey = `module-content-grid-count-${
+	props.module?._key || props.module?.type
+}-${props.module?.poolContentType || "default"}`;
+const selfLoadedCount = useState<number>(selfLoadedCountKey, () => 0);
 const isLoadingSelf = ref(false);
 const selfLoadPage = ref(1);
-const SELF_LOAD_PER_PAGE = 50;
+const SELF_LOAD_PER_PAGE = ITEMS_PER_PAGE;
 
 // Map module type to query type
 const getModuleQueryType = computed(() => {
@@ -236,8 +243,7 @@ const { data: selfLoadedItems, pending: isLoadingInitial } = await useAsyncData(
 	},
 	{
 		default: () => [],
-		lazy: true, // Enable lazy loading to unblock navigation
-		// server: true // explicit
+		lazy: false,
 	},
 );
 
@@ -733,20 +739,33 @@ const filteredItems = computed(() => {
 });
 
 const visibleItems = computed(() => {
-	// If we are filtering/server-loading, we show all loaded items
-	// But we still respect the 'visibleItemCount' limit for initial "Show More" functionality?
-	// User said: "sobald auf ein tag geklickt wird, sollen dann alle inhalte... nach und nach geladen werden"
-	// If we fetch 50 items server side, we can just show them all,
-	// or implement client-side pagination on top of server-side chunks?
-	// Let's rely on slice.
 	return filteredItems.value.slice(0, visibleItemCount.value);
 });
-const hasMoreItems = computed(
-	() => visibleItems.value.length < filteredItems.value.length,
-);
 
-function loadMoreItems() {
-	visibleItemCount.value += ITEMS_PER_PAGE;
+const hasMoreItems = computed(() => {
+	if (visibleItems.value.length < filteredItems.value.length) return true;
+	if (
+		needsSelfLoad.value &&
+		(selfLoadedItems.value?.length ?? 0) < selfLoadedCount.value
+	) {
+		return true;
+	}
+	return false;
+});
+
+async function loadMoreItems() {
+	const nextVisibleCount = visibleItemCount.value + ITEMS_PER_PAGE;
+
+	if (needsSelfLoad.value) {
+		while (
+			(selfLoadedItems.value?.length ?? 0) < nextVisibleCount &&
+			(selfLoadedItems.value?.length ?? 0) < selfLoadedCount.value
+		) {
+			await loadMoreSelfContent();
+		}
+	}
+
+	visibleItemCount.value = nextVisibleCount;
 }
 
 // ==================== UI HELPERS ====================
@@ -756,8 +775,8 @@ function toggleFiltersVisibility() {
 
 function toggleMobileFilters() {
 	showMobileFilters.value = !showMobileFilters.value;
-	// Prevent body scroll when overlay is open
 	if (showMobileFilters.value) {
+		showFilters.value = true;
 		document.body.style.overflow = "hidden";
 	} else {
 		document.body.style.overflow = "";
@@ -765,6 +784,8 @@ function toggleMobileFilters() {
 }
 
 function handleScroll() {
+	if (showMobileFilters.value) return;
+
 	const scrollY = window.scrollY;
 	const scrollDiff = scrollY - lastScrollY.value;
 
@@ -868,220 +889,56 @@ onUnmounted(() => {
 			module.style || 'default'
 		} ${categoryType.toLowerCase()}`"
 	>
-		<!-- Mobile/Tablet Header with Sort & Filter Button -->
-		<div class="content-grid__mobile-header">
-			<div class="mobile-sort-options">
-				<button
-					:class="['sort-button', { active: sortMode === 'new' }]"
-					@click="changeSortMode('new')"
-				>
-					<div class="dot"/>
-					New
-				</button>
-				<button
-					:class="['sort-button', { active: sortMode === 'alpha' }]"
-					@click="changeSortMode('alpha')"
-				>
-					<div class="dot"/>
-					A–Z
-				</button>
-				<button
-					:class="['sort-button', { active: sortMode === 'shuffle' }]"
-					@click="changeSortMode('shuffle')"
-				>
-					<div class="dot"/>
-					Shuffle
-				</button>
-			</div>
-			<button class="mobile-filter-toggle" @click="toggleMobileFilters">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M3 7H21M6 12H18M9 17H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-				</svg>
-				Filters
-				<span v-if="activeFilters.size > 0" class="filter-count">{{ activeFilters.size }}</span>
-			</button>
-		</div>
+		<!-- Mobile: compact filter toggle -->
+		<button
+			class="content-grid__mobile-filter-trigger"
+			:class="{ 'is-open': showMobileFilters }"
+			:aria-expanded="showMobileFilters"
+			aria-label="Toggle filters"
+			@click="toggleMobileFilters"
+		>
+			<svg
+				class="content-grid__mobile-filter-trigger__icon"
+				width="35"
+				height="29"
+				viewBox="0 0 35 29"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+				aria-hidden="true"
+			>
+				<path d="M0 14.5C0 6.49187 6.49187 0 14.5 0H35V29H14.5C6.49187 29 0 22.5081 0 14.5Z" fill="currentColor"/>
+				<path fill-rule="evenodd" clip-rule="evenodd" d="M17.6303 6.88281C21.8519 6.88281 25.2797 10.3106 25.2797 14.5323C25.2797 18.7545 21.8519 22.1823 17.6303 22.1823C13.4081 22.1823 9.98047 18.7545 9.98047 14.5323C9.98047 10.3106 13.4081 6.88281 17.6303 6.88281ZM17.6303 9.18605C14.6791 9.18605 12.2837 11.5817 12.2837 14.5323C12.2837 17.4834 14.6791 19.879 17.6303 19.879C20.5808 19.879 22.9765 17.4834 22.9765 14.5323C22.9765 11.5817 20.5808 9.18605 17.6303 9.18605Z" fill="#2C2C2C"/>
+				<path fill-rule="evenodd" clip-rule="evenodd" d="M26.5871 14.8919C26.3889 14.8919 26.228 14.7313 26.228 14.5327C26.228 14.3349 26.3889 14.1738 26.5871 14.1738H27.7087C27.9068 14.1738 28.0676 14.3349 28.0676 14.5327C28.0676 14.7313 27.9068 14.8919 27.7087 14.8919H26.5871Z" fill="white"/>
+				<path fill-rule="evenodd" clip-rule="evenodd" d="M7.35904 14.8919C7.16092 14.8919 7 14.7313 7 14.5327C7 14.3349 7.16092 14.1738 7.35904 14.1738H8.48066C8.67877 14.1738 8.83953 14.3349 8.83953 14.5327C8.83953 14.7313 8.67877 14.8919 8.48066 14.8919H7.35904Z" fill="white"/>
+				<path fill-rule="evenodd" clip-rule="evenodd" d="M17.8929 5.48081C17.8929 5.67892 17.7322 5.83984 17.5336 5.83984C17.3359 5.83984 17.1748 5.67892 17.1748 5.48081V4.35919C17.1748 4.16107 17.3359 4.00032 17.5336 4.00032C17.7322 4.00032 17.8929 4.16107 17.8929 4.35919V5.48081Z" fill="white"/>
+				<path fill-rule="evenodd" clip-rule="evenodd" d="M17.8929 24.7093C17.8929 24.9074 17.7322 25.0684 17.5336 25.0684C17.3359 25.0684 17.1748 24.9074 17.1748 24.7093V23.5877C17.1748 23.3896 17.3359 23.2288 17.5336 23.2288C17.7322 23.2288 17.8929 23.3896 17.8929 23.5877V24.7093Z" fill="white"/>
+				<path fill-rule="evenodd" clip-rule="evenodd" d="M24.1894 8.38476C24.0493 8.52485 23.8219 8.52502 23.6815 8.3846C23.5417 8.24478 23.5415 8.01707 23.6816 7.87698L24.4747 7.08388C24.6148 6.94379 24.8424 6.94404 24.9822 7.08385C25.1226 7.22428 25.1226 7.45156 24.9825 7.59165L24.1894 8.38476Z" fill="white"/>
+				<path fill-rule="evenodd" clip-rule="evenodd" d="M10.5932 21.9824C10.4531 22.1225 10.2257 22.1227 10.0853 21.9823C9.94547 21.8424 9.94533 21.6147 10.0854 21.4746L10.8785 20.6815C11.0186 20.5414 11.2462 20.5417 11.386 20.6815C11.5264 20.8219 11.5264 21.0492 11.3863 21.1893L10.5932 21.9824Z" fill="white"/>
+				<path fill-rule="evenodd" clip-rule="evenodd" d="M23.6812 21.1874C23.5411 21.0473 23.5409 20.8199 23.6813 20.6795C23.8211 20.5397 24.0488 20.5396 24.1889 20.6797L24.982 21.4728C25.1221 21.6129 25.1219 21.8404 24.9821 21.9803C24.8416 22.1207 24.6144 22.1206 24.4743 21.9805L23.6812 21.1874Z" fill="white"/>
+				<path fill-rule="evenodd" clip-rule="evenodd" d="M10.085 7.59369C9.94488 7.45359 9.94471 7.22619 10.0851 7.08577C10.2249 6.94596 10.4527 6.94582 10.5927 7.08591L11.3858 7.87901C11.5259 8.0191 11.5257 8.2467 11.3859 8.38651C11.2454 8.52693 11.0182 8.52688 10.8781 8.38679L10.085 7.59369Z" fill="white"/>
+				<g class="content-grid__mobile-filter-trigger__knob">
+					<circle cx="17.5" cy="15.5" r="6.5" fill="#4B4A4A"/>
+					<path fill-rule="evenodd" clip-rule="evenodd" d="M16.2842 7.73676C16.2842 6.99383 16.8873 6.39062 17.6304 6.39062C18.373 6.39062 18.9765 6.99383 18.9765 7.73676L18.9765 13.1117C18.9765 13.8549 18.373 14.4578 17.6304 14.4578C16.8873 14.4578 16.2842 13.8549 16.2842 13.1117L16.2842 7.73676Z" fill="white"/>
+				</g>
+			</svg>
+			<span v-if="activeFilters.size > 0" class="filter-count">{{ activeFilters.size }}</span>
+		</button>
 
-		<!-- Mobile Filter Overlay -->
-		<Transition name="filter-overlay">
-			<div v-if="showMobileFilters" class="mobile-filter-overlay" @click.self="toggleMobileFilters">
-				<div class="mobile-filter-content">
-					<div class="mobile-filter-header">
-						<h3>Filters</h3>
-						<button class="close-button" @click="toggleMobileFilters">
-							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-							</svg>
-						</button>
-					</div>
-
-					<!-- Active Filters -->
-					<div v-if="activeFilters.size > 0" class="mobile-active-filters">
-						<div class="mobile-active-filters__header">
-							<h4>Active Filters</h4>
-							<button class="clear-all" @click="resetFilters">Clear All</button>
-						</div>
-						<div class="mobile-active-filters__list">
-							<button
-								v-for="filterId in activeFilters"
-								:key="filterId"
-								class="tag active"
-								@click="toggleFilter(filterId)"
-							>
-								{{ getTagNameById(filterId) }}
-								<svg width="12" height="12" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path d="M6 2L2 6M2 2L6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-								</svg>
-							</button>
-						</div>
-					</div>
-
-					<!-- Cities Filter -->
-					<div v-if="categorizedTags.cities?.length > 0" class="mobile-filter-section">
-						<h4 class="mobile-filter-section__title">City</h4>
-						<div class="mobile-filter-tags">
-							<button
-								v-for="tag in categorizedTags.cities.filter(isMainCity)"
-								:key="tag._id"
-								class="tag"
-								:class="{ active: activeFilters.has(tag._id) }"
-								@click="toggleFilter(tag._id)"
-							>
-								{{ parseI18nObj(tag.title) }}
-							</button>
-							<button
-								v-if="categorizedTags.cities.some((tag) => !isMainCity(tag))"
-								class="tag"
-								:class="{ active: isOtherCitiesActive }"
-								@click="toggleFilter('others')"
-							>
-								Elsewhere
-							</button>
-						</div>
-					</div>
-
-					<!-- Sets: Genre Filter -->
-					<template v-if="contentType === 'sets' && categorizedTags.genres?.length > 0">
-						<div class="mobile-filter-section">
-							<h4 class="mobile-filter-section__title">Genres</h4>
-							<div class="mobile-filter-tags">
-								<button
-									v-for="genre in categorizedTags.genres"
-									:key="genre._id"
-									class="tag"
-									:class="{ active: activeGenres.has(genre._id) }"
-									@click="toggleGenreFilter(genre._id)"
-								>
-									{{ genre.title }}
-								</button>
-							</div>
-						</div>
-
-						<!-- SubGenres -->
-						<div v-if="activeGenres.size > 0" class="mobile-filter-section">
-							<h4 class="mobile-filter-section__title">Sub-Genres</h4>
-							<div class="mobile-filter-tags">
-								<template
-									v-for="genre in categorizedTags.genres.filter((g) => activeGenres.has(g._id))"
-									:key="genre._id"
-								>
-									<button
-										v-for="subGenre in genre.subGenres || []"
-										:key="subGenre._id"
-										class="tag"
-										:class="{ active: activeSubGenres.has(subGenre._id) }"
-										@click="toggleSubGenreFilter(subGenre._id)"
-									>
-										{{ subGenre.title }}
-									</button>
-								</template>
-							</div>
-						</div>
-					</template>
-
-					<!-- Words: Article Tags -->
-					<template v-else-if="contentType === 'words' && poolTags.articles.length > 0">
-						<div class="mobile-filter-section">
-							<h4 class="mobile-filter-section__title">Tags</h4>
-							<div class="mobile-filter-tags">
-								<button
-									v-for="tag in poolTags.articles"
-									:key="tag._id"
-									class="tag"
-									:class="{ active: activeFilters.has(tag._id) }"
-									@click="toggleFilter(tag._id)"
-								>
-									{{ tag.title }}
-								</button>
-							</div>
-						</div>
-					</template>
-
-					<!-- Pool: Type Filters -->
-					<template v-else-if="getContentTypeSpecificTags.length > 0">
-						<div class="mobile-filter-section">
-							<h4 class="mobile-filter-section__title">Type</h4>
-							<div class="mobile-filter-tags">
-								<button
-									v-if="poolTags.musicians.length > 0"
-									class="tag"
-									:class="{ active: activeFilterType === 'musicians' }"
-									@click="toggleFilterType('musicians')"
-								>
-									Musicians
-								</button>
-								<button
-									v-if="poolTags.venues.length > 0"
-									class="tag"
-									:class="{ active: activeFilterType === 'venues' }"
-									@click="toggleFilterType('venues')"
-								>
-									Venues
-								</button>
-								<button
-									v-if="poolTags.crafts.length > 0"
-									class="tag"
-									:class="{ active: activeFilterType === 'crafts' }"
-									@click="toggleFilterType('crafts')"
-								>
-									Crafts
-								</button>
-							</div>
-						</div>
-
-						<!-- Sub-Tags for Pool -->
-						<div
-							v-if="activeFilterType && poolTags[activeFilterType]?.length > 0"
-							class="mobile-filter-section"
-						>
-							<h4 class="mobile-filter-section__title">{{ activeFilterType }}</h4>
-							<div class="mobile-filter-tags">
-								<button
-									v-for="tag in poolTags[activeFilterType]"
-									:key="tag._id"
-									class="tag"
-									:class="{ active: activeFilters.has(tag._id) }"
-									@click="toggleFilter(tag._id)"
-								>
-									{{ tag.title }}
-								</button>
-							</div>
-						</div>
-					</template>
-
-					<!-- Apply Button -->
-					<div class="mobile-filter-footer">
-						<button class="apply-button" @click="toggleMobileFilters">
-							Apply Filters
-						</button>
-					</div>
-				</div>
-			</div>
+		<Transition name="mobile-filter-backdrop">
+			<div
+				v-if="showMobileFilters"
+				class="content-grid__mobile-filter-backdrop"
+				@click="toggleMobileFilters"
+			/>
 		</Transition>
 
 		<!-- Desktop Filter Panel -->
-		<div ref="filterSection" class="content-grid__filter-section">
-			<div class="content-grid__filter-bar">
+		<div
+			ref="filterSection"
+			class="content-grid__filter-section"
+			:class="{ 'is-mobile-open': showMobileFilters }"
+		>
+			<div class="content-grid__filter-bar content-grid__filter-bar--desktop">
 				<!-- Active Filters -->
 				<div class="active-filters">
 					<h4
@@ -1215,8 +1072,156 @@ onUnmounted(() => {
 				</div>
 			</div>
 
+			<!-- Mobile filter panel -->
+			<div v-if="showMobileFilters" class="content-grid__mobile-filter">
+				<div
+					v-if="categorizedTags.cities?.length > 0"
+					class="content-grid__mobile-filter-block content-grid__mobile-filter-block--city"
+				>
+					<h4 class="content-grid__mobile-filter-block__title">City</h4>
+					<div class="content-grid__mobile-filter-block__panel">
+						<div class="content-grid__mobile-filter-cities__tags">
+							<button
+								v-for="tag in categorizedTags.cities.filter(isMainCity)"
+								:key="tag._id"
+								class="tag filter-tag filter-tag--city"
+								:class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
+								@click="toggleFilter(tag._id)"
+							>
+								{{ parseI18nObj(tag.title) }}
+							</button>
+							<button
+								v-if="categorizedTags.cities.some((tag) => !isMainCity(tag))"
+								class="tag filter-tag filter-tag--city"
+								:class="{ 'filter-tag--active': isOtherCitiesActive }"
+								@click="toggleFilter('others')"
+							>
+								Elsewhere
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<div
+					class="content-grid__mobile-filter-block content-grid__mobile-filter-block--tags"
+					:class="{
+						'has-filter-tags': module.availableTags,
+						'has-active-filters': activeFilters.size > 0,
+					}"
+				>
+					<h4 class="content-grid__mobile-filter-block__title">Tags</h4>
+					<div
+						v-if="activeFilters.size > 0"
+						class="content-grid__mobile-filter-block__panel"
+					>
+						<div class="content-grid__mobile-filter-active">
+							<button
+								type="button"
+								class="content-grid__mobile-filter-active__clear"
+								aria-label="Remove last filter"
+								@click="removeLastFilter"
+							>
+								<svg
+									width="10"
+									height="10"
+									viewBox="0 0 8 8"
+									fill="none"
+									xmlns="http://www.w3.org/2000/svg"
+									aria-hidden="true"
+								>
+									<circle cx="4" cy="4" r="4" fill="black" />
+									<rect
+										x="1.77783"
+										y="2.4082"
+										width="0.888889"
+										height="5.33333"
+										transform="rotate(-45 1.77783 2.4082)"
+										fill="#E8E8E8"
+									/>
+									<path
+										d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
+										fill="#E8E8E8"
+									/>
+								</svg>
+							</button>
+							<div class="active-filters__list tags">
+								<div
+									v-for="filterId in activeFilters"
+									:key="filterId"
+									class="active-filter tag"
+								>
+									<span
+										class="active-filter__name"
+										@click="toggleFilter(filterId)"
+									>
+										{{ getTagNameById(filterId) }}
+										<span class="close-cross">
+											<svg
+												width="10"
+												height="10"
+												viewBox="0 0 8 8"
+												fill="none"
+												xmlns="http://www.w3.org/2000/svg"
+											>
+												<circle cx="4" cy="4" r="4" fill="black" />
+												<rect
+													x="1.77783"
+													y="2.4082"
+													width="0.888889"
+													height="5.33333"
+													transform="rotate(-45 1.77783 2.4082)"
+													fill="#E8E8E8"
+												/>
+												<path
+													d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
+													fill="#E8E8E8"
+												/>
+											</svg>
+										</span>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="content-grid__mobile-filter-bar">
+					<div class="mobile-sort-options">
+						<button
+							:class="['sort-button', { active: sortMode === 'new' }]"
+							@click="changeSortMode('new')"
+						>
+							<div class="dot" />
+							New
+						</button>
+						<button
+							:class="['sort-button', { active: sortMode === 'alpha' }]"
+							@click="changeSortMode('alpha')"
+						>
+							<div class="dot" />
+							A–Z
+						</button>
+						<button
+							:class="['sort-button', { active: sortMode === 'shuffle' }]"
+							@click="changeSortMode('shuffle')"
+						>
+							<div class="dot" />
+							Shuffle
+						</button>
+					</div>
+				</div>
+			</div>
+
 			<!-- Filter Tags Panel -->
-			<div v-if="module.availableTags" class="content-grid__filters">
+			<div
+				v-if="module.availableTags"
+				class="content-grid__filters"
+				:class="{
+					'content-grid__filters--in-mobile-panel': showMobileFilters,
+					'content-grid__filters--no-active-above':
+						showMobileFilters && activeFilters.size === 0,
+				}"
+			>
 				<div class="filter-container tags">
 					<!-- Sets: Genre Filter -->
 					<template v-if="contentType === 'sets'">
@@ -1366,7 +1371,10 @@ onUnmounted(() => {
 					:class="`grid-item grid-item--${module.style || 'default'}`"
 				>
 					<!-- City Tags -->
-					<div class="grid-item__tags city-tags">
+					<div
+						v-if="contentType !== 'words'"
+						class="grid-item__tags city-tags"
+					>
 						<span
 							v-for="tag in getItemCityTags(item)"
 							:key="tag._id"
@@ -1423,7 +1431,10 @@ onUnmounted(() => {
 
 					<!-- Content -->
 					<div class="grid-item__content">
-						<section class="grid-item__content__interactive">
+						<section
+							v-if="contentType !== 'words'"
+							class="grid-item__content__interactive"
+						>
 							<div
 								v-if="item.datetime || item.publishedAt"
 								class="grid-item__date"
@@ -1512,7 +1523,11 @@ onUnmounted(() => {
 
 						<!-- Teaser Text -->
 						<RichText
-							v-if="item?.useTeaserText && item?.textTeaser"
+							v-if="contentType === 'words'"
+							:blocks="parseI18nObj(item?.textTeaser)"
+						/>
+						<RichText
+							v-else-if="item?.useTeaserText && item?.textTeaser"
 							:blocks="parseI18nObj(item?.textTeaser)"
 						/>
 						<RichText
@@ -1564,9 +1579,32 @@ onUnmounted(() => {
 							"
 						/>
 
+						<!-- Words: Non-City Tags -->
+						<div
+							v-if="
+								contentType === 'words' &&
+									module.showTags &&
+									getItemNonCityTags(item).length > 0
+							"
+							class="grid-item__tags tags"
+						>
+							<button
+								v-for="tag in getItemNonCityTags(item)"
+								:key="tag._id"
+								class="tag clickable"
+								@click.prevent="navigateToTagSearch(tag, item)"
+							>
+								{{
+									tag?.title?.[1]?.value
+										? parseI18nObj(tag?.title)
+										: tag?.title?.[0]?.value ?? tag.title
+								}}
+							</button>
+						</div>
+
 						<!-- Non-City Tags -->
 						<div
-							v-if="getItemNonCityTags(item).length > 0"
+							v-else-if="getItemNonCityTags(item).length > 0"
 							class="grid-item__tags tags"
 						>
 							<span
@@ -1669,8 +1707,16 @@ onUnmounted(() => {
   /* Theme colors via CSS custom properties */
   --theme-color: var(--color-pink);
 
-  /* Mobile header - hidden on desktop */
-  &__mobile-header {
+  /* Mobile filter trigger - hidden on desktop */
+  &__mobile-filter-trigger {
+    display: none;
+  }
+
+  &__mobile-filter {
+    display: none;
+  }
+
+  &__mobile-filter-backdrop {
     display: none;
   }
 
@@ -1680,7 +1726,8 @@ onUnmounted(() => {
   &.pool {
     --theme-color: var(--color-blue);
   }
-  &.shows {
+  &.shows,
+  &.sets {
     --theme-color: var(--color-pink);
   }
 
@@ -1968,6 +2015,10 @@ onUnmounted(() => {
     .filter-category {
       width: var(--page-max-width);
       position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      row-gap: var(--small-padding);
       background-color: var(--color-bg-transparent);
       transform: translate(0, calc(var(--mid-padding) * -1.75));
       padding: calc(var(--mid-padding) * 1.75) 0 var(--mid-padding);
@@ -1989,7 +2040,7 @@ onUnmounted(() => {
       flex-flow: row wrap;
       align-items: center;
       justify-content: center;
-      margin: var(--base-padding) auto var(--mid-padding);
+      margin: var(--base-padding) auto 0;
       max-width: 66%;
       width: 66%;
       gap: var(--small-padding);
@@ -2238,10 +2289,20 @@ onUnmounted(() => {
     aspect-ratio: 3 / 4;
   }
 
-  &.words .content-grid__items {
-    gap: calc(var(--big-padding) * 3);
+  &.words {
+    .content-grid__items {
+      gap: calc(var(--big-padding) * 3);
+    }
+
+    .tag {
+      &.city {
+        background-color: var(--color-green);
+        color: var(--color-white);
+      }
+    }
 
     .grid-item {
+      position: relative;
       flex: 1 1 50%;
       max-width: calc(50% - var(--big-padding) * 1.5);
       background-color: var(--color-text);
@@ -2249,33 +2310,32 @@ onUnmounted(() => {
       border: 1px solid var(--color-text);
       overflow: hidden;
       padding: 0;
+      margin-right: 0;
 
-      .city-tags,
-      .grid-item__content__interactive {
+      .grid-item__content__interactive,
+      .city-tags {
         display: none;
       }
 
-      img {
-        width: 100%;
-        height: auto;
-        aspect-ratio: 3 / 2;
-        object-fit: cover;
+      &__link {
+        color: var(--color-bg);
       }
 
-      &__image img {
-        aspect-ratio: 3 / 1.5;
+      &__image {
+        width: 100%;
+
+        img {
+          aspect-ratio: 3 / 1.5 !important;
+          width: 100%;
+        }
       }
 
       &__content {
+        position: relative;
         gap: var(--big-padding);
         margin: 0;
         padding: var(--base-margin) var(--mid-padding);
-
-        .grid-item__tags {
-          position: absolute;
-          top: var(--base-padding);
-          right: var(--base-padding);
-        }
+        color: var(--color-bg);
 
         .read-more {
           position: absolute;
@@ -2288,13 +2348,31 @@ onUnmounted(() => {
         }
 
         .grid-item__title {
-          font-size: var(--large-font-size);
-          font-weight: 400;
-          font-family: var(--font-text-regular);
           color: var(--color-bg);
         }
 
-        .rich-text {
+        .grid-item__tags {
+          position: absolute;
+          top: var(--base-padding);
+          right: var(--base-padding);
+          color: var(--color-bg);
+          flex-grow: 0;
+
+          .tag {
+            background-color: transparent;
+            color: var(--color-bg);
+            padding: 2px 8px;
+            border: 1px solid var(--color-bg);
+
+            &:hover {
+              background-color: var(--color-bg);
+              color: var(--color-text);
+            }
+          }
+        }
+
+        .rich-text,
+        .rich-text * {
           color: var(--color-bg);
         }
       }
@@ -2312,79 +2390,305 @@ onUnmounted(() => {
   }
 }
 
-/* ==================== MOBILE FILTER OVERLAY ==================== */
-/* Completely hidden on desktop - all styles are in media query */
-.mobile-filter-overlay {
-  display: none !important;
-}
-
-/* All mobile filter styles are defined in @media (max-width: 1100px) */
-/* These elements are hidden on desktop */
-.mobile-filter-content,
-.mobile-filter-header,
-.mobile-active-filters,
-.mobile-filter-section,
-.mobile-filter-tags,
-.mobile-filter-footer {
-  display: none;
-}
-
-/* Overlay transition - only active on mobile */
-@media (max-width: 1100px) {
-  .filter-overlay-enter-active,
-  .filter-overlay-leave-active {
-    transition: opacity 0.3s ease;
-
-    .mobile-filter-content {
-      transition: transform 0.3s ease;
-    }
-  }
-
-  .filter-overlay-enter-from,
-  .filter-overlay-leave-to {
-    opacity: 0;
-
-    .mobile-filter-content {
-      transform: translateY(20px);
-    }
-  }
-
-  /* Dark mode adjustments */
-  @media (prefers-color-scheme: dark) {
-    .mobile-filter-content {
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    }
-
-    .mobile-filter-overlay {
-      background-color: rgba(0, 0, 0, 0.3);
-    }
-  }
-}
 
 /* ==================== RESPONSIVE ==================== */
 /* Tablet: 2 Spalten */
 @media (max-width: 1100px) {
   .content-grid {
-    /* Hide desktop filter section */
-    &__filter-section {
-      display: none !important;
+    --mobile-filter-trigger-height: 29px;
+
+    &__filter-bar--desktop {
+      display: none;
     }
 
-    /* Show mobile header */
-    &__mobile-header {
+    &__filter-section {
+      display: none;
+      margin-left: 0;
+      margin-right: 0;
+      padding-left: 0;
+      padding-right: 0;
+      padding-bottom: 0;
+
+      &::before {
+        display: none;
+      }
+
+      &.is-mobile-open {
+        display: flex;
+        flex-direction: column;
+        gap: var(--mid-padding);
+        position: fixed;
+        top: calc(
+          var(--nav-height) + var(--big-padding) +
+            var(--mobile-filter-trigger-height)
+        );
+        left: var(--mid-padding);
+        right: var(--mid-padding);
+        z-index: 9998;
+        max-height: calc(
+          100dvh - var(--nav-height) - var(--big-padding) -
+            var(--mobile-filter-trigger-height) - var(--big-padding)
+        );
+        overflow: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: var(--mid-padding);
+        border-radius: 1.56125rem;
+        border: 1px solid var(--color-bg);
+        background-color: var(--color-bg-transparent);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        animation: content-grid-filter-panel-in 0.45s cubic-bezier(0.22, 1, 0.36, 1)
+          both;
+      }
+    }
+
+    &__mobile-filter-backdrop {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: 9997;
+      background-color: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+
+      @media (prefers-color-scheme: dark) {
+        background-color: rgba(0, 0, 0, 0.25);
+      }
+    }
+
+    &__mobile-filter-trigger {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: var(--big-margin);
-      padding: var(--mid-padding);
-      background-color: var(--color-text);
+      justify-content: center;
+      position: fixed;
+      top: calc(var(--nav-height) + var(--big-padding));
+      right: 0;
+      z-index: 9999;
+      width: 35px;
+      height: var(--mobile-filter-trigger-height);
+      padding: 0;
+      color: var(--theme-color);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+
+      &__icon {
+        display: block;
+        width: 35px;
+        height: var(--mobile-filter-trigger-height);
+      }
+
+      &__knob {
+        transform-box: fill-box;
+        transform-origin: center;
+        transition: transform 0.2s ease;
+      }
+
+      .filter-count {
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        background-color: var(--color-text);
+        color: var(--color-bg);
+        border-radius: 50%;
+        min-width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        font-family: var(--font-text-semibold);
+        padding: 0 3px;
+        border: 1px solid var(--color-bg);
+      }
+
+      &.is-open {
+        opacity: 0.85;
+
+        .content-grid__mobile-filter-trigger__knob {
+          transform: rotate(-90deg);
+        }
+      }
+
+      &:hover:not(.is-open) .content-grid__mobile-filter-trigger__knob {
+        transform: scale(1.05);
+      }
+    }
+
+    &__mobile-filter {
+      display: contents;
+    }
+
+    &__mobile-filter-block {
+      display: flex;
+      flex-direction: column;
+      gap: var(--small-padding);
+
+      &__title {
+        font-size: var(--small-font-size);
+        font-family: var(--font-text-semibold);
+        text-transform: uppercase;
+        color: var(--color-text);
+        padding-left: var(--small-padding);
+        margin: 0;
+      }
+
+      &__panel {
+        background-color: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--color-bg);
+        border-radius: 1.56125rem;
+        padding: var(--mid-padding);
+        overflow: hidden;
+
+        @media (prefers-color-scheme: dark) {
+          background-color: rgba(0, 0, 0, 0.35);
+        }
+      }
+
+      &--city {
+        order: 1;
+      }
+
+      &--tags {
+        order: 2;
+
+        &.has-active-filters.has-filter-tags .content-grid__mobile-filter-block__panel {
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 0;
+          border-bottom: none;
+        }
+      }
+    }
+
+    &__mobile-filter-cities {
+      &__tags {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        gap: var(--small-padding);
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
+
+        .filter-tag--city {
+          flex-shrink: 0;
+          background-color: var(--color-dark-grey);
+          color: var(--color-text);
+          padding: var(--small-padding) var(--mid-padding);
+          border-radius: 100px;
+          border: 1px solid transparent;
+          font-size: var(--small-font-size);
+          text-transform: uppercase;
+          font-family: var(--font-text);
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &.filter-tag--active {
+            background-color: var(--theme-color);
+            color: var(--color-bg);
+            border-color: transparent;
+          }
+        }
+      }
+    }
+
+    &__mobile-filter-active {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--small-padding);
+      padding: 0;
+
+      &__clear {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        margin-top: var(--small-padding);
+        padding: 0;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+      }
+
+      .active-filters__list {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+        align-content: flex-start;
+        gap: var(--small-padding);
+        flex: 1;
+        min-width: 0;
+      }
+
+      .active-filter.tag {
+        flex-shrink: 0;
+        background-color: var(--theme-color);
+        color: var(--color-bg);
+        border: 1px solid var(--theme-color);
+        border-radius: 100px;
+        font-size: var(--small-font-size);
+        letter-spacing: var(--button-letter-spacing);
+        font-family: var(--font-text);
+        text-transform: uppercase;
+        padding: var(--small-padding) calc(var(--base-padding) + 10px)
+          var(--small-padding) var(--base-padding);
+        position: relative;
+        min-width: max-content;
+
+        .close-cross {
+          transform: translate(0, -1px);
+          right: 6px;
+          position: absolute;
+        }
+
+        &__name {
+          min-width: max-content;
+          cursor: pointer;
+          font-size: var(--small-font-size);
+          letter-spacing: var(--button-letter-spacing);
+          font-family: var(--font-text);
+          padding: 0;
+        }
+      }
+    }
+
+    &__mobile-filter-bar {
+      order: 4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: var(--small-padding) var(--mid-padding);
+      background-color: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--color-bg);
       border-radius: 100px;
-      gap: var(--mid-padding);
+
+      @media (prefers-color-scheme: dark) {
+        background-color: rgba(0, 0, 0, 0.35);
+      }
 
       .mobile-sort-options {
         display: flex;
-        gap: var(--mid-padding);
-        flex: 1;
+        justify-content: center;
+        align-items: center;
+        gap: var(--mid-margin);
+        flex-wrap: wrap;
 
         .sort-button {
           display: flex;
@@ -2393,16 +2697,12 @@ onUnmounted(() => {
           background-color: transparent;
           border: none;
           font-size: var(--small-font-size);
-          color: var(--color-dark-grey);
+          color: var(--color-text);
           text-transform: uppercase;
           font-family: var(--font-text-semibold);
           cursor: pointer;
           transition: color 0.2s ease;
           padding: 0;
-
-          @media (prefers-color-scheme: dark) {
-            color: var(--color-bg);
-          }
 
           .dot {
             width: 10px;
@@ -2410,18 +2710,6 @@ onUnmounted(() => {
             border-radius: 50%;
             background-color: var(--color-dark-grey);
             transition: background-color 0.2s ease;
-
-            @media (prefers-color-scheme: dark) {
-              background-color: var(--color-bg);
-            }
-          }
-
-          &:hover {
-            color: var(--theme-color);
-
-            .dot {
-              background-color: var(--theme-color);
-            }
           }
 
           &.active {
@@ -2433,273 +2721,130 @@ onUnmounted(() => {
           }
         }
       }
-
-      .mobile-filter-toggle {
-        display: flex;
-        align-items: center;
-        gap: var(--small-padding);
-        background-color: var(--color-bg);
-        color: var(--color-text);
-        border: none;
-        border-radius: 100px;
-        padding: var(--small-padding) var(--mid-padding);
-        font-size: var(--small-font-size);
-        text-transform: uppercase;
-        font-family: var(--font-text-semibold);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        position: relative;
-
-        svg {
-          width: 16px;
-          height: 16px;
-        }
-
-        .filter-count {
-          background-color: var(--theme-color);
-          color: var(--color-bg);
-          border-radius: 50%;
-          width: 20px;
-          height: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 11px;
-          margin-left: var(--small-padding);
-        }
-
-        &:hover {
-          background-color: var(--theme-color);
-          color: var(--color-bg);
-        }
-      }
     }
 
-    /* Show mobile overlay */
-    .mobile-filter-overlay {
-      display: block !important;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      height: 100dvh;
-      background-color: rgba(0, 0, 0, 0.15);
-      z-index: 99999;
-      overflow-y: auto;
-      padding: calc(var(--nav-height) + var(--first-content-distance) + var(--big-padding)) var(--big-padding) var(--big-padding);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      -webkit-overflow-scrolling: touch;
-    }
+    &__filters {
+      &--in-mobile-panel {
+        order: 3;
+        margin-top: calc(var(--mid-padding) * -1);
+        padding: var(--mid-padding);
+        background-color: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--color-bg);
+        border-top: none;
+        border-radius: 0 0 1.56125rem 1.56125rem;
 
-    /* Mobile filter content */
-    .mobile-filter-content {
-      display: block !important;
-      background-color: var(--color-bg);
-      border-radius: 12px;
-      max-width: 600px;
-      max-height: calc(100vh - var(--nav-height) - var(--first-content-distance) - var(--big-padding) * 2);
-      margin: 0 auto;
-      padding: var(--big-padding);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      overflow-y: auto;
-      position: relative;
-      border: 0.0935rem solid var(--color-text);
-      scrollbar-width: thin;
-      scrollbar-color: var(--color-text-light, rgba(0, 0, 0, 0.2)) transparent;
-      
-      &::-webkit-scrollbar {
-        width: 6px;
-      }
-      
-      &::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      
-      &::-webkit-scrollbar-thumb {
-        background-color: var(--color-text-light, rgba(0, 0, 0, 0.2));
-        border-radius: 3px;
-        
-        &:hover {
-          background-color: var(--color-text-light, rgba(0, 0, 0, 0.3));
-        }
-      }
-    }
-
-    /* Mobile filter header */
-    .mobile-filter-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--big-padding);
-      padding-bottom: var(--mid-padding);
-      border-bottom: 1px solid var(--color-grey);
-
-      h3 {
-        font-size: var(--large-font-size);
-        font-family: var(--font-text-semibold);
-        text-transform: uppercase;
-        margin: 0;
-      }
-
-      .close-button {
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        padding: var(--small-padding);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--color-text);
-        transition: color 0.2s ease;
-
-        &:hover {
-          color: var(--theme-color);
-        }
-      }
-    }
-
-    /* Mobile active filters */
-    .mobile-active-filters {
-      margin-bottom: var(--big-padding);
-      padding-bottom: var(--big-padding);
-      border-bottom: 1px solid var(--color-grey);
-
-      &__header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--mid-padding);
-
-        h4 {
-          font-size: var(--base-font-size);
-          font-family: var(--font-text-semibold);
-          text-transform: uppercase;
-          margin: 0;
-          color: var(--color-text);
+        @media (prefers-color-scheme: dark) {
+          background-color: rgba(0, 0, 0, 0.35);
         }
 
-        .clear-all {
+        &.content-grid__filters--no-active-above {
+          margin-top: 0;
+          border-top: 1px solid var(--color-bg);
+          border-radius: 1.56125rem;
+        }
+
+        .filter-container {
+          gap: var(--mid-padding);
+        }
+
+        .filter-category {
+          position: static;
+          width: 100%;
+          transform: none;
+          opacity: 1;
+          padding: 0;
+          border: none;
+          border-radius: 0;
           background: transparent;
-          border: none;
-          color: var(--theme-color);
-          font-size: var(--small-font-size);
-          text-transform: uppercase;
-          cursor: pointer;
-          font-family: var(--font-text-semibold);
-          padding: var(--small-padding);
-          transition: all 0.2s ease;
-
-          &:hover {
-            opacity: 0.7;
-            transform: translateY(-1px);
-          }
-
-          &:active {
-            transform: translateY(0);
-          }
-        }
-      }
-
-      &__list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--small-padding);
-
-        .tag {
+          backdrop-filter: none;
           display: flex;
-          align-items: center;
-          gap: var(--small-padding);
-          background-color: var(--theme-color);
-          color: var(--color-bg);
-          padding: var(--small-padding) var(--mid-padding);
-          border-radius: 100px;
-          font-size: var(--small-font-size);
-          text-transform: uppercase;
+          flex-direction: column;
+          align-items: stretch;
+          row-gap: var(--mid-padding);
+        }
+
+        .filter-genres,
+        .filter-tags {
+          max-width: 100%;
+          width: 100%;
+          margin: 0;
+          justify-content: flex-start;
+        }
+
+        .filter-subgenres {
+          margin-left: 0;
+          width: 100%;
+        }
+
+        .filter-type {
+          background-color: var(--color-bg);
+          color: var(--color-text);
+          border: 1px solid var(--color-text);
+
+          &--active {
+            background-color: var(--color-text);
+            color: var(--color-bg);
+          }
+        }
+
+        .filter-tag:not(.filter-tag--city) {
+          background-color: var(--color-bg);
+          color: var(--color-text);
+          border: 1px solid var(--color-text);
+
+          &.filter-tag--active {
+            background-color: var(--color-text);
+            color: var(--color-bg);
+          }
+        }
+
+        .filter-tag--genre {
+          background-color: var(--color-bg);
+          color: var(--color-text);
+          border: 1px solid var(--color-text);
+
+          &.filter-tag--active {
+            background-color: var(--color-text);
+            color: var(--color-bg);
+          }
+        }
+      }
+
+      &:not(&--in-mobile-panel) {
+        .filter-category {
+          position: static;
+          width: 100%;
+          transform: none;
+          opacity: 1;
+          padding: var(--mid-padding);
+          border-radius: 0 0 1.56125rem 1.56125rem;
           border: none;
-          cursor: pointer;
-          transition: opacity 0.2s ease;
-
-          &:hover {
-            opacity: 0.8;
-          }
-
-          svg {
-            width: 12px;
-            height: 12px;
-          }
-        }
-      }
-    }
-
-    /* Mobile filter section */
-    .mobile-filter-section {
-      margin-bottom: var(--big-padding);
-
-      &__title {
-        font-size: var(--base-font-size);
-        font-family: var(--font-text-semibold);
-        text-transform: uppercase;
-        margin: 0 0 var(--mid-padding) 0;
-        color: var(--color-text);
-        letter-spacing: 0.05em;
-      }
-    }
-
-    /* Mobile filter tags */
-    .mobile-filter-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--small-padding);
-
-      .tag {
-        background-color: var(--color-bg);
-        color: var(--color-text);
-        padding: var(--small-padding) var(--mid-padding);
-        border-radius: 100px;
-        font-size: var(--small-font-size);
-        text-transform: uppercase;
-        border: 1px solid var(--color-text);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-family: var(--font-text);
-
-        &:hover {
-          background-color: var(--theme-color);
-          color: var(--color-bg);
-          border-color: var(--theme-color);
+          border-top: 1px solid var(--color-grey);
+          background-color: var(--color-bg-transparent);
+          backdrop-filter: blur(10px);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          row-gap: var(--small-padding);
         }
 
-        &.active {
-          background-color: var(--theme-color);
-          color: var(--color-bg);
-          border-color: var(--theme-color);
+        .filter-genres {
+          max-width: 100%;
+          width: 100%;
+          margin: 0;
         }
-      }
-    }
 
-    /* Mobile filter footer */
-    .mobile-filter-footer {
-      margin-top: var(--big-padding);
-      padding-top: var(--big-padding);
-      border-top: 1px solid var(--color-grey);
+        .filter-tags {
+          max-width: 100%;
+          width: 100%;
+          margin: 0;
+        }
 
-      .apply-button {
-        width: 100%;
-        padding: var(--mid-padding) var(--big-padding);
-        background-color: var(--color-text);
-        color: var(--color-bg);
-        border: none;
-        border-radius: 100px;
-        font-size: var(--base-font-size);
-        font-family: var(--font-text-semibold);
-        text-transform: uppercase;
-        cursor: pointer;
-        transition: all 0.2s ease;
-
-        &:hover {
-          background-color: var(--theme-color);
+        .filter-subgenres {
+          margin-left: 0;
+          width: 100%;
         }
       }
     }
@@ -2747,110 +2892,59 @@ onUnmounted(() => {
   }
 }
 
+/* Pool & Words: einspaltig auf Mobile */
+@media (max-width: 900px) {
+  .content-grid.module-grid {
+    &.pool,
+    &.words {
+      .grid-item {
+        flex: 1 1 100%;
+        max-width: 100%;
+        width: 100%;
+      }
+    }
+
+    &.words .content-grid__items .grid-item {
+      flex: 1 1 100%;
+      max-width: 100%;
+      width: 100%;
+    }
+  }
+}
+
 /* Mobil: 1 Spalte */
 @media (max-width: 600px) {
   .content-grid {
-    /* Mobile header adjustments */
-    &__mobile-header {
-      flex-direction: column;
-      gap: var(--small-padding);
-      padding: var(--small-padding) var(--mid-padding);
-
-      .mobile-sort-options {
-        width: 100%;
-        justify-content: space-between;
-        gap: var(--small-padding);
-
-        .sort-button {
-          font-size: 11px;
-          
-          .dot {
-            width: 8px;
-            height: 8px;
-          }
-        }
-      }
-
-      .mobile-filter-toggle {
-        width: 100%;
-        justify-content: center;
-        padding: var(--small-padding);
-        font-size: 12px;
-
-        svg {
-          width: 14px;
-          height: 14px;
-        }
-
-        .filter-count {
-          width: 18px;
-          height: 18px;
-          font-size: 10px;
-        }
-      }
+    &__filter-section.is-mobile-open {
+      left: var(--small-padding);
+      right: var(--small-padding);
+      padding: var(--mid-padding) var(--small-padding);
+      max-height: calc(
+        100dvh - var(--nav-height) - var(--big-padding) -
+          var(--mobile-filter-trigger-height) - var(--big-padding)
+      );
     }
 
-    /* Mobile filter content adjustments */
-    .mobile-filter-content {
-      padding: var(--mid-padding);
-      max-height: calc(85vh - var(--nav-height));
-    }
-
-    .mobile-filter-overlay {
-      padding: calc(var(--nav-height) + var(--small-padding)) var(--small-padding) var(--small-padding);
-    }
-
-    .mobile-filter-section {
-      margin-bottom: var(--mid-padding);
-
-      &__title {
-        font-size: var(--small-font-size);
-        margin-bottom: var(--small-padding);
-      }
-    }
-
-    .mobile-filter-tags {
-      gap: 6px;
-
-      .tag {
+    &__mobile-filter-cities {
+      &__tags .filter-tag--city {
         font-size: 11px;
         padding: 6px 12px;
       }
     }
 
-    .mobile-active-filters {
-      margin-bottom: var(--mid-padding);
-      padding-bottom: var(--mid-padding);
+    &__mobile-filter-bar .mobile-sort-options {
+      gap: var(--mid-padding);
 
-      &__list {
-        gap: 6px;
+      .sort-button {
+        font-size: 11px;
 
-        .tag {
-          font-size: 11px;
-          padding: 6px 12px;
+        .dot {
+          width: 8px;
+          height: 8px;
         }
       }
     }
 
-    .mobile-filter-header {
-      margin-bottom: var(--mid-padding);
-      padding-bottom: var(--small-padding);
-
-      h3 {
-        font-size: var(--base-font-size);
-      }
-    }
-
-    .mobile-filter-footer {
-      margin-top: var(--mid-padding);
-      padding-top: var(--mid-padding);
-
-      .apply-button {
-        padding: var(--small-padding) var(--mid-padding);
-        font-size: var(--small-font-size);
-      }
-    }
-    
     &__items {
       gap: calc(var(--big-margin) / 2);
     }
@@ -2859,6 +2953,8 @@ onUnmounted(() => {
   .module-grid {
     .grid-item {
       max-width: 100%;
+      flex: 1 1 100%;
+      width: 100%;
       
       &:nth-child(2n),
       &:nth-child(3n) {
@@ -2867,9 +2963,70 @@ onUnmounted(() => {
     }
     
     &.words {
-      .grid-item {
+      .grid-item,
+      .content-grid__items .grid-item {
+        flex: 1 1 100%;
         max-width: 100%;
+        width: 100%;
       }
+    }
+
+    &.pool .grid-item {
+      flex: 1 1 100%;
+      max-width: 100%;
+      width: 100%;
+    }
+  }
+}
+
+.mobile-filter-backdrop-enter-active,
+.mobile-filter-backdrop-leave-active {
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mobile-filter-backdrop-enter-from,
+.mobile-filter-backdrop-leave-to {
+  opacity: 0;
+}
+
+@keyframes content-grid-filter-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-filter-backdrop-enter-active,
+  .mobile-filter-backdrop-leave-active {
+    transition: none;
+  }
+
+  .content-grid__filter-section.is-mobile-open {
+    animation: none;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .content-grid .grid-item__content {
+    margin: var(--card-content-padding-y) 0 0 0;
+    gap: var(--card-content-gap);
+  }
+
+  .content-grid.words .content-grid__items .grid-item__content {
+    gap: var(--card-content-gap);
+    padding: var(--card-content-padding-y) var(--card-content-padding-x);
+
+    .read-more {
+      transform: translate(
+        0,
+        calc(var(--card-content-padding-y) * -1 - 50%)
+      );
     }
   }
 }

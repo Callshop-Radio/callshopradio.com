@@ -39,24 +39,6 @@ export const words = defineType({
       group: "editorial",
       fields: [
         {
-          title: "Number of visible Articles",
-          name: "count",
-          type: "number",
-          initialValue: 6,
-          options: {
-            list: [
-              { value: 2, title: "2" },
-              { value: 4, title: "4" },
-              { value: 6, title: "6" },
-              { value: 8, title: "8" },
-              { value: 10, title: "10" },
-            ],
-            layout: "radio",
-            direction: "horizontal",
-          },
-          validate: (Rule) => Rule.required().integer().min(2).max(10),
-        },
-        {
           title: "Auto load content",
           description: "Disable to manually select content.",
           name: "autoLoad",

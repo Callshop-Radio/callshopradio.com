@@ -1,21 +1,28 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
+import { computed } from "vue";
 import { POOLARCHIVE_QUERY } from "~~/queries/sanity.queries.ts";
+
+definePageMeta({
+	bodyClass: "pool-archive",
+});
 
 const query = groq`${POOLARCHIVE_QUERY}`;
 const { data } = await useCachedSanityQuery(query);
 
-usePageSeo(data?.value?.seo);
-
-useHead({
-	bodyAttrs: {
-		class: "pool-archive",
-	},
+const slider = computed(() => data.value?.slider);
+const { featured: featuredProfiles } = useCoverFlowSliderItems(slider, "pool", {
+	contentType: "pool",
 });
+
+usePageSeo(data?.value?.seo);
 </script>
 
 <template>
 	<div class="pool-archive">
+		<section v-if="featuredProfiles.length > 0" class="intro-section">
+			<ModuleIntroPoolCoverFlow :profiles="featuredProfiles" />
+		</section>
 		<section
 			v-if="data?.modules && data.modules.length > 0"
 			class="module-section"

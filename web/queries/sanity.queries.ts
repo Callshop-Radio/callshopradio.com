@@ -113,35 +113,34 @@ export const POOLARCHIVE_QUERY = `
   ${SEO_QUERY},
   slider{
     ...,
-    count,
     "pool": select(
-      autoLoad == true => *[_type in ['person', 'venue'] && poolVisibility == true] | order(_updatedAt desc)[0...20] {
+      autoLoad == true => [],
+      profiles[]->{
           ...,
           _id,
           _type,
           title,
           name,
           slug,
+          image ${IMAGE_QUERY},
           "tags": tags[]->{
               ...,
               _id,
-              title
-          }| order(lower(title)),
-          location
-      },
-      pool[]->{
-          ...,
-          _id,
-          _type,
-          title,
-          name,
-          slug,
-          "tags": tags[]->{
-              ...,
-              _id,
+              _type,
               title
           }| order(lower(title)),
           location,
+          useTeaserText,
+          textTeaser[] ${RICH_TEXT_QUERY},
+          text[] ${RICH_TEXT_QUERY},
+          description[] ${RICH_TEXT_QUERY},
+          socials {
+            instagram,
+            soundcloud,
+            nina,
+            bandcamp,
+            web
+          }
       }
     ),
   }
@@ -371,39 +370,8 @@ export const SHOWSARCHIVE_QUERY = `
   ${SEO_QUERY},
   slider{
     ...,
-    count,
     "sets": select(
-            autoLoad == true => *[_type == 'set' && datetime != null] | order(datetime desc)[0...20] {
-                ...,
-                _id,
-                _type,
-                title,
-                slug,
-                "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},  
-                "tags": tags[]->{
-                    ...,
-                    _id,
-                    title
-                }| order(lower(title)),
-                persons[]->{
-                    ...,
-                    _id,
-                    title
-                },
-                "parentShow": *[_type == "show" && references(^._id)][0]{
-                    ...,
-                    _id,
-                    title,
-                    slug,
-                    image { asset-> },
-                    "city": *[_type == "tag.city" && references(^._id)][0]{
-                        _id,
-                        _type,
-                        title,
-                        short
-                    },
-                }
-            },
+            autoLoad == true => [],
             sets[]->{
                 _id,
                 _type,
@@ -629,39 +597,8 @@ export const WORDS_QUERY = `
   ${SEO_QUERY},
   slider{
     ...,
-    count,
     "articles": select(
-            autoLoad == true => *[_type == 'article'] | order(datetime desc)[0...20] {
-                ...,
-                _id,
-                _type,
-                title,
-                slug,
-                image ${IMAGE_QUERY},
-                text[] ${RICH_TEXT_QUERY},
-                datetime,
-                useTeaserText,
-                textTeaser[] ${RICH_TEXT_QUERY},
-                contentReferences[]->{
-                    ...,
-                },
-                autoRelatedArticles,
-                relatedArticles[]->{
-                    ...,
-                },
-                socials {
-                  instagram,
-                  soundcloud,
-                  nina,
-                  bandcamp,
-                  web
-                },
-                "tags": tags[]->{
-                    ...,
-                    _id,
-                    title
-                }| order(lower(title)),
-            },
+            autoLoad == true => [],
             articles[]->{
                 ...,
                 _id,
@@ -767,7 +704,8 @@ export const ENTRY_QUERY = `
         "tags": tags[]->{
             _id,
             _type,
-            title
+            title,
+            short
         }| order(lower(title)),
         "matchingTagsCount": count((tags[]->._id)[@ in ^.^.tags[]->._id])
     },

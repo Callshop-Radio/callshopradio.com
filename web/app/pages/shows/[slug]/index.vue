@@ -2,6 +2,10 @@
 <script setup>
 import { SHOW_QUERY } from "~~/queries/sanity.queries.ts";
 
+definePageMeta({
+	bodyClass: "show-detail",
+});
+
 const route = useRoute();
 
 const query = groq`${SHOW_QUERY}`;
@@ -72,7 +76,10 @@ section {
   &__intro-section {
     margin: 0 0 0;
     width: 100%;
-    /* max-width: var(--page-max-width); */
+
+    @media screen and (max-width: 900px) {
+      padding-top: 0;
+    }
   }
   &__related-content,
   &__more-content {

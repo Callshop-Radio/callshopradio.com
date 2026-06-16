@@ -1642,4 +1642,23 @@ watch(
     grid-template-columns: 1fr;
   }
 }
+
+@media screen and (max-width: 900px) {
+  .search-results .grid-item__content {
+    margin: var(--card-content-padding-y) 0 0 0;
+    gap: var(--card-content-gap);
+  }
+
+  .search-results.words .grid-item__content {
+    gap: var(--card-content-gap);
+    padding: var(--card-content-padding-y) var(--card-content-padding-x);
+
+    .read-more {
+      transform: translate(
+        0,
+        calc(var(--card-content-padding-y) * -1 - 50%)
+      );
+    }
+  }
+}
 </style>

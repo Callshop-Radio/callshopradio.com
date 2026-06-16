@@ -2,16 +2,14 @@
 <script setup>
 import { HOMEPAGE_QUERY } from "~~/queries/sanity.queries.ts";
 
+definePageMeta({
+	bodyClass: "words-archive",
+});
+
 const query = groq`${HOMEPAGE_QUERY}`;
 const { data } = await useCachedSanityQuery(query);
 
 usePageSeo(data?.value?.seo);
-
-useHead({
-	bodyAttrs: {
-		class: "words-archive",
-	},
-});
 </script>
 
 <template>

@@ -54,19 +54,13 @@ const togglePlayerVisibility = () => {
 						</NuxtLink>
 					</ul>
 				</nav>
-				<SiteSearchButton class="mobile-hidden" />
-				<SiteDiscordButton
-					v-if="mainStore?.siteNav?.discordLink"
-					class="mobile-hidden"
-				/>
-				<SiteScheduleButton
-					v-if="mainStore?.siteNav?.schedulePage"
-					class="mobile-hidden"
-				/>
-				<SiteMenuButton class="mobile-hidden" />
+				<SiteSearchButton />
+				<SiteDiscordButton v-if="mainStore?.siteNav?.discordLink" />
+				<SiteScheduleButton v-if="mainStore?.siteNav?.schedulePage" />
+				<SiteMenuButton />
 			</div>
 		</section>
-		<SiteMenu class="mobile-hidden" />
+		<SiteMenu />
 		<section class="header__audio-player-section">
 			<MusicController />
 		</section>

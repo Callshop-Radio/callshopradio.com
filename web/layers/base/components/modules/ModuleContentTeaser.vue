@@ -47,7 +47,12 @@ const needsSelfLoad = computed(() => {
 });
 
 // Self-loaded items state
-const selfLoadedCount = ref(0);
+// useState so SSR-computed count survives hydration; a plain ref(0) would
+// reset on the client and cause hydration mismatches in pagination branches.
+const selfLoadedCountKey = `module-content-teaser-count-${
+	props.module?._key || props.module?.type
+}-${props.module?.poolContentType || "default"}`;
+const selfLoadedCount = useState<number>(selfLoadedCountKey, () => 0);
 const isLoadingSelf = ref(false);
 const selfLoadPage = ref(1);
 const SELF_LOAD_PER_PAGE = 50;
@@ -1477,11 +1482,14 @@ onMounted(() => {
         }
       }
     }
-    
-    /* Words bleibt bei 2 Spalten auf Tablet */
+
+    /* Pool & Words: einspaltig auf Mobile */
+    &.pool,
     &.words {
       .teaser-item {
-        max-width: calc(50% - var(--big-padding) * 1.5);
+        flex: 1 1 100%;
+        max-width: 100%;
+        width: 100%;
       }
     }
   }
@@ -1495,7 +1503,9 @@ onMounted(() => {
     }
     
     .teaser-item {
+      flex: 1 1 100%;
       max-width: 100%;
+      width: 100%;
 
       &:nth-child(2n),
       &:nth-child(3n) {
@@ -1503,10 +1513,12 @@ onMounted(() => {
       }
     }
     
-    /* Words auf mobil auch einspaltig */
+    &.pool,
     &.words {
       .teaser-item {
+        flex: 1 1 100%;
         max-width: 100%;
+        width: 100%;
       }
     }
   }
@@ -1527,6 +1539,18 @@ button.genre {
 
   &:active {
     transform: translateY(0);
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .content-teaser .teaser-item__content {
+    margin: var(--card-content-padding-y) 0 0 0;
+    gap: var(--card-content-gap);
+  }
+
+  .content-teaser.words .teaser-item__content {
+    gap: var(--card-content-gap);
+    padding: var(--card-content-padding-y) var(--card-content-padding-x);
   }
 }
 </style>

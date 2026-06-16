@@ -14,6 +14,16 @@ interface Tag {
 	short?: string;
 }
 
+function getTagLabel(tag: Tag): string {
+	if (tag?.title?.[1]?.value) {
+		return parseI18nObj(tag.title) as string;
+	}
+	if (Array.isArray(tag?.title)) {
+		return tag.title[0]?.value ?? String(tag.title);
+	}
+	return String(tag?.title ?? "");
+}
+
 interface PoolItem {
 	_id?: string;
 	_type?: string;
@@ -25,12 +35,31 @@ interface PoolItem {
 	location?: string;
 	tags?: Tag[];
 	bio?: unknown[];
+	text?: unknown[];
+	textTeaser?: unknown[];
+	useTeaserText?: boolean;
+	description?: unknown[];
+	socials?: {
+		instagram?: string;
+		soundcloud?: string;
+		nina?: string;
+		bandcamp?: string;
+		web?: string;
+	};
 }
 
 // Props
-const props = defineProps<{
-	poolItem: PoolItem;
-}>();
+const props = withDefaults(
+	defineProps<{
+		poolItem: PoolItem;
+		layout?: "default" | "cover-flow";
+		mediaActive?: boolean;
+	}>(),
+	{
+		layout: "default",
+		mediaActive: true,
+	},
+);
 
 // Store
 const mainStore = useMainStore();
@@ -82,10 +111,147 @@ const _itemType = computed(() => {
 const _itemLocation = computed(() => {
 	return props.poolItem?.location || "";
 });
+
+const cityTags = computed(() =>
+	(props.poolItem?.tags ?? []).filter((tag) => tag._type === "tag.city"),
+);
+
+const otherTags = computed(() =>
+	(props.poolItem?.tags ?? []).filter((tag) => tag._type !== "tag.city"),
+);
+
+const COVER_FLOW_DESCRIPTION_MAX_WORDS = 20;
+
+const coverFlowDescriptionBlocks = computed(() => {
+	const item = props.poolItem;
+	if (!item) return [];
+
+	if (item.useTeaserText && item.textTeaser?.length) {
+		return limitTextBlocksByWords(
+			parseI18nObj(item.textTeaser),
+			COVER_FLOW_DESCRIPTION_MAX_WORDS,
+		);
+	}
+
+	if (item.text?.length) {
+		const blocks = parseI18nObj(item.text || []);
+		return limitTextBlocksByWords(
+			Array.isArray(blocks) ? blocks.slice(0, 1) : [],
+			COVER_FLOW_DESCRIPTION_MAX_WORDS,
+		);
+	}
+
+	if (item.description?.length) {
+		const blocks = parseI18nObj(item.description || []);
+		return limitTextBlocksByWords(
+			Array.isArray(blocks) ? blocks.slice(0, 1) : [],
+			COVER_FLOW_DESCRIPTION_MAX_WORDS,
+		);
+	}
+
+	if (
+		!item.text &&
+		item._type === "person" &&
+		mainStore?.siteFallbacks?.fallbackPerson?.description?.length
+	) {
+		return limitTextBlocksByWords(
+			parseI18nObj(mainStore.siteFallbacks.fallbackPerson.description)?.slice(
+				0,
+				1,
+			),
+			COVER_FLOW_DESCRIPTION_MAX_WORDS,
+		);
+	}
+
+	if (
+		!item.text &&
+		item._type === "venue" &&
+		mainStore?.siteFallbacks?.fallbackVenue?.description?.length
+	) {
+		return limitTextBlocksByWords(
+			parseI18nObj(mainStore.siteFallbacks.fallbackVenue.description)?.slice(
+				0,
+				1,
+			),
+			COVER_FLOW_DESCRIPTION_MAX_WORDS,
+		);
+	}
+
+	return [];
+});
 </script>
 
 <template>
-	<div v-if="poolItem" class="set-content pool-content">
+	<div
+		v-if="poolItem && props.layout === 'cover-flow'"
+		class="pool-content pool-content--cover-flow"
+	>
+		<div class="pool-main">
+			<div class="set-info pool-info">
+				<div class="set-info-container pool-info-container">
+					<div class="set-header pool-header">
+						<div class="set-show-title pool-show-title">
+							<NuxtLink
+								:to="getItemRoute(poolItem)"
+								class="set__link pool-link"
+								:aria-label="itemTitle"
+							>
+								<h2 v-if="itemTitle" class="set-title pool-title">
+									{{ itemTitle }}
+								</h2>
+							</NuxtLink>
+						</div>
+					</div>
+					<div
+						v-if="cityTags.length || otherTags.length"
+						class="set-tags pool-tags tags"
+					>
+						<button
+							v-for="(tag, index) in cityTags"
+							:key="tag._id || `city-${index}`"
+							class="tag"
+							type="button"
+						>
+							{{ getTagLabel(tag) }}
+						</button>
+						<button
+							v-for="(tag, index) in otherTags.slice(
+								0,
+								Math.max(0, 3 - cityTags.length),
+							)"
+							:key="tag._id || `other-${index}`"
+							class="tag"
+							type="button"
+						>
+							{{ getTagLabel(tag) }}
+						</button>
+					</div>
+					<div
+						v-if="coverFlowDescriptionBlocks.length"
+						class="pool-teaser"
+					>
+						<RichText :blocks="coverFlowDescriptionBlocks" />
+					</div>
+				</div>
+			</div>
+			<div class="pool-media">
+				<NuxtLink
+					:to="getItemRoute(poolItem)"
+					class="pool-link"
+					:aria-label="itemTitle"
+				>
+					<MediaImage
+						v-if="mediaActive"
+						:image="itemImage"
+						:alt="itemTitle"
+						class="pool-image"
+					/>
+					<div v-else class="pool-image pool-image-placeholder" />
+				</NuxtLink>
+			</div>
+		</div>
+	</div>
+	<div v-else-if="poolItem" class="set-content pool-content">
 		<div class="set-main pool-container">
 			<!-- Tags-Icon -->
 			<div v-if="poolItem?.tags?.length" class="set-tags pool-tags tags">
@@ -349,6 +515,155 @@ const _itemLocation = computed(() => {
         color: var(--color-bg);
         margin: 0;
       }
+    }
+  }
+}
+
+.pool-content--cover-flow {
+  width: 100%;
+  max-width: 100%;
+
+  .pool-main {
+    width: 100%;
+    overflow: hidden;
+    border: 0.0625rem solid var(--color-text);
+    border-radius: 1.5625rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pool-info {
+    position: relative;
+    order: 1;
+    z-index: 2;
+    left: auto;
+    bottom: auto;
+    width: 100%;
+    margin: 0 0 -1.25rem;
+    height: auto;
+    flex-grow: 0;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: var(--mid-margin);
+    background-color: var(--color-bg);
+    border-bottom: none;
+    border-radius: 1.5625rem 1.5625rem 0 0;
+    padding: var(--mid-padding);
+    padding-bottom: calc(var(--mid-padding) + 1.25rem);
+  }
+
+  .pool-info-container {
+    display: flex;
+    flex-flow: column wrap;
+    justify-content: center;
+    gap: var(--mid-padding);
+    width: 100%;
+  }
+
+  .pool-info .pool-header {
+    display: flex;
+    flex-flow: column wrap;
+    justify-content: center;
+    gap: var(--mid-padding);
+
+    .pool-title,
+    .set-title {
+      font-size: var(--base-font-size);
+      font-family: var(--font-text-semibold);
+      font-weight: 500;
+      text-transform: uppercase;
+      color: var(--color-text);
+      width: 100%;
+      margin: 0;
+    }
+  }
+
+  .pool-tags {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+    gap: var(--base-padding);
+    position: static;
+    top: auto;
+    right: auto;
+    padding: 0;
+    margin: 0;
+  }
+
+  .pool-teaser {
+    margin: 0;
+    padding: 0;
+    color: var(--color-text);
+    line-height: 1.4;
+
+    & > *,
+    :deep(.rich-text),
+    :deep(p),
+    :deep(span) {
+      color: var(--color-text);
+      margin: 0;
+    }
+  }
+
+  .pool-show-title {
+    width: 100%;
+
+    .pool-link,
+    .set__link {
+      width: 100%;
+      color: var(--color-text);
+      text-decoration: none;
+    }
+  }
+
+  .pool-media {
+    order: 2;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    border-radius: 0 0 1.5625rem 1.5625rem;
+    overflow: hidden;
+
+    .pool-image,
+    :deep(img) {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: none;
+      object-fit: cover;
+      aspect-ratio: 1 / 1;
+    }
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .pool-content .pool-info {
+    padding: var(--card-content-padding-y) var(--card-content-padding-x)
+      var(--card-content-padding-y);
+
+    .pool-info-container,
+    .pool-header {
+      gap: var(--card-content-gap);
+    }
+  }
+
+  .pool-content--cover-flow {
+    .pool-info {
+      padding: var(--card-content-padding-y) var(--card-content-padding-x);
+      padding-bottom: calc(var(--card-content-padding-y) + 1.25rem);
+    }
+
+    .pool-info-container,
+    .pool-info .pool-header {
+      gap: var(--card-content-gap);
+    }
+
+    .pool-teaser {
+      font-size: var(--small-font-size);
     }
   }
 }

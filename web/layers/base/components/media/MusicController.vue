@@ -458,8 +458,18 @@ onMounted(() => {
 		updateMediaSessionMetadata();
 	}
 
-	// Initially load status data
-	updateLiveStatus();
+	// Initially load status data — deferred until the browser is idle so the
+	// 3 external live-status calls don't compete with above-the-fold rendering.
+	const deferInitialStatus = () => {
+		if (typeof window === "undefined") return;
+		const ric = window.requestIdleCallback;
+		if (typeof ric === "function") {
+			ric(() => updateLiveStatus(), { timeout: 3000 });
+		} else {
+			setTimeout(updateLiveStatus, 1500);
+		}
+	};
+	deferInitialStatus();
 
 	// Set up status update timer
 	const startInterval = () => {

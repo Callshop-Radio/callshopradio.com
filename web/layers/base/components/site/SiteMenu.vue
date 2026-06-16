@@ -2,7 +2,7 @@
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, locales: _locales } = useI18n();
-const _localePath = useLocalePath();
+const localePath = useLocalePath();
 
 const mainStore = useMainStore();
 const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
@@ -11,6 +11,11 @@ const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 <template>
 	<Transition name="menu-fade">
 		<nav v-if="mainStore?.menuOpen" class="menu tags">
+			<div class="menu__primary">
+				<NuxtLink :to="localePath('/shows')" class="tag shows">Shows</NuxtLink>
+				<NuxtLink :to="localePath('/pool')" class="tag pool">Pool</NuxtLink>
+				<NuxtLink :to="localePath('/words')" class="tag words">Words</NuxtLink>
+			</div>
 			<ul>
 				<li v-for="item in mainMenu" :key="item?._key">
 					<ElementsLink
@@ -132,6 +137,34 @@ nav {
         border: 0.09325rem solid var(--color-green);
       }
     }
+  }
+}
+
+/* The Shows/Pool/Words quick-links live in the header on desktop; on mobile
+   they move into the opened menu as the first row. */
+.menu__primary {
+  display: none;
+}
+
+@media screen and (max-width: 900px) {
+  nav {
+    flex-flow: column;
+    align-items: stretch;
+    gap: var(--base-padding);
+
+    ul {
+      flex-flow: row wrap;
+      justify-content: flex-start;
+    }
+  }
+
+  .menu__primary {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    gap: var(--base-padding);
+    width: 100%;
+    max-width: var(--page-max-width);
   }
 }
 </style>

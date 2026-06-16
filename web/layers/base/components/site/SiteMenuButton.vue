@@ -81,9 +81,6 @@ svg {
   width: calc(var(--base-font-size) + var(--small-padding) * 2);
   height: calc(var(--base-font-size) + var(--small-padding) * 2);
   cursor: pointer;
-  @media screen and (max-width: 900px) {
-    display: none !important;
-  }
 
   &.open {
     &:hover {

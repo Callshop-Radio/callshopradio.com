@@ -20,7 +20,7 @@ export default defineNuxtConfig({
 		payloadExtraction: false,
 	},
 	app: {
-		pageTransition: { name: "page", mode: "out-in" },
+		pageTransition: { name: "page" },
 		head: {
 			meta: [
 				{
@@ -72,7 +72,7 @@ export default defineNuxtConfig({
 		projectId: process.env.NUXT_SANITY_PROJECT_ID,
 		dataset: process.env.NUXT_SANITY_DATASET,
 		apiVersion: "2024-01-01",
-		useCdn: false,
+		useCdn: true,
 		perspective: "published",
 		visualEditing: {
 			studioUrl: process.env.NUXT_SANITY_STUDIO_URL || "http://localhost:3333",

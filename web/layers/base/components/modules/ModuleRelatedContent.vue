@@ -274,17 +274,6 @@ onMounted(() => {
 				:key="item?._id"
 				:class="`related-item related-item--${style} ${typeClass}`"
 			>
-				<!-- Stadt-Tags falls vorhanden -->
-				<!-- <div class="related-item__tags city-tags">
-          <span
-            v-for="tag in getItemCityTags(item)"
-            :key="tag._id"
-            class="tag city"
-          >
-            {{ parseI18nObj(tag?.short) }}
-          </span>
-        </div> -->
-
 				<!-- Bild -->
 				<NuxtLink
 					v-if="item?.slug"
@@ -342,7 +331,7 @@ onMounted(() => {
 				<div class="related-item__content">
 					<!-- Interaktiver Bereich mit Datum und Play-Button -->
 					<section
-						v-if="type !== 'pool'"
+						v-if="type !== 'pool' && type !== 'words'"
 						class="related-item__content__interactive"
 					>
 						<!-- Datum (falls vorhanden) -->
@@ -443,6 +432,15 @@ onMounted(() => {
 						</div>
 					</div>
 
+					<!-- Words: Read More -->
+					<div v-if="type === 'words'" class="tags read-more">
+						<NuxtLink
+							:to="getItemRoute(item)"
+							class="related-item__link"
+						><h3 class="tag">Read More</h3></NuxtLink
+						>
+					</div>
+
 					<!-- Titel für alle anderen Content-Typen -->
 					<NuxtLink
 						v-if="type !== 'sets'"
@@ -454,7 +452,11 @@ onMounted(() => {
 						</h3>
 					</NuxtLink>
 					<RichText
-						v-if="item?.useTeaserText && item?.textTeaser"
+						v-if="type === 'words'"
+						:blocks="parseI18nObj(item?.textTeaser)"
+					/>
+					<RichText
+						v-else-if="item?.useTeaserText && item?.textTeaser"
 						:blocks="parseI18nObj(item?.textTeaser)"
 					/>
 					<RichText
@@ -475,9 +477,28 @@ onMounted(() => {
 						"
 					/>
 
+					<!-- Words: Non-City Tags -->
+					<div
+						v-if="type === 'words' && getItemNonCityTags(item).length > 0"
+						class="related-item__tags tags"
+					>
+						<button
+							v-for="tag in getItemNonCityTags(item)"
+							:key="tag._id"
+							class="tag clickable"
+							@click.prevent="navigateToTagSearch(tag, item)"
+						>
+							{{
+								tag?.title?.[1]?.value
+									? parseI18nObj(tag?.title)
+									: tag?.title?.[0]?.value ?? tag.title
+							}}
+						</button>
+					</div>
+
 					<!-- Nicht-City Tags anzeigen -->
 					<div
-						v-if="getItemNonCityTags(item).length > 0"
+						v-else-if="getItemNonCityTags(item).length > 0"
 						class="related-item__tags tags"
 					>
 						<button
@@ -739,10 +760,91 @@ onMounted(() => {
   }
 
   &.words {
+    .related-content__grid {
+      gap: calc(var(--big-padding) * 3);
+    }
+
     .tag {
       &.city {
         background-color: var(--color-green);
         color: var(--color-white);
+      }
+    }
+
+    .related-item {
+      position: relative;
+      flex: 1 1 50%;
+      max-width: calc(50% - var(--big-padding) * 1.5);
+      background-color: var(--color-text);
+      border-radius: 12px;
+      border: 1px solid var(--color-text);
+      overflow: hidden;
+      padding: 0;
+      margin-right: 0;
+
+      .related-item__content__interactive,
+      .city-tags {
+        display: none;
+      }
+
+      &__link {
+        color: var(--color-bg);
+      }
+
+      &__image {
+        width: 100%;
+
+        img {
+          aspect-ratio: 3 / 1.5 !important;
+          width: 100%;
+        }
+      }
+
+      &__content {
+        position: relative;
+        gap: var(--big-padding);
+        margin: 0;
+        padding: var(--base-margin) var(--mid-padding);
+        color: var(--color-bg);
+
+        .read-more {
+          position: absolute;
+          transform: translate(0, calc(var(--base-margin) * -1 - 50%));
+          .tag {
+            border: 1px solid var(--color-text);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+          }
+        }
+
+        .related-item__title {
+          color: var(--color-bg);
+        }
+
+        .related-item__tags {
+          position: absolute;
+          top: var(--base-padding);
+          right: var(--base-padding);
+          color: var(--color-bg);
+          flex-grow: 0;
+
+          .tag {
+            background-color: transparent;
+            color: var(--color-bg);
+            padding: 2px 8px;
+            border: 1px solid var(--color-bg);
+
+            &:hover {
+              background-color: var(--color-bg);
+              color: var(--color-text);
+            }
+          }
+        }
+
+        .rich-text,
+        .rich-text * {
+          color: var(--color-bg);
+        }
       }
     }
   }
@@ -790,6 +892,32 @@ onMounted(() => {
 /* Responsive Anpassungen */
 @media (max-width: 900px) {
   .related-content {
+    &__grid {
+      min-width: 0;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      gap: calc(var(--big-padding) * 2);
+    }
+
+    &.words .related-item {
+      flex: 1 1 100%;
+      max-width: 100%;
+      width: 100%;
+
+      &__content {
+        gap: var(--card-content-gap);
+        padding: var(--card-content-padding-y) var(--card-content-padding-x);
+
+        .read-more {
+          transform: translate(
+            0,
+            calc(var(--card-content-padding-y) * -1 - 50%)
+          );
+        }
+      }
+    }
+
     .related-item {
       max-width: 100%;
       width: 100%;

@@ -73,6 +73,15 @@
   --mid-margin: 2rem;
   --small-margin: 0.875rem;
 
+  --page-gutter: var(--big-margin);
+
+  @media screen and (max-width: 900px) {
+    --page-gutter: var(--mid-padding);
+    --card-content-padding-y: var(--base-padding);
+    --card-content-padding-x: var(--base-padding);
+    --card-content-gap: var(--small-padding);
+  }
+
   /* Transitions */
   --transition-normal: 400ms ease;
   --transition-fast: 200ms ease;

@@ -431,7 +431,8 @@ const currentArticleText = computed(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 var(--big-margin);
+  padding: var(--content-gap) var(--mid-padding) 0;
+  box-sizing: border-box;
 }
 
 .article-container {
@@ -451,7 +452,7 @@ const currentArticleText = computed(() => {
   flex-flow: column;
   justify-content: flex-end;
   align-items: center;
-  padding: 0 var(--big-margin);
+  padding: 0;
   z-index: 99999;
   img {
     position: absolute;
@@ -466,6 +467,9 @@ const currentArticleText = computed(() => {
     position: relative;
     max-width: var(--page-max-width);
     width: 100%;
+    margin: 0 auto;
+    padding: 0 var(--mid-padding);
+    box-sizing: border-box;
     .tag {
       background-color: var(--color-green);
       border: none;
@@ -508,7 +512,8 @@ const currentArticleText = computed(() => {
 }
 
 .article-title-section {
-  width: var(--page-max-width);
+  width: 100%;
+  max-width: var(--page-max-width);
   margin: 0 auto var(--big-margin);
   .article-title {
     font-size: var(--h1-size);
@@ -594,6 +599,63 @@ const currentArticleText = computed(() => {
     /* Position des Gleiters wenn der zweite Button aktiv ist */
     &:has(.lang-btn:nth-child(2).lang-btn--active)::after {
       transform: translateX(100%);
+    }
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .article-media {
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    height: 50vh;
+    max-height: 50vh;
+    padding: 0;
+
+    img,
+    .article-image-placeholder {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      max-height: 50vh;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .article-category {
+      z-index: 2;
+      padding: 0 var(--mid-padding);
+    }
+
+    .article-tags {
+      bottom: var(--base-padding);
+      right: var(--base-padding);
+      gap: var(--small-padding);
+    }
+  }
+
+  .article-content {
+    padding: var(--content-gap) var(--mid-padding) 0;
+  }
+
+  .article-title-section {
+    width: 100%;
+    margin: 0 auto var(--big-margin);
+    padding: 0;
+
+    .article-title {
+      font-size: var(--h2-size);
+    }
+  }
+
+  .article-text-container {
+    flex-direction: column;
+    gap: var(--base-margin);
+
+    .article-language-switcher {
+      margin: 0;
+      align-self: flex-start;
     }
   }
 }
