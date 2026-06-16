@@ -52,3 +52,6 @@ credentials.*
 *-credentials.json
 service-account*.json
 auth.json
+
+# ── Local dataset exports (Sanity migration backups, etc.) ───────────────
+backups/

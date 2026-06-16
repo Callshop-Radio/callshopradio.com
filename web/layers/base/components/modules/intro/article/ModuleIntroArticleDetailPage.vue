@@ -200,7 +200,9 @@ watch(locale, (newVal: string) => {
 
 const availableLocales = computed(() => {
 	if (Array.isArray(props.article?.text)) {
-		return props.article.text.map((t: { _key?: string }) => t._key);
+		return props.article.text.map(
+			(t: { _key?: string; language?: string }) => t.language ?? t._key,
+		);
 	}
 	return [];
 });
@@ -208,7 +210,8 @@ const availableLocales = computed(() => {
 const currentArticleText = computed(() => {
 	if (!props.article?.text || !Array.isArray(props.article.text)) return null;
 	return props.article.text.find(
-		(t: { _key?: string; value?: string }) => t._key === articleLocale.value,
+		(t: { _key?: string; language?: string; value?: string }) =>
+			(t.language ?? t._key) === articleLocale.value,
 	)?.value;
 });
 </script>

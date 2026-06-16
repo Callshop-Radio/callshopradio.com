@@ -443,17 +443,6 @@ function getItemNonCityTags(item: ContentItem) {
 	return item?.tags.filter((tag: Tag) => tag._type !== "tag.city");
 }
 
-// Helper für RichText Blocks
-function getRichTextBlocks(content: unknown): unknown[] {
-	if (!content) return [];
-	return Array.isArray(content) ? content : [];
-}
-
-function getRichTextBlocksSliced(content: unknown, slice = 1): unknown[] {
-	if (!content) return [];
-	return Array.isArray(content) ? content.slice(0, slice) : [];
-}
-
 // Fisher-Yates Shuffle-Algorithmus mit Seed
 function shuffleArray(array: ContentItem[], seed: number) {
 	const rng = seededRandom(seed);
@@ -779,7 +768,7 @@ onMounted(() => {
 								item?.textTeaser &&
 								props.module.type !== 'words'
 						"
-						:blocks="getRichTextBlocks(item?.textTeaser)"
+						:blocks="parseI18nObj(item?.textTeaser) || []"
 					/>
 					<RichText
 						v-else-if="
@@ -788,7 +777,9 @@ onMounted(() => {
 								item?.text.length > 0 &&
 								props.module.type !== 'words'
 						"
-						:blocks="getRichTextBlocksSliced(item?.text, 1)"
+						:blocks="
+							limitTextBlocks(parseI18nObj(item?.text)?.slice(0, 1) || [], 100)
+						"
 					/>
 					<RichText
 						v-else-if="props.module.type === 'words'"
