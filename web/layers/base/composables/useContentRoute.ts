@@ -6,35 +6,33 @@ type RouteItem = any;
 
 export const useContentRoute = () => {
 	const localePath = useLocalePath();
+	const { getSlugCurrent } = useSanityLink();
 
-	// Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
 	function getItemRoute(item: RouteItem) {
-		if (!item?.slug) return "/";
+		const slugCurrent = getSlugCurrent(item?.slug);
+		if (!slugCurrent) return localePath("/");
 
 		switch (item?._type) {
 			case "person":
 			case "venue":
-				return localePath(`/pool/${item?.slug?.current}`);
+				return localePath(`/pool/${slugCurrent}`);
 
-			case "set":
-				// Prüfe, ob parentShow vorhanden ist
-				if (item?.parentShow?.slug?.current) {
-					return localePath(
-						`/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`,
-					);
+			case "set": {
+				const showSlug = getSlugCurrent(item?.parentShow?.slug);
+				if (showSlug) {
+					return localePath(`/shows/${showSlug}/${slugCurrent}`);
 				}
-				// Fallback falls parentShow nicht verfügbar ist
-				return localePath(`/shows/${item?.slug?.current}`);
+				return localePath(`/shows/${slugCurrent}`);
+			}
 
 			case "article":
-				return localePath(`/words/${item?.slug?.current}`);
+				return localePath(`/words/${slugCurrent}`);
 
 			case "show":
-				return localePath(`/shows/${item?.slug?.current}`);
+				return localePath(`/shows/${slugCurrent}`);
 
-			// Standard-Fallback
 			default:
-				return localePath(`/${item?._type}/${item?.slug?.current}`);
+				return localePath(`/${item?._type}/${slugCurrent}`);
 		}
 	}
 

@@ -24,7 +24,7 @@ const props = defineProps({
 		default: () => "",
 	},
 	slug: {
-		type: String,
+		type: [String, Object],
 		default: () => "",
 	},
 	parentSlug: {
@@ -34,6 +34,14 @@ const props = defineProps({
 	setSlug: {
 		type: String,
 		default: () => "",
+	},
+	refType: {
+		type: String,
+		default: () => "",
+	},
+	reference: {
+		type: Object,
+		default: null,
 	},
 	func: {
 		type: String,
@@ -48,10 +56,13 @@ const props = defineProps({
 const linkTarget = computed(() => {
 	if (props.type === "internal") {
 		return localizedSanityPath({
-			route: props.route || "index",
+			type: props.type,
+			route: props.route || undefined,
 			slug: props.slug,
-			parentSlug: props.parentSlug,
-			setSlug: props.setSlug,
+			parentSlug: props.parentSlug || undefined,
+			setSlug: props.setSlug || undefined,
+			refType: props.refType || undefined,
+			reference: props.reference || undefined,
 		});
 	}
 
@@ -100,7 +111,9 @@ const isActive = computed(() => {
 
 	if (localeSegment[0] && localeSegment[0] === linkLocaleSegment[0]) {
 		if (
-			["shows", "pool", "words", "info", "schedule"].includes(linkLocaleSegment[0])
+			["shows", "pool", "words", "info", "schedule"].includes(
+				linkLocaleSegment[0],
+			)
 		) {
 			return true;
 		}

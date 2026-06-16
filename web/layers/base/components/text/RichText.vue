@@ -1,9 +1,9 @@
 <script setup>
 import { flattenProps } from "@portabletext/vue";
 import {
-	ElementsLink,
 	ModuleCarousel,
 	ModuleMedia,
+	PortableTextLink,
 	RichTextStyles,
 } from "#components";
 
@@ -20,8 +20,8 @@ const portableTextComponents = {
 		"module.carousel": flattenProps(ModuleCarousel),
 	},
 	marks: {
-		link: flattenProps(ElementsLink),
-		linkCookie: flattenProps(ElementsLink),
+		link: flattenProps(PortableTextLink),
+		linkCookie: flattenProps(PortableTextLink),
 		underline: "u",
 		"strike-through": "s",
 	},

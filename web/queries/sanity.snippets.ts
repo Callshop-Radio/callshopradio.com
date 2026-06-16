@@ -51,6 +51,7 @@ export const LINK_QUERY = `
 			"index"
 		),
 		"slug": reference->slug.current,
+		"refType": reference->_type,
 		"parentSlug": select(
 			reference->_type == "set" => *[_type == "show" && references(^.reference._ref)][0].slug.current,
 			null

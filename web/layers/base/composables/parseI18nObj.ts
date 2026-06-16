@@ -28,7 +28,9 @@ export const isI18nArray = <T = string>(
 	if (typeof first !== "object" || first === null) return false;
 	if (!("value" in first)) return false;
 	if (first._type?.includes("internationalizedArray")) return true;
-	return "language" in first || (typeof first._key === "string" && !first._type);
+	return (
+		"language" in first || (typeof first._key === "string" && !first._type)
+	);
 };
 
 const readLocale = (): string => {

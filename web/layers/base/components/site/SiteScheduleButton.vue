@@ -16,6 +16,7 @@ const scheduleLink = computed(() => {
 		slug: nav.schedulePageSlug,
 		parentSlug: nav.schedulePageParentSlug,
 		setSlug: nav.schedulePageSetSlug,
+		refType: nav.schedulePageRefType,
 	});
 });
 </script>

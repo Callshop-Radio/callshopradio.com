@@ -737,6 +737,7 @@ export const SITE_OPTIONS_QUERY = `{
 			"index"
 		),
 		"schedulePageSlug": schedulePage->slug.current,
+		"schedulePageRefType": schedulePage->_type,
 		"schedulePageParentSlug": select(
 			schedulePage->_type == "set" => *[_type == "show" && references(^.schedulePage._ref)][0].slug.current,
 			null

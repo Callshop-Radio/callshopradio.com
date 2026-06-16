@@ -17,6 +17,7 @@ const footerMenu = computed(() => mainStore?.siteNav?.footerMenu);
 			:slug="item?.slug"
 			:parent-slug="item?.parentSlug"
 			:set-slug="item?.setSlug"
+			:ref-type="item?.refType"
 			:func="item?.func"
 		>
 			{{ item?.title }}

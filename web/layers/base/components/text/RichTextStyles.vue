@@ -10,7 +10,9 @@ const props = defineProps({
 	},
 });
 
-const blockStyle = computed(() => props.style || props.value?.style || "normal");
+const blockStyle = computed(
+	() => props.style || props.value?.style || "normal",
+);
 </script>
 
 <template>
