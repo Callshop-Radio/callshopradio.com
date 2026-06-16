@@ -79,7 +79,7 @@ const props = defineProps<{
 }>();
 
 // Route Helper Functions
-function _getItemRoute(item: ContentReference): string {
+function getItemRoute(item: ContentReference): string {
 	if (!item?.slug?.current) return "/";
 
 	const { _type, slug, parentShow } = item;

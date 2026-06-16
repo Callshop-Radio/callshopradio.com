@@ -14,7 +14,7 @@ interface Tag {
 	short?: string;
 }
 
-function _getTagLabel(tag: Tag): string {
+function getTagLabel(tag: Tag): string {
 	if (tag?.title?.[1]?.value) {
 		return parseI18nObj(tag.title) as string;
 	}

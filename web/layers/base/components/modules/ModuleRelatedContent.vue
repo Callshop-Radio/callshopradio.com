@@ -100,7 +100,7 @@ const visibleItems = computed(() => {
 });
 
 // Funktion zum Laden weiterer Items
-function _loadMoreItems() {
+function loadMoreItems() {
 	visibleItemCount.value += itemsPerPage;
 
 	// Wichtig: Nach dem Laden neuer Items müssen wir die Artwork-URLs für die neuen Items laden
@@ -129,7 +129,7 @@ const hasMoreItems = computed(() => {
 const artworkUrls = ref(new Map());
 
 // Hilfsfunktion zur Formatierung von Datum/Zeit
-function _formatDate(dateString) {
+function formatDate(dateString) {
 	if (!dateString) return "";
 	const date = new Date(dateString);
 	if (Number.isNaN(date.getTime())) return "";
@@ -141,7 +141,7 @@ function _formatDate(dateString) {
 }
 
 // Funktionen für Bild-Handling
-function _getItemImage(item) {
+function getItemImage(item) {
 	// Wenn kein Item existiert, sofort ein Fallback-Bild zurückgeben
 	if (!item) return mainStore?.siteFallbacks?.fallbackSet?.image;
 
@@ -234,7 +234,7 @@ function _getItemCityTags(item) {
 }
 
 // Nicht-Stadt-Tags abrufen
-function _getItemNonCityTags(item) {
+function getItemNonCityTags(item) {
 	if (!item?.tags || !Array.isArray(item?.tags)) return [];
 	return item?.tags.filter((tag) => tag._type !== "tag.city");
 }

@@ -217,7 +217,7 @@ function _getItemCityTags(item: Set): Tag[] {
 }
 
 // Nicht-Stadt-Tags abrufen
-function _getItemNonCityTags(item: Set): Tag[] {
+function getItemNonCityTags(item: Set): Tag[] {
 	if (!item?.tags || !Array.isArray(item?.tags)) return [];
 	return item?.tags.filter((tag: Tag) => tag._type !== "tag.city");
 }

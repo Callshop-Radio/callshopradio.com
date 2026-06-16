@@ -111,7 +111,7 @@ function _getItemImage(item: ContentItem): Image | undefined {
 	);
 }
 
-function _getItemCityTags(item: ContentItem) {
+function getItemCityTags(item: ContentItem) {
 	const cityTags: Tag[] = [];
 
 	if (item?.tags && Array.isArray(item?.tags)) {

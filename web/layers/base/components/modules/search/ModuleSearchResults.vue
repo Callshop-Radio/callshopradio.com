@@ -251,7 +251,7 @@ const groupedTagsByColor = computed(() => {
 });
 
 // Helper for accessing pool tags by type name (avoids TypeScript casting in template)
-function _getPoolTagsByType(typeName: string): Tag[] {
+function getPoolTagsByType(typeName: string): Tag[] {
 	const pool = groupedTagsByColor.value.pool;
 	if (typeName === "musicians") return pool.musicians;
 	if (typeName === "venues") return pool.venues;
@@ -301,7 +301,7 @@ function _isMainCity(cityTag: Tag): boolean {
 	return MAIN_CITIES.includes(cityName);
 }
 
-function _getTagNameById(tagId: string): string {
+function getTagNameById(tagId: string): string {
 	if (tagId === "others") return "Elsewhere";
 
 	// Check city tags
@@ -337,7 +337,7 @@ function _getTagNameById(tagId: string): string {
 }
 
 // ==================== FILTER LOGIC ====================
-function _toggleFilter(tagId: string) {
+function toggleFilter(tagId: string) {
 	const isActive = activeFilters.value.has(tagId);
 
 	if (isActive) {
@@ -349,7 +349,7 @@ function _toggleFilter(tagId: string) {
 	}
 }
 
-function _toggleGenreFilter(genreId: string) {
+function toggleGenreFilter(genreId: string) {
 	if (activeGenres.value.has(genreId)) {
 		activeGenres.value.delete(genreId);
 		// Clear subgenres for this genre (if we had genre->subgenre mapping we'd use it)
@@ -358,7 +358,7 @@ function _toggleGenreFilter(genreId: string) {
 	}
 }
 
-function _toggleSubGenreFilter(subGenreId: string) {
+function toggleSubGenreFilter(subGenreId: string) {
 	if (activeSubGenres.value.has(subGenreId)) {
 		activeSubGenres.value.delete(subGenreId);
 		activeFilters.value.delete(subGenreId);
@@ -368,11 +368,11 @@ function _toggleSubGenreFilter(subGenreId: string) {
 	}
 }
 
-function _toggleFilterType(type: string) {
+function toggleFilterType(type: string) {
 	activeFilterType.value = activeFilterType.value === type ? null : type;
 }
 
-function _resetFilters() {
+function resetFilters() {
 	activeFilters.value.clear();
 	activeGenres.value.clear();
 	activeSubGenres.value.clear();
@@ -446,7 +446,7 @@ function itemMatchesFilters(item: ContentItem): boolean {
 }
 
 // ==================== SORTING ====================
-function _changeSortMode(mode: "new" | "alpha") {
+function changeSortMode(mode: "new" | "alpha") {
 	sortMode.value = mode;
 }
 
@@ -497,7 +497,7 @@ const _groupedResults = computed(() => {
 const _visibleItems = computed(() => filteredItems.value);
 
 // ==================== UI HELPERS ====================
-function _toggleFiltersVisibility() {
+function toggleFiltersVisibility() {
 	showFilters.value = !showFilters.value;
 }
 

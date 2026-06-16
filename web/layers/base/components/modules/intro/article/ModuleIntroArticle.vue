@@ -66,7 +66,7 @@ const useImageManagement = () => {
 };
 
 // Funktion zum Bestimmen der passenden Route
-function _getItemRoute(item) {
+function getItemRoute(item) {
 	if (!item?.slug) return "/";
 	return localePath(`/words/${item?.slug?.current}`);
 }

@@ -502,7 +502,7 @@ function getTagCategory(tagId: string): string {
 	return typeMap[tag?._type] || "global";
 }
 
-function _getTagNameById(tagId: string): string {
+function getTagNameById(tagId: string): string {
 	if (tagId === "others") return "Elsewhere";
 
 	const searchSources = [
@@ -544,7 +544,7 @@ function removeFromHistory(type: "filter" | "genre" | "subGenre", id: string) {
 	if (index > -1) filterHistory.value.splice(index, 1);
 }
 
-function _removeLastFilter() {
+function removeLastFilter() {
 	// Try to remove from activeFilters (Tags) first
 	if (activeFilters.value.size > 0) {
 		const lastFilter = [...activeFilters.value].pop();
@@ -695,7 +695,7 @@ function itemMatchesFilters(item: ContentItem): boolean {
 }
 
 // ==================== SORTING ====================
-function _changeSortMode(mode: "new" | "shuffle" | "alpha") {
+function changeSortMode(mode: "new" | "shuffle" | "alpha") {
 	if (mode === "shuffle") shuffleSeed.value = Date.now();
 	sortMode.value = mode;
 }
@@ -769,11 +769,11 @@ async function _loadMoreItems() {
 }
 
 // ==================== UI HELPERS ====================
-function _toggleFiltersVisibility() {
+function toggleFiltersVisibility() {
 	showFilters.value = !showFilters.value;
 }
 
-function _toggleMobileFilters() {
+function toggleMobileFilters() {
 	showMobileFilters.value = !showMobileFilters.value;
 	if (showMobileFilters.value) {
 		showFilters.value = true;

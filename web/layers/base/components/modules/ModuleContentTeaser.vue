@@ -180,7 +180,7 @@ const sortMode = ref("new"); // Standardmäßig "new" (chronologisch)
 const shuffleSeed = ref(Date.now()); // Zufallsseed für Shuffle
 
 // Funktion zum Ändern des Sortiermodus
-function _changeSortMode(mode: string) {
+function changeSortMode(mode: string) {
 	if (mode === "shuffle") {
 		// Bei jedem Klick auf Shuffle einen neuen Seed generieren
 		shuffleSeed.value = Date.now();
@@ -192,7 +192,7 @@ function _changeSortMode(mode: string) {
 }
 
 // Hilfsfunktion zur Formatierung von Datum/Zeit
-function _formatDate(dateString: string) {
+function formatDate(dateString: string) {
 	if (!dateString) return "";
 	const date = new Date(dateString);
 	if (Number.isNaN(date.getTime())) return "";
@@ -207,7 +207,7 @@ function _formatDate(dateString: string) {
 const artworkUrls = ref(new Map());
 
 // Funktion zum Laden weiterer Items
-async function _loadMoreItems() {
+async function loadMoreItems() {
 	// Simple pagination
 	visibleItemCount.value += itemsPerPage.value;
 	loadMoreClickCount.value++;
@@ -413,7 +413,7 @@ function _checkImage(url: string) {
 }
 
 // Stadt-Tags abrufen
-function _getItemCityTags(item: ContentItem) {
+function getItemCityTags(item: ContentItem) {
 	const cityTags: Tag[] = [];
 
 	if (item?.tags && Array.isArray(item?.tags)) {
@@ -438,18 +438,18 @@ function _getItemCityTags(item: ContentItem) {
 }
 
 // Nicht-Stadt-Tags abrufen
-function _getItemNonCityTags(item: ContentItem) {
+function getItemNonCityTags(item: ContentItem) {
 	if (!item?.tags || !Array.isArray(item?.tags)) return [];
 	return item?.tags.filter((tag: Tag) => tag._type !== "tag.city");
 }
 
 // Helper für RichText Blocks
-function _getRichTextBlocks(content: unknown): unknown[] {
+function getRichTextBlocks(content: unknown): unknown[] {
 	if (!content) return [];
 	return Array.isArray(content) ? content : [];
 }
 
-function _getRichTextBlocksSliced(content: unknown, slice = 1): unknown[] {
+function getRichTextBlocksSliced(content: unknown, slice = 1): unknown[] {
 	if (!content) return [];
 	return Array.isArray(content) ? content.slice(0, slice) : [];
 }
