@@ -1,4 +1,3 @@
-import get from "lodash.get";
 import { useFormValue } from "sanity";
 
 const PlaceholderStringInput = (props) => {
@@ -7,7 +6,10 @@ const PlaceholderStringInput = (props) => {
   const path = schemaType?.options?.field;
   const doc = useFormValue([]);
 
-  const proxyValue = path ? get(doc, path) : "";
+  // Walk `a.b.c` through the form value — replaces lodash.get (deprecated).
+  const proxyValue = path
+    ? path.split(".").reduce((obj, key) => obj?.[key], doc)
+    : "";
 
   return props.renderDefault({
     ...props,

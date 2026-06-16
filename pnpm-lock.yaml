@@ -98,9 +98,6 @@ importers:
       eslint-plugin-simple-import-sort:
         specifier: ^13.0.0
         version: 13.0.0(eslint@10.5.0(jiti@2.7.0))
-      lodash.get:
-        specifier: ^4.4.2
-        version: 4.4.2
       prettier:
         specifier: ^3.8.4
         version: 3.8.4
@@ -7931,10 +7928,6 @@ packages:
 
   lodash.debounce@4.0.8:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
-
-  lodash.get@4.4.2:
-    resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
-    deprecated: This package is deprecated. Use the optional chaining (?.) operator instead.
 
   lodash.isplainobject@4.0.6:
     resolution: {integrity: sha512-oSXzaWypCMHkPC3NvBEaPHf0KsA5mvPrOPgQWDsbg8n7orZ290M0BmC/jgRZ4vcJ6DTAhjrsSYgdsW/F+MFOBA==}
@@ -19930,8 +19923,6 @@ snapshots:
   lodash-es@4.18.1: {}
 
   lodash.debounce@4.0.8: {}
-
-  lodash.get@4.4.2: {}
 
   lodash.isplainobject@4.0.6: {}
 
