@@ -5,8 +5,8 @@
  * Überprüft die generierten statischen Dateien nach dem Build
  */
 
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
 const DIST_DIR = "./dist";
 const REQUIRED_FILES = ["index.html", "200.html", "sitemap.xml"];

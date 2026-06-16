@@ -3,7 +3,7 @@ import { computed, nextTick, onMounted, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-const localePath = useLocalePath();
+const _localePath = useLocalePath();
 const { getItemRoute } = useContentRoute();
 
 // Template-Referenzen
@@ -155,7 +155,7 @@ const useSoundCloud = () => {
 };
 
 // Computed property für die Höhe von set-main
-const computedSetMainHeight = computed(() => {
+const _computedSetMainHeight = computed(() => {
 	// Unter 900px Bildschirmbreite soll die Höhe 100% sein
 	if (windowWidth.value <= 900) {
 		return "100%";
@@ -217,7 +217,7 @@ function _getItemCityTags(item: Set): Tag[] {
 }
 
 // Nicht-Stadt-Tags abrufen
-function getItemNonCityTags(item: Set): Tag[] {
+function _getItemNonCityTags(item: Set): Tag[] {
 	if (!item?.tags || !Array.isArray(item?.tags)) return [];
 	return item?.tags.filter((tag: Tag) => tag._type !== "tag.city");
 }

@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale } = useI18n();
-const localePath = useLocalePath();
+const _localePath = useLocalePath();
 
 const mainStore = useMainStore();
 
@@ -89,7 +89,7 @@ const typeClassMap = {
 };
 
 // CSS-Klasse entsprechend dem Typ
-const typeClass = computed(() => {
+const _typeClass = computed(() => {
 	return typeClassMap[props.type] || "default";
 });
 
@@ -100,7 +100,7 @@ const visibleItems = computed(() => {
 });
 
 // Funktion zum Laden weiterer Items
-function loadMoreItems() {
+function _loadMoreItems() {
 	visibleItemCount.value += itemsPerPage;
 
 	// Wichtig: Nach dem Laden neuer Items müssen wir die Artwork-URLs für die neuen Items laden
@@ -121,7 +121,7 @@ function loadMoreItems() {
 }
 
 // Bestimmen, ob mehr Items zum Laden verfügbar sind
-const hasMoreItems = computed(() => {
+const _hasMoreItems = computed(() => {
 	return props.items && props.items.length > visibleItemCount.value;
 });
 
@@ -129,10 +129,10 @@ const hasMoreItems = computed(() => {
 const artworkUrls = ref(new Map());
 
 // Hilfsfunktion zur Formatierung von Datum/Zeit
-function formatDate(dateString) {
+function _formatDate(dateString) {
 	if (!dateString) return "";
 	const date = new Date(dateString);
-	if (isNaN(date.getTime())) return "";
+	if (Number.isNaN(date.getTime())) return "";
 	return date.toLocaleDateString("de-DE", {
 		day: "2-digit",
 		month: "2-digit",
@@ -141,7 +141,7 @@ function formatDate(dateString) {
 }
 
 // Funktionen für Bild-Handling
-function getItemImage(item) {
+function _getItemImage(item) {
 	// Wenn kein Item existiert, sofort ein Fallback-Bild zurückgeben
 	if (!item) return mainStore?.siteFallbacks?.fallbackSet?.image;
 
@@ -150,9 +150,9 @@ function getItemImage(item) {
 	let image = null;
 
 	// Bild aus dem Item selbst
-	if (item?.image && item?.image.asset) {
+	if (item?.image?.asset) {
 		image = item?.image;
-	} else if (item?.mainImage && item?.mainImage.asset) {
+	} else if (item?.mainImage?.asset) {
 		image = item?.mainImage;
 	} else {
 		// Fallback-Bilder je nach Typ
@@ -207,7 +207,7 @@ function _checkImage(url) {
 
 // Stadt-Tags abrufen (used in template)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- used in template
-function getItemCityTags(item) {
+function _getItemCityTags(item) {
 	const cityTags = [];
 
 	// Direkte City-Tags
@@ -234,7 +234,7 @@ function getItemCityTags(item) {
 }
 
 // Nicht-Stadt-Tags abrufen
-function getItemNonCityTags(item) {
+function _getItemNonCityTags(item) {
 	if (!item?.tags || !Array.isArray(item?.tags)) return [];
 	return item?.tags.filter((tag) => tag._type !== "tag.city");
 }

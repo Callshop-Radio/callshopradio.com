@@ -76,7 +76,7 @@ const useImageManagement = () => {
 
 // Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
 function _getItemRoute(item: import("~/types/sanity").ContentItem) {
-	if (!item || !item?.slug) return "/";
+	if (!item?.slug) return "/";
 
 	switch (item?._type) {
 		case "person":
@@ -175,7 +175,7 @@ onMounted(() => {
 	loadArticleImageUrl();
 });
 
-const cityTags = computed(() => {
+const _cityTags = computed(() => {
 	return (
 		props.article?.tags?.filter(
 			(tag: import("~/types/sanity").Tag) => tag._type === "tag.city",
@@ -183,7 +183,7 @@ const cityTags = computed(() => {
 	);
 });
 
-const otherTags = computed(() => {
+const _otherTags = computed(() => {
 	return (
 		props.article?.tags?.filter(
 			(tag: import("~/types/sanity").Tag) => tag._type !== "tag.city",
@@ -198,14 +198,14 @@ watch(locale, (newVal: string) => {
 	articleLocale.value = newVal;
 });
 
-const availableLocales = computed(() => {
+const _availableLocales = computed(() => {
 	if (Array.isArray(props.article?.text)) {
 		return props.article.text.map((t: { _key?: string }) => t._key);
 	}
 	return [];
 });
 
-const currentArticleText = computed(() => {
+const _currentArticleText = computed(() => {
 	if (!props.article?.text || !Array.isArray(props.article.text)) return null;
 	return props.article.text.find(
 		(t: { _key?: string; value?: string }) => t._key === articleLocale.value,

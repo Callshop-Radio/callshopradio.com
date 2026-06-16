@@ -33,13 +33,13 @@ const scrollPrev = () => {
 		(currentIndex.value - 1 + slides.value.length) % slides.value.length;
 };
 
-const scrollTo = (index: number) => {
+const _scrollTo = (index: number) => {
 	currentIndex.value = index;
 };
 
 // Swipe Support
 const { isSwiping: _isSwiping, direction: _direction } = useSwipe(sliderRef, {
-	onSwipeEnd(e, direction) {
+	onSwipeEnd(_e, direction) {
 		if (direction === "left") scrollNext();
 		if (direction === "right") scrollPrev();
 	},

@@ -3,7 +3,7 @@ import { onMounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-const localePath = useLocalePath();
+const _localePath = useLocalePath();
 const { getItemRoute } = useContentRoute();
 
 // Typdefinitionen

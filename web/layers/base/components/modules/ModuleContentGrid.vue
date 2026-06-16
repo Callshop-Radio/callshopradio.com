@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
-import type { ContentItem, Image, Tag } from "~/types/sanity";
+import type { ContentItem, Tag } from "~/types/sanity";
 import {
 	ARTICLE_COUNT_QUERY,
 	ARTICLE_LIST_QUERY,
@@ -14,8 +14,8 @@ import {
 } from "~~/queries/module.queries";
 
 const { locale: _locale } = useI18n();
-const localePath = useLocalePath();
-const mainStore = useMainStore();
+const _localePath = useLocalePath();
+const _mainStore = useMainStore();
 
 const { getItemImage } = useContentImage();
 const { getItemRoute } = useContentRoute();
@@ -55,7 +55,7 @@ const sortMode = ref<"new" | "shuffle" | "alpha">("new");
 const shuffleSeed = ref(Date.now());
 const visibleItemCount = ref(ITEMS_PER_PAGE);
 const artworkUrls = ref(new Map<string, string>());
-const moduleContainer = ref<HTMLElement | null>(null);
+const _moduleContainer = ref<HTMLElement | null>(null);
 const filterSection = ref<HTMLElement | null>(null);
 
 // ==================== COMPUTED: Content Type ====================
@@ -68,7 +68,7 @@ const contentType = computed(() => {
 	return type;
 });
 
-const categoryType = computed(() => {
+const _categoryType = computed(() => {
 	const type = contentType.value;
 	if (["persons", "venues", "all"].includes(type)) return "Pool";
 	if (type === "sets") return "sets";
@@ -423,7 +423,7 @@ const availableTags = computed(() => {
 		.filter((tag: Tag) => tag?._id);
 });
 
-const poolTags = computed(() => {
+const _poolTags = computed(() => {
 	const tags = availableTags.value;
 	const byType = (type: string) => tags.filter((t: Tag) => t._type === type);
 	return {
@@ -434,7 +434,7 @@ const poolTags = computed(() => {
 	};
 });
 
-const getContentTypeSpecificTags = computed(() =>
+const _getContentTypeSpecificTags = computed(() =>
 	availableTags.value.filter((tag: Tag) => tag._type !== "tag.city"),
 );
 
@@ -459,7 +459,7 @@ function getItemTags(item: ContentItem, type?: string): Tag[] {
 }
 
 const getItemCityTags = (item: ContentItem) => getItemTags(item, "tag.city");
-const getItemNonCityTags = (item: ContentItem) =>
+const _getItemNonCityTags = (item: ContentItem) =>
 	(item.tags || []).filter((t: Tag) => t._type !== "tag.city");
 
 function getTagTitle(title: Tag["title"]): string {
@@ -502,7 +502,7 @@ function getTagCategory(tagId: string): string {
 	return typeMap[tag?._type] || "global";
 }
 
-function getTagNameById(tagId: string): string {
+function _getTagNameById(tagId: string): string {
 	if (tagId === "others") return "Elsewhere";
 
 	const searchSources = [
@@ -544,7 +544,7 @@ function removeFromHistory(type: "filter" | "genre" | "subGenre", id: string) {
 	if (index > -1) filterHistory.value.splice(index, 1);
 }
 
-function removeLastFilter() {
+function _removeLastFilter() {
 	// Try to remove from activeFilters (Tags) first
 	if (activeFilters.value.size > 0) {
 		const lastFilter = [...activeFilters.value].pop();
@@ -630,11 +630,11 @@ function toggleSubGenreFilter(subGenreId: string) {
 	visibleItemCount.value = ITEMS_PER_PAGE;
 }
 
-function toggleFilterType(type: string) {
+function _toggleFilterType(type: string) {
 	activeFilterType.value = activeFilterType.value === type ? null : type;
 }
 
-function resetFilters() {
+function _resetFilters() {
 	activeFilters.value.clear();
 	activeGenres.value.clear();
 	activeSubGenres.value.clear();
@@ -695,7 +695,7 @@ function itemMatchesFilters(item: ContentItem): boolean {
 }
 
 // ==================== SORTING ====================
-function changeSortMode(mode: "new" | "shuffle" | "alpha") {
+function _changeSortMode(mode: "new" | "shuffle" | "alpha") {
 	if (mode === "shuffle") shuffleSeed.value = Date.now();
 	sortMode.value = mode;
 }
@@ -742,7 +742,7 @@ const visibleItems = computed(() => {
 	return filteredItems.value.slice(0, visibleItemCount.value);
 });
 
-const hasMoreItems = computed(() => {
+const _hasMoreItems = computed(() => {
 	if (visibleItems.value.length < filteredItems.value.length) return true;
 	if (
 		needsSelfLoad.value &&
@@ -753,7 +753,7 @@ const hasMoreItems = computed(() => {
 	return false;
 });
 
-async function loadMoreItems() {
+async function _loadMoreItems() {
 	const nextVisibleCount = visibleItemCount.value + ITEMS_PER_PAGE;
 
 	if (needsSelfLoad.value) {
@@ -769,11 +769,11 @@ async function loadMoreItems() {
 }
 
 // ==================== UI HELPERS ====================
-function toggleFiltersVisibility() {
+function _toggleFiltersVisibility() {
 	showFilters.value = !showFilters.value;
 }
 
-function toggleMobileFilters() {
+function _toggleMobileFilters() {
 	showMobileFilters.value = !showMobileFilters.value;
 	if (showMobileFilters.value) {
 		showFilters.value = true;
@@ -793,10 +793,10 @@ function handleScroll() {
 	if (filterSection.value) {
 		const rect = filterSection.value.getBoundingClientRect();
 		const style = window.getComputedStyle(filterSection.value);
-		const stickyTop = parseInt(style.top);
+		const stickyTop = parseInt(style.top, 10);
 
 		// Check if the element is currently stuck (top position matches sticky offset)
-		if (!isNaN(stickyTop) && Math.abs(rect.top - stickyTop) <= 2) {
+		if (!Number.isNaN(stickyTop) && Math.abs(rect.top - stickyTop) <= 2) {
 			isStuck = true;
 		}
 	}
@@ -815,10 +815,10 @@ function handleScroll() {
 	lastScrollY.value = scrollY;
 }
 
-function formatDate(dateString: string): string {
+function _formatDate(dateString: string): string {
 	if (!dateString) return "";
 	const date = new Date(dateString);
-	if (isNaN(date.getTime())) return "";
+	if (Number.isNaN(date.getTime())) return "";
 	return date.toLocaleDateString("de-DE", {
 		day: "2-digit",
 		month: "2-digit",

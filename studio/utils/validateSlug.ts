@@ -10,7 +10,7 @@ export const validateSlug = (Rule: {
   };
 }) => {
   return Rule.required().custom(async (value: { current?: string }) => {
-    const currentSlug = value && value.current;
+    const currentSlug = value?.current;
     if (!currentSlug) {
       return true;
     }

@@ -14,7 +14,7 @@ import { useMainStore } from "~/stores/mainStore";
 import type { ContentItem, Image, Tag } from "~/types/sanity";
 
 const { locale: _locale } = useI18n();
-const localePath = useLocalePath();
+const _localePath = useLocalePath();
 const mainStore = useMainStore();
 
 const { getItemRoute } = useContentRoute();
@@ -41,7 +41,7 @@ const visibleItemCount = ref(ITEMS_PER_PAGE);
 const artworkUrls = ref(new Map<string, string>());
 
 // Color and styling based on type
-const typeConfig = computed(() => {
+const _typeConfig = computed(() => {
 	const configs: Record<
 		string,
 		{ color: string; label: string; cssClass: string }
@@ -59,12 +59,12 @@ const visibleItems = computed(() => {
 });
 
 // Has more items to load
-const hasMoreItems = computed(() => {
+const _hasMoreItems = computed(() => {
 	return props.items.length > visibleItemCount.value;
 });
 
 // Functions
-function loadMoreItems() {
+function _loadMoreItems() {
 	visibleItemCount.value += ITEMS_PER_PAGE;
 
 	// Load artwork URLs for newly visible items (for shows/sets)
@@ -83,10 +83,10 @@ function loadMoreItems() {
 	}
 }
 
-function formatDate(dateString: string) {
+function _formatDate(dateString: string) {
 	if (!dateString) return "";
 	const date = new Date(dateString);
-	if (isNaN(date.getTime())) return "";
+	if (Number.isNaN(date.getTime())) return "";
 	return date.toLocaleDateString("de-DE", {
 		day: "2-digit",
 		month: "2-digit",
@@ -94,7 +94,7 @@ function formatDate(dateString: string) {
 	});
 }
 
-function getItemImage(item: ContentItem): Image | undefined {
+function _getItemImage(item: ContentItem): Image | undefined {
 	if (item.image) return item.image;
 	if (item.mainImage) return item.mainImage;
 
@@ -111,7 +111,7 @@ function getItemImage(item: ContentItem): Image | undefined {
 	);
 }
 
-function getItemCityTags(item: ContentItem) {
+function _getItemCityTags(item: ContentItem) {
 	const cityTags: Tag[] = [];
 
 	if (item?.tags && Array.isArray(item?.tags)) {
@@ -136,7 +136,7 @@ function getItemCityTags(item: ContentItem) {
 	return cityTags;
 }
 
-function getItemNonCityTags(item: ContentItem) {
+function _getItemNonCityTags(item: ContentItem) {
 	const tags: Tag[] = [];
 
 	const addTags = (sourceTags: Tag[] | undefined) => {

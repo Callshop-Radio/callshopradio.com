@@ -5,7 +5,6 @@ import {
   CodeIcon,
   LinkIcon,
 } from "@sanity/icons";
-import React from "react";
 
 export function LinkAnnotation(props) {
   const { value, ...restProps } = props;

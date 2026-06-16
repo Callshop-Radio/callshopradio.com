@@ -10,7 +10,7 @@ const detectSystemDarkMode = () => {
 	mainStore.detectSystemDarkMode();
 };
 
-const toggleDarkMode = () => {
+const _toggleDarkMode = () => {
 	mainStore.toggleDarkMode();
 };
 

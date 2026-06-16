@@ -1,4 +1,4 @@
-import { DesktopIcon, SearchIcon, UnarchiveIcon } from "@sanity/icons";
+import { SearchIcon, UnarchiveIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
 const TITLE = "Fallbacks";

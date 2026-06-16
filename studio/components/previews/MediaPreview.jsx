@@ -1,6 +1,3 @@
-/* eslint-disable react/prop-types */
-import React from "react";
-
 export default function MediaPreview(props) {
   const { isVideo, poster, playbackId, image, ...restProps } = props;
 

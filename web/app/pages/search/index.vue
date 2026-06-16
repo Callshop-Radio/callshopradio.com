@@ -35,7 +35,7 @@ const skipAutocompleteReset = ref(false);
 // Tag filter state
 const activeTagFilters = ref(new Set());
 const expandedTagCategory = ref(null);
-const availableTags = ref(null);
+const _availableTags = ref(null);
 
 const inputRef = ref(null);
 let autocompleteTimeout = null;
@@ -43,7 +43,7 @@ let searchTimeout = null;
 let hideTimeout = null;
 
 // Content type options
-const contentTypeOptions = [
+const _contentTypeOptions = [
 	{ value: "all", label: "All" },
 	{ value: "shows", label: "Shows" },
 	{ value: "pool", label: "Pool" },
@@ -59,11 +59,11 @@ const isValidSearchQuery = (query) => {
 };
 
 // ==================== COMPUTED ====================
-const hasQuery = computed(() => isValidSearchQuery(searchQuery.value));
+const _hasQuery = computed(() => isValidSearchQuery(searchQuery.value));
 const _hasResults = computed(() => results.value.length > 0);
 
 // Filter results by active content types (tag filtering moved to ModuleSearchResults)
-const filteredResults = computed(() => {
+const _filteredResults = computed(() => {
 	if (activeContentTypes.value.size === 0) return results.value;
 	return results.value.filter((item) => {
 		if (activeContentTypes.value.has(item._type)) return true;
@@ -82,7 +82,7 @@ const filteredResults = computed(() => {
 });
 
 // Determine the primary active content type for visual styling
-const activeContentType = computed(() => {
+const _activeContentType = computed(() => {
 	const types = Array.from(activeContentTypes.value);
 	if (types.length === 0) return "all";
 	if (types.length === 1) return types[0];
@@ -110,7 +110,7 @@ const categorizedTagsFromResults = computed(() => {
 		// Combine tags from item and parentShow (for sets)
 		const allTags = [...(item.tags || []), ...(item.parentShow?.tags || [])];
 		allTags.forEach((tag) => {
-			if (!tag || !tag._id) return;
+			if (!tag?._id) return;
 
 			// Show tags: genres, subGenres, global, mood
 			if (
@@ -339,7 +339,7 @@ watch(searchQuery, (newQuery) => {
 	}, 400);
 });
 
-const clearSearch = () => {
+const _clearSearch = () => {
 	searchQuery.value = "";
 	results.value = [];
 	autocompleteResults.value = [];
@@ -349,7 +349,7 @@ const clearSearch = () => {
 };
 
 // Content type filter toggle
-const toggleContentType = (type) => {
+const _toggleContentType = (type) => {
 	if (type === "all") {
 		activeContentTypes.value.clear();
 	} else {
@@ -361,7 +361,7 @@ const toggleContentType = (type) => {
 	}
 };
 
-const isContentTypeActive = (type) => {
+const _isContentTypeActive = (type) => {
 	if (type === "all") return activeContentTypes.value.size === 0;
 	return activeContentTypes.value.has(type);
 };
@@ -393,14 +393,14 @@ const _hideSuggestions = () => {
 };
 
 // Handle input blur - hide autocomplete after delay
-const handleInputBlur = () => {
+const _handleInputBlur = () => {
 	setTimeout(() => {
 		showAutocomplete.value = false;
 	}, 200);
 };
 
 // Autocomplete keyboard navigation
-const handleKeydown = (event) => {
+const _handleKeydown = (event) => {
 	if (!showAutocomplete.value || autocompleteResults.value.length === 0) {
 		if (event.key === "Escape") {
 			showAutocomplete.value = false;
@@ -501,7 +501,7 @@ const _getTypeIcon = (type) => {
 	return icons[type] || "📄";
 };
 
-const getCategoryLabel = (type) => {
+const _getCategoryLabel = (type) => {
 	if (type.startsWith("tag.")) return "Tag";
 	if (["show", "set"].includes(type)) return "Shows";
 	if (["person", "venue"].includes(type)) return "Pool";
@@ -509,7 +509,7 @@ const getCategoryLabel = (type) => {
 	return type;
 };
 
-const getCategoryClass = (type) => {
+const _getCategoryClass = (type) => {
 	if (type.startsWith("tag.")) return "type-tag";
 	if (["show", "set"].includes(type)) return "type-shows";
 	if (["person", "venue"].includes(type)) return "type-pool";

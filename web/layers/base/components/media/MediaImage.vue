@@ -45,7 +45,7 @@ const props = defineProps({
 	},
 });
 
-const placeholderSrc = computed(() => {
+const _placeholderSrc = computed(() => {
 	const svgColor = "rgb(230,230,230)";
 	if (props.svgPlaceholder) {
 		return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${cropWidth.value} ${cropHeight.value}'%3E%3Crect width='${cropWidth.value}' height='${cropHeight.value}' fill='${svgColor}' /%3E%3C/svg%3E`;
@@ -56,7 +56,7 @@ const placeholderSrc = computed(() => {
 	return "";
 });
 
-const srcSet = computed(() => {
+const _srcSet = computed(() => {
 	let srcSet = "";
 	const widths = [400, 750, 1200, 1800, 2400];
 	widths.forEach((width, index) => {
@@ -82,7 +82,7 @@ const cropWidth = computed(() => {
 
 	const calculatedWidth =
 		originalWidth - cropLeft * originalWidth - cropRight * originalWidth;
-	return isNaN(calculatedWidth) ? 1920 : calculatedWidth; // Schutz vor NaN
+	return Number.isNaN(calculatedWidth) ? 1920 : calculatedWidth; // Schutz vor NaN
 });
 
 const cropHeight = computed(() => {
@@ -94,10 +94,10 @@ const cropHeight = computed(() => {
 
 	const calculatedHeight =
 		originalHeight - cropTop * originalHeight - cropBottom * originalHeight;
-	return isNaN(calculatedHeight) ? 1080 : calculatedHeight; // Schutz vor NaN
+	return Number.isNaN(calculatedHeight) ? 1080 : calculatedHeight; // Schutz vor NaN
 });
 
-const orientation = computed(() => {
+const _orientation = computed(() => {
 	if (!cropWidth.value || !cropHeight.value) return undefined;
 
 	return cropWidth.value > cropHeight.value
@@ -107,14 +107,14 @@ const orientation = computed(() => {
 			: "square";
 });
 
-const altText = computed(() => props.alt ?? props.image?.asset?.altText);
+const _altText = computed(() => props.alt ?? props.image?.asset?.altText);
 const isLoaded = ref(false);
-const onLoad = () => {
+const _onLoad = () => {
 	isLoaded.value = true;
 };
 
-const hasValidImage = computed(() => {
-	return props.image && props.image.asset;
+const _hasValidImage = computed(() => {
+	return props.image?.asset;
 });
 
 // Emittiere ein Event wenn die Bilddimensionen berechnet sind

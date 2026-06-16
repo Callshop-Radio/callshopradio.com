@@ -45,7 +45,7 @@ export function useShowFormatters() {
 	const shouldShowInSchedule = (show) => {
 		// Start- und Endzeit der Show
 		const startTime = new Date(getShowStart(show));
-		const endTime = new Date(getShowEnd(show));
+		const _endTime = new Date(getShowEnd(show));
 
 		// Überprüfung der Uhrzeit (zwischen 8:00 und 00:00)
 		const startHour = startTime.getHours();

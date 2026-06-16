@@ -22,7 +22,7 @@ export default defineEventHandler(async (_event) => {
 
 				// Special handling for sets - they need a parent show
 				if (route._type === "set") {
-					return route.show && route.show.slug;
+					return route.show?.slug;
 				}
 
 				return true;

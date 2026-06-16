@@ -6,14 +6,14 @@ import {
 	RichTextStyles,
 } from "#components";
 
-const props = defineProps({
+const _props = defineProps({
 	blocks: {
 		type: Array,
 		default: () => [],
 	},
 });
 
-const serializers = {
+const _serializers = {
 	types: {
 		"module.media": ModuleMedia,
 		"module.carousel": ModuleCarousel,

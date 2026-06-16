@@ -2,10 +2,10 @@
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, locales: _locales } = useI18n();
-const localePath = useLocalePath();
+const _localePath = useLocalePath();
 
 const mainStore = useMainStore();
-const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
+const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 </script>
 
 <template>

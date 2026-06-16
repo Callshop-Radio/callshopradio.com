@@ -1,6 +1,5 @@
 import {
   CogIcon,
-  DocumentTextIcon,
   PinIcon,
   PlayIcon,
   SearchIcon,

@@ -107,7 +107,7 @@ const loadAllInstanceTracks = async () => {
 	const results = await Promise.all(fetchPromises);
 
 	for (const result of results) {
-		if (result && result.instanceId && result.tracks) {
+		if (result?.instanceId && result.tracks) {
 			tracksData[result.instanceId] = result.tracks;
 		}
 	}
@@ -187,19 +187,19 @@ const dusseldorfShows = computed(() => {
 const wienShows = computed(() => getWienShows());
 
 // Gruppierte Shows für Düsseldorf und Wien
-const groupedDusseldorfShows = computed(() =>
+const _groupedDusseldorfShows = computed(() =>
 	groupShowsByDay(dusseldorfShows.value),
 );
 
-const groupedWienShows = computed(() => groupShowsByDay(wienShows.value));
+const _groupedWienShows = computed(() => groupShowsByDay(wienShows.value));
 
 // Computed Property für die Sichtbarkeit basierend auf dem aktiven Standort
-const isLocationVisible = (location) => {
+const _isLocationVisible = (location) => {
 	return mainStore.activeScheduleLocation === location;
 };
 
 // Neulade-Funktion für manuelles Aktualisieren
-const refreshData = () => {
+const _refreshData = () => {
 	loadData();
 };
 

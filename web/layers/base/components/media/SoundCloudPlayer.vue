@@ -73,7 +73,7 @@ const trackUrl = computed(() => {
 		if (localTrack.value.stream_url.includes("api.soundcloud.com/tracks/")) {
 			// Extract track ID and convert to permalink_url
 			const trackIdMatch = localTrack.value.stream_url.match(/tracks\/(\d+)/);
-			if (trackIdMatch && trackIdMatch[1]) {
+			if (trackIdMatch?.[1]) {
 				return `https://api.soundcloud.com/tracks/${trackIdMatch[1]}`;
 			}
 		}
@@ -84,7 +84,7 @@ const trackUrl = computed(() => {
 });
 
 // Track ID for tracking and comparison
-const trackId = computed(() => {
+const _trackId = computed(() => {
 	return (
 		localTrack.value?.id ||
 		localTrack.value?.track_id ||
@@ -97,7 +97,7 @@ const trackId = computed(() => {
 // Load SoundCloud Widget API
 function loadSoundCloudWidget() {
 	return new Promise((resolve) => {
-		if (window.SC && window.SC.Widget) {
+		if (window.SC?.Widget) {
 			resolve(window.SC.Widget);
 			return;
 		}

@@ -18,7 +18,7 @@ export const limitTextBlocks = (blocks: unknown, maxLength = 100): unknown => {
 			for (const child of block.children) {
 				// Wenn der Text länger als maxLength ist, kürzen und "…" hinzufügen
 				if (child.text && child.text.length > maxLength) {
-					child.text = child.text.substring(0, maxLength) + "…";
+					child.text = `${child.text.substring(0, maxLength)}…`;
 				}
 			}
 		}

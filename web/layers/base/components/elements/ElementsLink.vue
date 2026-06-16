@@ -37,7 +37,7 @@ const props = defineProps({
 });
 
 const query = currentRoute.query;
-const internalRoute = computed(() => {
+const _internalRoute = computed(() => {
 	return {
 		name: props?.route ?? "index",
 		params: props?.slug ? { slug: props?.slug } : {},
@@ -49,7 +49,7 @@ const { $CC } = useNuxtApp();
 const mainStore = useMainStore();
 
 // Verbesserte Funktion zur Prüfung, ob eine Route aktiv ist, auch bei mehrfacher Verschachtelung
-const isActive = computed(() => {
+const _isActive = computed(() => {
 	if (props.type !== "internal" || !props.parentActive) return false;
 
 	// Index-Route ist ein Spezialfall
@@ -84,7 +84,7 @@ const isActive = computed(() => {
 	// dass wir nur vollständige Pfadsegmente matchen
 	if (
 		normalizedLinkPath !== "/" &&
-		normalizedRoutePath.startsWith(normalizedLinkPath + "/")
+		normalizedRoutePath.startsWith(`${normalizedLinkPath}/`)
 	) {
 		return true;
 	}
@@ -116,7 +116,7 @@ const isActive = computed(() => {
 	return false;
 });
 
-const onClick = (func) => {
+const _onClick = (func) => {
 	switch (func) {
 		case "cookie":
 			if (!mainStore?.siteCookieBanner?.useCookieBanner) {

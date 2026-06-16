@@ -13,13 +13,13 @@ interface Slide {
 	};
 }
 
-const props = defineProps({
+const _props = defineProps({
 	slides: {
 		type: Array as () => Slide[],
 		default: () => [],
 	},
 });
-const [emblaNode, emblaApi] = emblaCarouselVue({
+const [_emblaNode, emblaApi] = emblaCarouselVue({
 	align: "start",
 });
 

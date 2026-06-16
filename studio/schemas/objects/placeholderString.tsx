@@ -1,4 +1,3 @@
-import React from "react";
 import { defineType } from "sanity";
 
 import PlaceholderStringInput from "@/components/inputs/PlaceholderString";

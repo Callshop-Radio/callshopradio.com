@@ -1,12 +1,5 @@
-import {
-  EyeOpenIcon,
-  SearchIcon,
-  StarIcon,
-  TagIcon,
-  TextIcon,
-} from "@sanity/icons";
+import { SearchIcon, TagIcon } from "@sanity/icons";
 import { defineType } from "sanity";
-import { validateSlug } from "@/utils/validateSlug";
 
 export const tagMusician = defineType({
   name: "tag.musician",

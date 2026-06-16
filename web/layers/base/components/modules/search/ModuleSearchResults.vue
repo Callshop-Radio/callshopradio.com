@@ -17,7 +17,7 @@ const props = defineProps({
 });
 
 // Compute the category type for CSS class
-const categoryType = computed(() => {
+const _categoryType = computed(() => {
 	const type = props.activeContentType;
 	if (type === "person" || type === "venue") return "Pool";
 	if (type === "set" || type === "show") return "sets";
@@ -59,7 +59,7 @@ const showFilters = ref(true);
 const lastScrollY = ref(0);
 const sortMode = ref<"new" | "alpha">("new");
 const artworkUrls = ref(new Map<string, string>());
-const moduleContainer = ref<HTMLElement | null>(null);
+const _moduleContainer = ref<HTMLElement | null>(null);
 
 // ==================== COMPUTED: Tags ====================
 
@@ -251,7 +251,7 @@ const groupedTagsByColor = computed(() => {
 });
 
 // Helper for accessing pool tags by type name (avoids TypeScript casting in template)
-function getPoolTagsByType(typeName: string): Tag[] {
+function _getPoolTagsByType(typeName: string): Tag[] {
 	const pool = groupedTagsByColor.value.pool;
 	if (typeName === "musicians") return pool.musicians;
 	if (typeName === "venues") return pool.venues;
@@ -301,7 +301,7 @@ function _isMainCity(cityTag: Tag): boolean {
 	return MAIN_CITIES.includes(cityName);
 }
 
-function getTagNameById(tagId: string): string {
+function _getTagNameById(tagId: string): string {
 	if (tagId === "others") return "Elsewhere";
 
 	// Check city tags
@@ -337,7 +337,7 @@ function getTagNameById(tagId: string): string {
 }
 
 // ==================== FILTER LOGIC ====================
-function toggleFilter(tagId: string) {
+function _toggleFilter(tagId: string) {
 	const isActive = activeFilters.value.has(tagId);
 
 	if (isActive) {
@@ -349,7 +349,7 @@ function toggleFilter(tagId: string) {
 	}
 }
 
-function toggleGenreFilter(genreId: string) {
+function _toggleGenreFilter(genreId: string) {
 	if (activeGenres.value.has(genreId)) {
 		activeGenres.value.delete(genreId);
 		// Clear subgenres for this genre (if we had genre->subgenre mapping we'd use it)
@@ -358,7 +358,7 @@ function toggleGenreFilter(genreId: string) {
 	}
 }
 
-function toggleSubGenreFilter(subGenreId: string) {
+function _toggleSubGenreFilter(subGenreId: string) {
 	if (activeSubGenres.value.has(subGenreId)) {
 		activeSubGenres.value.delete(subGenreId);
 		activeFilters.value.delete(subGenreId);
@@ -368,11 +368,11 @@ function toggleSubGenreFilter(subGenreId: string) {
 	}
 }
 
-function toggleFilterType(type: string) {
+function _toggleFilterType(type: string) {
 	activeFilterType.value = activeFilterType.value === type ? null : type;
 }
 
-function resetFilters() {
+function _resetFilters() {
 	activeFilters.value.clear();
 	activeGenres.value.clear();
 	activeSubGenres.value.clear();
@@ -446,7 +446,7 @@ function itemMatchesFilters(item: ContentItem): boolean {
 }
 
 // ==================== SORTING ====================
-function changeSortMode(mode: "new" | "alpha") {
+function _changeSortMode(mode: "new" | "alpha") {
 	sortMode.value = mode;
 }
 
@@ -469,7 +469,7 @@ const filteredItems = computed(() => {
 });
 
 // Group filtered items by content type for sectioned display
-const groupedResults = computed(() => {
+const _groupedResults = computed(() => {
 	const pool: ContentItem[] = [];
 	const shows: ContentItem[] = [];
 	const words: ContentItem[] = [];
@@ -497,7 +497,7 @@ const groupedResults = computed(() => {
 const _visibleItems = computed(() => filteredItems.value);
 
 // ==================== UI HELPERS ====================
-function toggleFiltersVisibility() {
+function _toggleFiltersVisibility() {
 	showFilters.value = !showFilters.value;
 }
 
@@ -513,7 +513,7 @@ function handleScroll() {
 function _formatDate(dateString: string): string {
 	if (!dateString) return "";
 	const date = new Date(dateString);
-	if (isNaN(date.getTime())) return "";
+	if (Number.isNaN(date.getTime())) return "";
 	return date.toLocaleDateString("de-DE", {
 		day: "2-digit",
 		month: "2-digit",

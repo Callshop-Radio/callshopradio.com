@@ -2,7 +2,6 @@
 /* eslint-disable sort-imports -- FullCalendar/timegrid vs vue3 path order conflicts with memberSyntaxSortOrder */
 
 import timeGridPlugin from "@fullcalendar/timegrid";
-import FullCalendar from "@fullcalendar/vue3";
 import axios from "axios";
 import { computed, onMounted, reactive, ref } from "vue";
 
@@ -76,7 +75,7 @@ const init = async () => {
 		let title = value.artist ? `${value.title} - ${value.artist}` : value.title;
 		title += value.year !== "0" ? " (R)" : "";
 
-		const start = value.starts.split(" ").join("T") + "Z";
+		const start = `${value.starts.split(" ").join("T")}Z`;
 		const length = value.cue_out.split(":");
 		const seconds =
 			length.length > 2
@@ -100,11 +99,11 @@ const initWien = () => {
 		const title = value.instance_description
 			? `${value.title} - ${value.instance_description}`
 			: value.title;
-		const start = value.start.split(" ").join("T") + "Z";
-		const end = value.end.split(" ").join("T") + "Z";
+		const start = `${value.start.split(" ").join("T")}Z`;
+		const end = `${value.end.split(" ").join("T")}Z`;
 
 		return {
-			title: parseString("#2: " + title),
+			title: parseString(`#2: ${title}`),
 			start: new Date(start).toISOString(),
 			end: new Date(end).toISOString(),
 			classNames: ["rosa"],
@@ -113,7 +112,7 @@ const initWien = () => {
 };
 
 // Kalenderoptionen
-const calendarOptions = computed(() => ({
+const _calendarOptions = computed(() => ({
 	plugins: [timeGridPlugin],
 	initialView: windowSize.width < 900 ? "timeGridDay" : "timeGridWeek",
 	allDaySlot: false,

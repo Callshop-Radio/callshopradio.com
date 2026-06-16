@@ -14,7 +14,7 @@ const props = defineProps({
 });
 
 // Init Embla Carousel
-const [emblaNode, emblaApi] = emblaCarouselVue({
+const [_emblaNode, emblaApi] = emblaCarouselVue({
 	align: "start",
 	loop: true,
 });
@@ -46,18 +46,18 @@ const onSelect = () => {
 	currentIndex.value = selectedIndex.value; // Aktualisiere currentIndex, wenn sich der Slide ändert
 };
 
-const scrollTo = (index: number) => {
+const _scrollTo = (index: number) => {
 	if (!emblaApi.value) return;
 	emblaApi.value.scrollTo(index);
 	currentIndex.value = index; // Aktualisiere currentIndex beim manuellen Scrollen
 };
 
-const scrollPrev = () => {
+const _scrollPrev = () => {
 	if (!emblaApi.value) return;
 	emblaApi.value.scrollPrev();
 };
 
-const scrollNext = () => {
+const _scrollNext = () => {
 	if (!emblaApi.value) return;
 	emblaApi.value.scrollNext();
 };
@@ -87,7 +87,7 @@ onMounted(() => {
 });
 
 // Verwende die Pool-Items aus den Props
-const slides = computed(() => {
+const _slides = computed(() => {
 	const result = [];
 	// Gruppiere Pool-Items in Paare (2 pro Slide)
 	for (let i = 0; i < props.poolItems.length; i += 2) {

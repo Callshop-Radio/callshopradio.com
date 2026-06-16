@@ -58,7 +58,7 @@ export async function getPrerenderRoutes(): Promise<string[]> {
 				return false;
 			}
 			if (route._type === "set") {
-				return route.show && route.show.slug;
+				return route.show?.slug;
 			}
 			return true;
 		})

@@ -8,7 +8,7 @@ export const formatDate = (
 
 	const date = new Date(dateObj);
 
-	if (isNaN(date.getTime())) {
+	if (Number.isNaN(date.getTime())) {
 		console.warn("Invalid date provided!");
 		return;
 	}

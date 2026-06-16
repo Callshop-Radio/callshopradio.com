@@ -1,12 +1,5 @@
-import {
-  EyeOpenIcon,
-  HighlightIcon,
-  SearchIcon,
-  StarIcon,
-  TextIcon,
-} from "@sanity/icons";
+import { HighlightIcon, SearchIcon } from "@sanity/icons";
 import { defineType } from "sanity";
-import { validateSlug } from "@/utils/validateSlug";
 
 export const category = defineType({
   name: "category",

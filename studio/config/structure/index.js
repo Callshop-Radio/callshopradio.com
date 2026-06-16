@@ -8,10 +8,8 @@ import {
 
 import { articles } from "./items/articles";
 import { articleTags } from "./items/articleTags";
-import { categories } from "./items/categories";
 import { cityTags } from "./items/cityTags";
 import { craftTags } from "./items/craftTags";
-import { error } from "./items/error";
 import { genres } from "./items/genres";
 import { globalTags } from "./items/globalTags";
 import { home } from "./items/home";

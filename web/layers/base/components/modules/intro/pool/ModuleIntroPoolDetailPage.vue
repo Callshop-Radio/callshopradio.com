@@ -7,7 +7,7 @@ const { locale: _locale, setLocale: _setLocale } = useI18n();
 const { getItemRoute } = useContentRoute();
 
 // Template-Referenzen (wie Set für Höhen-Sync)
-const poolContentRef = ref<HTMLElement | null>(null);
+const _poolContentRef = ref<HTMLElement | null>(null);
 const poolMainRef = ref<HTMLElement | null>(null);
 const poolMainHeight = ref(0);
 const windowWidth = ref(0);
@@ -81,15 +81,15 @@ const useImageManagement = () => {
 
 const { itemImage } = useImageManagement();
 
-const itemTitle = computed(() => {
+const _itemTitle = computed(() => {
 	return props.poolItem?.title || props.poolItem?.name || "";
 });
 
-const displayTags = computed(() => {
+const _displayTags = computed(() => {
 	return props.poolItem?.otherTags ?? props.poolItem?.tags ?? [];
 });
 
-const contactLink = computed(() => {
+const _contactLink = computed(() => {
 	const contact = props.poolItem?.contact;
 	if (!contact) return "#";
 	if (contact.includes("@")) return `mailto:${contact}`;
@@ -105,7 +105,7 @@ const computedPoolMainHeight = computed(() => {
 	return poolMainHeight.value;
 });
 
-const poolDetailsStyle = computed(() => {
+const _poolDetailsStyle = computed(() => {
 	const h = computedPoolMainHeight.value;
 	if (typeof h === "string") return `max-height: ${h}; height: ${h}`;
 	return `max-height: ${h}px; height: ${h}px`;

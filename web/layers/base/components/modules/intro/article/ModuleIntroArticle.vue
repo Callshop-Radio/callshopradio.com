@@ -66,8 +66,8 @@ const useImageManagement = () => {
 };
 
 // Funktion zum Bestimmen der passenden Route
-function getItemRoute(item) {
-	if (!item || !item?.slug) return "/";
+function _getItemRoute(item) {
+	if (!item?.slug) return "/";
 	return localePath(`/words/${item?.slug?.current}`);
 }
 
@@ -75,14 +75,14 @@ function getItemRoute(item) {
 const { getItemImage } = useImageManagement();
 
 // Computed properties
-const articleImage = computed(() => {
+const _articleImage = computed(() => {
 	const image = getItemImage(props.article);
 	return image?.asset?.url || "";
 });
 
 const COVER_FLOW_TEASER_MAX_WORDS = 40;
 
-const coverFlowTeaserBlocks = computed(() => {
+const _coverFlowTeaserBlocks = computed(() => {
 	if (props.layout !== "cover-flow" || !props.article) return [];
 
 	if (props.article.useTeaserText && props.article.textTeaser?.length) {

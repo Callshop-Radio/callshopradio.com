@@ -16,7 +16,7 @@ import {
 const { locale: _locale } = useI18n();
 const localePath = useLocalePath();
 const router = useRouter();
-const mainStore = useMainStore();
+const _mainStore = useMainStore();
 
 const { getItemImage } = useContentImage();
 const { getItemRoute } = useContentRoute();
@@ -180,7 +180,7 @@ const sortMode = ref("new"); // Standardmäßig "new" (chronologisch)
 const shuffleSeed = ref(Date.now()); // Zufallsseed für Shuffle
 
 // Funktion zum Ändern des Sortiermodus
-function changeSortMode(mode: string) {
+function _changeSortMode(mode: string) {
 	if (mode === "shuffle") {
 		// Bei jedem Klick auf Shuffle einen neuen Seed generieren
 		shuffleSeed.value = Date.now();
@@ -192,10 +192,10 @@ function changeSortMode(mode: string) {
 }
 
 // Hilfsfunktion zur Formatierung von Datum/Zeit
-function formatDate(dateString: string) {
+function _formatDate(dateString: string) {
 	if (!dateString) return "";
 	const date = new Date(dateString);
-	if (isNaN(date.getTime())) return "";
+	if (Number.isNaN(date.getTime())) return "";
 	return date.toLocaleDateString("de-DE", {
 		day: "2-digit",
 		month: "2-digit",
@@ -207,7 +207,7 @@ function formatDate(dateString: string) {
 const artworkUrls = ref(new Map());
 
 // Funktion zum Laden weiterer Items
-async function loadMoreItems() {
+async function _loadMoreItems() {
 	// Simple pagination
 	visibleItemCount.value += itemsPerPage.value;
 	loadMoreClickCount.value++;
@@ -253,7 +253,7 @@ const hasMoreItems = computed(() => {
 });
 
 // Bestimmen, ob "Show More" angezeigt werden soll
-const shouldShowMoreButton = computed(() => {
+const _shouldShowMoreButton = computed(() => {
 	return loadMoreClickCount.value >= 2 && hasMoreItems.value;
 });
 
@@ -393,7 +393,7 @@ const typeClassMap: Record<string, string> = {
 };
 
 // CSS-Klasse entsprechend dem Typ
-const typeClass = computed(() => {
+const _typeClass = computed(() => {
 	return typeClassMap[props.module.type] || "default";
 });
 // Funktion zum Abrufen und Speichern der Artwork-URL
@@ -413,7 +413,7 @@ function _checkImage(url: string) {
 }
 
 // Stadt-Tags abrufen
-function getItemCityTags(item: ContentItem) {
+function _getItemCityTags(item: ContentItem) {
 	const cityTags: Tag[] = [];
 
 	if (item?.tags && Array.isArray(item?.tags)) {
@@ -438,18 +438,18 @@ function getItemCityTags(item: ContentItem) {
 }
 
 // Nicht-Stadt-Tags abrufen
-function getItemNonCityTags(item: ContentItem) {
+function _getItemNonCityTags(item: ContentItem) {
 	if (!item?.tags || !Array.isArray(item?.tags)) return [];
 	return item?.tags.filter((tag: Tag) => tag._type !== "tag.city");
 }
 
 // Helper für RichText Blocks
-function getRichTextBlocks(content: unknown): unknown[] {
+function _getRichTextBlocks(content: unknown): unknown[] {
 	if (!content) return [];
 	return Array.isArray(content) ? content : [];
 }
 
-function getRichTextBlocksSliced(content: unknown, slice = 1): unknown[] {
+function _getRichTextBlocksSliced(content: unknown, slice = 1): unknown[] {
 	if (!content) return [];
 	return Array.isArray(content) ? content.slice(0, slice) : [];
 }

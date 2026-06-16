@@ -123,7 +123,7 @@ export const moduleMediaPlayer = defineType({
       }
 
       return {
-        title: "Media Player for " + title,
+        title: `Media Player for ${title}`,
         subtitle,
         media: PlayIcon,
         poster,

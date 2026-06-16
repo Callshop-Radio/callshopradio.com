@@ -14,7 +14,7 @@ interface Tag {
 	short?: string;
 }
 
-function getTagLabel(tag: Tag): string {
+function _getTagLabel(tag: Tag): string {
 	if (tag?.title?.[1]?.value) {
 		return parseI18nObj(tag.title) as string;
 	}
@@ -100,7 +100,7 @@ const useImageManagement = () => {
 const { itemImage } = useImageManagement();
 
 // Formatierte Daten
-const itemTitle = computed(() => {
+const _itemTitle = computed(() => {
 	return props.poolItem?.title || props.poolItem?.name || "";
 });
 
@@ -112,17 +112,17 @@ const _itemLocation = computed(() => {
 	return props.poolItem?.location || "";
 });
 
-const cityTags = computed(() =>
+const _cityTags = computed(() =>
 	(props.poolItem?.tags ?? []).filter((tag) => tag._type === "tag.city"),
 );
 
-const otherTags = computed(() =>
+const _otherTags = computed(() =>
 	(props.poolItem?.tags ?? []).filter((tag) => tag._type !== "tag.city"),
 );
 
 const COVER_FLOW_DESCRIPTION_MAX_WORDS = 20;
 
-const coverFlowDescriptionBlocks = computed(() => {
+const _coverFlowDescriptionBlocks = computed(() => {
 	const item = props.poolItem;
 	if (!item) return [];
 

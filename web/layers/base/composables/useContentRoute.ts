@@ -9,7 +9,7 @@ export const useContentRoute = () => {
 
 	// Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
 	function getItemRoute(item: RouteItem) {
-		if (!item || !item?.slug) return "/";
+		if (!item?.slug) return "/";
 
 		switch (item?._type) {
 			case "person":

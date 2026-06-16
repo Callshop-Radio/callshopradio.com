@@ -228,8 +228,8 @@ export const useModuleContent = <T = ContentItem>(
 
 			if (isCacheValid(cachedEntry)) {
 				// Use cached data
-				fetchedItems = cachedEntry!.items as T[];
-				count = cachedEntry!.count;
+				fetchedItems = cachedEntry?.items as T[];
+				count = cachedEntry?.count;
 			} else {
 				// Fetch from Sanity
 				const [items, countResult] = await Promise.all([

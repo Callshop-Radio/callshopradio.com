@@ -71,7 +71,7 @@ export const moduleHeroEntry = defineType({
       return {
         title: "Hero Entry",
         subtitle: type
-          ? "Content: '" + type.charAt(0).toUpperCase() + type.slice(1) + "' "
+          ? `Content: '${type.charAt(0).toUpperCase()}${type.slice(1)}' `
           : "Empty Hero Slider",
       };
     },

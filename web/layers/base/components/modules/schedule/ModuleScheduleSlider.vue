@@ -9,7 +9,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { formatScheduleLabel } from "~/composables/useShowFormatters";
 import { useMainStore } from "~/stores/mainStore";
 
-const mainStore = useMainStore();
+const _mainStore = useMainStore();
 
 /** Minimal show shape for schedule (LibreTime/schedule API) */
 interface ScheduleShow {
@@ -61,7 +61,7 @@ const props = defineProps<{
 }>();
 
 // Carousel setup
-const [emblaNode, emblaApi] = emblaCarouselVue({
+const [_emblaNode, emblaApi] = emblaCarouselVue({
 	align: "start",
 	containScroll: "trimSnaps",
 });
@@ -164,7 +164,7 @@ const calculateTrackEndTime = (track: ScheduleTrack): Date | null => {
 };
 
 const formatTrackTime = (dateTime: Date | null): string => {
-	if (!dateTime || isNaN(dateTime.getTime())) return "";
+	if (!dateTime || Number.isNaN(dateTime.getTime())) return "";
 
 	// No rounding - use exact time
 	const hours = dateTime.getHours().toString().padStart(2, "0");
@@ -376,7 +376,7 @@ const getMobileDayGridLayout = (date: string | Date): DayGridLayout => {
 	};
 };
 
-const getEventsGridStyle = (date: string | Date) => {
+const _getEventsGridStyle = (date: string | Date) => {
 	if (!isMobile.value) return {};
 
 	const { rowCount } = getMobileDayGridLayout(date);
@@ -387,7 +387,7 @@ const getEventsGridStyle = (date: string | Date) => {
 	};
 };
 
-const getCurrentTimeMarkerStyleForDate = (date: string | Date) => {
+const _getCurrentTimeMarkerStyleForDate = (date: string | Date) => {
 	if (!shouldShowTimeMarkerForDate(date)) {
 		return { display: "none" };
 	}
@@ -437,7 +437,7 @@ const getCurrentTimeMarkerStyleForDate = (date: string | Date) => {
 };
 
 // Grid-based position calculation
-const getItemGridPosition = (item: ProcessedItem) => {
+const _getItemGridPosition = (item: ProcessedItem) => {
 	const startSegment = timeToGridSegment(item.startTime);
 	const durationSegments = calculateItemDurationInSegments(item);
 
@@ -467,9 +467,9 @@ const getItemGridPosition = (item: ProcessedItem) => {
 };
 
 // Navigation
-const scrollPrev = () => emblaApi.value?.scrollPrev();
-const scrollNext = () => emblaApi.value?.scrollNext();
-const scrollTo = (index: number) => emblaApi.value?.scrollTo(index);
+const _scrollPrev = () => emblaApi.value?.scrollPrev();
+const _scrollNext = () => emblaApi.value?.scrollNext();
+const _scrollTo = (index: number) => emblaApi.value?.scrollTo(index);
 
 // Throttled save function
 const _saveTranslatePositions = useThrottleFn(() => {

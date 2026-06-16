@@ -79,7 +79,7 @@ const props = defineProps<{
 }>();
 
 // Route Helper Functions
-function getItemRoute(item: ContentReference): string {
+function _getItemRoute(item: ContentReference): string {
 	if (!item?.slug?.current) return "/";
 
 	const { _type, slug, parentShow } = item;
@@ -206,7 +206,7 @@ const contentType = computed<string | null>(() => {
 	return props.module?.contentReference?._type || null;
 });
 
-const layoutClass = computed<string>(() => {
+const _layoutClass = computed<string>(() => {
 	return `layout-${contentType.value || "default"}`;
 });
 
@@ -218,7 +218,7 @@ const contentReference = computed(() => {
 	return props.module?.contentReference;
 });
 
-const hasParentShow = computed(() => {
+const _hasParentShow = computed(() => {
 	const parentShow = contentReference.value?.parentShow;
 	return parentShow && parentShow.title !== "No Show";
 });
