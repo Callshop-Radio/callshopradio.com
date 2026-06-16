@@ -14,8 +14,8 @@ import {
 } from "~~/queries/module.queries";
 
 const { locale: _locale } = useI18n();
-const _localePath = useLocalePath();
-const _mainStore = useMainStore();
+const localePath = useLocalePath();
+const mainStore = useMainStore();
 
 const { getItemImage } = useContentImage();
 const { getItemRoute } = useContentRoute();
@@ -423,7 +423,7 @@ const availableTags = computed(() => {
 		.filter((tag: Tag) => tag?._id);
 });
 
-const _poolTags = computed(() => {
+const poolTags = computed(() => {
 	const tags = availableTags.value;
 	const byType = (type: string) => tags.filter((t: Tag) => t._type === type);
 	return {
@@ -434,7 +434,7 @@ const _poolTags = computed(() => {
 	};
 });
 
-const _getContentTypeSpecificTags = computed(() =>
+const getContentTypeSpecificTags = computed(() =>
 	availableTags.value.filter((tag: Tag) => tag._type !== "tag.city"),
 );
 
@@ -459,7 +459,7 @@ function getItemTags(item: ContentItem, type?: string): Tag[] {
 }
 
 const getItemCityTags = (item: ContentItem) => getItemTags(item, "tag.city");
-const _getItemNonCityTags = (item: ContentItem) =>
+const getItemNonCityTags = (item: ContentItem) =>
 	(item.tags || []).filter((t: Tag) => t._type !== "tag.city");
 
 function getTagTitle(title: Tag["title"]): string {
@@ -630,11 +630,11 @@ function toggleSubGenreFilter(subGenreId: string) {
 	visibleItemCount.value = ITEMS_PER_PAGE;
 }
 
-function _toggleFilterType(type: string) {
+function toggleFilterType(type: string) {
 	activeFilterType.value = activeFilterType.value === type ? null : type;
 }
 
-function _resetFilters() {
+function resetFilters() {
 	activeFilters.value.clear();
 	activeGenres.value.clear();
 	activeSubGenres.value.clear();
@@ -742,7 +742,7 @@ const visibleItems = computed(() => {
 	return filteredItems.value.slice(0, visibleItemCount.value);
 });
 
-const _hasMoreItems = computed(() => {
+const hasMoreItems = computed(() => {
 	if (visibleItems.value.length < filteredItems.value.length) return true;
 	if (
 		needsSelfLoad.value &&
@@ -753,7 +753,7 @@ const _hasMoreItems = computed(() => {
 	return false;
 });
 
-async function _loadMoreItems() {
+async function loadMoreItems() {
 	const nextVisibleCount = visibleItemCount.value + ITEMS_PER_PAGE;
 
 	if (needsSelfLoad.value) {
@@ -815,7 +815,7 @@ function handleScroll() {
 	lastScrollY.value = scrollY;
 }
 
-function _formatDate(dateString: string): string {
+function formatDate(dateString: string): string {
 	if (!dateString) return "";
 	const date = new Date(dateString);
 	if (Number.isNaN(date.getTime())) return "";

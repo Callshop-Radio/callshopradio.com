@@ -59,12 +59,12 @@ const visibleItems = computed(() => {
 });
 
 // Has more items to load
-const _hasMoreItems = computed(() => {
+const hasMoreItems = computed(() => {
 	return props.items.length > visibleItemCount.value;
 });
 
 // Functions
-function _loadMoreItems() {
+function loadMoreItems() {
 	visibleItemCount.value += ITEMS_PER_PAGE;
 
 	// Load artwork URLs for newly visible items (for shows/sets)
@@ -83,7 +83,7 @@ function _loadMoreItems() {
 	}
 }
 
-function _formatDate(dateString: string) {
+function formatDate(dateString: string) {
 	if (!dateString) return "";
 	const date = new Date(dateString);
 	if (Number.isNaN(date.getTime())) return "";
@@ -94,7 +94,7 @@ function _formatDate(dateString: string) {
 	});
 }
 
-function _getItemImage(item: ContentItem): Image | undefined {
+function getItemImage(item: ContentItem): Image | undefined {
 	if (item.image) return item.image;
 	if (item.mainImage) return item.mainImage;
 
@@ -136,7 +136,7 @@ function getItemCityTags(item: ContentItem) {
 	return cityTags;
 }
 
-function _getItemNonCityTags(item: ContentItem) {
+function getItemNonCityTags(item: ContentItem) {
 	const tags: Tag[] = [];
 
 	const addTags = (sourceTags: Tag[] | undefined) => {

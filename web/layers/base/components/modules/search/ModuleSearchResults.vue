@@ -469,7 +469,7 @@ const filteredItems = computed(() => {
 });
 
 // Group filtered items by content type for sectioned display
-const _groupedResults = computed(() => {
+const groupedResults = computed(() => {
 	const pool: ContentItem[] = [];
 	const shows: ContentItem[] = [];
 	const words: ContentItem[] = [];
