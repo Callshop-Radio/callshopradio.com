@@ -15,9 +15,9 @@ licensing questions.
 
 ## The stack
 
-- **Web** — [Nuxt](https://nuxt.com) 3.16 (v4 compat flag) + Vue 3, UnoCSS + PostCSS,
-Hybrid SSG/SSR, deployed on Netlify.
-- **Studio** — [Sanity](https://www.sanity.io) v3 content studio.
+- **Web** — [Nuxt](https://nuxt.com) 4 + Vue 3, UnoCSS + PostCSS,
+  hybrid SSG/SSR, deployed on Netlify.
+- **Studio** — [Sanity](https://www.sanity.io) Studio v6.
 - **Live audio** — LibreTime as the scheduling backend (proxied server-side).
 
 ## Repository layout
