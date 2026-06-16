@@ -1,14 +1,12 @@
 export default function MediaPreview(props) {
-  const { isVideo, poster, playbackId, image, ...restProps } = props;
+  const { isVideo, playbackId } = props;
 
-  // create thumbnail url
   const thumbnailUrl = playbackId
     ? `https://image.mux.com/${playbackId}/animated.gif`
     : undefined;
 
-  if (isVideo && thumbnailUrl) {
-    // create miniature icon
-    restProps.media = (
+  const media =
+    isVideo && thumbnailUrl ? (
       // eslint-disable-next-line jsx-a11y/alt-text
       <img
         style={{
@@ -20,8 +18,9 @@ export default function MediaPreview(props) {
         }}
         src={thumbnailUrl}
       />
+    ) : (
+      props.media
     );
-  }
 
-  return props.renderDefault(restProps);
+  return props.renderDefault({ ...props, media });
 }

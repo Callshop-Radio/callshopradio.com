@@ -7,8 +7,8 @@ import {
 } from "@sanity/icons";
 
 export function LinkAnnotation(props) {
-  const { value, ...restProps } = props;
-  const { type } = value || "internal";
+  const { value } = props;
+  const { type } = value || {};
   return (
     <>
       {type === "internal" && <LinkIcon />}
@@ -16,7 +16,7 @@ export function LinkAnnotation(props) {
       {type === "download" && <ArrowDownIcon />}
       {type === "function" && <CodeIcon />}
       &nbsp;
-      {props.renderDefault(restProps)}
+      {props.renderDefault(props)}
     </>
   );
 }
