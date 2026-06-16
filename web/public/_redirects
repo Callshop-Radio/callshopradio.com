@@ -2,3 +2,6 @@
 
 # Sitemap explizit ausschließen vom Catch-All
 /sitemap.xml /sitemap.xml 200!
+
+# Nitro netlify preset normally appends this; keep explicit so public/ copy cannot drop it
+/* /.netlify/functions/server 200

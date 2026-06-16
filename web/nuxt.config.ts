@@ -18,6 +18,8 @@ export default defineNuxtConfig({
 	// Optimiert für SSG
 	experimental: {
 		payloadExtraction: false,
+		// After deploys, stale tabs may request removed _nuxt/* chunks → hard reload.
+		emitRouteChunkError: "automatic",
 	},
 	app: {
 		pageTransition: { name: "page" },
@@ -136,6 +138,11 @@ export default defineNuxtConfig({
 	},
 
 	nitro: {
+		// Must match Netlify deploy output (dist/ + .netlify/functions-internal/).
+		// Env var alone is fragile; Netlify sets NETLIFY=true at build time.
+		preset:
+			process.env.NITRO_PRESET ||
+			(process.env.NETLIFY ? "netlify" : undefined),
 		prerender: {
 			crawlLinks: true,
 			concurrency: 5,

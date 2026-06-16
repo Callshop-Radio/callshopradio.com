@@ -2,13 +2,13 @@
   base = "web/"
   # With NITRO_PRESET=netlify, Nitro writes static assets to dist/ (not .output/public/).
   publish = "dist"
-  command = "pnpm run build"
- 
- [build.environment]
-   # Sanity-Variablen (NUXT_SANITY_PROJECT_ID, NUXT_SANITY_DATASET) beim Build setzen,
-   # damit /pool/*, /shows/*, /words/* mit echten Daten geprerendert werden (sonst 404 → Redirect)
-   NODE_OPTIONS = "--max-old-space-size=8192"
-   NPM_FLAGS = "--legacy-peer-deps"
+  command = "NITRO_PRESET=netlify pnpm run build"
+
+[build.environment]
+  # Sanity-Variablen (NUXT_SANITY_PROJECT_ID, NUXT_SANITY_DATASET) beim Build setzen,
+  # damit /pool/*, /shows/*, /words/* mit echten Daten geprerendert werden (sonst 404 → Redirect)
+  NODE_OPTIONS = "--max-old-space-size=8192"
+  NPM_FLAGS = "--legacy-peer-deps"
   NITRO_PRESET = "netlify"
 
 # Netlify Functions für SSR
@@ -53,6 +53,17 @@
   [headers.values]
     cache-control = "public, max-age=3600"
 
+# HTML shell — avoid stale entry chunks after deploy (immutable /_nuxt/* vs old HTML)
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    cache-control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    cache-control = "public, max-age=0, must-revalidate"
+
 # Static Content Pages - revalidate on deploy
 [[headers]]
   for = "/pool/*"
@@ -84,5 +95,11 @@
 # API Proxy – Netlify Function fuer LibreTime etc.
 [[redirects]]
   from = "/api/*"
+  to = "/.netlify/functions/server"
+  status = 200
+
+# SSR fallback for non-prerendered routes (public/_redirects must not drop this)
+[[redirects]]
+  from = "/*"
   to = "/.netlify/functions/server"
   status = 200
