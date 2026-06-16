@@ -215,31 +215,27 @@ export default defineNuxtConfig({
 			},
 		},
 		optimizeDeps: {
-			// Vite 8 trips on the CJS-as-default-export interop in some
-			// transitively-bundled lodash submodules used by Sanity's
-			// @sanity/visual-editing + @sanity/mutate stack. Pre-bundling
-			// these via esbuild rewrites them to proper ESM with a default
-			// export, fixing runtime errors like
-			// `does not provide an export named 'default'`.
+			// Vite 8 trips on the CJS-as-default-export interop in lodash
+			// submodules imported by @sanity/mutate (transitive via
+			// @nuxtjs/sanity 2 → @sanity/visual-editing). Listing the lodash
+			// submodules here forces esbuild to pre-bundle them as ESM with
+			// a default export, fixing
+			// `does not provide an export named 'default'` at runtime.
+			//
+			// Note: optimizeDeps.include takes bare module paths, NOT the
+			// "a > b > c" trace strings Vite prints in diagnostics.
 			include: [
 				"vue",
 				"vue-router",
 				"@sanity/client",
 				"@sanity/image-url",
-				"@nuxtjs/sanity > @sanity/client > @sanity/visual-editing",
-				"@nuxtjs/sanity > @sanity/visual-editing > @sanity/insert-menu",
-				"@nuxtjs/sanity > @sanity/visual-editing > @sanity/mutate > lodash/groupBy.js",
-				"@nuxtjs/sanity > @sanity/visual-editing > @sanity/mutate > lodash/isObject.js",
-				"@nuxtjs/sanity > @sanity/visual-editing > @sanity/mutate > lodash/keyBy.js",
-				"@nuxtjs/sanity > @sanity/visual-editing > @sanity/mutate > lodash/partition.js",
-				"@nuxtjs/sanity > @sanity/visual-editing > @sanity/mutate > lodash/sortedIndex.js",
-				"@nuxtjs/sanity > @sanity/visual-editing > @sanity/ui > styled-components",
-				"@nuxtjs/sanity > @sanity/visual-editing > @sanity/visual-editing > react-is",
-				"@nuxtjs/sanity > @sanity/visual-editing > react",
-				"@nuxtjs/sanity > @sanity/visual-editing > react-compiler-runtime",
-				"@nuxtjs/sanity > @sanity/visual-editing > react-dom",
-				"@nuxtjs/sanity > @sanity/visual-editing > react-dom/client",
-				"@nuxtjs/sanity > @sanity/visual-editing > react/jsx-runtime",
+				"@sanity/visual-editing",
+				"@sanity/mutate",
+				"lodash/groupBy.js",
+				"lodash/isObject.js",
+				"lodash/keyBy.js",
+				"lodash/partition.js",
+				"lodash/sortedIndex.js",
 				"embla-carousel-vue",
 				"hls.js",
 				"plyr",
