@@ -214,28 +214,31 @@ export default defineNuxtConfig({
 				},
 			},
 		},
+		// @sanity/mutate (transitive via @nuxtjs/sanity 2 → @sanity/visual-editing)
+		// imports five lodash submodules. Lodash 4.x is CJS; Vite serves them
+		// straight from /@fs/ without converting, and the browser fails with
+		// `does not provide an export named 'default'`. Pre-bundling via
+		// optimizeDeps.include doesn't help here because @sanity/mutate isn't
+		// a direct dependency of `web/`, so Vite can't resolve the bare path.
+		//
+		// Workaround: alias each used lodash/<x>.js to lodash-es/<x>.js
+		// (already present in node_modules as a transitive ESM dep, with
+		// identical export names). Bypasses CJS interop entirely.
+		resolve: {
+			alias: {
+				"lodash/groupBy.js": "lodash-es/groupBy.js",
+				"lodash/isObject.js": "lodash-es/isObject.js",
+				"lodash/keyBy.js": "lodash-es/keyBy.js",
+				"lodash/partition.js": "lodash-es/partition.js",
+				"lodash/sortedIndex.js": "lodash-es/sortedIndex.js",
+			},
+		},
 		optimizeDeps: {
-			// Vite 8 trips on the CJS-as-default-export interop in lodash
-			// submodules imported by @sanity/mutate (transitive via
-			// @nuxtjs/sanity 2 → @sanity/visual-editing). Listing the lodash
-			// submodules here forces esbuild to pre-bundle them as ESM with
-			// a default export, fixing
-			// `does not provide an export named 'default'` at runtime.
-			//
-			// Note: optimizeDeps.include takes bare module paths, NOT the
-			// "a > b > c" trace strings Vite prints in diagnostics.
 			include: [
 				"vue",
 				"vue-router",
 				"@sanity/client",
 				"@sanity/image-url",
-				"@sanity/visual-editing",
-				"@sanity/mutate",
-				"lodash/groupBy.js",
-				"lodash/isObject.js",
-				"lodash/keyBy.js",
-				"lodash/partition.js",
-				"lodash/sortedIndex.js",
 				"embla-carousel-vue",
 				"hls.js",
 				"plyr",
