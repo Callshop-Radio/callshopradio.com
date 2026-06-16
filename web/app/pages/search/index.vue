@@ -440,6 +440,16 @@ const handleKeydown = (event) => {
 	}
 };
 
+// Get the URL path for a search result
+const getResultPath = (item) => {
+	if (item._type.startsWith("tag.")) {
+		return localePath(`/search?q=${encodeURIComponent(item.title)}`);
+	}
+
+	const path = resolveContentItemPath(item);
+	return path ? localePath(path) : null;
+};
+
 const selectAutocompleteItem = (item) => {
 	showAutocomplete.value = false;
 
@@ -457,36 +467,6 @@ const selectAutocompleteItem = (item) => {
 		} else {
 			navigateTo(path);
 		}
-	}
-};
-
-// Get the URL path for a search result
-const getResultPath = (item) => {
-	if (item._type.startsWith("tag.")) {
-		return localePath(`/search?q=${encodeURIComponent(item.title)}`);
-	}
-	const slug = item.slug?.current || item.slug;
-	if (!slug) return null;
-
-	switch (item._type) {
-		case "show":
-			return localePath(`/shows/${slug}`);
-		case "set": {
-			// Sets need parent show slug
-			const parentSlug =
-				item.parentShow?.slug?.current || item.parentShow?.slug;
-			return parentSlug
-				? localePath(`/shows/${parentSlug}/${slug}`)
-				: localePath(`/shows/${slug}`);
-		}
-		case "person":
-			return localePath(`/pool/${slug}`);
-		case "venue":
-			return localePath(`/pool/${slug}`);
-		case "article":
-			return localePath(`/words/${slug}`);
-		default:
-			return null;
 	}
 };
 

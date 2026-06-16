@@ -18,7 +18,7 @@ const localePath = useLocalePath();
 const mainStore = useMainStore();
 
 const { getItemImage } = useContentImage();
-const { getItemRoute } = useContentRoute();
+const { getItemRoute, getShowRoute, getPoolRoute } = useContentRoute();
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 const { navigateToTagSearch } = useTagNavigation();
 
@@ -1460,7 +1460,7 @@ onUnmounted(() => {
 									item.parentShow?.title?.toLowerCase() !== 'no-show' &&
 										item.parentShow?.slug
 								"
-								:to="localePath(`/shows/${item.parentShow?.slug.current}`)"
+								:to="getShowRoute(item.parentShow)"
 								class="grid-item__link"
 							>
 								<h3 class="grid-item__title show-title">
@@ -1479,7 +1479,7 @@ onUnmounted(() => {
 								>
 									<NuxtLink
 										v-if="artist?.poolVisibility"
-										:to="localePath(`/pool/${artist?.slug?.current}`)"
+										:to="getPoolRoute(artist)"
 										class="grid-item__link"
 									>
 										{{ artist.title

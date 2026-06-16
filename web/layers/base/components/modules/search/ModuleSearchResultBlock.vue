@@ -17,7 +17,7 @@ const { locale: _locale } = useI18n();
 const localePath = useLocalePath();
 const mainStore = useMainStore();
 
-const { getItemRoute } = useContentRoute();
+const { getItemRoute, getShowRoute, getPoolRoute } = useContentRoute();
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 
 const props = defineProps({
@@ -322,7 +322,7 @@ watch(
 								item.parentShow?.title?.toLowerCase() !== 'no-show' &&
 									item.parentShow?.slug
 							"
-							:to="localePath(`/shows/${item.parentShow.slug.current}`)"
+							:to="getShowRoute(item.parentShow)"
 							class="teaser-item__link"
 						>
 							<h3 class="teaser-item__title show-title">
@@ -349,7 +349,7 @@ watch(
 							>
 								<NuxtLink
 									v-if="artist?.poolVisibility"
-									:to="localePath(`/pool/${artist?.slug?.current}`)"
+									:to="getPoolRoute(artist)"
 									class="teaser-item__link"
 								>
 									{{ artist.title

@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 
 const { locale, setLocale: _setLocale } = useI18n();
-const localePath = useLocalePath();
+const { getItemRoute, getPoolRoute } = useContentRoute();
 const mainStore = useMainStore();
 
 // Typdefinitionen
@@ -74,37 +74,6 @@ const useImageManagement = () => {
 	};
 };
 
-// Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
-function _getItemRoute(item: import("~/types/sanity").ContentItem) {
-	if (!item?.slug) return "/";
-
-	switch (item?._type) {
-		case "person":
-		case "venue":
-			return localePath(`/pool/${item?.slug?.current}`);
-
-		case "set":
-			// Prüfe, ob parentShow vorhanden ist
-			if (item?.parentShow?.slug?.current) {
-				return localePath(
-					`/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`,
-				);
-			}
-			// Fallback falls parentShow nicht verfügbar ist
-			return localePath(`/shows/${item?.slug?.current}`);
-
-		case "article":
-			return localePath(`/words/${item?.slug?.current}`);
-
-		case "show":
-			return localePath(`/shows/${item?.slug?.current}`);
-
-		// Standard-Fallback
-		default:
-			return localePath(`/${item?._type}/${item?.slug?.current}`);
-	}
-}
-
 // Composable für Artikel-spezifische Funktionalität
 const useArticle = () => {
 	const articleImageUrl = ref("");
@@ -142,10 +111,10 @@ const useArticle = () => {
 
 	function navigateToArticle() {
 		const item = props.article;
-		if (!item?.slug?.current) return;
+		if (!item) return;
 
-		// Navigation zum vollständigen Artikel
-		navigateTo(localePath(`/words/${item.slug.current}`));
+		const path = getItemRoute(item);
+		if (path) navigateTo(path);
 	}
 
 	return {
@@ -381,7 +350,7 @@ const currentArticleText = computed(() =>
 								>
 									<NuxtLink
 										v-if="author?.poolVisibility"
-										:to="localePath(`/pool/${author?.slug?.current}`)"
+										:to="getPoolRoute(author)"
 										class="article__author"
 									>
 										{{ author.title

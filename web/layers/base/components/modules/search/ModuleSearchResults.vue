@@ -513,22 +513,6 @@ function _formatDate(dateString: string): string {
 	});
 }
 
-// ==================== ROUTING ====================
-function _getItemRoute(item: ContentItem): string {
-	if (!item?.slug) return "/";
-	const slug = item.slug.current;
-	const routes: Record<string, string> = {
-		person: `/pool/${slug}`,
-		venue: `/pool/${slug}`,
-		set: item.parentShow?.slug?.current
-			? `/shows/${item.parentShow.slug.current}/${slug}`
-			: `/shows/${slug}`,
-		article: `/words/${slug}`,
-		show: `/shows/${slug}`,
-	};
-	return localePath(routes[item._type] || `/${item._type}/${slug}`);
-}
-
 // ==================== IMAGE HANDLING ====================
 function _getItemImage(item: ContentItem) {
 	if (item.image || item.mainImage) return item.image || item.mainImage;

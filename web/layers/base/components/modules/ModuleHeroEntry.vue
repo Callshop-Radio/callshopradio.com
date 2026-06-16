@@ -78,7 +78,7 @@ const props = defineProps<{
 	module: Module;
 }>();
 
-const { getItemRoute } = useContentRoute();
+const { getItemRoute, getShowRoute, getPoolRoute } = useContentRoute();
 
 // Image Management Composable
 const useImageManagement = () => {
@@ -280,11 +280,7 @@ onMounted(() => {
 						>
 							<NuxtLink
 								v-if="hasParentShow"
-								:to="
-									localePath(
-										`/shows/${contentReference.parentShow?.slug?.current}`
-									)
-								"
+								:to="getShowRoute(contentReference.parentShow)"
 							>
 								<h2 class="hero-entry-title">
 									{{ contentReference.parentShow?.title }}
@@ -303,7 +299,7 @@ onMounted(() => {
 								>
 									<NuxtLink
 										v-if="artist?.poolVisibility && artist?.slug?.current"
-										:to="localePath(`/pool/${artist.slug.current}`)"
+										:to="getPoolRoute(artist)"
 										class="hero-entry-show-artists-artist"
 									>
 										{{ artist.title

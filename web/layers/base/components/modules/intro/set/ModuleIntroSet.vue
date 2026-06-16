@@ -3,8 +3,7 @@ import { onMounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-const localePath = useLocalePath();
-const { getItemRoute } = useContentRoute();
+const { getItemRoute, getShowRoute, getPoolRoute } = useContentRoute();
 
 // Typdefinitionen
 interface Image {
@@ -223,7 +222,7 @@ onMounted(() => {
 						<div class="set-show-title">
 							<NuxtLink
 								v-if="set?.parentShow?.title !== 'No Show' && set?.parentShow"
-								:to="localePath(`/shows/${set?.parentShow?.slug?.current}`)"
+								:to="getShowRoute(set?.parentShow)"
 								class="set__link set-title"
 							>
 								<h2 v-if="set?.parentShow?.title" class="set-title">
@@ -238,7 +237,7 @@ onMounted(() => {
 								>
 									<NuxtLink
 										v-if="artist?.poolVisibility"
-										:to="localePath(`/pool/${artist?.slug.current}`)"
+										:to="getPoolRoute(artist)"
 										class="set__artist"
 									>
 										{{ artist.title

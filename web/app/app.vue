@@ -8,7 +8,7 @@ favicon();
     <SiteHead />
     <main>
       <div class="page-content">
-        <NuxtPage />
+        <NuxtPage :key="$route.fullPath" />
       </div>
     </main>
     <SiteFoot class="footer" />

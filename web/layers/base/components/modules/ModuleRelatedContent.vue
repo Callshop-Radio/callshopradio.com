@@ -3,13 +3,12 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale } = useI18n();
-const localePath = useLocalePath();
-
-const mainStore = useMainStore();
-
-const { getItemRoute } = useContentRoute();
+const { getItemRoute, getShowRoute, getPoolRoute, hasContentSlug } =
+	useContentRoute();
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 const { navigateToTagSearch } = useTagNavigation();
+
+const mainStore = useMainStore();
 
 const props = defineProps({
 	// Daten-Array (z.B. data?.parentShow?.sets)
@@ -283,7 +282,7 @@ onMounted(() => {
 			>
 				<!-- Bild -->
 				<NuxtLink
-					v-if="item?.slug"
+					v-if="hasContentSlug(item)"
 					:to="getItemRoute(item)"
 					class="related-item__link"
 				>
@@ -389,9 +388,9 @@ onMounted(() => {
 						<NuxtLink
 							v-if="
 								item?.parentShow?.title?.toLowerCase() !== 'no-show' &&
-									item?.parentShow?.slug
+									hasContentSlug(item?.parentShow)
 							"
-							:to="localePath(`/shows/${item?.parentShow?.slug.current}`)"
+							:to="getShowRoute(item?.parentShow)"
 							class="related-item__link"
 						>
 							<h3 class="related-item__title show-title">
@@ -424,8 +423,8 @@ onMounted(() => {
 								class="related-item__artist"
 							>
 								<NuxtLink
-									v-if="artist?.poolVisibility"
-									:to="localePath(`/pool/${artist?.slug?.current}`)"
+									v-if="artist?.poolVisibility && hasContentSlug(artist)"
+									:to="getPoolRoute(artist)"
 									class="related-item__link"
 								>
 									{{ artist?.title

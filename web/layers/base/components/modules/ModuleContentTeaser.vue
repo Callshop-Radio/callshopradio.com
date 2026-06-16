@@ -19,7 +19,7 @@ const router = useRouter();
 const mainStore = useMainStore();
 
 const { getItemImage } = useContentImage();
-const { getItemRoute } = useContentRoute();
+const { getItemRoute, getShowRoute, getPoolRoute } = useContentRoute();
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 const { navigateToTagSearch } = useTagNavigation();
 
@@ -688,7 +688,7 @@ onMounted(() => {
 									item?.parentShow?.slug &&
 									item?.clickableTitle
 							"
-							:to="localePath(`/shows/${item?.parentShow?.slug.current}`)"
+							:to="getShowRoute(item?.parentShow)"
 							class="teaser-item__link"
 						>
 							<h3 class="teaser-item__title show-title">
@@ -724,7 +724,7 @@ onMounted(() => {
 							>
 								<NuxtLink
 									v-if="artist?.poolVisibility"
-									:to="localePath(`/pool/${artist?.slug?.current}`)"
+									:to="getPoolRoute(artist)"
 									class="teaser-item__link"
 								>
 									{{ artist?.title

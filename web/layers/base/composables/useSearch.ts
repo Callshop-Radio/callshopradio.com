@@ -15,7 +15,7 @@ export interface SearchResult {
 	parentShow?: {
 		_id: string;
 		title: string;
-		slug: string;
+		slug?: { current?: string } | string;
 	};
 	datetime?: string;
 	additionalTitle?: string;
@@ -54,7 +54,7 @@ export const SEARCH_AUTOCOMPLETE_QUERY = `
     "parentShow": *[_type == "show" && references(^._id)][0]{
       _id,
       title,
-      "slug": slug.current
+      slug
     }
   }
 }`;
@@ -148,32 +148,13 @@ export function useSearch(options: UseSearchOptions = {}) {
 		}
 	};
 
-	// Get the route path based on content type
+	// Get the route path based on content type (without locale prefix)
 	const getResultPath = (result: SearchResult): string => {
 		if (result._type.startsWith("tag.")) {
 			return `/search?q=${encodeURIComponent(result.title)}`;
 		}
-		switch (result._type) {
-			case "person":
-			case "venue":
-				return `/pool/${result.slug?.current}`;
-			case "show":
-				return `/shows/${result.slug?.current}`;
-			case "set": {
-				// Sets need to link to shows/[show-slug]/[set-slug]
-				const parentSlug = result.parentShow?.slug;
-				const setSlug = result.slug?.current;
 
-				if (parentSlug && setSlug) {
-					return `/shows/${parentSlug}/${setSlug}`;
-				}
-				return `/shows/${setSlug}`;
-			}
-			case "article":
-				return `/words/${result.slug?.current}`;
-			default:
-				return "/";
-		}
+		return resolveContentItemPath(result) || "/";
 	};
 
 	// Get a friendly label for the content type
