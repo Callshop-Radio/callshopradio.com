@@ -1,4 +1,5 @@
 <script setup>
+import { flattenProps } from "@portabletext/vue";
 import {
 	ElementsLink,
 	ModuleCarousel,
@@ -13,18 +14,18 @@ const props = defineProps({
 	},
 });
 
-const serializers = {
+const portableTextComponents = {
 	types: {
-		"module.media": ModuleMedia,
-		"module.carousel": ModuleCarousel,
+		"module.media": flattenProps(ModuleMedia),
+		"module.carousel": flattenProps(ModuleCarousel),
 	},
 	marks: {
-		link: ElementsLink,
-		linkCookie: ElementsLink,
+		link: flattenProps(ElementsLink),
+		linkCookie: flattenProps(ElementsLink),
 		underline: "u",
 		"strike-through": "s",
 	},
-	styles: {
+	block: {
 		normal: RichTextStyles,
 		h1: RichTextStyles,
 		h2: RichTextStyles,
@@ -38,7 +39,7 @@ const serializers = {
 
 <template>
 	<div class="rich-text">
-		<SanityContent :blocks="props.blocks" :serializers="serializers" />
+		<SanityContent :value="props.blocks" :components="portableTextComponents" />
 	</div>
 </template>
 <style lang="postcss" scoped>

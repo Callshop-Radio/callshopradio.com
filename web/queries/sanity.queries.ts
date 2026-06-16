@@ -737,6 +737,14 @@ export const SITE_OPTIONS_QUERY = `{
 			"index"
 		),
 		"schedulePageSlug": schedulePage->slug.current,
+		"schedulePageParentSlug": select(
+			schedulePage->_type == "set" => *[_type == "show" && references(^.schedulePage._ref)][0].slug.current,
+			null
+		),
+		"schedulePageSetSlug": select(
+			schedulePage->_type == "set" => schedulePage->slug.current,
+			null
+		),
     discordLink,
     footerMenu[] {
       ...,

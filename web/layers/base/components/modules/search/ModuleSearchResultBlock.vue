@@ -230,7 +230,7 @@ watch(
 						:key="tag._id"
 						class="tag city"
 					>
-						{{ parseI18nObj(tag?.short) || tag?.short }}
+						{{ getI18nLabel(tag?.short) }}
 					</span>
 				</div>
 
@@ -404,7 +404,7 @@ watch(
 							:key="tag._id"
 							class="tag"
 						>
-							{{ tag.title }}
+							{{ getI18nLabel(tag.title) }}
 						</span>
 					</div>
 				</div>

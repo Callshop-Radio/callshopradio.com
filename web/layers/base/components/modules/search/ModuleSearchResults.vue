@@ -284,15 +284,7 @@ const _getItemNonCityTags = (item: ContentItem) =>
 	(item.tags || []).filter((t: Tag) => t._type !== "tag.city");
 
 function getTagTitle(title: Tag["title"]): string {
-	if (!title) return "";
-	if (typeof title === "string") return title;
-	if (Array.isArray(title)) {
-		return parseI18nObj(title) || title[0]?.value || "";
-	}
-	if (typeof title === "object") {
-		return title.de || title.en || Object.values(title)[0] || "";
-	}
-	return String(title);
+	return getI18nLabel(title);
 }
 
 function _isMainCity(cityTag: Tag): boolean {
@@ -765,7 +757,7 @@ watch(
 									:class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
 									@click="toggleFilter(tag._id)"
 								>
-									{{ tag.title }}
+									{{ getI18nLabel(tag.title) }}
 								</button>
                 
 								<!-- Pool: Type toggles (Blue) -->
@@ -802,7 +794,7 @@ watch(
 									:class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
 									@click="toggleFilter(tag._id)"
 								>
-									{{ tag.title }}
+									{{ getI18nLabel(tag.title) }}
 								</button>
 							</div>
               
@@ -833,7 +825,7 @@ watch(
 										:class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
 										@click="toggleFilter(tag._id)"
 									>
-										{{ tag.title }}
+										{{ getI18nLabel(tag.title) }}
 									</button>
 								</template>
 							</div>

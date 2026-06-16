@@ -50,7 +50,15 @@ export const LINK_QUERY = `
             reference->_type == "timetable" => "schedule",
 			"index"
 		),
-		"slug": reference->slug.current
+		"slug": reference->slug.current,
+		"parentSlug": select(
+			reference->_type == "set" => *[_type == "show" && references(^.reference._ref)][0].slug.current,
+			null
+		),
+		"setSlug": select(
+			reference->_type == "set" => reference->slug.current,
+			null
+		)
 	},
 	type == "external" => {
 		...,
@@ -159,6 +167,12 @@ export const RICH_TEXT_QUERY = `{
 			video ${IMAGE_QUERY},
 		}
 	},
+}`;
+
+/** Projection for internationalizedArray* rich text wrapper items. */
+export const I18N_RICH_TEXT_VALUE_QUERY = `{
+	...,
+	value[] ${RICH_TEXT_QUERY}
 }`;
 /** Slim set projection for archive cover-flow slider (autoLoad). */
 export const SET_COVER_FLOW_SLIDER_ITEM_QUERY = `{

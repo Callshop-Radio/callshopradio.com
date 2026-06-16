@@ -78,33 +78,7 @@ const props = defineProps<{
 	module: Module;
 }>();
 
-// Route Helper Functions
-function getItemRoute(item: ContentReference): string {
-	if (!item?.slug?.current) return "/";
-
-	const { _type, slug, parentShow } = item;
-
-	switch (_type) {
-		case "person":
-		case "venue":
-			return localePath(`/pool/${slug.current}`);
-
-		case "set":
-			if (parentShow?.slug?.current) {
-				return localePath(`/shows/${parentShow.slug.current}/${slug.current}`);
-			}
-			return localePath(`/shows/${slug.current}`);
-
-		case "article":
-			return localePath(`/words/${slug.current}`);
-
-		case "show":
-			return localePath(`/shows/${slug.current}`);
-
-		default:
-			return localePath(`/${_type}/${slug.current}`);
-	}
-}
+const { getItemRoute } = useContentRoute();
 
 // Image Management Composable
 const useImageManagement = () => {
@@ -424,11 +398,7 @@ onMounted(() => {
 							type="button"
 							@click.prevent="navigateToTagSearch(tag, contentReference)"
 						>
-							{{
-								tag?.title?.[1]?.value
-									? parseI18nObj(tag?.title)
-									: tag?.title[0]?.value ?? tag.title
-							}}
+								{{ getI18nLabel(tag?.title) }}
 						</button>
 					</div>
 				</div>

@@ -207,13 +207,9 @@ const availableLocales = computed(() => {
 	return [];
 });
 
-const currentArticleText = computed(() => {
-	if (!props.article?.text || !Array.isArray(props.article.text)) return null;
-	return props.article.text.find(
-		(t: { _key?: string; language?: string; value?: string }) =>
-			(t.language ?? t._key) === articleLocale.value,
-	)?.value;
-});
+const currentArticleText = computed(() =>
+	parseI18nObj(props.article?.text, articleLocale.value),
+);
 </script>
 
 <template>
@@ -233,11 +229,7 @@ const currentArticleText = computed(() => {
 				class="tag"
 				type="button"
 			>
-				{{
-					tag?.title?.[1]?.value
-						? parseI18nObj(tag?.title)
-						: tag?.title[0]?.value ?? tag.title
-				}}
+					{{ getI18nLabel(tag?.title) }}
 			</button>
 		</div>
 		<div
@@ -358,11 +350,7 @@ const currentArticleText = computed(() => {
 					class="tag"
 					type="button"
 				>
-					{{
-						tag?.title?.[1]?.value
-							? parseI18nObj(tag?.title)
-							: tag?.title[0]?.value ?? tag.title
-					}}
+					{{ getI18nLabel(tag?.title) }}
 				</button>
 			</div>
 		</div>

@@ -65,11 +65,7 @@ const useImageManagement = () => {
 	};
 };
 
-// Funktion zum Bestimmen der passenden Route
-function getItemRoute(item) {
-	if (!item?.slug) return "/";
-	return localePath(`/words/${item?.slug?.current}`);
-}
+const { getItemRoute } = useContentRoute();
 
 // Anwendung der Composables
 const { getItemImage } = useImageManagement();
@@ -133,11 +129,7 @@ const coverFlowTeaserBlocks = computed(() => {
 					class="tag"
 					type="button"
 				>
-					{{
-						tag?.title?.[1]?.value
-							? parseI18nObj(tag?.title)
-							: tag?.title[0]?.value ?? tag.title
-					}}
+						{{ getI18nLabel(tag?.title) }}
 				</button>
 			</div>
 

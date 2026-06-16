@@ -113,11 +113,7 @@ const contactLink = computed(() => {
 					class="tag city"
 					type="button"
 				>
-					{{
-						tag?.title?.[1]?.value
-							? parseI18nObj(tag?.title)
-							: tag?.title[0]?.value ?? tag.title
-					}}
+						{{ getI18nLabel(tag?.title) }}
 				</button>
 			</div>
 

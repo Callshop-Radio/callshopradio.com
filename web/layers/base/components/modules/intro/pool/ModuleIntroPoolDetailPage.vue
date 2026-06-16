@@ -165,11 +165,7 @@ onMounted(() => {
                 class="tag"
                 type="button"
               >
-                {{
-                  tag?.title?.[1]?.value
-                    ? parseI18nObj(tag?.title)
-                    : (tag?.title?.[0]?.value ?? tag.title)
-                }}
+                {{ getI18nLabel(tag?.title) }}
               </button>
 			  <button
                 v-for="(tag, index) in poolItem?.otherTags"
@@ -177,11 +173,7 @@ onMounted(() => {
                 class="tag"
                 type="button"
               >
-                {{
-                  tag?.title?.[1]?.value
-                    ? parseI18nObj(tag?.title)
-                    : (tag?.title?.[0]?.value ?? tag.title)
-                }}
+                {{ getI18nLabel(tag?.title) }}
               </button>
             </div>
           </div>
@@ -295,23 +287,8 @@ onMounted(() => {
             />
           </div>
 
-          <section v-if="poolItem?.description" class="pool-description">
-            <RichText
-              v-if="
-                poolItem.description &&
-                (poolItem.description[0]?.value ||
-                  poolItem.description[1]?.value)
-              "
-              :blocks="parseI18nObj(poolItem?.description)"
-            />
-            <RichText
-              v-else-if="poolItem.description && poolItem.description[0]?.value"
-              :blocks="parseI18nObj(poolItem.description[0].value)"
-            />
-            <RichText
-              v-else-if="poolItem.description && poolItem.description[1]?.value"
-              :blocks="parseI18nObj(poolItem.description[1].value)"
-            />
+          <section v-if="parseI18nObj(poolItem?.description)" class="pool-description">
+            <RichText :blocks="parseI18nObj(poolItem?.description)" />
           </section>
         </div>
       </div>

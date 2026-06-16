@@ -573,11 +573,7 @@ onMounted(() => {
 						class="tag city clickable"
 						@click.prevent="navigateToTagSearch(tag, item)"
 					>
-						{{
-							tag?.short?.[1]?.value
-								? parseI18nObj(tag?.short)
-								: tag?.short?.[0]?.value ?? tag.short
-						}}
+						{{ getI18nLabel(tag?.short) }}
 					</button>
 				</div>
 
@@ -783,14 +779,18 @@ onMounted(() => {
 					/>
 					<RichText
 						v-else-if="props.module.type === 'words'"
-						:blocks="parseI18nObj(item?.textTeaser)"
+						:blocks="
+							parseI18nObj(item?.textTeaser) ||
+								parseI18nObj(item?.text) ||
+								[]
+						"
 					/>
 					<RichText
 						v-else-if="
 							!item?.text &&
 								item?.description &&
 								item?.description.length > 0 &&
-								(item?.description[0]?.value || item?.description[1]?.value)
+								parseI18nObj(item?.description)
 						"
 						:blocks="
 							limitTextBlocks(parseI18nObj(item?.description)?.slice(0, 1), 100)
@@ -847,11 +847,7 @@ onMounted(() => {
 							class="tag clickable"
 							@click.prevent="navigateToTagSearch(tag, item)"
 						>
-							{{
-								tag?.title?.[1]?.value
-									? parseI18nObj(tag?.title)
-									: tag?.title?.[0]?.value ?? tag.title
-							}}
+							{{ getI18nLabel(tag?.title) }}
 						</button>
 					</div>
 

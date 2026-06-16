@@ -477,7 +477,7 @@ onMounted(() => {
 							!item?.text &&
 								item?.description &&
 								item?.description.length > 0 &&
-								(item?.description[0]?.value || item?.description[1]?.value)
+								parseI18nObj(item?.description)
 						"
 						:blocks="
 							limitTextBlocks(parseI18nObj(item?.description)?.slice(0, 1), 100)
@@ -495,11 +495,7 @@ onMounted(() => {
 							class="tag clickable"
 							@click.prevent="navigateToTagSearch(tag, item)"
 						>
-							{{
-								tag?.title?.[1]?.value
-									? parseI18nObj(tag?.title)
-									: tag?.title?.[0]?.value ?? tag.title
-							}}
+							{{ getI18nLabel(tag?.title) }}
 						</button>
 					</div>
 
@@ -514,7 +510,7 @@ onMounted(() => {
 							class="tag clickable"
 							@click.prevent="navigateToTagSearch(tag, item)"
 						>
-							{{ tag.title }}
+							{{ getI18nLabel(tag.title) }}
 						</button>
 					</div>
 				</div>

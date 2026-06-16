@@ -1,15 +1,27 @@
 <script setup>
+import { computed } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
-const { locale: _locale, locales: _locales } = useI18n();
 const localePath = useLocalePath();
+const { localizedSanityPath } = useSanityLink();
 
 const mainStore = useMainStore();
-const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
+
+const scheduleLink = computed(() => {
+	const nav = mainStore?.siteNav;
+	if (!nav?.schedulePageRoute) return localePath("/schedule");
+
+	return localizedSanityPath({
+		route: nav.schedulePageRoute,
+		slug: nav.schedulePageSlug,
+		parentSlug: nav.schedulePageParentSlug,
+		setSlug: nav.schedulePageSetSlug,
+	});
+});
 </script>
 
 <template>
-	<NuxtLink :to="localePath(`/${mainStore?.siteNav?.schedulePageRoute}`)">
+	<NuxtLink :to="scheduleLink">
 		<svg
 			width="24"
 			height="24"
@@ -54,18 +66,6 @@ svg {
       @media (min-width: 1024px) {
         fill: var(--color-bg);
       }
-    }
-  }
-}
-
-.router-link-active {
-  svg {
-    fill: var(--color-pink);
-    circle {
-      stroke: var(--color-pink);
-    }
-    path {
-      fill: var(--color-bg);
     }
   }
 }

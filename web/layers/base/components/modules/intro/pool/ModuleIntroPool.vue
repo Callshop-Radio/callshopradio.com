@@ -15,13 +15,7 @@ interface Tag {
 }
 
 function getTagLabel(tag: Tag): string {
-	if (tag?.title?.[1]?.value) {
-		return parseI18nObj(tag.title) as string;
-	}
-	if (Array.isArray(tag?.title)) {
-		return tag.title[0]?.value ?? String(tag.title);
-	}
-	return String(tag?.title ?? "");
+	return getI18nLabel(tag.title);
 }
 
 interface PoolItem {
@@ -261,11 +255,7 @@ const coverFlowDescriptionBlocks = computed(() => {
 					class="tag"
 					type="button"
 				>
-					{{
-						tag?.title?.[1]?.value
-							? parseI18nObj(tag?.title)
-							: tag?.title[0]?.value ?? tag.title
-					}}
+						{{ getI18nLabel(tag?.title) }}
 				</button>
 			</div>
 			<!-- Bild/Media-Bereich -->
@@ -321,7 +311,7 @@ const coverFlowDescriptionBlocks = computed(() => {
 							!poolItem?.text &&
 								poolItem?.description &&
 								poolItem.description.length > 0 &&
-								(poolItem.description[0]?.value || poolItem.description[1]?.value)
+							parseI18nObj(poolItem?.description)
 						"
 						:blocks="
 							limitTextBlocks(

@@ -24,6 +24,8 @@ const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 						:blank="item?.blank"
 						:route="item?.route"
 						:slug="item?.slug"
+						:parent-slug="item?.parentSlug"
+						:set-slug="item?.setSlug"
 						:func="item?.func"
 						:class="`tag ${item?.route ? item?.route : ''}`"
 					>

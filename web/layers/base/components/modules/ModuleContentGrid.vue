@@ -463,17 +463,7 @@ const getItemNonCityTags = (item: ContentItem) =>
 	(item.tags || []).filter((t: Tag) => t._type !== "tag.city");
 
 function getTagTitle(title: Tag["title"]): string {
-	// Handle both string and i18n array formats
-	if (!title) return "";
-	if (typeof title === "string") return title;
-	if (Array.isArray(title)) {
-		return parseI18nObj(title) || title[0]?.value || "";
-	}
-	// Handle object format like { de: "...", en: "..." }
-	if (typeof title === "object") {
-		return title.de || title.en || Object.values(title)[0] || "";
-	}
-	return String(title);
+	return getI18nLabel(title);
 }
 
 function isMainCity(cityTag: Tag): boolean {
@@ -1032,7 +1022,7 @@ onUnmounted(() => {
 							:class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
 							@click="toggleFilter(tag._id)"
 						>
-							{{ parseI18nObj(tag.title) }}
+							{{ getI18nLabel(tag.title) }}
 						</button>
 						<button
 							v-if="categorizedTags.cities.some((tag) => !isMainCity(tag))"
@@ -1088,7 +1078,7 @@ onUnmounted(() => {
 								:class="{ 'filter-tag--active': activeFilters.has(tag._id) }"
 								@click="toggleFilter(tag._id)"
 							>
-								{{ parseI18nObj(tag.title) }}
+								{{ getI18nLabel(tag.title) }}
 							</button>
 							<button
 								v-if="categorizedTags.cities.some((tag) => !isMainCity(tag))"
@@ -1293,7 +1283,7 @@ onUnmounted(() => {
 									}"
 									@click="toggleFilter(tag._id)"
 								>
-									{{ tag.title }}
+									{{ getI18nLabel(tag.title) }}
 								</button>
 							</div>
 						</div>
@@ -1353,7 +1343,7 @@ onUnmounted(() => {
 									}"
 									@click="toggleFilter(tag._id)"
 								>
-									{{ tag.title }}
+									{{ getI18nLabel(tag.title) }}
 								</button>
 							</div>
 						</div>
@@ -1379,7 +1369,7 @@ onUnmounted(() => {
 							v-for="tag in getItemCityTags(item)"
 							:key="tag._id"
 							class="tag city"
-						>{{ parseI18nObj(tag?.short) }}</span
+						>{{ getI18nLabel(tag?.short) }}</span
 						>
 					</div>
 
@@ -1538,7 +1528,7 @@ onUnmounted(() => {
 							v-else-if="
 								!item?.text &&
 									item?.description?.length > 0 &&
-									(item.description[0]?.value || item.description[1]?.value)
+								parseI18nObj(item?.description)
 							"
 							:blocks="
 								limitTextBlocks(
@@ -1594,11 +1584,7 @@ onUnmounted(() => {
 								class="tag clickable"
 								@click.prevent="navigateToTagSearch(tag, item)"
 							>
-								{{
-									tag?.title?.[1]?.value
-										? parseI18nObj(tag?.title)
-										: tag?.title?.[0]?.value ?? tag.title
-								}}
+								{{ getI18nLabel(tag?.title) }}
 							</button>
 						</div>
 
@@ -1611,7 +1597,7 @@ onUnmounted(() => {
 								v-for="tag in getItemNonCityTags(item)"
 								:key="tag._id"
 								class="tag"
-							>{{ tag.title }}</span
+							>{{ getI18nLabel(tag.title) }}</span
 							>
 						</div>
 					</div>

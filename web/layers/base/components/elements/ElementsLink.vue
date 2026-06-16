@@ -3,6 +3,7 @@ import { useMainStore } from "~/stores/mainStore";
 
 const { locale } = useI18n();
 const localePath = useLocalePath();
+const { localizedSanityPath } = useSanityLink();
 const currentRoute = useRoute();
 
 const props = defineProps({
@@ -26,6 +27,14 @@ const props = defineProps({
 		type: String,
 		default: () => "",
 	},
+	parentSlug: {
+		type: String,
+		default: () => "",
+	},
+	setSlug: {
+		type: String,
+		default: () => "",
+	},
 	func: {
 		type: String,
 		default: () => "",
@@ -36,34 +45,24 @@ const props = defineProps({
 	},
 });
 
-const query = currentRoute.query;
-const internalRoute = computed(() => {
-	return {
-		name: props?.route ?? "index",
-		params: props?.slug ? { slug: props?.slug } : {},
-		query: query,
-	};
-});
+const linkTarget = computed(() => {
+	if (props.type === "internal") {
+		return localizedSanityPath({
+			route: props.route || "index",
+			slug: props.slug,
+			parentSlug: props.parentSlug,
+			setSlug: props.setSlug,
+		});
+	}
 
-const { $CC } = useNuxtApp();
-const mainStore = useMainStore();
+	return props.href || localePath("/");
+});
 
 // Verbesserte Funktion zur Prüfung, ob eine Route aktiv ist, auch bei mehrfacher Verschachtelung
 const isActive = computed(() => {
 	if (props.type !== "internal" || !props.parentActive) return false;
 
-	// Index-Route ist ein Spezialfall
-	if (props.route === "index" || !props.route) {
-		return (
-			currentRoute.path === "/" || currentRoute.path === `/${locale.value}/`
-		);
-	}
-
-	// Bestimme den Pfad des Links
-	const linkPath = localePath({
-		name: props.route,
-		params: props.slug ? { slug: props.slug } : {},
-	});
+	const linkPath = linkTarget.value;
 
 	// Pfade ohne Trailing Slash normalisieren
 	const normalizedLinkPath = linkPath.endsWith("/")
@@ -80,8 +79,6 @@ const isActive = computed(() => {
 	}
 
 	// 2. Prüfe, ob die aktuelle Route eine Unterseite des Links ist
-	// Wichtig: Wir prüfen auf /path/ mit Slash am Ende, um sicherzustellen,
-	// dass wir nur vollständige Pfadsegmente matchen
 	if (
 		normalizedLinkPath !== "/" &&
 		normalizedRoutePath.startsWith(`${normalizedLinkPath}/`)
@@ -90,31 +87,35 @@ const isActive = computed(() => {
 	}
 
 	// 3. Prüfe Haupt-Sektionen der Website
-	// Wir extrahieren das erste Segment und vergleichen es mit den bekannten Hauptrouten
 	const routeSegments = normalizedRoutePath.split("/").filter(Boolean);
 	const linkSegments = normalizedLinkPath.split("/").filter(Boolean);
 
-	// Wenn keine Segmente vorhanden sind, ist es nicht aktiv
 	if (routeSegments.length === 0 || linkSegments.length === 0) return false;
 
-	// Hauptrouten-Prüfung (funktioniert auch bei tiefer verschachtelten Pfaden)
-	if (routeSegments[0] === linkSegments[0]) {
-		// Für Hauptsektionen wie 'shows', 'pool', 'words' etc.
+	// Skip locale prefix segment for comparison (e.g. /de/shows → shows)
+	const localeSegment =
+		routeSegments[0] === locale.value ? routeSegments.slice(1) : routeSegments;
+	const linkLocaleSegment =
+		linkSegments[0] === locale.value ? linkSegments.slice(1) : linkSegments;
+
+	if (localeSegment[0] && localeSegment[0] === linkLocaleSegment[0]) {
 		if (
-			["shows", "pool", "words", "info", "schedule"].includes(linkSegments[0])
+			["shows", "pool", "words", "info", "schedule"].includes(linkLocaleSegment[0])
 		) {
 			return true;
 		}
 	}
 
 	// 4. Slug-basierte Prüfung
-	// Wenn ein spezifischer Slug vorhanden ist, muss dieser exakt übereinstimmen
 	if (props.slug) {
 		return normalizedRoutePath === normalizedLinkPath;
 	}
 
 	return false;
 });
+
+const { $CC } = useNuxtApp();
+const mainStore = useMainStore();
 
 const onClick = (func) => {
 	switch (func) {
@@ -136,7 +137,7 @@ const onClick = (func) => {
 	<NuxtLink
 		v-if="type !== 'function'"
 		:key="`rt-${locale}`"
-		:to="props.type !== 'internal' ? props?.href : localePath(internalRoute)"
+		:to="linkTarget"
 		:target="props?.blank && props?.type !== 'internal' ? '_blank' : undefined"
 		:download="props.type === 'download' ? true : undefined"
 		:rel="props?.blank && props?.type !== 'internal' ? 'noopener' : undefined"
@@ -158,14 +159,6 @@ const onClick = (func) => {
 /* Normale router-link-active und router-link-exact-active Styles beibehalten */
 .router-link-exact-active {
 }
-
-/* a[target="_blank"] {
-  @apply after:content-['↗'];
-}
-
-a[download] {
-  @apply after:content-['↓'];
-} */
 
 /* Navigations-spezifische Styles */
 :where(nav) {
