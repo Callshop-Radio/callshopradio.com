@@ -226,11 +226,18 @@ export default defineNuxtConfig({
 		// identical export names). Bypasses CJS interop entirely.
 		resolve: {
 			alias: {
+				// Lodash submodules used by @sanity/mutate are CJS → alias to
+				// the ESM-native lodash-es (same export names).
 				"lodash/groupBy.js": "lodash-es/groupBy.js",
 				"lodash/isObject.js": "lodash-es/isObject.js",
 				"lodash/keyBy.js": "lodash-es/keyBy.js",
 				"lodash/partition.js": "lodash-es/partition.js",
 				"lodash/sortedIndex.js": "lodash-es/sortedIndex.js",
+				// React 19's `react/compiler-runtime.js` is a CJS shim; the
+				// standalone `react-compiler-runtime` package is ESM and
+				// exports the runtime helpers (`c`, `$dispatcherGuard`, …)
+				// that @sanity/visual-editing imports.
+				"react/compiler-runtime": "react-compiler-runtime",
 			},
 		},
 		optimizeDeps: {
