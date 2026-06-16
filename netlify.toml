@@ -1,9 +1,7 @@
 [build]
   base = "web/"
-  # Nuxt 3 writes the static asset output to .output/public/ (not dist/).
-  # Production deploys were serving an empty/stale dist/ → 404 on every
-  # hashed _nuxt/* chunk and the prerendered payload.json files.
-  publish = ".output/public"
+  # With NITRO_PRESET=netlify, Nitro writes static assets to dist/ (not .output/public/).
+  publish = "dist"
   command = "pnpm run build"
  
  [build.environment]
