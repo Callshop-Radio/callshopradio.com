@@ -21,7 +21,7 @@
 		"web:update": "pnpm up --filter web"
 	},
 	"author": "Marco Land",
-	"license": "ISC",
+	"license": "PolyForm-Noncommercial-1.0.0",
 	"dependencies": {
 		"@intlify/message-compiler": "^11.1.11"
 	},

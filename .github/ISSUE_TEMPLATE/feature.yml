@@ -1,0 +1,41 @@
+name: Feature request
+description: Suggest an improvement or new capability
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the problem you're solving and the outcome you want. Feature requests
+        for the public site may need editorial or product sign-off before implementation.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What user or editorial need does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Web frontend
+        - Sanity studio
+        - Content model
+        - Audio / player
+        - Schedule
+        - Other
+    validations:
+      required: true

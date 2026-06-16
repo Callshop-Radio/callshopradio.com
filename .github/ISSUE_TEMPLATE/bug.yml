@@ -1,0 +1,57 @@
+name: Bug report
+description: Something is broken or behaves incorrectly
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please check [CONTRIBUTING.md](../../CONTRIBUTING.md) for
+        environment setup before filing.
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What did you expect vs. what actually happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to …
+        2. Click …
+        3. See error
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: URL (if applicable)
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Web frontend
+        - Sanity studio
+        - Audio / player
+        - Schedule / LibreTime
+        - Search
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: Browser, OS, branch/commit if self-hosted
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      options:
+        - label: I searched existing issues before opening this
+          required: true

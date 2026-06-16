@@ -84,3 +84,10 @@ as the SSR fallback. Content updates trigger cache revalidation via the Sanity
 webhook (`web/server/api/revalidate.ts`).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for conventions and workflow.
+
+## License
+
+This repository is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE).
+Non-commercial use is permitted; commercial use requires a separate agreement with
+Callshop Radio. Contact [web@callshopradio.com](mailto:web@callshopradio.com) for
+licensing questions.
