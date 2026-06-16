@@ -177,11 +177,11 @@ export default defineNuxtConfig({
 	},
 
 	runtimeConfig: {
-		// Server-only secrets
+		// Server-only secrets — never exposed to the client bundle.
 		sanityWebhookSecret: process.env.SANITY_WEBHOOK_SECRET,
+		libretimeApiKey: process.env.NUXT_LIBRETIME_API_KEY,
 		public: {
 			baseUrl: process.env.NUXT_PUBLIC_SITE_URL,
-			libretimeApiKey: process.env.NUXT_LIBRETIME_API_KEY,
 		},
 	},
 

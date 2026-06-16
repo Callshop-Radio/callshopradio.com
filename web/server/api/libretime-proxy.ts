@@ -1,38 +1,36 @@
+// LibreTime is queried server-side so the API key never reaches the browser.
+// `path` is appended to a hardcoded base URL — accepting an arbitrary
+// `endpoint` URL would be SSRF + key-leak surface.
+const LIBRETIME_BASE_URL = "https://libretime.callshopradio.com";
+
 export default defineEventHandler(async (event) => {
 	const config = useRuntimeConfig();
 	const query = getQuery(event);
 
-	const endpoint = query.endpoint as string;
-	const requiresAuth = query.auth === "true";
-
-	if (!endpoint) {
+	const path = typeof query.path === "string" ? query.path : "";
+	if (!path.startsWith("/")) {
 		throw createError({
 			statusCode: 400,
-			statusMessage: "Endpoint parameter is required",
+			statusMessage: "path must start with '/'",
 		});
 	}
 
+	const headers: Record<string, string> = {
+		"Content-Type": "application/json",
+	};
+	if (config.libretimeApiKey) {
+		headers.Authorization = `Api-Key ${config.libretimeApiKey}`;
+	}
+
 	try {
-		const headers: Record<string, string> = {
-			"Content-Type": "application/json",
-		};
-
-		// Add API key if authentication is required
-		if (requiresAuth && config.public.libretimeApiKey) {
-			headers["Authorization"] = `Api-Key ${config.public.libretimeApiKey}`;
-		}
-
-		const response = await $fetch(endpoint, {
+		return await $fetch(`${LIBRETIME_BASE_URL}${path}`, {
 			headers,
-			// Disable auto error throwing to handle errors manually
 			ignoreResponseError: true,
 		});
-
-		return response;
 	} catch (error) {
 		console.error("[LibreTime Proxy] Error fetching:", error);
 		throw createError({
-			statusCode: 500,
+			statusCode: 502,
 			statusMessage: "Failed to fetch data from LibreTime API",
 		});
 	}

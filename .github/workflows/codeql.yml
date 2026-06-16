@@ -1,0 +1,38 @@
+name: CodeQL
+
+# Static analysis for JS/TS — catches injection, prototype pollution,
+# unsafe regex, etc. Free for public repos. Findings show up in the
+# repo's Security tab.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # Weekly re-scan picks up newly-published rules without waiting for
+    # the next code change. Monday 06:00 UTC = same window as Dependabot.
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["javascript-typescript"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"

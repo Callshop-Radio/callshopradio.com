@@ -1,0 +1,24 @@
+name: Gitleaks
+
+# Second line of defense for secrets, after GitHub Push Protection.
+# Scans the diff on PRs and full history on pushes to main.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  scan:
+    name: Scan for committed secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # gitleaks needs commit history to diff PR vs base — shallow checkout
+          # would only ever see one commit and miss anything earlier in the PR.
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

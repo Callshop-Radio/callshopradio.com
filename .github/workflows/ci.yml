@@ -30,7 +30,13 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
+      # Run biome with --write so auto-fixable lint/format issues are applied,
+      # then fail if anything actually changed. This forces contributors to
+      # run `pnpm format` locally instead of letting drift accumulate in main.
+      - name: Biome (apply fixes, fail on drift)
+        run: pnpm format
+      - name: Ensure formatter produced no changes
+        run: git diff --exit-code
       - name: Typecheck (advisory)
         continue-on-error: true
         run: pnpm typecheck

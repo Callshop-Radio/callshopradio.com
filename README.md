@@ -1,15 +1,24 @@
 # Callshop Radio
 
-Website and CMS for Callshop Radio — an internet radio platform (shows, sets, a
-people/venue "pool", articles, a live schedule, and a persistent audio player).
+> Community internet radio from Düsseldorf, Leipzig and Vienna — airing live Mon–Sun.
+> **Listen at [callshopradio.com](https://callshopradio.com).**
 
-- **Web** — [Nuxt](https://nuxt.com) 3.16 (with the v4 compatibility flag) + Vue 3,
-  UnoCSS + PostCSS, bilingual (EN default, `/de` prefix). Hybrid SSG/SSR, deployed
-  on Netlify.
+This repository holds the website and CMS that run the station. We're publishing
+the source as inspiration for other small radio projects — read it, learn from
+it, let your AI tools chew on it. We just ask that you build something of your
+own with it rather than redistributing it.
+
+Licensed under the **[PolyForm Noncommercial License 1.0.0](LICENSE)** —
+non-commercial use is permitted; commercial use requires a separate agreement.
+Reach out via [web@callshopradio.com](mailto:web@callshopradio.com) for
+licensing questions.
+
+## The stack
+
+- **Web** — [Nuxt](https://nuxt.com) 3.16 (v4 compat flag) + Vue 3, UnoCSS + PostCSS,
+Hybrid SSG/SSR, deployed on Netlify.
 - **Studio** — [Sanity](https://www.sanity.io) v3 content studio.
-
-Contacts: [web@callshopradio.com](mailto:web@callshopradio.com) ·
-[support@callshopradio.com](mailto:support@callshopradio.com)
+- **Live audio** — LibreTime as the scheduling backend (proxied server-side).
 
 ## Repository layout
 
@@ -21,8 +30,8 @@ callshopradio.com/
 └── netlify.toml
 ```
 
-The frontend uses a **Nuxt layer** at `web/layers/base/` for shared
-components, composables, plugins and styles. Components and composables there are
+The frontend uses a **Nuxt layer** at `web/layers/base/` for shared components,
+composables, plugins and styles. Components and composables there are
 auto-imported (no explicit import needed). Page routes live in `web/app/pages/`,
 GROQ queries in `web/queries/`, and server routes/handlers in `web/server/`.
 
@@ -71,7 +80,7 @@ Web (`web/.env`):
 | `NUXT_SANITY_API_READ_TOKEN` | Read token (preview / visual editing) |
 | `NUXT_SANITY_STUDIO_URL` | Studio URL for visual editing |
 | `NUXT_GTAG_ID` | Google Analytics (consent-gated) |
-| `NUXT_LIBRETIME_API_KEY` | LibreTime API key (live schedule) |
+| `NUXT_LIBRETIME_API_KEY` | LibreTime API key — server-only, never exposed to the client |
 | `SANITY_WEBHOOK_SECRET` | Verifies the cache-revalidation webhook |
 
 ## Rendering & deploy
@@ -83,11 +92,14 @@ with `pnpm run build` from `web/` and serves `web/dist`, with Netlify Functions
 as the SSR fallback. Content updates trigger cache revalidation via the Sanity
 webhook (`web/server/api/revalidate.ts`).
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for conventions and workflow.
+## Contributing
 
-## License
+See [CONTRIBUTING.md](CONTRIBUTING.md) for conventions and workflow. By
+contributing, you agree your changes ship under the same PolyForm Noncommercial
+license as the rest of the project.
 
-This repository is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE).
-Non-commercial use is permitted; commercial use requires a separate agreement with
-Callshop Radio. Contact [web@callshopradio.com](mailto:web@callshopradio.com) for
-licensing questions.
+## Credits & contact
+
+Built by the Callshop Radio crew. For collaboration, partnerships or licensing:
+[web@callshopradio.com](mailto:web@callshopradio.com) ·
+[support@callshopradio.com](mailto:support@callshopradio.com).

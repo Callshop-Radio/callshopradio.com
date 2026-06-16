@@ -6,16 +6,15 @@ export function useScheduleService() {
 	const weekInfoWienData = ref({});
 	const scheduleData = ref([]);
 
-	const config = useRuntimeConfig();
-
+	// LibreTime calls go through the server proxy (key stays server-side).
+	// Public endpoints (e.g. wien.callshopradio.com) are called directly.
 	const fetcher = async (url, requiresAuth = false) => {
 		try {
-			const headers = {};
-			if (requiresAuth && config.public.libretimeApiKey) {
-				headers["Authorization"] = `Api-Key ${config.public.libretimeApiKey}`;
+			if (requiresAuth) {
+				const path = new URL(url).pathname + new URL(url).search;
+				return await $fetch("/api/libretime-proxy", { query: { path } });
 			}
-			const response = await $fetch(url, { headers });
-			return response;
+			return await $fetch(url);
 		} catch (error) {
 			console.error(`[useScheduleService] Fetch error for ${url}:`, error);
 			return null;
@@ -36,29 +35,25 @@ export function useScheduleService() {
 
 	// Load all data
 	const fetchScheduleData = async () => {
-		try {
-			const weekInfoUrl = "https://libretime.callshopradio.com/api/week-info";
-			const weekInfoWienUrl =
-				"https://wien.callshopradio.com/api/week-info?days=7";
+		const weekInfoUrl = "https://libretime.callshopradio.com/api/week-info";
+		const weekInfoWienUrl =
+			"https://wien.callshopradio.com/api/week-info?days=7";
 
-			// Generate URL for upcoming shows
-			const timeWindow = getNextTwoWeeksWindow();
-			const scheduleUrl = `https://libretime.callshopradio.com/api/shows?start=${timeWindow.start}&end=${timeWindow.end}`;
+		// Generate URL for upcoming shows
+		const timeWindow = getNextTwoWeeksWindow();
+		const scheduleUrl = `https://libretime.callshopradio.com/api/shows?start=${timeWindow.start}&end=${timeWindow.end}`;
 
-			// Fetch all data in parallel via proxy
-			const [weekInfo, weekInfoWien, schedule] = await Promise.all([
-				fetcher(weekInfoUrl, true).catch(() => ({})), // Düsseldorf with auth
-				fetcher(weekInfoWienUrl, false).catch(() => ({})), // Wien without auth
-				fetcher(scheduleUrl, true).catch(() => []), // Schedule with auth
-			]);
+		// Fetch all data in parallel via proxy
+		const [weekInfo, weekInfoWien, schedule] = await Promise.all([
+			fetcher(weekInfoUrl, true).catch(() => ({})), // Düsseldorf with auth
+			fetcher(weekInfoWienUrl, false).catch(() => ({})), // Wien without auth
+			fetcher(scheduleUrl, true).catch(() => []), // Schedule with auth
+		]);
 
-			// Set data
-			weekInfoData.value = weekInfo || {};
-			weekInfoWienData.value = weekInfoWien || {};
-			scheduleData.value = schedule || [];
-		} catch (err) {
-			throw err;
-		}
+		// Set data
+		weekInfoData.value = weekInfo || {};
+		weekInfoWienData.value = weekInfoWien || {};
+		scheduleData.value = schedule || [];
 	};
 
 	// Process weekinfo data into a uniform format
@@ -75,7 +70,7 @@ export function useScheduleService() {
 
 		// Collect all events
 		let allEvents = [];
-		filtered.forEach(([dayName, dayContent]) => {
+		filtered.forEach(([_dayName, dayContent]) => {
 			// API responses have different structures depending on endpoint
 			if (Array.isArray(dayContent)) {
 				// Simple array structure
@@ -101,9 +96,7 @@ export function useScheduleService() {
 		// Mark live shows
 		allEvents = allEvents.map((event) => ({
 			...event,
-			isLive:
-				event.description &&
-				event.description.trim().toLowerCase().includes("live"),
+			isLive: event.description?.trim().toLowerCase().includes("live"),
 		}));
 
 		return allEvents;

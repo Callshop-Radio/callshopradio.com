@@ -32,16 +32,17 @@ const liveStatus = ref({
 	},
 });
 
-const config = useRuntimeConfig();
-
+// LibreTime calls go through the server proxy (key stays server-side).
+// Other endpoints (icecast, wien) are called directly — no auth needed.
 const fetcher = async (url, requiresAuth = false) => {
 	try {
-		const headers = {};
-		if (requiresAuth && config.public.libretimeApiKey) {
-			headers["Authorization"] = `Api-Key ${config.public.libretimeApiKey}`;
+		if (requiresAuth) {
+			const u = new URL(url);
+			return await $fetch("/api/libretime-proxy", {
+				query: { path: u.pathname + u.search },
+			});
 		}
-		const response = await $fetch(url, { headers });
-		return response;
+		return await $fetch(url);
 	} catch (error) {
 		console.error(`[MusicController] Fetch error for ${url}:`, error);
 		return null;
@@ -91,7 +92,7 @@ const updateLiveStatus = async () => {
 // Function to play and stop stream for Track 1
 
 // Function to play and stop stream for Track 1
-const togglePlay1 = () => {
+const _togglePlay1 = () => {
 	if (!audioEl1) return;
 
 	if (isPlaying1.value) {
@@ -140,7 +141,7 @@ const togglePlay1 = () => {
 };
 
 // Function to play and stop stream for Track 2
-const togglePlay2 = () => {
+const _togglePlay2 = () => {
 	if (!audioEl2) return;
 
 	if (isPlaying2.value) {
@@ -218,12 +219,12 @@ const isCurrentShowLive2 = computed(() => {
 });
 
 // Helper functions to determine the correct live status
-const getActualLiveStatus1 = computed(() => {
+const _getActualLiveStatus1 = computed(() => {
 	const { onAirLight } = liveStatus.value.stream1;
 	return onAirLight?.on_air_light && isCurrentShowLive1.value;
 });
 
-const getActualLiveStatus2 = computed(() => {
+const _getActualLiveStatus2 = computed(() => {
 	const { onAirLight } = liveStatus.value.stream2;
 	return onAirLight?.on_air_light && isCurrentShowLive2.value;
 });
@@ -279,7 +280,7 @@ const getCurrentName1 = computed(() => {
 		const hoursNext = date.getUTCHours();
 		const minutesNext =
 			date.getUTCMinutes() < 10
-				? "0" + date.getUTCMinutes()
+				? `0${date.getUTCMinutes()}`
 				: date.getUTCMinutes();
 
 		return `Next (${hoursNext}:${minutesNext}): ${parseString(nextShow.name)}`;
@@ -344,7 +345,7 @@ const getCurrentName2 = computed(() => {
 		const hoursNext = date.getUTCHours();
 		const minutesNext =
 			date.getUTCMinutes() < 10
-				? "0" + date.getUTCMinutes()
+				? `0${date.getUTCMinutes()}`
 				: date.getUTCMinutes();
 
 		return `Next (${hoursNext}:${minutesNext}): ${parseString(nextShow.name)}`;

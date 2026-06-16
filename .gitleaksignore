@@ -1,0 +1,7 @@
+# Historical leaks — both tokens have been rotated. We keep these
+# fingerprints listed so gitleaks ignores known-and-handled findings
+# instead of failing every CI run. DO NOT add fresh findings here:
+# new leaks must be rotated, not silenced.
+ea297bd4ee867ad961b004c0221c9824876609c2:web/.netlify/functions-internal/server/chunks/nitro/nitro.mjs:generic-api-key:4542
+ea297bd4ee867ad961b004c0221c9824876609c2:web/.netlify/functions-internal/server/chunks/nitro/nitro.mjs:generic-api-key:4555
+0f80cb5890e4d2618660509ffa930a3fc787c26b:web/nuxt.config.ts:generic-api-key:36
