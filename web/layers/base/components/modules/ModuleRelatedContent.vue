@@ -233,18 +233,6 @@ function getItemNonCityTags(item) {
 	return item?.tags.filter((tag) => tag._type !== "tag.city");
 }
 
-function getTagTitle(title) {
-	if (!title) return "";
-	if (typeof title === "string") return title;
-	if (Array.isArray(title)) {
-		return parseI18nObj(title) || title[0]?.value || "";
-	}
-	if (typeof title === "object") {
-		return title.de || title.en || Object.values(title)[0] || "";
-	}
-	return String(title);
-}
-
 // Watcher für visibleItems, um Artwork-URLs für neue Items zu laden
 watch(
 	visibleItems,
@@ -286,29 +274,6 @@ onMounted(() => {
 				:key="item?._id"
 				:class="`related-item related-item--${style} ${typeClass}`"
 			>
-				<!-- Words: all tags combined top-right -->
-				<div
-					v-if="
-						type === 'words' &&
-							(getItemCityTags(item).length > 0 ||
-								getItemNonCityTags(item).length > 0)
-					"
-					class="related-item__tags tags city-tags related-item__tags--words"
-				>
-					<span
-						v-for="tag in getItemCityTags(item)"
-						:key="tag._id"
-						class="tag city"
-					>{{ parseI18nObj(tag?.short) }}</span
-					>
-					<span
-						v-for="tag in getItemNonCityTags(item)"
-						:key="tag._id"
-						class="tag"
-					>{{ getTagTitle(tag.title) }}</span
-					>
-				</div>
-
 				<!-- Bild -->
 				<NuxtLink
 					v-if="item?.slug"
@@ -487,7 +452,11 @@ onMounted(() => {
 						</h3>
 					</NuxtLink>
 					<RichText
-						v-if="item?.useTeaserText && item?.textTeaser"
+						v-if="type === 'words'"
+						:blocks="parseI18nObj(item?.textTeaser)"
+					/>
+					<RichText
+						v-else-if="item?.useTeaserText && item?.textTeaser"
 						:blocks="parseI18nObj(item?.textTeaser)"
 					/>
 					<RichText
@@ -508,9 +477,28 @@ onMounted(() => {
 						"
 					/>
 
+					<!-- Words: Non-City Tags -->
+					<div
+						v-if="type === 'words' && getItemNonCityTags(item).length > 0"
+						class="related-item__tags tags"
+					>
+						<button
+							v-for="tag in getItemNonCityTags(item)"
+							:key="tag._id"
+							class="tag clickable"
+							@click.prevent="navigateToTagSearch(tag, item)"
+						>
+							{{
+								tag?.title?.[1]?.value
+									? parseI18nObj(tag?.title)
+									: tag?.title?.[0]?.value ?? tag.title
+							}}
+						</button>
+					</div>
+
 					<!-- Nicht-City Tags anzeigen -->
 					<div
-						v-if="type !== 'words' && getItemNonCityTags(item).length > 0"
+						v-else-if="getItemNonCityTags(item).length > 0"
 						class="related-item__tags tags"
 					>
 						<button
@@ -776,6 +764,13 @@ onMounted(() => {
       gap: calc(var(--big-padding) * 3);
     }
 
+    .tag {
+      &.city {
+        background-color: var(--color-green);
+        color: var(--color-white);
+      }
+    }
+
     .related-item {
       position: relative;
       flex: 1 1 50%;
@@ -785,27 +780,24 @@ onMounted(() => {
       border: 1px solid var(--color-text);
       overflow: hidden;
       padding: 0;
+      margin-right: 0;
 
-      &__tags--words {
-        position: absolute;
-        top: var(--base-padding);
-        right: var(--base-padding);
-        z-index: 2;
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: flex-end;
-        align-items: flex-start;
-        gap: var(--small-padding);
-        flex-grow: 0;
-        height: auto;
-        margin: 0;
+      .related-item__content__interactive,
+      .city-tags {
+        display: none;
       }
 
-      &__image img {
+      &__link {
+        color: var(--color-bg);
+      }
+
+      &__image {
         width: 100%;
-        height: auto;
-        aspect-ratio: 3 / 1.5 !important;
-        object-fit: cover;
+
+        img {
+          aspect-ratio: 3 / 1.5 !important;
+          width: 100%;
+        }
       }
 
       &__content {
@@ -813,6 +805,7 @@ onMounted(() => {
         gap: var(--big-padding);
         margin: 0;
         padding: var(--base-margin) var(--mid-padding);
+        color: var(--color-bg);
 
         .read-more {
           position: absolute;
@@ -825,29 +818,33 @@ onMounted(() => {
         }
 
         .related-item__title {
-          padding-top: var(--big-padding);
-          font-size: var(--large-font-size);
-          font-weight: 400;
-          font-family: var(--font-text-regular);
-          color: var(--color-bg);
-          text-transform: none;
-        }
-
-        .rich-text {
-          padding-bottom: var(--big-padding);
           color: var(--color-bg);
         }
 
         .related-item__tags {
+          position: absolute;
+          top: var(--base-padding);
+          right: var(--base-padding);
+          color: var(--color-bg);
           flex-grow: 0;
-        }
-      }
-    }
 
-    .tag {
-      &.city {
-        background-color: var(--color-green);
-        color: var(--color-white);
+          .tag {
+            background-color: transparent;
+            color: var(--color-bg);
+            padding: 2px 8px;
+            border: 1px solid var(--color-bg);
+
+            &:hover {
+              background-color: var(--color-bg);
+              color: var(--color-text);
+            }
+          }
+        }
+
+        .rich-text,
+        .rich-text * {
+          color: var(--color-bg);
+        }
       }
     }
   }

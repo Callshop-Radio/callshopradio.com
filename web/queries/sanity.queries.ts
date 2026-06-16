@@ -704,7 +704,8 @@ export const ENTRY_QUERY = `
         "tags": tags[]->{
             _id,
             _type,
-            title
+            title,
+            short
         }| order(lower(title)),
         "matchingTagsCount": count((tags[]->._id)[@ in ^.^.tags[]->._id])
     },

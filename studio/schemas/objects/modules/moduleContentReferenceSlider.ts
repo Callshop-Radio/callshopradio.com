@@ -207,7 +207,7 @@ export const moduleContentReferenceSlider = defineType({
     prepare(selection) {
       const { style, type } = selection;
       return {
-        title: "Content Slider",
+        title: "Content Teaser",
         subtitle:
           "'" +
           type.charAt(0).toUpperCase() +

@@ -431,7 +431,7 @@ const currentArticleText = computed(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 var(--mid-padding);
+  padding: var(--content-gap) var(--mid-padding) 0;
   box-sizing: border-box;
 }
 
@@ -605,11 +605,12 @@ const currentArticleText = computed(() => {
 
 @media screen and (max-width: 900px) {
   .article-media {
-    width: 100%;
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(50% - 50vw);
     height: 50vh;
     max-height: 50vh;
     padding: 0;
-    margin: 0;
 
     img,
     .article-image-placeholder {
@@ -635,12 +636,12 @@ const currentArticleText = computed(() => {
   }
 
   .article-content {
-    padding: 0 var(--mid-padding);
+    padding: var(--content-gap) var(--mid-padding) 0;
   }
 
   .article-title-section {
     width: 100%;
-    margin: var(--base-margin) auto;
+    margin: 0 auto var(--big-margin);
     padding: 0;
 
     .article-title {

@@ -20,6 +20,7 @@ const mainStore = useMainStore();
 const { getItemImage } = useContentImage();
 const { getItemRoute } = useContentRoute();
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
+const { navigateToTagSearch } = useTagNavigation();
 
 const props = defineProps({
 	module: { type: Object, required: true },
@@ -1382,29 +1383,6 @@ onUnmounted(() => {
 						>
 					</div>
 
-					<!-- Words: all tags combined top-right -->
-					<div
-						v-if="
-							contentType === 'words' &&
-								(getItemCityTags(item).length > 0 ||
-									getItemNonCityTags(item).length > 0)
-						"
-						class="grid-item__tags tags city-tags grid-item__tags--words"
-					>
-						<span
-							v-for="tag in getItemCityTags(item)"
-							:key="tag._id"
-							class="tag city"
-						>{{ parseI18nObj(tag?.short) }}</span
-						>
-						<span
-							v-for="tag in getItemNonCityTags(item)"
-							:key="tag._id"
-							class="tag"
-						>{{ getTagTitle(tag.title) }}</span
-						>
-					</div>
-
 					<!-- Image -->
 					<NuxtLink
 						v-if="item?.slug"
@@ -1453,7 +1431,10 @@ onUnmounted(() => {
 
 					<!-- Content -->
 					<div class="grid-item__content">
-						<section class="grid-item__content__interactive">
+						<section
+							v-if="contentType !== 'words'"
+							class="grid-item__content__interactive"
+						>
 							<div
 								v-if="item.datetime || item.publishedAt"
 								class="grid-item__date"
@@ -1542,7 +1523,11 @@ onUnmounted(() => {
 
 						<!-- Teaser Text -->
 						<RichText
-							v-if="item?.useTeaserText && item?.textTeaser"
+							v-if="contentType === 'words'"
+							:blocks="parseI18nObj(item?.textTeaser)"
+						/>
+						<RichText
+							v-else-if="item?.useTeaserText && item?.textTeaser"
 							:blocks="parseI18nObj(item?.textTeaser)"
 						/>
 						<RichText
@@ -1594,12 +1579,32 @@ onUnmounted(() => {
 							"
 						/>
 
-						<!-- Non-City Tags -->
+						<!-- Words: Non-City Tags -->
 						<div
 							v-if="
-								contentType !== 'words' &&
+								contentType === 'words' &&
+									module.showTags &&
 									getItemNonCityTags(item).length > 0
 							"
+							class="grid-item__tags tags"
+						>
+							<button
+								v-for="tag in getItemNonCityTags(item)"
+								:key="tag._id"
+								class="tag clickable"
+								@click.prevent="navigateToTagSearch(tag, item)"
+							>
+								{{
+									tag?.title?.[1]?.value
+										? parseI18nObj(tag?.title)
+										: tag?.title?.[0]?.value ?? tag.title
+								}}
+							</button>
+						</div>
+
+						<!-- Non-City Tags -->
+						<div
+							v-else-if="getItemNonCityTags(item).length > 0"
 							class="grid-item__tags tags"
 						>
 							<span
@@ -2284,8 +2289,17 @@ onUnmounted(() => {
     aspect-ratio: 3 / 4;
   }
 
-  &.words .content-grid__items {
-    gap: calc(var(--big-padding) * 3);
+  &.words {
+    .content-grid__items {
+      gap: calc(var(--big-padding) * 3);
+    }
+
+    .tag {
+      &.city {
+        background-color: var(--color-green);
+        color: var(--color-white);
+      }
+    }
 
     .grid-item {
       position: relative;
@@ -2296,41 +2310,32 @@ onUnmounted(() => {
       border: 1px solid var(--color-text);
       overflow: hidden;
       padding: 0;
+      margin-right: 0;
 
-      .grid-item__content__interactive {
+      .grid-item__content__interactive,
+      .city-tags {
         display: none;
       }
 
-      .grid-item__tags--words {
-        position: absolute;
-        top: var(--base-padding);
-        right: var(--base-padding);
-        z-index: 2;
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: flex-end;
-        align-items: flex-start;
-        gap: var(--small-padding);
-        flex-grow: 0;
-        height: auto;
-        margin: 0;
+      &__link {
+        color: var(--color-bg);
       }
 
-      img {
+      &__image {
         width: 100%;
-        height: auto;
-        aspect-ratio: 3 / 2;
-        object-fit: cover;
-      }
 
-      &__image img {
-        aspect-ratio: 3 / 1.5;
+        img {
+          aspect-ratio: 3 / 1.5 !important;
+          width: 100%;
+        }
       }
 
       &__content {
+        position: relative;
         gap: var(--big-padding);
         margin: 0;
         padding: var(--base-margin) var(--mid-padding);
+        color: var(--color-bg);
 
         .read-more {
           position: absolute;
@@ -2343,15 +2348,31 @@ onUnmounted(() => {
         }
 
         .grid-item__title {
-          padding-top: var(--big-padding);
-          font-size: var(--large-font-size);
-          font-weight: 400;
-          font-family: var(--font-text-regular);
           color: var(--color-bg);
         }
 
-        .rich-text {
-          padding-bottom: var(--big-padding);
+        .grid-item__tags {
+          position: absolute;
+          top: var(--base-padding);
+          right: var(--base-padding);
+          color: var(--color-bg);
+          flex-grow: 0;
+
+          .tag {
+            background-color: transparent;
+            color: var(--color-bg);
+            padding: 2px 8px;
+            border: 1px solid var(--color-bg);
+
+            &:hover {
+              background-color: var(--color-bg);
+              color: var(--color-text);
+            }
+          }
+        }
+
+        .rich-text,
+        .rich-text * {
           color: var(--color-bg);
         }
       }
