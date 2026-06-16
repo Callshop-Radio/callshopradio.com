@@ -15,12 +15,12 @@ import { migrateToLanguageField } from "sanity-plugin-internationalized-array/mi
  * Apply:    cd studio && pnpm sanity migration run migrate-internationalized-array-to-v5 --no-dry-run --no-confirm
  */
 const DOCUMENT_TYPES = [
-	"person",
-	"venue",
-	"article",
-	"page",
-	"tag.city",
-	"fallbackGlobal",
+  "person",
+  "venue",
+  "article",
+  "page",
+  "tag.city",
+  "fallbackGlobal",
 ];
 
 export default migrateToLanguageField(DOCUMENT_TYPES);
