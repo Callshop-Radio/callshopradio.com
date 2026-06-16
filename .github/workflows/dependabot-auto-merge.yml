@@ -10,5 +10,5 @@ permissions:
 
 jobs:
   auto-merge:
-    uses: Callshop-Radio/.github/.github/workflows/dependabot-auto-merge.yml@main
+    uses: Callshop-Radio/.github/.github/workflows/dependabot-auto-merge.yml@e3e58bbfc9a8acd262c5ea7d7b2579e928a06c7f
     secrets: inherit

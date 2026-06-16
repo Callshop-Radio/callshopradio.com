@@ -15,10 +15,13 @@ const props = withDefaults(
 		items: Array<{ _id?: string }>;
 		navLabel?: string;
 		equalizeCardHeights?: boolean;
+		/** Area accent for dots and arrow hover — e.g. var(--color-blue) for pool */
+		accentColor?: string;
 	}>(),
 	{
 		navLabel: "Slide",
 		equalizeCardHeights: false,
+		accentColor: "var(--color-pink)",
 	},
 );
 
@@ -99,7 +102,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-	<div v-if="total > 0" class="intro-cover-flow">
+	<div
+		v-if="total > 0"
+		class="intro-cover-flow"
+		:style="{ '--cover-flow-accent': accentColor }"
+	>
 		<div class="cover-flow">
 			<button
 				v-if="total > 1"
@@ -254,7 +261,7 @@ onUnmounted(() => {
 
   &:hover:not(:disabled) svg path {
     @media (min-width: 1024px) {
-      fill: var(--color-pink);
+      fill: var(--cover-flow-accent);
     }
   }
 
@@ -290,12 +297,12 @@ onUnmounted(() => {
   transition: background-color var(--transition-fast);
 
   &.is-selected {
-    background-color: var(--color-pink);
+    background-color: var(--cover-flow-accent);
   }
 
   &:hover:not(:disabled) {
     @media (min-width: 1024px) {
-      background-color: var(--color-pink);
+      background-color: var(--cover-flow-accent);
     }
   }
 
