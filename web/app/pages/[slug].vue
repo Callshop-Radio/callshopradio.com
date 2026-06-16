@@ -9,11 +9,9 @@ definePageMeta({
 const query = groq`${SLUG_PAGE_QUERY}`;
 
 const route = useRoute();
-const queryParams = computed(() => ({
-	slug: String(route.params.slug),
-}));
-const { data } = await useCachedSanityQuery(query, queryParams, {
-	key: "slug-page",
+
+const { data } = await useCachedSanityQuery(query, {
+	slug: route?.params?.slug,
 });
 
 if (!data?.value) {

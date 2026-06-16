@@ -9,11 +9,8 @@ definePageMeta({
 const route = useRoute();
 
 const query = groq`${SHOW_QUERY}`;
-const queryParams = computed(() => ({
-	slug: String(route.params.slug),
-}));
-const { data } = await useCachedSanityQuery(query, queryParams, {
-	key: "show-detail",
+const { data } = await useCachedSanityQuery(query, {
+	slug: route.params.slug,
 });
 
 // Fehlerbehandlung hinzufügen

@@ -19,7 +19,6 @@ const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 		class="open"
 		@click="mainStore?.toggleMenu"
 	>
-		stroke="var(--color-text)"
 		<circle
 			cx="12"
 			cy="12"

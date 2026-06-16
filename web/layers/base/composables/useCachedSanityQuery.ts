@@ -1,6 +1,3 @@
-import type { MaybeRefOrGetter } from "vue";
-import { computed, toValue } from "vue";
-
 /**
  * Cached Sanity Query Composable
  *
@@ -9,22 +6,18 @@ import { computed, toValue } from "vue";
  */
 export const useCachedSanityQuery = async <_T = unknown>(
 	query: string,
-	params?: MaybeRefOrGetter<Record<string, unknown>>,
+	params?: Record<string, unknown>,
 	options?: {
 		key?: string;
 	},
 ) => {
 	const nuxtApp = useNuxtApp();
-	const resolvedParams = computed(() => toValue(params) ?? {});
 
-	const queryKey = computed(() => {
-		if (options?.key) {
-			return `${options.key}-${JSON.stringify(resolvedParams.value)}`;
-		}
-		return `sanity-${btoa(query + JSON.stringify(resolvedParams.value)).slice(0, 32)}`;
-	});
+	const queryKey =
+		options?.key ||
+		`sanity-${btoa(query + JSON.stringify(params || {})).slice(0, 32)}`;
 
-	return useSanityQuery(query, resolvedParams, {
+	return useSanityQuery(query, params, {
 		getCachedData: (key: string) => {
 			const cachedData = nuxtApp.payload.data[key];
 

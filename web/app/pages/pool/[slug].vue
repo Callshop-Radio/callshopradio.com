@@ -10,11 +10,9 @@ const route = useRoute();
 
 // Den "set"-Parameter aus der URL-Route extrahieren
 const query = groq`${POOL_PROFILE_QUERY}`;
-const queryParams = computed(() => ({
-	slug: String(route.params.slug),
-}));
-const { data } = await useCachedSanityQuery(query, queryParams, {
-	key: "pool-detail",
+
+const { data } = await useCachedSanityQuery(query, {
+	slug: route.params.slug,
 });
 
 // Fehlerbehandlung hinzufügen
