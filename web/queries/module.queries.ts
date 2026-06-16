@@ -5,7 +5,13 @@
  * These queries match the original MODULE_QUERY data structure.
  */
 
-import { IMAGE_QUERY, RICH_TEXT_QUERY } from "./sanity.snippets";
+import {
+	IMAGE_QUERY,
+	PARENT_SHOW_LINK_FRAGMENT,
+	PERSON_LINK_FRAGMENT,
+	RICH_TEXT_QUERY,
+	SITE_PATH_FRAGMENT,
+} from "./sanity.snippets";
 
 // ==================== SET QUERIES ====================
 
@@ -50,9 +56,7 @@ export const SET_PROJECTION = `{
     short
   } | order(lower(title)),
   persons[]->{
-    ...,
-    _id,
-    title
+    ${PERSON_LINK_FRAGMENT}
   },
   "parentShow": *[_type == "show" && references(^._id)][0]{
     ...,
@@ -67,7 +71,9 @@ export const SET_PROJECTION = `{
       title,
       short
     } | order(lower(title)),
-  }
+    ${SITE_PATH_FRAGMENT}
+  },
+  ${SITE_PATH_FRAGMENT}
 }`;
 
 /**
@@ -105,7 +111,8 @@ export const POOL_PROJECTION = `{
     _id,
     title
   } | order(lower(title)),
-  location
+  location,
+  ${SITE_PATH_FRAGMENT}
 }`;
 
 export const POOL_LIST_QUERY = `*[${POOL_BASE_FILTER}] | order(_updatedAt desc)[$start...$end] ${POOL_PROJECTION}`;
@@ -143,7 +150,8 @@ export const ARTICLE_PROJECTION = `{
     _id,
     title,
     short
-  } | order(lower(title))
+  } | order(lower(title)),
+  ${SITE_PATH_FRAGMENT}
 }`;
 
 export const ARTICLE_LIST_QUERY = `*[${ARTICLE_BASE_FILTER}] | order(datetime desc)[$start...$end] ${ARTICLE_PROJECTION}`;
@@ -178,7 +186,8 @@ export const SHOW_PROJECTION = `{
     _id,
     title,
     short
-  } | order(lower(title))
+  } | order(lower(title)),
+  ${SITE_PATH_FRAGMENT}
 }`;
 
 export const SHOW_LIST_QUERY = `*[${SHOW_BASE_FILTER}] | order(datetime desc)[$start...$end] ${SHOW_PROJECTION}`;

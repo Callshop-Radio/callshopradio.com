@@ -4,13 +4,14 @@ import { SHOW_QUERY } from "~~/queries/sanity.queries.ts";
 
 definePageMeta({
 	bodyClass: "show-detail",
+	key: (route) => route.fullPath,
 });
 
 const route = useRoute();
 
 const query = groq`${SHOW_QUERY}`;
-const { data } = await useCachedSanityQuery(query, {
-	slug: route.params.slug,
+const { data } = await useDetailSanityQuery(query, {
+	keyPrefix: "show-detail",
 });
 
 // Fehlerbehandlung hinzufügen

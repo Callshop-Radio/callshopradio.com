@@ -4,6 +4,7 @@ import { POOL_PROFILE_QUERY } from "~~/queries/sanity.queries.ts";
 
 definePageMeta({
 	bodyClass: "pool-detail",
+	key: (route) => route.fullPath,
 });
 
 const route = useRoute();
@@ -11,8 +12,8 @@ const route = useRoute();
 // Den "set"-Parameter aus der URL-Route extrahieren
 const query = groq`${POOL_PROFILE_QUERY}`;
 
-const { data } = await useCachedSanityQuery(query, {
-	slug: route.params.slug,
+const { data } = await useDetailSanityQuery(query, {
+	keyPrefix: "pool-detail",
 });
 
 // Fehlerbehandlung hinzufügen

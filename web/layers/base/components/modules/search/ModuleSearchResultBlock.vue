@@ -14,10 +14,9 @@ import { useMainStore } from "~/stores/mainStore";
 import type { ContentItem, Image, Tag } from "~/types/sanity";
 
 const { locale: _locale } = useI18n();
-const localePath = useLocalePath();
 const mainStore = useMainStore();
 
-const { getItemRoute, getShowRoute, getPoolRoute } = useContentRoute();
+const { archive } = useAppPath();
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 
 const props = defineProps({
@@ -200,7 +199,7 @@ watch(
 		<!-- Header with Category Pill -->
 		<div class="search-result-block__header">
 			<NuxtLink
-				:to="type === 'shows' ? localePath('/shows') : localePath(`/${type}`)"
+				:to="archive(type)"
 				class="search-result-block__header__link"
 			>
 				<h2
@@ -235,11 +234,7 @@ watch(
 				</div>
 
 				<!-- Image -->
-				<NuxtLink
-					v-if="item?.slug"
-					:to="getItemRoute(item)"
-					class="teaser-item__link"
-				>
+				<ElementsContentLink :item="item" class="teaser-item__link">
 					<div class="teaser-item__image">
 						<!-- Set with SoundCloud -->
 						<template v-if="item._type === 'set'">
@@ -280,7 +275,7 @@ watch(
 							>
 						</template>
 					</div>
-				</NuxtLink>
+				</ElementsContentLink>
 
 				<!-- Content -->
 				<div class="teaser-item__content">
@@ -317,18 +312,15 @@ watch(
 						class="teaser-item__content__show"
 					>
 						<!-- Only show parent show link if NOT no-show -->
-						<NuxtLink
-							v-if="
-								item.parentShow?.title?.toLowerCase() !== 'no-show' &&
-									item.parentShow?.slug
-							"
-							:to="getShowRoute(item.parentShow)"
+						<ElementsContentLink
+							v-if="item.parentShow?.title?.toLowerCase() !== 'no-show'"
+							:show="item.parentShow"
 							class="teaser-item__link"
 						>
 							<h3 class="teaser-item__title show-title">
 								{{ item.parentShow.title }}
 							</h3>
-						</NuxtLink>
+						</ElementsContentLink>
 						<!-- If no-show: show only set title -->
 						<h3
 							v-else-if="
@@ -347,14 +339,14 @@ watch(
 								:key="artist._id"
 								class="teaser-item__artist"
 							>
-								<NuxtLink
+								<ElementsContentLink
 									v-if="artist?.poolVisibility"
-									:to="getPoolRoute(artist)"
+									:pool="artist"
 									class="teaser-item__link"
 								>
 									{{ artist.title
 									}}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
-								</NuxtLink>
+								</ElementsContentLink>
 								<span v-else>
 									{{ artist.title
 									}}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
@@ -364,15 +356,15 @@ watch(
 					</div>
 
 					<!-- Title for other content -->
-					<NuxtLink
+					<ElementsContentLink
 						v-if="item._type !== 'set'"
-						:to="getItemRoute(item)"
+						:item="item"
 						class="teaser-item__link"
 					>
 						<h3 class="teaser-item__title">
 							{{ item?.title || item?.name }}
 						</h3>
-					</NuxtLink>
+					</ElementsContentLink>
 
 					<!-- Teaser text (for words) -->
 					<RichText

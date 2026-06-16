@@ -4,14 +4,13 @@ import { SLUG_PAGE_QUERY } from "~~/queries/sanity.queries";
 
 definePageMeta({
 	bodyClass: "page--default",
+	key: (route) => route.fullPath,
 });
 
 const query = groq`${SLUG_PAGE_QUERY}`;
 
-const route = useRoute();
-
-const { data } = await useCachedSanityQuery(query, {
-	slug: route?.params?.slug,
+const { data } = await useDetailSanityQuery(query, {
+	keyPrefix: "slug-page",
 });
 
 if (!data?.value) {

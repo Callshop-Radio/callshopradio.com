@@ -17,6 +17,7 @@ useHead({
 });
 
 const localePath = useLocalePath();
+const { to, searchTag } = useAppPath();
 
 // ==================== STATE ====================
 const searchQuery = ref("");
@@ -440,14 +441,13 @@ const handleKeydown = (event) => {
 	}
 };
 
-// Get the URL path for a search result
+// Get the localized URL path for a search result
 const getResultPath = (item) => {
 	if (item._type.startsWith("tag.")) {
-		return localePath(`/search?q=${encodeURIComponent(item.title)}`);
+		return searchTag(item.title);
 	}
 
-	const path = resolveContentItemPath(item);
-	return path ? localePath(path) : null;
+	return to(item.path) ?? null;
 };
 
 const selectAutocompleteItem = (item) => {

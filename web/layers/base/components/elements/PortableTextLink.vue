@@ -10,6 +10,10 @@ const props = defineProps({
 		type: String,
 		default: "external",
 	},
+	path: {
+		type: String,
+		default: "",
+	},
 	href: {
 		type: String,
 		default: "",
@@ -52,21 +56,13 @@ const props = defineProps({
 	},
 });
 
-const { localizedSanityPath } = useSanityLink();
+const { to } = useAppPath();
 const { $CC } = useNuxtApp();
 const mainStore = useMainStore();
 
 const linkTarget = computed(() => {
 	if (props.type === "internal") {
-		return localizedSanityPath({
-			type: props.type,
-			route: props.route || undefined,
-			slug: props.slug,
-			parentSlug: props.parentSlug || undefined,
-			setSlug: props.setSlug || undefined,
-			refType: props.refType || undefined,
-			reference: props.reference || undefined,
-		});
+		return to(props.path) ?? "#";
 	}
 
 	if (props.type === "external") {

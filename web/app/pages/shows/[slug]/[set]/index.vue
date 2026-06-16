@@ -4,13 +4,15 @@ import { SET_QUERY } from "~~/queries/sanity.queries.ts";
 
 definePageMeta({
 	bodyClass: "set-detail",
+	key: (route) => route.fullPath,
 });
 
 const route = useRoute();
 
 const query = groq`${SET_QUERY}`;
-const { data } = await useCachedSanityQuery(query, {
-	slug: route.params.set,
+const { data } = await useDetailSanityQuery(query, {
+	keyPrefix: "set-detail",
+	routeParam: "set",
 });
 
 if (!data.value) {

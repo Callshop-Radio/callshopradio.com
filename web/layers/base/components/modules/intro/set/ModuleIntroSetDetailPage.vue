@@ -3,8 +3,6 @@ import { computed, nextTick, onMounted, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-const { getItemRoute, getShowRoute, getPoolRoute } = useContentRoute();
-
 // Template-Referenzen
 const setContentRef = ref<HTMLElement | null>(null);
 const setMainRef = ref<HTMLElement | null>(null);
@@ -266,10 +264,7 @@ onMounted(() => {
 		<div ref="setMainRef" class="set-main">
 			<!-- Bild/Media-Bereich -->
 			<div class="set-media">
-				<NuxtLink
-					v-if="set"
-					:to="getItemRoute(set)"
-					class="grid-item__link">
+				<ElementsContentLink :item="set" class="grid-item__link">
 					<img
 						v-if="artworkUrl"
 						:src="artworkUrl"
@@ -282,7 +277,7 @@ onMounted(() => {
 						class="track-artwork-placeholder"
 						@vue:mounted="loadArtworkUrl"
 					/>
-				</NuxtLink>
+				</ElementsContentLink>
 			</div>
 
 			<!-- Content-Bereich -->
@@ -325,29 +320,29 @@ onMounted(() => {
 							</h3>
 						</div>
 						<div class="set-show-title">
-							<NuxtLink
+							<ElementsContentLink
 								v-if="set?.parentShow?.title !== 'No Show' && set?.parentShow"
-								:to="getShowRoute(set?.parentShow)"
+								:show="set?.parentShow"
 								class="set__link set-title"
 							>
 								<h2 v-if="set?.parentShow?.title" class="set-title">
 									{{ set?.parentShow?.title }}
 								</h2>
-							</NuxtLink>
+							</ElementsContentLink>
 							<div>
 								<h3
 									v-for="(artist, index) in set.persons"
 									:key="artist._key"
 									class="set__artist"
 								>
-									<NuxtLink
+									<ElementsContentLink
 										v-if="artist?.poolVisibility"
-										:to="getPoolRoute(artist)"
+										:pool="artist"
 										class="set__artist"
 									>
 										{{ artist.title
 										}}{{ index < set.persons.length - 1 ? "," : "" }}&nbsp;
-									</NuxtLink>
+									</ElementsContentLink>
 									<span v-else class="set__artist">
 										{{ artist.title
 										}}{{ index < set.persons.length - 1 ? "," : "" }}&nbsp;

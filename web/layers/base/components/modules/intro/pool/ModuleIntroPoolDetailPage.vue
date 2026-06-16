@@ -4,8 +4,6 @@ import { useMainStore } from "~/stores/mainStore";
 import type { Image } from "~/types/sanity";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-const { getItemRoute } = useContentRoute();
-
 // Template-Referenzen (wie Set für Höhen-Sync)
 const poolContentRef = ref<HTMLElement | null>(null);
 const poolMainRef = ref<HTMLElement | null>(null);
@@ -148,15 +146,15 @@ onMounted(() => {
         <div class="pool-details-inner">
           <div class="pool-header">
             <div class="pool-title">
-              <NuxtLink
-                :to="getItemRoute(poolItem)"
+              <ElementsContentLink
+                :item="poolItem"
                 class="pool__link pool-title"
                 :aria-label="itemTitle"
               >
                 <h2 class="pool-title">
                   {{ itemTitle }}
                 </h2>
-              </NuxtLink>
+              </ElementsContentLink>
             </div>
             <div v-if="poolItem?.cityTags?.length || displayTags.length > 0" class="pool-tags tags">
               <button
@@ -189,7 +187,7 @@ onMounted(() => {
                   :key="show._id"
                   class="pool-ref-item"
                 >
-                  <NuxtLink :to="getItemRoute(show)" class="pool-ref-link">
+                  <ElementsContentLink :item="show" class="pool-ref-link">
                     <div class="pool-ref-info">
                       <svg
                         viewBox="0 0 22 22"
@@ -206,7 +204,7 @@ onMounted(() => {
                       </svg>
                       <h4 class="tag">{{ show.title }}</h4>
                     </div>
-                  </NuxtLink>
+                  </ElementsContentLink>
                 </div>
               </div>
             </section>
@@ -239,9 +237,9 @@ onMounted(() => {
                   :key="person._id"
                   class="pool-ref-item tags"
                 >
-                  <NuxtLink :to="getItemRoute(person)" class="pool-ref-link">
+                  <ElementsContentLink :item="person" class="pool-ref-link">
                     <h4 class="tag">{{ person.title }}</h4>
-                  </NuxtLink>
+                  </ElementsContentLink>
                 </div>
               </div>
             </section>
@@ -273,9 +271,9 @@ onMounted(() => {
                   :key="venue._id"
                   class="pool-ref-item tags"
                 >
-                  <NuxtLink :to="getItemRoute(venue)" class="pool-ref-link">
+                  <ElementsContentLink :item="venue" class="pool-ref-link">
                     <h4 class="tag">{{ venue.title }}</h4>
-                  </NuxtLink>
+                  </ElementsContentLink>
                 </div>
               </div>
             </section>

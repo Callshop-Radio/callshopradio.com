@@ -1,10 +1,12 @@
 import type { Ref } from "vue";
 import { computed, ref, watch } from "vue";
+import { SITE_PATH_FRAGMENT } from "~~/queries/sanity.snippets";
 
 export interface SearchResult {
 	_id: string;
 	_type: "person" | "set" | "show" | "venue" | "article" | string;
 	title: string;
+	path?: string;
 	slug: { current: string };
 	image?: {
 		asset?: {
@@ -56,10 +58,12 @@ export const SEARCH_AUTOCOMPLETE_QUERY = `
       title,
       slug
     }
-  }
+  },
+  ${SITE_PATH_FRAGMENT}
 }`;
 
 export function useSearch(options: UseSearchOptions = {}) {
+	const { to, searchTag } = useAppPath();
 	// Increase default max results for better UX with scrolling
 	const { maxResults = 20, debounceMs = 150 } = options;
 
@@ -148,13 +152,13 @@ export function useSearch(options: UseSearchOptions = {}) {
 		}
 	};
 
-	// Get the route path based on content type (without locale prefix)
+	// Localized route for a search result
 	const getResultPath = (result: SearchResult): string => {
 		if (result._type.startsWith("tag.")) {
-			return `/search?q=${encodeURIComponent(result.title)}`;
+			return searchTag(result.title);
 		}
 
-		return resolveContentItemPath(result) || "/";
+		return to(result.path) ?? to("/")!;
 	};
 
 	// Get a friendly label for the content type

@@ -20,6 +20,7 @@ const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 				<li v-for="item in mainMenu" :key="item?._key">
 					<ElementsLink
 						:type="item?.type"
+						:path="item?.path"
 						:href="item?.url"
 						:blank="item?.blank"
 						:route="item?.route"

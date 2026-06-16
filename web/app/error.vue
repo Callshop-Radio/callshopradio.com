@@ -6,6 +6,7 @@ const query = groq`${ERROR_PAGE_QUERY}`;
 const { data } = await useSanityQuery(query);
 
 const { favicon } = useUtils();
+const localePath = useLocalePath();
 favicon();
 useSeoMeta({
 	title: data?.value?.title || "Page Not Found",
@@ -15,7 +16,7 @@ useSeoMeta({
 <template>
 	<div class="error-page">
 		<RichText :blocks="data?.content ?? []" />
-		<NuxtLink to="/" class="link-style">
+		<NuxtLink :to="localePath('/')" class="link-style">
 			{{ data?.button }}
 		</NuxtLink>
 	</div>

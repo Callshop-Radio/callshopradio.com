@@ -4,8 +4,6 @@ import { useMainStore } from "~/stores/mainStore";
 import type { Image } from "~/types/sanity";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-const { getItemRoute } = useContentRoute();
-
 // Typdefinitionen
 interface Tag {
 	_id?: string;
@@ -185,15 +183,15 @@ const coverFlowDescriptionBlocks = computed(() => {
 				<div class="set-info-container pool-info-container">
 					<div class="set-header pool-header">
 						<div class="set-show-title pool-show-title">
-							<NuxtLink
-								:to="getItemRoute(poolItem)"
+							<ElementsContentLink
+								:item="poolItem"
 								class="set__link pool-link"
 								:aria-label="itemTitle"
 							>
 								<h2 v-if="itemTitle" class="set-title pool-title">
 									{{ itemTitle }}
 								</h2>
-							</NuxtLink>
+							</ElementsContentLink>
 						</div>
 					</div>
 					<div
@@ -229,8 +227,8 @@ const coverFlowDescriptionBlocks = computed(() => {
 				</div>
 			</div>
 			<div class="pool-media">
-				<NuxtLink
-					:to="getItemRoute(poolItem)"
+				<ElementsContentLink
+					:item="poolItem"
 					class="pool-link"
 					:aria-label="itemTitle"
 				>
@@ -241,7 +239,7 @@ const coverFlowDescriptionBlocks = computed(() => {
 						class="pool-image"
 					/>
 					<div v-else class="pool-image pool-image-placeholder" />
-				</NuxtLink>
+				</ElementsContentLink>
 			</div>
 		</div>
 	</div>
@@ -260,8 +258,8 @@ const coverFlowDescriptionBlocks = computed(() => {
 			</div>
 			<!-- Bild/Media-Bereich -->
 			<div class="set-media pool-media">
-				<NuxtLink
-					:to="getItemRoute(poolItem)"
+				<ElementsContentLink
+					:item="poolItem"
 					class="pool-link"
 					:aria-label="poolItem?.title || poolItem?.name"
 				>
@@ -270,7 +268,7 @@ const coverFlowDescriptionBlocks = computed(() => {
 						:alt="poolItem?.title || poolItem?.name"
 						class="set-image pool-image"
 					/>
-				</NuxtLink>
+				</ElementsContentLink>
 			</div>
 
 			<!-- Content-Bereich -->
@@ -280,15 +278,15 @@ const coverFlowDescriptionBlocks = computed(() => {
 					<div class="set-header pool-header">
 						<!-- Typ und Standort -->
 						<div class="set-show-title pool-item-title">
-							<NuxtLink
-								:to="getItemRoute(poolItem)"
+							<ElementsContentLink
+								:item="poolItem"
 								class="pool-link"
 								:aria-label="poolItem?.title || poolItem?.name"
 							>
 								<h2 class="set-title pool-title">
 									{{ itemTitle }}
 								</h2>
-							</NuxtLink>
+							</ElementsContentLink>
 						</div>
 					</div>
 					<!-- Hier die Teaser-Text Logik einfügen, analog zum ContentSlider -->

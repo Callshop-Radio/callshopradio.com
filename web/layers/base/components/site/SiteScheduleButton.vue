@@ -2,23 +2,13 @@
 import { computed } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
-const localePath = useLocalePath();
-const { localizedSanityPath } = useSanityLink();
+const { to, archive } = useAppPath();
 
 const mainStore = useMainStore();
 
-const scheduleLink = computed(() => {
-	const nav = mainStore?.siteNav;
-	if (!nav?.schedulePageRoute) return localePath("/schedule");
-
-	return localizedSanityPath({
-		route: nav.schedulePageRoute,
-		slug: nav.schedulePageSlug,
-		parentSlug: nav.schedulePageParentSlug,
-		setSlug: nav.schedulePageSetSlug,
-		refType: nav.schedulePageRefType,
-	});
-});
+const scheduleLink = computed(
+	() => to(mainStore?.siteNav?.schedulePagePath) ?? archive("schedule"),
+);
 </script>
 
 <template>

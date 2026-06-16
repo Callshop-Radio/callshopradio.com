@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 
 const { locale, setLocale: _setLocale } = useI18n();
-const { getItemRoute, getPoolRoute } = useContentRoute();
+const { navigateToPath } = useAppPath();
 const mainStore = useMainStore();
 
 // Typdefinitionen
@@ -113,8 +113,7 @@ const useArticle = () => {
 		const item = props.article;
 		if (!item) return;
 
-		const path = getItemRoute(item);
-		if (path) navigateTo(path);
+		navigateToPath(item?.path);
 	}
 
 	return {
@@ -348,14 +347,14 @@ const currentArticleText = computed(() =>
 									:key="author._key"
 									class="article__author"
 								>
-									<NuxtLink
+									<ElementsContentLink
 										v-if="author?.poolVisibility"
-										:to="getPoolRoute(author)"
+										:pool="author"
 										class="article__author"
 									>
 										{{ author.title
 										}}{{ index < article.authors.length - 1 ? "," : "" }}&nbsp;
-									</NuxtLink>
+									</ElementsContentLink>
 									<span v-else class="article__author">
 										{{ author.title
 										}}{{ index < article.authors.length - 1 ? "," : "" }}&nbsp;

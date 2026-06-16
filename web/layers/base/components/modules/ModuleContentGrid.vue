@@ -18,7 +18,6 @@ const localePath = useLocalePath();
 const mainStore = useMainStore();
 
 const { getItemImage } = useContentImage();
-const { getItemRoute, getShowRoute, getPoolRoute } = useContentRoute();
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 const { navigateToTagSearch } = useTagNavigation();
 
@@ -1374,11 +1373,7 @@ onUnmounted(() => {
 					</div>
 
 					<!-- Image -->
-					<NuxtLink
-						v-if="item?.slug"
-						:to="getItemRoute(item)"
-						class="grid-item__link"
-					>
+					<ElementsContentLink :item="item" class="grid-item__link">
 						<div class="grid-item__image">
 							<template v-if="contentType === 'sets'">
 								<img
@@ -1417,7 +1412,7 @@ onUnmounted(() => {
 								>
 							</template>
 						</div>
-					</NuxtLink>
+					</ElementsContentLink>
 
 					<!-- Content -->
 					<div class="grid-item__content">
@@ -1455,18 +1450,15 @@ onUnmounted(() => {
 						<!-- Set Content -->
 						<div v-if="item.parentShow && contentType === 'sets'">
 							<!-- Only show parent show link if NOT no-show -->
-							<NuxtLink
-								v-if="
-									item.parentShow?.title?.toLowerCase() !== 'no-show' &&
-										item.parentShow?.slug
-								"
-								:to="getShowRoute(item.parentShow)"
+							<ElementsContentLink
+								v-if="item.parentShow?.title?.toLowerCase() !== 'no-show'"
+								:show="item.parentShow"
 								class="grid-item__link"
 							>
 								<h3 class="grid-item__title show-title">
 									{{ item.parentShow?.title }}
 								</h3>
-							</NuxtLink>
+							</ElementsContentLink>
 							<!-- If no-show: show only set title -->
 							<h3 v-else-if="item?.title" class="grid-item__title show-title">
 								{{ item?.title }}
@@ -1477,14 +1469,14 @@ onUnmounted(() => {
 									:key="artist._id"
 									class="grid-item__artist"
 								>
-									<NuxtLink
+									<ElementsContentLink
 										v-if="artist?.poolVisibility"
-										:to="getPoolRoute(artist)"
+										:pool="artist"
 										class="grid-item__link"
 									>
 										{{ artist.title
 										}}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
-									</NuxtLink>
+									</ElementsContentLink>
 									<span v-else
 									>{{ artist.title
 									}}{{
@@ -1497,19 +1489,17 @@ onUnmounted(() => {
 
 						<!-- Words: Read More -->
 						<div v-if="contentType === 'words'" class="tags read-more">
-							<NuxtLink
-								:to="getItemRoute(item)"
-								class="grid-item__link"
-							><h3 class="tag">Read More</h3></NuxtLink
+							<ElementsContentLink :item="item" class="grid-item__link"
+							><h3 class="tag">Read More</h3></ElementsContentLink
 							>
 						</div>
 
 						<!-- Title -->
-						<NuxtLink :to="getItemRoute(item)" class="grid-item__link">
+						<ElementsContentLink :item="item" class="grid-item__link">
 							<h3 v-if="contentType !== 'sets'" class="grid-item__title">
 								{{ item.title || item.name }}
 							</h3>
-						</NuxtLink>
+						</ElementsContentLink>
 
 						<!-- Teaser Text -->
 						<RichText

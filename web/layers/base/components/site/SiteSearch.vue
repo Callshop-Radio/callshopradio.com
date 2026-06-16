@@ -84,7 +84,7 @@ const navigateToResult = (result) => {
 		emit("close");
 	}
 
-	navigateTo(localePath(path));
+	navigateTo(path);
 };
 
 // Handle close

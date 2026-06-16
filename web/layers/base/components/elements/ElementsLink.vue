@@ -3,13 +3,17 @@ import { useMainStore } from "~/stores/mainStore";
 
 const { locale } = useI18n();
 const localePath = useLocalePath();
-const { localizedSanityPath } = useSanityLink();
+const { to } = useAppPath();
 const currentRoute = useRoute();
 
 const props = defineProps({
 	type: {
 		type: String,
 		default: () => "external",
+	},
+	path: {
+		type: String,
+		default: () => "",
 	},
 	href: {
 		type: String,
@@ -55,15 +59,7 @@ const props = defineProps({
 
 const linkTarget = computed(() => {
 	if (props.type === "internal") {
-		return localizedSanityPath({
-			type: props.type,
-			route: props.route || undefined,
-			slug: props.slug,
-			parentSlug: props.parentSlug || undefined,
-			setSlug: props.setSlug || undefined,
-			refType: props.refType || undefined,
-			reference: props.reference || undefined,
-		});
+		return to(props.path) ?? localePath("/");
 	}
 
 	return props.href || localePath("/");

@@ -78,8 +78,6 @@ const props = defineProps<{
 	module: Module;
 }>();
 
-const { getItemRoute, getShowRoute, getPoolRoute } = useContentRoute();
-
 // Image Management Composable
 const useImageManagement = () => {
 	function getItemImage(item?: ContentReference): Image | null {
@@ -210,9 +208,8 @@ onMounted(() => {
 		<div class="hero-entry-container">
 			<!-- Bild/Media-Bereich -->
 			<div class="hero-entry-media">
-				<NuxtLink
-					v-if="contentReference?.slug"
-					:to="getItemRoute(contentReference)"
+				<ElementsContentLink
+					:item="contentReference"
 					class="slide__link"
 				>
 					<MediaImage
@@ -232,7 +229,7 @@ onMounted(() => {
 						class="track-artwork-placeholder"
 						@vue:mounted="loadArtworkUrl"
 					/>
-				</NuxtLink>
+				</ElementsContentLink>
 			</div>
 
 			<div class="graphics-behind">
@@ -283,14 +280,14 @@ onMounted(() => {
 							v-if="contentReference?._type === 'set'"
 							class="hero-entry-title"
 						>
-							<NuxtLink
+							<ElementsContentLink
 								v-if="hasParentShow"
-								:to="getShowRoute(contentReference.parentShow)"
+								:show="contentReference.parentShow"
 							>
 								<h2 class="hero-entry-title">
 									{{ contentReference.parentShow?.title }}
 								</h2>
-							</NuxtLink>
+							</ElementsContentLink>
 
 							<!-- Künstler (für Sets) -->
 							<div
@@ -302,16 +299,16 @@ onMounted(() => {
 									:key="artist?._id"
 									class="hero-entry-show-artists-artist"
 								>
-									<NuxtLink
-										v-if="artist?.poolVisibility && artist?.slug?.current"
-										:to="getPoolRoute(artist)"
+									<ElementsContentLink
+										v-if="artist?.poolVisibility"
+										:pool="artist"
 										class="hero-entry-show-artists-artist"
 									>
 										{{ artist.title
 										}}{{
 											index < contentReference.persons.length - 1 ? "," : ""
 										}}&nbsp;
-									</NuxtLink>
+									</ElementsContentLink>
 									<span v-else class="hero-entry-show-artists-artist">
 										{{ artist?.title
 										}}{{

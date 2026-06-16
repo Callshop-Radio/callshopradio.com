@@ -28,6 +28,65 @@ export const SOUNDCLOUD_TRACKS_QUERY = `soundcloud{
 	}
 }`;
 
+/** Inner GROQ select for canonical paths (reused for path + loc). */
+export const SITE_PATH_SELECT = `select(
+	_type == "home" => "/",
+	_type == "page" => "/" + slug.current,
+	_type == "show" => "/shows/" + slug.current,
+	_type == "set" => "/shows/" + coalesce(show->slug.current, *[_type == "show" && references(^._id)][0].slug.current) + "/" + slug.current,
+	_type == "person" => "/pool/" + slug.current,
+	_type == "venue" => "/pool/" + slug.current,
+	_type == "article" => "/words/" + slug.current,
+	_type == "pool" => "/pool",
+	_type == "words" => "/words",
+	_type == "showsArchive" => "/shows",
+	_type == "timetable" => "/schedule",
+	defined(slug.current) => "/" + slug.current,
+	null
+)`;
+
+/** Canonical site path for a Sanity document (language-neutral, no locale prefix). */
+export const SITE_PATH_FRAGMENT = `
+	"path": ${SITE_PATH_SELECT},
+	"loc": ${SITE_PATH_SELECT}
+`;
+
+/** Linked person/venue with canonical path (artists on sets, related content, etc.). */
+export const PERSON_LINK_FRAGMENT = `
+	_id,
+	title,
+	slug,
+	poolVisibility,
+	${SITE_PATH_FRAGMENT}
+`;
+
+/** Parent show on a set with canonical path. */
+export const PARENT_SHOW_LINK_FRAGMENT = `
+	_id,
+	title,
+	slug,
+	image { asset-> },
+	${SITE_PATH_FRAGMENT}
+`;
+
+/** Canonical path for an internal link reference (menu, rich text, footer). */
+export const LINK_PATH_FRAGMENT = `
+		"path": select(
+			reference->_type == "home" => "/",
+			reference->_type == "page" => "/" + reference->slug.current,
+			reference->_type == "showsArchive" => "/shows",
+			reference->_type == "show" => "/shows/" + reference->slug.current,
+			reference->_type == "set" => "/shows/" + *[_type == "show" && references(^.reference._ref)][0].slug.current + "/" + reference->slug.current,
+			reference->_type == "words" => "/words",
+			reference->_type == "article" => "/words/" + reference->slug.current,
+			reference->_type == "pool" => "/pool",
+			reference->_type == "person" => "/pool/" + reference->slug.current,
+			reference->_type == "venue" => "/pool/" + reference->slug.current,
+			reference->_type == "timetable" => "/schedule",
+			null
+		)
+`;
+
 export const LINK_QUERY = `
 	...,
 	type == "internal" => {
@@ -59,7 +118,8 @@ export const LINK_QUERY = `
 		"setSlug": select(
 			reference->_type == "set" => reference->slug.current,
 			null
-		)
+		),
+		${LINK_PATH_FRAGMENT}
 	},
 	type == "external" => {
 		...,
@@ -187,22 +247,16 @@ export const SET_COVER_FLOW_SLIDER_ITEM_QUERY = `{
 		"tracks": tracks[0]{ id, artwork_url }
 	},
 	persons[]->{
-		_id,
-		_key,
-		title,
-		slug,
-		poolVisibility
+		${PERSON_LINK_FRAGMENT}
 	},
 	"tags": tags[]->{
 		_id,
 		title
 	} | order(lower(title)),
 	"parentShow": *[_type == "show" && references(^._id)][0]{
-		_id,
-		title,
-		slug,
-		image { asset-> }
-	}
+		${PARENT_SHOW_LINK_FRAGMENT}
+	},
+	${SITE_PATH_FRAGMENT}
 }`;
 
 /** Slim article projection for archive cover-flow slider (autoLoad). */
@@ -218,7 +272,8 @@ export const ARTICLE_COVER_FLOW_SLIDER_ITEM_QUERY = `{
 	"tags": tags[]->{
 		_id,
 		title
-	} | order(lower(title))
+	} | order(lower(title)),
+	${SITE_PATH_FRAGMENT}
 }`;
 
 /** Slim pool profile projection for archive cover-flow slider (autoLoad). */
@@ -238,7 +293,8 @@ export const POOL_COVER_FLOW_SLIDER_ITEM_QUERY = `{
 	useTeaserText,
 	textTeaser[] ${RICH_TEXT_QUERY},
 	text[] ${RICH_TEXT_QUERY},
-	description[] ${RICH_TEXT_QUERY}
+	description[] ${RICH_TEXT_QUERY},
+	${SITE_PATH_FRAGMENT}
 }`;
 
 export const TAG_QUERY = `
@@ -329,17 +385,12 @@ export const MODULE_QUERY = `{
             } | order(lower(title)),
             "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
             persons[]->{
-                    ...,
-                    _id,
-                    title
+                    ${PERSON_LINK_FRAGMENT}
             },
             "parentShow": *[_type == "show" && references(^._id)][0]{
-                    ...,
-                    _id,
-                    title,
-                    slug,
-                    image { asset-> },
-            }
+                    ${PARENT_SHOW_LINK_FRAGMENT}
+            },
+            ${SITE_PATH_FRAGMENT}
         }
         }
     },
@@ -365,21 +416,16 @@ export const MODULE_QUERY = `{
             }| order(lower(title)),
             "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
             persons[]->{
-                    ...,
-                    _id,
-                    title
+                    ${PERSON_LINK_FRAGMENT}
             },
             "parentShow": *[_type == "show" && references(^._id)][0]{
-                    ...,
-                    _id,
-                    title,
-                    slug,
-                    image { asset-> },
+                    ${PARENT_SHOW_LINK_FRAGMENT},
                      "city": *[_type == "show" && references(^._id)][0]{
                         ...,
                         title,
-                    },
-            }
+                    }
+            },
+            ${SITE_PATH_FRAGMENT}
         }
     },
 	_type == "module.contentReferenceSlider" => {

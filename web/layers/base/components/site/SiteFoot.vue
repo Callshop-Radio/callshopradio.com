@@ -11,6 +11,7 @@ const footerMenu = computed(() => mainStore?.siteNav?.footerMenu);
 			v-for="item in footerMenu"
 			:key="item?._key"
 			:type="item?.type"
+			:path="item?.path"
 			:href="item?.url"
 			:blank="item?.blank"
 			:route="item?.route"

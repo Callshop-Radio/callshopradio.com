@@ -3,8 +3,6 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale } = useI18n();
-const { getItemRoute, getShowRoute, getPoolRoute, hasContentSlug } =
-	useContentRoute();
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 const { navigateToTagSearch } = useTagNavigation();
 
@@ -281,11 +279,7 @@ onMounted(() => {
 				:class="`related-item related-item--${style} ${typeClass}`"
 			>
 				<!-- Bild -->
-				<NuxtLink
-					v-if="hasContentSlug(item)"
-					:to="getItemRoute(item)"
-					class="related-item__link"
-				>
+				<ElementsContentLink :item="item" class="related-item__link">
 					<div v-if="type === 'sets'" class="related-item__image">
 						<img
 							v-if="item?.image && item?.image.asset && item?.image.asset.url"
@@ -331,7 +325,7 @@ onMounted(() => {
 							>
 						</div>
 					</div>
-				</NuxtLink>
+				</ElementsContentLink>
 
 				<!-- Inhalt -->
 				<div class="related-item__content">
@@ -385,18 +379,15 @@ onMounted(() => {
 						class="related-item__content__show"
 					>
 						<!-- Show-Titel (nur anzeigen wenn NICHT no-show) -->
-						<NuxtLink
-							v-if="
-								item?.parentShow?.title?.toLowerCase() !== 'no-show' &&
-									hasContentSlug(item?.parentShow)
-							"
-							:to="getShowRoute(item?.parentShow)"
+						<ElementsContentLink
+							v-if="item?.parentShow?.title?.toLowerCase() !== 'no-show'"
+							:show="item?.parentShow"
 							class="related-item__link"
 						>
 							<h3 class="related-item__title show-title">
 								{{ item?.parentShow?.title }}
 							</h3>
-						</NuxtLink>
+						</ElementsContentLink>
 						<!-- Wenn no-show: nur Set-Titel anzeigen -->
 						<h3
 							v-else-if="
@@ -422,14 +413,14 @@ onMounted(() => {
 								:key="artist._id"
 								class="related-item__artist"
 							>
-								<NuxtLink
-									v-if="artist?.poolVisibility && hasContentSlug(artist)"
-									:to="getPoolRoute(artist)"
+								<ElementsContentLink
+									v-if="artist?.poolVisibility"
+									:pool="artist"
 									class="related-item__link"
 								>
 									{{ artist?.title
 									}}{{ index < item?.persons?.length - 1 ? "," : "" }}&nbsp;
-								</NuxtLink>
+								</ElementsContentLink>
 								<span v-else>
 									{{ artist.title
 									}}{{ index < item?.persons?.length - 1 ? "," : "" }}&nbsp;
@@ -440,23 +431,21 @@ onMounted(() => {
 
 					<!-- Words: Read More -->
 					<div v-if="type === 'words'" class="tags read-more">
-						<NuxtLink
-							:to="getItemRoute(item)"
-							class="related-item__link"
-						><h3 class="tag">Read More</h3></NuxtLink
+						<ElementsContentLink :item="item" class="related-item__link"
+						><h3 class="tag">Read More</h3></ElementsContentLink
 						>
 					</div>
 
 					<!-- Titel für alle anderen Content-Typen -->
-					<NuxtLink
+					<ElementsContentLink
 						v-if="type !== 'sets'"
-						:to="getItemRoute(item)"
+						:item="item"
 						class="related-item__link"
 					>
 						<h3 class="related-item__title">
 							{{ item?.title || item?.name }}
 						</h3>
-					</NuxtLink>
+					</ElementsContentLink>
 					<RichText
 						v-if="type === 'words'"
 						:blocks="parseI18nObj(item?.textTeaser)"

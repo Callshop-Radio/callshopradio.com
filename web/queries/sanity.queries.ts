@@ -2,8 +2,11 @@ import {
 	IMAGE_QUERY,
 	LINK_QUERY,
 	MODULE_QUERY,
+	PARENT_SHOW_LINK_FRAGMENT,
+	PERSON_LINK_FRAGMENT,
 	RICH_TEXT_QUERY,
 	SEO_QUERY,
+	SITE_PATH_FRAGMENT,
 	SOUNDCLOUD_TRACKS_QUERY,
 } from "./sanity.snippets";
 
@@ -28,20 +31,7 @@ export const SITEMAP_QUERY = `
   _type,
   "slug": slug.current,
   "modifiedAt": _updatedAt,
-  "loc": select(
-    _type == "home" => "/",
-    _type == "page" => "/" + slug.current,
-    _type == "show" => "/shows/" + slug.current,
-    _type == "set" => "/shows/" + show->slug.current + "/" + slug.current,
-    _type == "person" => "/pool/" + slug.current,
-    _type == "venue" => "/pool/" + slug.current,
-    _type == "article" => "/words/" + slug.current,
-    _type == "pool" => "/pool",
-    _type == "timetable" => "/schedule",
-    _type == "showsArchive" => "/shows",
-    _type == "words" => "/words",
-    "/" + slug.current
-  ),
+  ${SITE_PATH_FRAGMENT},
   "changefreq": select(
     _type == "home" => "daily",
     _type == "show" => "weekly",
@@ -140,7 +130,8 @@ export const POOLARCHIVE_QUERY = `
             nina,
             bandcamp,
             web
-          }
+          },
+          ${SITE_PATH_FRAGMENT}
       }
     ),
   }
@@ -199,6 +190,7 @@ export const POOL_PROFILE_QUERY = `
         title,
         short
       }| order(lower(title)),
+      ${SITE_PATH_FRAGMENT},
        sets[]->{
                 _id,
                 _type,
@@ -206,9 +198,7 @@ export const POOL_PROFILE_QUERY = `
                 slug,
                 "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
                 persons[]->{
-                    ...,
-                    _id,
-                    title
+                    ${PERSON_LINK_FRAGMENT}
                 },
                 "tags": tags[]->{
                     ...,
@@ -216,12 +206,9 @@ export const POOL_PROFILE_QUERY = `
                     title
                 }| order(lower(title)),
                 "parentShow": *[_type == "show" && references(^._id)][0]{
-                    ...,
-                    _id,
-                    title,
-                    slug,
-                    image { asset-> },
-                }
+                    ${PARENT_SHOW_LINK_FRAGMENT}
+                },
+                ${SITE_PATH_FRAGMENT}
             } | order(datetime desc)[0...3]
     },
     // Personen für Veranstaltungsorte hinzufügen
@@ -237,7 +224,8 @@ export const POOL_PROFILE_QUERY = `
           _type,
           title,
           short
-        }| order(lower(title))
+        }| order(lower(title)),
+        ${SITE_PATH_FRAGMENT}
       }
     },
     // Veranstaltungsorte für Personen hinzufügen
@@ -254,7 +242,8 @@ export const POOL_PROFILE_QUERY = `
           _type,
           title,
           short
-        }| order(lower(title))
+        }| order(lower(title)),
+        ${SITE_PATH_FRAGMENT}
       }
     },
     modules[] ${MODULE_QUERY},
@@ -273,16 +262,12 @@ export const POOL_PROFILE_QUERY = `
         short
       }| order(lower(title)),
       "parentShow": *[_type == "show" && references(^._id)][0]{
-        ...,
-        _id,
-        title,
-        slug
+        ${PARENT_SHOW_LINK_FRAGMENT}
       },
       persons[]->{
-        ...,
-        _id,
-        title
+        ${PERSON_LINK_FRAGMENT}
       },
+      ${SITE_PATH_FRAGMENT}
   },
   "moreContent": *[_type in ['set',] && references(^._id)] | order(datetime desc) [0...99] {
       ...,
@@ -299,16 +284,12 @@ export const POOL_PROFILE_QUERY = `
         short
       }| order(lower(title)),
       "parentShow": *[_type == "show" && references(^._id)][0]{
-        ...,
-        _id,
-        title,
-        slug
+        ${PARENT_SHOW_LINK_FRAGMENT}
       },
       persons[]->{
-        ...,
-        _id,
-        title
+        ${PERSON_LINK_FRAGMENT}
       },
+      ${SITE_PATH_FRAGMENT}
   },
 "relatedContent": *[
     _type in ['person','venue'] && poolVisibility == true && 
@@ -339,10 +320,7 @@ export const POOL_PROFILE_QUERY = `
       }
     },
     persons[]->{
-      _id,
-      title,
-      slug,
-      poolVisibility
+      ${PERSON_LINK_FRAGMENT}
     },
     "tags": tags[]->{
       _id,
@@ -351,11 +329,9 @@ export const POOL_PROFILE_QUERY = `
       short
     }| order(lower(title)),
     "parentShow": *[_type == "show" && references(^._id)][0]{
-      _id,
-      title,
-      slug,
-      image { asset-> },
+      ${PARENT_SHOW_LINK_FRAGMENT}
     },
+    ${SITE_PATH_FRAGMENT},
     "matchingTagsCount": count((tags[]->._id)[@ in ^.^.tags[]->._id]),
     "matchingArtistsCount": count((persons[]->._id)[@ in ^.^.persons[]->._id])
   },
@@ -379,9 +355,7 @@ export const SHOWSARCHIVE_QUERY = `
                 slug,
                 "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
                 persons[]->{
-                    ...,
-                    _id,
-                    title
+                    ${PERSON_LINK_FRAGMENT}
                 },
                 "tags": tags[]->{
                     ...,
@@ -389,12 +363,9 @@ export const SHOWSARCHIVE_QUERY = `
                     title
                 }| order(lower(title)),
                 "parentShow": *[_type == "show" && references(^._id)][0]{
-                    ...,
-                    _id,
-                    title,
-                    slug,
-                    image { asset-> },
-                }
+                    ${PARENT_SHOW_LINK_FRAGMENT}
+                },
+                ${SITE_PATH_FRAGMENT}
             }
         )
   }
@@ -420,24 +391,18 @@ export const SHOW_QUERY = `
     image ${IMAGE_QUERY},
     "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
     "parentShow": *[_type == "show" && references(^._id)][0]{
-          ...,
-          _id,
-          title,
-          slug,
-          image { asset-> },
+          ${PARENT_SHOW_LINK_FRAGMENT},
           content[] ${RICH_TEXT_QUERY}
     },
     persons[]->{
-      ...,
-      _id,
-      title,
-      slug
+      ${PERSON_LINK_FRAGMENT}
     },
     "tags": tags[]->{
       _id,
       title,
       short
-    }| order(lower(title))
+    }| order(lower(title)),
+    ${SITE_PATH_FRAGMENT}
   } | order(datetime desc),
   persons[]->{
     _id,
@@ -449,7 +414,8 @@ export const SHOW_QUERY = `
       _id,
       title,
       short
-    }| order(lower(title))
+    }| order(lower(title)),
+    ${SITE_PATH_FRAGMENT}
   },
   venues[]->{
     ...,
@@ -463,7 +429,8 @@ export const SHOW_QUERY = `
       _id,
       title,
       short
-    }| order(lower(title))
+    }| order(lower(title)),
+    ${SITE_PATH_FRAGMENT}
   },
   "tags": tags[]->{
     _id,
@@ -501,10 +468,7 @@ export const SET_QUERY = `
     short
   }| order(lower(title)),
   persons[]->{
-    ...,
-    _id,
-    title,
-    slug
+    ${PERSON_LINK_FRAGMENT}
   },
   "parentShow": *[_type == "show" && references(^._id)][0]{
     ...,
@@ -512,6 +476,7 @@ export const SET_QUERY = `
     title,
     slug,
     image { asset-> },
+    ${SITE_PATH_FRAGMENT},
     sets[]->{
       ...,
       _id,
@@ -520,9 +485,7 @@ export const SET_QUERY = `
       slug,
       "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
       persons[]->{
-          ...,
-          _id,
-          title
+          ${PERSON_LINK_FRAGMENT}
       },
       "tags": tags[]->{
           ...,
@@ -530,12 +493,9 @@ export const SET_QUERY = `
           title
       }| order(lower(title)),
       "parentShow": *[_type == "show" && references(^._id)][0]{
-          ...,
-          _id,
-          title,
-          slug,
-          image { asset-> },
-      }
+          ${PARENT_SHOW_LINK_FRAGMENT}
+      },
+      ${SITE_PATH_FRAGMENT}
   }
   },
   "relatedContent": *[
@@ -567,10 +527,7 @@ export const SET_QUERY = `
       }
     },
     persons[]->{
-      _id,
-      title,
-      slug,
-      poolVisibility
+      ${PERSON_LINK_FRAGMENT}
     },
     "tags": tags[]->{
       _id,
@@ -579,11 +536,9 @@ export const SET_QUERY = `
       short
     }| order(lower(title)),
     "parentShow": *[_type == "show" && references(^._id)][0]{
-      _id,
-      title,
-      slug,
-      image { asset-> },
+      ${PARENT_SHOW_LINK_FRAGMENT}
     },
+    ${SITE_PATH_FRAGMENT},
     "matchingTagsCount": count((tags[]->._id)[@ in ^.^.tags[]->._id]),
     "matchingArtistsCount": count((persons[]->._id)[@ in ^.^.persons[]->._id])
   },
@@ -630,10 +585,9 @@ export const WORDS_QUERY = `
                     title
                 }| order(lower(title)),
                 persons[]->{
-                    ...,
-                    _id,
-                    title
+                    ${PERSON_LINK_FRAGMENT}
                 },
+                ${SITE_PATH_FRAGMENT}
             }
         )
   }
@@ -674,9 +628,7 @@ export const ENTRY_QUERY = `
         title
     }| order(lower(title)),
     persons[]->{
-        ...,
-        _id,
-        title
+        ${PERSON_LINK_FRAGMENT}
     },
     modules[] ${MODULE_QUERY},
     "relatedContent": *[
@@ -697,9 +649,7 @@ export const ENTRY_QUERY = `
         useTeaserText,
         textTeaser[] ${RICH_TEXT_QUERY},
         persons[]->{
-            _id,
-            title,
-            slug
+            ${PERSON_LINK_FRAGMENT}
         },
         "tags": tags[]->{
             _id,
@@ -707,6 +657,7 @@ export const ENTRY_QUERY = `
             title,
             short
         }| order(lower(title)),
+        ${SITE_PATH_FRAGMENT},
         "matchingTagsCount": count((tags[]->._id)[@ in ^.^.tags[]->._id])
     },
     ${SEO_QUERY}
@@ -745,6 +696,21 @@ export const SITE_OPTIONS_QUERY = `{
 		"schedulePageSetSlug": select(
 			schedulePage->_type == "set" => schedulePage->slug.current,
 			null
+		),
+		"schedulePagePath": select(
+			!defined(schedulePage._ref) => "/schedule",
+			schedulePage->_type == "home" => "/",
+			schedulePage->_type == "page" => "/" + schedulePage->slug.current,
+			schedulePage->_type == "showsArchive" => "/shows",
+			schedulePage->_type == "show" => "/shows/" + schedulePage->slug.current,
+			schedulePage->_type == "set" => "/shows/" + *[_type == "show" && references(^.schedulePage._ref)][0].slug.current + "/" + schedulePage->slug.current,
+			schedulePage->_type == "words" => "/words",
+			schedulePage->_type == "article" => "/words/" + schedulePage->slug.current,
+			schedulePage->_type == "pool" => "/pool",
+			schedulePage->_type == "person" => "/pool/" + schedulePage->slug.current,
+			schedulePage->_type == "venue" => "/pool/" + schedulePage->slug.current,
+			schedulePage->_type == "timetable" => "/schedule",
+			"/schedule"
 		),
     discordLink,
     footerMenu[] {

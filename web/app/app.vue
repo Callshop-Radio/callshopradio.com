@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const route = useRoute();
 const { favicon } = useUtils();
 favicon();
 </script>
@@ -8,7 +9,7 @@ favicon();
     <SiteHead />
     <main>
       <div class="page-content">
-        <NuxtPage :key="$route.fullPath" />
+        <NuxtPage :key="route.fullPath" />
       </div>
     </main>
     <SiteFoot class="footer" />

@@ -4,8 +4,6 @@ import { useMainStore } from "~/stores/mainStore";
 import type { Image } from "~/types/sanity";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-const { getItemRoute } = useContentRoute();
-
 // Typdefinitionen
 interface Tag {
 	_id?: string;
@@ -124,15 +122,15 @@ const contactLink = computed(() => {
 					<div class="show-intro-header">
 						<!-- Typ und Standort -->
 						<div class="show-intro-title">
-							<NuxtLink
-								:to="getItemRoute(showItem)"
+							<ElementsContentLink
+								:item="showItem"
 								class="show-intro-link"
 								:aria-label="showItem?.title || showItem?.name"
 							>
 								<h2 class="show-intro-title">
 									{{ itemTitle }}
 								</h2>
-							</NuxtLink>
+							</ElementsContentLink>
 						</div>
 					</div>
 					<!-- Hier die Teaser-Text Logik einfügen, analog zum ContentSlider -->
@@ -159,7 +157,7 @@ const contactLink = computed(() => {
 								:key="show._id"
 								class="show-intro-ref-item"
 							>
-								<NuxtLink :to="getItemRoute(show)" class="show-intro-ref-link">
+								<ElementsContentLink :item="show" class="show-intro-ref-link">
 									<div class="show-intro-ref-info">
 										<svg
 											viewBox="0 0 22 22"
@@ -181,7 +179,7 @@ const contactLink = computed(() => {
 
 										<h4 class="tag">{{ show.title }}</h4>
 									</div>
-								</NuxtLink>
+								</ElementsContentLink>
 							</div>
 						</div>
 					</div>
@@ -226,15 +224,15 @@ const contactLink = computed(() => {
 								:key="person._id"
 								class="show-intro-ref-item tags"
 							>
-								<NuxtLink
+								<ElementsContentLink
 									v-if="person?.poolVisibility"
-									:to="getItemRoute(person)"
+									:pool="person"
 									class="show-intro-ref-link"
 								>
 									<div class="show-intro-ref-info">
 										<h4 class="tag">{{ person.title }}</h4>
 									</div>
-								</NuxtLink>
+								</ElementsContentLink>
 								<div v-else class="show-intro-ref-link no-link">
 									<div class="show-intro-ref-info">
 										<h4 class="tag">{{ person.title }}</h4>
@@ -272,11 +270,11 @@ const contactLink = computed(() => {
 								:key="venue._id"
 								class="show-intro-ref-item"
 							>
-								<NuxtLink :to="getItemRoute(venue)" class="show-intro-ref-link">
+								<ElementsContentLink :item="venue" class="show-intro-ref-link">
 									<div class="show-intro-ref-info">
 										<h4 class="tag">{{ venue.title }}</h4>
 									</div>
-								</NuxtLink>
+								</ElementsContentLink>
 							</div>
 						</div>
 					</div>
@@ -402,8 +400,8 @@ const contactLink = computed(() => {
 			</div>
 			<!-- Bild/Media-Bereich -->
 			<div class="show-intro-media">
-				<NuxtLink
-					:to="getItemRoute(showItem)"
+				<ElementsContentLink
+					:item="showItem"
 					class="show-intro-link"
 					:aria-label="showItem?.title || showItem?.name"
 				>
@@ -412,7 +410,7 @@ const contactLink = computed(() => {
 						:alt="showItem?.title || showItem?.name"
 						class="show-intro-image"
 					/>
-				</NuxtLink>
+				</ElementsContentLink>
 			</div>
 		</div>
 	</div>

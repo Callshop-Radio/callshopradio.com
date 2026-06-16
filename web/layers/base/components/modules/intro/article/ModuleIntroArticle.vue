@@ -4,7 +4,6 @@ import { useMainStore } from "~/stores/mainStore";
 import type { Image, Tag } from "~/types/sanity";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-const localePath = useLocalePath();
 
 // Typdefinitionen für Artikel
 interface Article {
@@ -65,8 +64,6 @@ const useImageManagement = () => {
 	};
 };
 
-const { getItemRoute } = useContentRoute();
-
 // Anwendung der Composables
 const { getItemImage } = useImageManagement();
 
@@ -109,7 +106,7 @@ const coverFlowTeaserBlocks = computed(() => {
 		<div class="article-container">
 			<!-- Bild/Media-Bereich -->
 			<div class="article-media">
-				<NuxtLink :to="getItemRoute(article)" class="grid-item__link">
+				<ElementsContentLink :item="article" class="grid-item__link">
 					<img
 						v-if="mediaActive && articleImage"
 						:src="articleImage"
@@ -118,7 +115,7 @@ const coverFlowTeaserBlocks = computed(() => {
 						loading="lazy"
 					>
 					<div v-else class="article-image-placeholder"/>
-				</NuxtLink>
+				</ElementsContentLink>
 			</div>
 
 			<!-- Tags auf dem Bild -->
@@ -136,9 +133,9 @@ const coverFlowTeaserBlocks = computed(() => {
 			<!-- Content-Bereich -->
 			<div class="article-info">
 				<div v-if="article.useTeaserText || article.text" class="tags read-more">
-					<NuxtLink :to="getItemRoute(article)" class="tag">
+					<ElementsContentLink :item="article" class="tag">
 						Read More
-					</NuxtLink>
+					</ElementsContentLink>
 				</div>
 
 				<div class="article-info-container">
@@ -154,14 +151,14 @@ const coverFlowTeaserBlocks = computed(() => {
               </h3>
             </div> -->
 						<div class="article-title-container">
-							<NuxtLink
-								:to="getItemRoute(article)"
+							<ElementsContentLink
+								:item="article"
 								class="article__link article-title"
 							>
 								<h2 v-if="article?.title" class="article-title">
 									{{ article?.title }}
 								</h2>
-							</NuxtLink>
+							</ElementsContentLink>
 						</div>
 					</div>
 

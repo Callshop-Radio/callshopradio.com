@@ -19,7 +19,6 @@ const router = useRouter();
 const mainStore = useMainStore();
 
 const { getItemImage } = useContentImage();
-const { getItemRoute, getShowRoute, getPoolRoute } = useContentRoute();
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 const { navigateToTagSearch } = useTagNavigation();
 
@@ -578,11 +577,7 @@ onMounted(() => {
 				</div>
 
 				<!-- Bild -->
-				<NuxtLink
-					v-if="item?.slug"
-					:to="getItemRoute(item)"
-					class="teaser-item__link"
-				>
+				<ElementsContentLink :item="item" class="teaser-item__link">
 					<div v-if="props.module.type === 'sets'" class="teaser-item__image">
 						<img
 							v-if="item?.image && item?.image.asset && item?.image.asset.url"
@@ -628,7 +623,7 @@ onMounted(() => {
 							>
 						</div>
 					</div>
-				</NuxtLink>
+				</ElementsContentLink>
 
 				<!-- Inhalt -->
 				<div class="teaser-item__content">
@@ -682,19 +677,18 @@ onMounted(() => {
 						class="teaser-item__content__show"
 					>
 						<!-- Show-Titel (nur anzeigen wenn NICHT no-show) -->
-						<NuxtLink
+						<ElementsContentLink
 							v-if="
 								item?.parentShow?.title?.toLowerCase() !== 'no-show' &&
-									item?.parentShow?.slug &&
 									item?.clickableTitle
 							"
-							:to="getShowRoute(item?.parentShow)"
+							:show="item?.parentShow"
 							class="teaser-item__link"
 						>
 							<h3 class="teaser-item__title show-title">
 								{{ item?.parentShow?.title }}
 							</h3>
-						</NuxtLink>
+						</ElementsContentLink>
 						<!-- Wenn no-show: nur Set-Titel anzeigen -->
 						<h3
 							v-else-if="
@@ -722,14 +716,14 @@ onMounted(() => {
 								:key="artist._id"
 								class="teaser-item__artist"
 							>
-								<NuxtLink
+								<ElementsContentLink
 									v-if="artist?.poolVisibility"
-									:to="getPoolRoute(artist)"
+									:pool="artist"
 									class="teaser-item__link"
 								>
 									{{ artist?.title
 									}}{{ index < item?.persons?.length - 1 ? "," : "" }}&nbsp;
-								</NuxtLink>
+								</ElementsContentLink>
 								<span v-else>
 									{{ artist.title
 									}}{{ index < item?.persons?.length - 1 ? "," : "" }}&nbsp;
@@ -739,23 +733,21 @@ onMounted(() => {
 					</div>
 
 					<div v-if="props.module.type === 'words'" class="tags read-more">
-						<NuxtLink
-							:to="getItemRoute(item)"
-							class="grid-item__link"
-						><h3 class="tag">Read More</h3></NuxtLink
+						<ElementsContentLink :item="item" class="grid-item__link"
+						><h3 class="tag">Read More</h3></ElementsContentLink
 						>
 					</div>
 
 					<!-- Titel für alle anderen Content-Typen -->
-					<NuxtLink
+					<ElementsContentLink
 						v-if="props.module.type !== 'sets'"
-						:to="getItemRoute(item)"
+						:item="item"
 						class="teaser-item__link"
 					>
 						<h3 class="teaser-item__title">
 							{{ item?.title || item?.name }}
 						</h3>
-					</NuxtLink>
+					</ElementsContentLink>
 
 					<!-- RichText Content -->
 					<RichText
