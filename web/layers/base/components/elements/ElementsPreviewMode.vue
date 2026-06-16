@@ -1,6 +1,9 @@
 <script setup>
 const route = useRoute();
-const { enabled: previewEnabled, inFrame } = useSanityVisualEditingState();
+// `useSanityVisualEditingState()` returns undefined when visualEditing is
+// disabled in @nuxtjs/sanity — guard with `?? {}` so destructure doesn't throw.
+const { enabled: previewEnabled, inFrame } =
+	useSanityVisualEditingState() ?? {};
 </script>
 
 <template>

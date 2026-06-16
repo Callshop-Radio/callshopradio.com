@@ -14,12 +14,13 @@ export default defineNuxtPlugin(async () => {
 	const { sections } = JSON.parse(
 		cookieSettings?.preferencesModal?.sections?.code ?? '{ "sections": [] }',
 	);
-	const { grantConsent, revokeConsent } = useGtag();
+	// nuxt-gtag v4 renamed grantConsent → enableAnalytics, revokeConsent → disableAnalytics
+	const { enableAnalytics, disableAnalytics } = useGtag();
 
 	function toggleGtag(cookie) {
 		const hasGoogleConsent = cookie?.categories?.includes("analytics");
-		if (hasGoogleConsent) grantConsent();
-		else revokeConsent();
+		if (hasGoogleConsent) enableAnalytics();
+		else disableAnalytics();
 	}
 	const config = {
 		// https://cookieconsent.orestbida.com/reference/configuration-reference.html#guioptions

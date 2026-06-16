@@ -76,11 +76,11 @@ export default defineNuxtConfig({
 		apiVersion: "2024-01-01",
 		useCdn: true,
 		perspective: "published",
-		visualEditing: {
-			studioUrl: process.env.NUXT_SANITY_STUDIO_URL || "http://localhost:3333",
-			token: process.env.NUXT_SANITY_API_READ_TOKEN,
-			stega: false, // activate once FFox problem has been resolved
-		},
+		// Visual Editing disabled — @nuxtjs/sanity v2 pulls @sanity/visual-editing
+		// 5, whose React+lodash+react-compiler-runtime subtree breaks Vite 8
+		// dev with cascading CJS/ESM-interop errors. Re-enable once you actually
+		// need preview-in-studio and we'll tackle the bundling separately.
+		visualEditing: false,
 	},
 
 	components: [
@@ -212,32 +212,6 @@ export default defineNuxtConfig({
 					}
 					warn(warning);
 				},
-			},
-		},
-		// @sanity/mutate (transitive via @nuxtjs/sanity 2 → @sanity/visual-editing)
-		// imports five lodash submodules. Lodash 4.x is CJS; Vite serves them
-		// straight from /@fs/ without converting, and the browser fails with
-		// `does not provide an export named 'default'`. Pre-bundling via
-		// optimizeDeps.include doesn't help here because @sanity/mutate isn't
-		// a direct dependency of `web/`, so Vite can't resolve the bare path.
-		//
-		// Workaround: alias each used lodash/<x>.js to lodash-es/<x>.js
-		// (already present in node_modules as a transitive ESM dep, with
-		// identical export names). Bypasses CJS interop entirely.
-		resolve: {
-			alias: {
-				// Lodash submodules used by @sanity/mutate are CJS → alias to
-				// the ESM-native lodash-es (same export names).
-				"lodash/groupBy.js": "lodash-es/groupBy.js",
-				"lodash/isObject.js": "lodash-es/isObject.js",
-				"lodash/keyBy.js": "lodash-es/keyBy.js",
-				"lodash/partition.js": "lodash-es/partition.js",
-				"lodash/sortedIndex.js": "lodash-es/sortedIndex.js",
-				// React 19's `react/compiler-runtime.js` is a CJS shim; the
-				// standalone `react-compiler-runtime` package is ESM and
-				// exports the runtime helpers (`c`, `$dispatcherGuard`, …)
-				// that @sanity/visual-editing imports.
-				"react/compiler-runtime": "react-compiler-runtime",
 			},
 		},
 		optimizeDeps: {
