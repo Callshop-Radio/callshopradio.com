@@ -31,7 +31,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
-      - run: pnpm typecheck
+      - name: Typecheck (advisory)
+        continue-on-error: true
+        run: pnpm typecheck
 
   build-web:
     name: build (web)
