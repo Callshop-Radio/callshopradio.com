@@ -1,84 +1,84 @@
-import { SITE_OPTIONS_QUERY } from '~~/queries/sanity.queries'
-import type { SiteFallbacks } from '~~/types/sanity'
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { defineStore } from "pinia";
+import { ref } from "vue";
+import { SITE_OPTIONS_QUERY } from "~~/queries/sanity.queries";
+import type { SiteFallbacks } from "~~/types/sanity";
 
 /** Payload for addToRepro (repro list / current track info) */
 export interface AddToReproPayload {
-	link: string
-	name: string
-	active: boolean
+	link: string;
+	name: string;
+	active: boolean;
 }
 
 /** Minimal current track shape for SoundCloud / repro */
 export interface CurrentTrack {
-	link?: string
-	name?: string
-	[key: string]: unknown
+	link?: string;
+	name?: string;
+	[key: string]: unknown;
 }
 
-export const useMainStore = defineStore('mainStore', () => {
+export const useMainStore = defineStore("mainStore", () => {
 	// state als refs
-	const siteCookieBanner = ref<Record<string, unknown>>({})
-	const siteNav = ref<Record<string, unknown>>({})
-	const siteSettings = ref<Record<string, unknown>>({})
-	const siteFallbacks = ref<SiteFallbacks | Record<string, unknown>>({})
-	const link = ref('')
-	const titel = ref('')
-	const currentTrack = ref<CurrentTrack | null>(null)
-	const active = ref(false)
-	const isPlayerPlaying = ref(false)
-	const isPlayerVisible = ref(true)
-	const activeScheduleLocation = ref('channelOne')
-	const activeStreamingChannel = ref('channelOne')
-	const currentHeroContentType = ref('')
-	const isDarkMode = ref<boolean | undefined>(undefined)
-	const menuOpen = ref(false)
+	const siteCookieBanner = ref<Record<string, unknown>>({});
+	const siteNav = ref<Record<string, unknown>>({});
+	const siteSettings = ref<Record<string, unknown>>({});
+	const siteFallbacks = ref<SiteFallbacks | Record<string, unknown>>({});
+	const link = ref("");
+	const titel = ref("");
+	const currentTrack = ref<CurrentTrack | null>(null);
+	const active = ref(false);
+	const isPlayerPlaying = ref(false);
+	const isPlayerVisible = ref(true);
+	const activeScheduleLocation = ref("channelOne");
+	const activeStreamingChannel = ref("channelOne");
+	const currentHeroContentType = ref("");
+	const isDarkMode = ref<boolean | undefined>(undefined);
+	const menuOpen = ref(false);
 
 	// actions als Funktionen
 	async function nuxtServerInit() {
-		const sanity = useSanity()
-		const query = groq`${SITE_OPTIONS_QUERY}`
-		const data = await sanity.fetch(query)
+		const sanity = useSanity();
+		const query = groq`${SITE_OPTIONS_QUERY}`;
+		const data = await sanity.fetch(query);
 
-		siteCookieBanner.value = data?.siteCookieBanner
-		siteNav.value = data?.siteNav
-		siteSettings.value = data?.siteSettings
-		siteFallbacks.value = data?.siteFallbacks
+		siteCookieBanner.value = data?.siteCookieBanner;
+		siteNav.value = data?.siteNav;
+		siteSettings.value = data?.siteSettings;
+		siteFallbacks.value = data?.siteFallbacks;
 	}
 
 	function addToRepro(payload: AddToReproPayload) {
-		link.value = payload.link
-		titel.value = payload.name
-		active.value = payload.active
+		link.value = payload.link;
+		titel.value = payload.name;
+		active.value = payload.active;
 	}
 
 	function setPlayerStatus(isPlaying: boolean) {
-		isPlayerPlaying.value = isPlaying
+		isPlayerPlaying.value = isPlaying;
 	}
 
 	function togglePlayerVisibility() {
-		isPlayerVisible.value = !isPlayerVisible.value
+		isPlayerVisible.value = !isPlayerVisible.value;
 	}
 
 	function resetSoundCloudPlayer() {
-		currentTrack.value = null
+		currentTrack.value = null;
 	}
 
 	function setActiveScheduleLocation(location: string) {
-		activeScheduleLocation.value = location
+		activeScheduleLocation.value = location;
 	}
 
 	function toggleMenu() {
-		menuOpen.value = !menuOpen.value
+		menuOpen.value = !menuOpen.value;
 	}
 
 	function setActiveStreamingChannel(channel: string) {
-		activeStreamingChannel.value = channel
+		activeStreamingChannel.value = channel;
 	}
 
 	function setCurrentHeroContentType(type: string) {
-		currentHeroContentType.value = type
+		currentHeroContentType.value = type;
 	}
 
 	function detectSystemDarkMode() {
@@ -86,48 +86,48 @@ export const useMainStore = defineStore('mainStore', () => {
 		if (import.meta.client) {
 			// MediaQueryList-Objekt erstellen, um Systemeinstellung zu prüfen
 			const darkModeMediaQuery = window.matchMedia(
-				'(prefers-color-scheme: dark)'
-			)
+				"(prefers-color-scheme: dark)",
+			);
 
 			// isDarkMode anhand des System-Darkmode setzen
-			isDarkMode.value = darkModeMediaQuery.matches
+			isDarkMode.value = darkModeMediaQuery.matches;
 
 			// Farben aktualisieren
-			updateColors()
+			updateColors();
 
 			// Auf Änderungen reagieren
-			darkModeMediaQuery.addEventListener('change', (e) => {
-				isDarkMode.value = e.matches
-				updateColors()
-			})
+			darkModeMediaQuery.addEventListener("change", (e) => {
+				isDarkMode.value = e.matches;
+				updateColors();
+			});
 		}
 	}
 
 	function updateColors() {
 		if (isDarkMode.value) {
-			document.documentElement.style.setProperty('--color-bg', '#000')
-			document.documentElement.style.setProperty('--color-text', '#fff')
+			document.documentElement.style.setProperty("--color-bg", "#000");
+			document.documentElement.style.setProperty("--color-text", "#fff");
 			document
-				?.querySelector('.header .logo')
-				?.style.setProperty('filter', 'invert(1)')
+				?.querySelector(".header .logo")
+				?.style.setProperty("filter", "invert(1)");
 			document
-				?.querySelector('.header .text-logo')
-				?.style.setProperty('filter', 'invert(1)')
+				?.querySelector(".header .text-logo")
+				?.style.setProperty("filter", "invert(1)");
 		} else {
-			document.documentElement.style.setProperty('--color-bg', '#fff')
-			document.documentElement.style.setProperty('--color-text', '#000')
+			document.documentElement.style.setProperty("--color-bg", "#fff");
+			document.documentElement.style.setProperty("--color-text", "#000");
 			document
-				?.querySelector('.header .logo')
-				?.style.setProperty('filter', 'invert(0)')
+				?.querySelector(".header .logo")
+				?.style.setProperty("filter", "invert(0)");
 			document
-				?.querySelector('.header .text-logo')
-				?.style.setProperty('filter', 'invert(0)')
+				?.querySelector(".header .text-logo")
+				?.style.setProperty("filter", "invert(0)");
 		}
 	}
 
 	function toggleDarkMode() {
-		isDarkMode.value = !isDarkMode.value
-		updateColors()
+		isDarkMode.value = !isDarkMode.value;
+		updateColors();
 	}
 
 	return {
@@ -157,6 +157,6 @@ export const useMainStore = defineStore('mainStore', () => {
 		updateColors,
 		toggleDarkMode,
 		toggleMenu,
-		setActiveStreamingChannel
-	}
-})
+		setActiveStreamingChannel,
+	};
+});

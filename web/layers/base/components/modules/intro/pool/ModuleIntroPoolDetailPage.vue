@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
+import type { Image } from "~/types/sanity";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-const localePath = useLocalePath();
+const { getItemRoute } = useContentRoute();
 
 // Template-Referenzen (wie Set für Höhen-Sync)
 const poolContentRef = ref<HTMLElement | null>(null);
@@ -12,167 +13,131 @@ const poolMainHeight = ref(0);
 const windowWidth = ref(0);
 
 // Typdefinitionen
-interface Image {
-  asset?: {
-    url?: string;
-    altText?: string;
-  };
-  alt?: string;
-}
-
 interface Tag {
-  _id?: string;
-  _type?: string;
-  title?: string | unknown;
-  short?: string;
+	_id?: string;
+	_type?: string;
+	title?: string | unknown;
+	short?: string;
 }
 
 interface PoolItem {
-  _id?: string;
-  _type?: string;
-  title?: string;
-  name?: string;
-  description?: object;
-  slug?: { current?: string };
-  image?: Image;
-  mainImage?: Image;
-  location?: string;
-  tags?: Tag[];
-  otherTags?: Tag[];
-  cityTags?: Tag[];
-  bio?: unknown[];
-  contact?: string;
-  socials?: Record<string, string>;
-  shows?: Array<{
-    _id?: string;
-    title?: string;
-    slug?: { current?: string };
-    _type?: string;
-  }>;
-  persons?: Array<{
-    _id?: string;
-    title?: string;
-    image?: Image;
-    slug?: { current?: string };
-  }>;
-  venues?: Array<{ _id?: string; title?: string; slug?: { current?: string } }>;
+	_id?: string;
+	_type?: string;
+	title?: string;
+	name?: string;
+	description?: object;
+	slug?: { current?: string };
+	image?: Image;
+	mainImage?: Image;
+	location?: string;
+	tags?: Tag[];
+	otherTags?: Tag[];
+	cityTags?: Tag[];
+	bio?: unknown[];
+	contact?: string;
+	socials?: Record<string, string>;
+	shows?: Array<{
+		_id?: string;
+		title?: string;
+		slug?: { current?: string };
+		_type?: string;
+	}>;
+	persons?: Array<{
+		_id?: string;
+		title?: string;
+		image?: Image;
+		slug?: { current?: string };
+	}>;
+	venues?: Array<{ _id?: string; title?: string; slug?: { current?: string } }>;
 }
 
 // Props
 const props = defineProps<{
-  poolItem: PoolItem;
+	poolItem: PoolItem;
 }>();
-
-// Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
-function getItemRoute(item) {
-  if (!item || !item?.slug) return "/";
-
-  switch (item?._type) {
-    case "person":
-    case "venue":
-      return localePath(`/pool/${item.slug.current}`);
-
-    case "set":
-      if (item?.parentShow?.slug?.current) {
-        return localePath(
-          `/shows/${item.parentShow.slug.current}/${item.slug.current}`,
-        );
-      }
-      return localePath(`/shows/${item?.slug?.current}`);
-
-    case "article":
-      return localePath(`/words/${item?.slug?.current}`);
-
-    case "show":
-      return localePath(`/shows/${item?.slug?.current}`);
-
-    default:
-      return localePath(`/${item?._type}/${item?.slug?.current}`);
-  }
-}
 
 // Store
 const mainStore = useMainStore();
 
 // Composable für Bild-Management
 const useImageManagement = () => {
-  function getItemImage(item?: PoolItem): Image | null {
-    if (!item) return null;
-    if (item.image || item.mainImage) {
-      return item.image || item.mainImage;
-    }
-    if (item._type === "person") {
-      return mainStore?.siteFallbacks?.fallbackPerson?.image;
-    }
-    if (item._type === "venue") {
-      return mainStore?.siteFallbacks?.fallbackVenue?.image;
-    }
-    return mainStore?.siteFallbacks?.fallbackPerson?.image;
-  }
+	function getItemImage(item?: PoolItem): Image | null {
+		if (!item) return null;
+		if (item.image || item.mainImage) {
+			return item.image || item.mainImage;
+		}
+		if (item._type === "person") {
+			return mainStore?.siteFallbacks?.fallbackPerson?.image;
+		}
+		if (item._type === "venue") {
+			return mainStore?.siteFallbacks?.fallbackVenue?.image;
+		}
+		return mainStore?.siteFallbacks?.fallbackPerson?.image;
+	}
 
-  const itemImage = computed(() => getItemImage(props.poolItem));
-  return { itemImage };
+	const itemImage = computed(() => getItemImage(props.poolItem));
+	return { itemImage };
 };
 
 const { itemImage } = useImageManagement();
 
 const itemTitle = computed(() => {
-  return props.poolItem?.title || props.poolItem?.name || "";
+	return props.poolItem?.title || props.poolItem?.name || "";
 });
 
 const displayTags = computed(() => {
-  return props.poolItem?.otherTags ?? props.poolItem?.tags ?? [];
+	return props.poolItem?.otherTags ?? props.poolItem?.tags ?? [];
 });
 
 const contactLink = computed(() => {
-  const contact = props.poolItem?.contact;
-  if (!contact) return "#";
-  if (contact.includes("@")) return `mailto:${contact}`;
-  if (/^\+?[0-9\s()-]+$/.test(contact)) {
-    return `tel:${contact.replace(/\s/g, "")}`;
-  }
-  return contact;
+	const contact = props.poolItem?.contact;
+	if (!contact) return "#";
+	if (contact.includes("@")) return `mailto:${contact}`;
+	if (/^\+?[0-9\s()-]+$/.test(contact)) {
+		return `tel:${contact.replace(/\s/g, "")}`;
+	}
+	return contact;
 });
 
 // Höhen-Sync wie bei Set (rechte Spalte = gleiche Höhe wie linke)
 const computedPoolMainHeight = computed(() => {
-  if (windowWidth.value <= 900) return "100%";
-  return poolMainHeight.value;
+	if (windowWidth.value <= 900) return "100%";
+	return poolMainHeight.value;
 });
 
 const poolDetailsStyle = computed(() => {
-  const h = computedPoolMainHeight.value;
-  if (typeof h === "string") return `max-height: ${h}; height: ${h}`;
-  return `max-height: ${h}px; height: ${h}px`;
+	const h = computedPoolMainHeight.value;
+	if (typeof h === "string") return `max-height: ${h}; height: ${h}`;
+	return `max-height: ${h}px; height: ${h}px`;
 });
 
 const updatePoolMainHeight = () => {
-  if (poolMainRef.value) poolMainHeight.value = poolMainRef.value.offsetHeight;
+	if (poolMainRef.value) poolMainHeight.value = poolMainRef.value.offsetHeight;
 };
 
 const updateWindowWidth = () => {
-  if (typeof window !== "undefined") windowWidth.value = window.innerWidth;
+	if (typeof window !== "undefined") windowWidth.value = window.innerWidth;
 };
 
 onMounted(() => {
-  nextTick();
-  updatePoolMainHeight();
-  updateWindowWidth();
-  if (typeof window !== "undefined" && poolMainRef.value) {
-    const resizeObserver = new ResizeObserver(() => updatePoolMainHeight());
-    resizeObserver.observe(poolMainRef.value);
-    window.addEventListener("resize", () => {
-      updateWindowWidth();
-      updatePoolMainHeight();
-    });
-    const mutationObserver = new MutationObserver(() => updatePoolMainHeight());
-    mutationObserver.observe(poolMainRef.value, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["style", "class"],
-    });
-  }
+	nextTick();
+	updatePoolMainHeight();
+	updateWindowWidth();
+	if (typeof window !== "undefined" && poolMainRef.value) {
+		const resizeObserver = new ResizeObserver(() => updatePoolMainHeight());
+		resizeObserver.observe(poolMainRef.value);
+		window.addEventListener("resize", () => {
+			updateWindowWidth();
+			updatePoolMainHeight();
+		});
+		const mutationObserver = new MutationObserver(() => updatePoolMainHeight());
+		mutationObserver.observe(poolMainRef.value, {
+			childList: true,
+			subtree: true,
+			attributes: true,
+			attributeFilter: ["style", "class"],
+		});
+	}
 });
 </script>
 

@@ -2,16 +2,16 @@
 // @ts-nocheck
 export default async function (seo) {
 	if (!seo) {
-		return
+		return;
 	}
 
-	const TITLE_SEPARATOR = '|'
-	const isHomepage = computed(() => useRoute()?.name === 'index')
+	const TITLE_SEPARATOR = "|";
+	const isHomepage = computed(() => useRoute()?.name === "index");
 	const title = computed(() =>
 		isHomepage?.value
 			? seo?.title
-			: `${seo?.title} ${TITLE_SEPARATOR} ${seo?.pageTitle}`
-	)
+			: `${seo?.title} ${TITLE_SEPARATOR} ${seo?.pageTitle}`,
+	);
 
 	useSeoMeta({
 		title: title?.value,
@@ -19,6 +19,6 @@ export default async function (seo) {
 		description: seo?.metaDescription,
 		ogDescription: seo?.metaDescription,
 		ogImage: seo?.ogImage,
-		twitterCard: 'summary_large_image'
-	})
+		twitterCard: "summary_large_image",
+	});
 }

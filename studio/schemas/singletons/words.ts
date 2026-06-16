@@ -1,85 +1,85 @@
-import {UlistIcon, SearchIcon, TextIcon, CogIcon} from '@sanity/icons'
-import { defineType } from 'sanity'
+import { CogIcon, SearchIcon, TextIcon, UlistIcon } from "@sanity/icons";
+import { defineType } from "sanity";
 
-const TITLE = 'Words Page'
+const TITLE = "Words Page";
 
 export const words = defineType({
-  name: 'words',
-  type: 'document',
+  name: "words",
+  type: "document",
   title: TITLE,
   icon: UlistIcon,
   groups: [
     {
-      title: 'Editorial',
-      name: 'editorial',
+      title: "Editorial",
+      name: "editorial",
       icon: TextIcon,
     },
     {
-      title: 'Settings',
-      name: 'settings',
+      title: "Settings",
+      name: "settings",
       icon: CogIcon,
     },
     {
-      title: 'SEO',
-      name: 'seo',
+      title: "SEO",
+      name: "seo",
       icon: SearchIcon,
     },
   ],
   fields: [
     {
-      title: 'Title',
-      name: 'title',
-      type: 'string',
-      group: 'editorial',
+      title: "Title",
+      name: "title",
+      type: "string",
+      group: "editorial",
     },
     {
-      title: 'Intro Slider',
-      name: 'slider',
-      type: 'object',
-      group: 'editorial',
+      title: "Intro Slider",
+      name: "slider",
+      type: "object",
+      group: "editorial",
       fields: [
         {
-          title: 'Number of visible Articles',
-          name: 'count',
-          type: 'number',
+          title: "Number of visible Articles",
+          name: "count",
+          type: "number",
           initialValue: 6,
           options: {
             list: [
-              {value: 2, title: '2'},
-              {value: 4, title: '4'},
-              {value: 6, title: '6'},
-              {value: 8, title: '8'},
-              {value: 10, title: '10'},
+              { value: 2, title: "2" },
+              { value: 4, title: "4" },
+              { value: 6, title: "6" },
+              { value: 8, title: "8" },
+              { value: 10, title: "10" },
             ],
-            layout: 'radio',
-            direction: 'horizontal',
+            layout: "radio",
+            direction: "horizontal",
           },
           validate: (Rule) => Rule.required().integer().min(2).max(10),
         },
         {
-          title: 'Auto load content',
-          description: 'Disable to manually select content.',
-          name: 'autoLoad',
-          type: 'boolean',
+          title: "Auto load content",
+          description: "Disable to manually select content.",
+          name: "autoLoad",
+          type: "boolean",
           initialValue: true,
           options: {
-            layout: 'checkbox',
+            layout: "checkbox",
           },
           validation: (Rule) => Rule.required(),
         },
         {
-          name: 'articles',
-          title: 'Articles',
-          description: 'Only selected content below will be displayed.',
-          type: 'array',
+          name: "articles",
+          title: "Articles",
+          description: "Only selected content below will be displayed.",
+          type: "array",
           validate: (Rule) => Rule.integer().min(2).max(10),
-          hidden: ({parent}) => parent?.autoLoad !== false,
+          hidden: ({ parent }) => parent?.autoLoad !== false,
           of: [
             {
-              name: 'article',
-              type: 'reference',
-              title: 'Article',
-              to: [{type: 'article'}],
+              name: "article",
+              type: "reference",
+              title: "Article",
+              to: [{ type: "article" }],
               options: {
                 disableNew: true,
               },
@@ -89,16 +89,16 @@ export const words = defineType({
       ],
     },
     {
-      title: 'Modules',
-      name: 'modules',
-      type: 'modules',
-      group: 'editorial',
+      title: "Modules",
+      name: "modules",
+      type: "modules",
+      group: "editorial",
     },
     {
-      title: 'SEO',
-      name: 'seo',
-      type: 'seo.page',
-      group: 'seo',
+      title: "SEO",
+      name: "seo",
+      type: "seo.page",
+      group: "seo",
     },
     // {
     //   title: 'Animations',
@@ -107,17 +107,17 @@ export const words = defineType({
     //   group: 'settings',
     // },
     {
-      name: 'color',
-      title: 'Page Color',
-      type: 'color',
-      group: 'settings',
+      name: "color",
+      title: "Page Color",
+      type: "color",
+      group: "settings",
     },
   ],
   preview: {
     prepare() {
       return {
         title: TITLE,
-      }
+      };
     },
   },
-})
+});

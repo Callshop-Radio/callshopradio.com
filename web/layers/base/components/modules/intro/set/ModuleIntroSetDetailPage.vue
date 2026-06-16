@@ -1,291 +1,262 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
-import { useMainStore } from '~/stores/mainStore'
+import { computed, nextTick, onMounted, ref } from "vue";
+import { useMainStore } from "~/stores/mainStore";
 
-const { locale: _locale, setLocale: _setLocale } = useI18n()
-const localePath = useLocalePath()
+const { locale: _locale, setLocale: _setLocale } = useI18n();
+const localePath = useLocalePath();
+const { getItemRoute } = useContentRoute();
 
 // Template-Referenzen
-const setContentRef = ref<HTMLElement | null>(null)
-const setMainRef = ref<HTMLElement | null>(null)
+const setContentRef = ref<HTMLElement | null>(null);
+const setMainRef = ref<HTMLElement | null>(null);
 
 // Reactive height tracking
-const setMainHeight = ref(0)
-const windowWidth = ref(0)
+const setMainHeight = ref(0);
+const windowWidth = ref(0);
 
 // Typdefinitionen
 interface Image {
-  asset?: {
-    url?: string;
-  };
+	asset?: {
+		url?: string;
+	};
 }
 
 interface Person {
-  _key?: string;
-  title?: string;
-  poolVisibility?: boolean;
-  slug?: {
-    current?: string;
-  };
+	_key?: string;
+	title?: string;
+	poolVisibility?: boolean;
+	slug?: {
+		current?: string;
+	};
 }
 
 interface Tag {
-  _id?: string;
-  _type?: string;
-  title?: unknown;
-  short?: unknown;
+	_id?: string;
+	_type?: string;
+	title?: unknown;
+	short?: unknown;
 }
 
 interface Set {
-  _id?: string;
-  _type?: string;
-  title?: string;
-  image?: Image;
-  content?: unknown;
-  mainImage?: Image;
-  parentShow?: {
-    title?: string;
-    image?: Image;
-    content?: unknown;
-    slug?: {
-      current?: string;
-    };
-    tags?: Tag[];
-  };
-  datetime?: string;
-  _updatedAt?: string;
-  persons?: Person[];
-  tags?: Tag[];
-  tracklistRich?: unknown;
-  tracklist?: unknown[];
-  soundcloud?: {
-    tracks?: Array<{
-      id?: string;
-      artwork_url?: string;
-      permalink_url?: string;
-    }>;
-  };
+	_id?: string;
+	_type?: string;
+	title?: string;
+	image?: Image;
+	content?: unknown;
+	mainImage?: Image;
+	parentShow?: {
+		title?: string;
+		image?: Image;
+		content?: unknown;
+		slug?: {
+			current?: string;
+		};
+		tags?: Tag[];
+	};
+	datetime?: string;
+	_updatedAt?: string;
+	persons?: Person[];
+	tags?: Tag[];
+	tracklistRich?: unknown;
+	tracklist?: unknown[];
+	soundcloud?: {
+		tracks?: Array<{
+			id?: string;
+			artwork_url?: string;
+			permalink_url?: string;
+		}>;
+	};
 }
 
 // Props
 const props = defineProps<{
-  set: Set;
-}>()
+	set: Set;
+}>();
 
 // Store
-const mainStore = useMainStore()
+const mainStore = useMainStore();
 
 // Composable für Bild-Management
 const useImageManagement = () => {
 	// Helper-Funktion für Bild-Fetching und Fallbacks
 	function getItemImage(item?: Set): Image | null {
-		if (!item) return null
+		if (!item) return null;
 
 		// Bild aus dem Item selbst
 		if (item.image || item.mainImage) {
-			return item.image || item.mainImage
+			return item.image || item.mainImage;
 		}
 
 		// Fallback für Sets
-		return mainStore?.siteFallbacks?.fallbackSet?.image
+		return mainStore?.siteFallbacks?.fallbackSet?.image;
 	}
 
 	function checkImage(url: string): Promise<boolean> {
 		return new Promise((resolve) => {
-			const img = new Image()
-			img.onload = () => resolve(true)
-			img.onerror = () => resolve(false)
-			img.src = url
-		})
+			const img = new Image();
+			img.onload = () => resolve(true);
+			img.onerror = () => resolve(false);
+			img.src = url;
+		});
 	}
 
 	return {
 		getItemImage,
-		checkImage
-	}
-}
-
-// Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
-function getItemRoute(item) {
-	if (!item || !item?.slug) return '/'
-
-	switch (item?._type) {
-	case 'person':
-	case 'venue':
-		return localePath(`/pool/${item?.slug?.current}`)
-
-	case 'set':
-		// Prüfe, ob parentShow vorhanden ist
-		if (item?.parentShow?.slug?.current) {
-			return localePath(
-				`/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
-			)
-		}
-		// Fallback falls parentShow nicht verfügbar ist
-		return localePath(`/shows/${item?.slug?.current}`)
-
-	case 'article':
-		return localePath(`/words/${item?.slug?.current}`)
-
-	case 'show':
-		return localePath(`/shows/${item?.slug?.current}`)
-
-		// Standard-Fallback
-	default:
-		return localePath(`/${item?._type}/${item?.slug?.current}`)
-	}
-}
+		checkImage,
+	};
+};
 
 // Composable für SoundCloud-Funktionalität
 const useSoundCloud = () => {
-	const artworkUrl = ref('')
-	const { checkImage: _checkImage } = useImageManagement()
+	const artworkUrl = ref("");
+	const { checkImage: _checkImage } = useImageManagement();
 
 	// Non-blocking - returns URL directly
 	function getSoundcloudArtwork(item?: Set): string {
-		if (!item) return ''
+		if (!item) return "";
 		// Try SoundCloud artwork first
-		const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url
+		const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
 		if (artworkUrl) {
-			return artworkUrl.replace('-large', '-t500x500')
+			return artworkUrl.replace("-large", "-t500x500");
 		}
 		// Fallback chain
-		const parentShowImageUrl = item?.parentShow?.image?.asset?.url
-		const storeFallbackUrl = mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
-		return parentShowImageUrl || storeFallbackUrl || ''
+		const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
+		const storeFallbackUrl =
+			mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
+		return parentShowImageUrl || storeFallbackUrl || "";
 	}
 
 	function loadArtworkUrl() {
-		if (!props.set) return
-		const url = getSoundcloudArtwork(props.set)
-		artworkUrl.value = url
+		if (!props.set) return;
+		const url = getSoundcloudArtwork(props.set);
+		artworkUrl.value = url;
 	}
 
 	function playTrack() {
-		const item = props.set
-		if (!item?.soundcloud?.tracks?.[0]) return
+		const item = props.set;
+		if (!item?.soundcloud?.tracks?.[0]) return;
 
-		const track = item.soundcloud.tracks[0]
+		const track = item.soundcloud.tracks[0];
 
 		// Sicherstellen, dass permalink_url gesetzt ist
 		if (!track.permalink_url && track.id) {
-			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
+			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
 		}
 
 		// Track im Store speichern
-		mainStore.currentTrack = track
+		mainStore.currentTrack = track;
 	}
 
 	return {
 		artworkUrl,
 		loadArtworkUrl,
-		playTrack
-	}
-}
+		playTrack,
+	};
+};
 
 // Computed property für die Höhe von set-main
 const computedSetMainHeight = computed(() => {
 	// Unter 900px Bildschirmbreite soll die Höhe 100% sein
 	if (windowWidth.value <= 900) {
-		return '100%'
+		return "100%";
 	}
-	return setMainHeight.value
-})
+	return setMainHeight.value;
+});
 
 // Funktion zum Aktualisieren der Höhe
 const updateSetMainHeight = () => {
 	if (setMainRef.value) {
-		setMainHeight.value = setMainRef.value.offsetHeight
+		setMainHeight.value = setMainRef.value.offsetHeight;
 	}
-}
+};
 
 // Funktion zum Aktualisieren der Fensterbreite
 const updateWindowWidth = () => {
-	if (typeof window !== 'undefined') {
-		windowWidth.value = window.innerWidth
+	if (typeof window !== "undefined") {
+		windowWidth.value = window.innerWidth;
 	}
-}
+};
 
 // Anwendung der Composables
-const { getItemImage: _getItemImage } = useImageManagement()
-const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud()
+const { getItemImage: _getItemImage } = useImageManagement();
+const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
 
 // Funktion zum Anpassen der Höhe
 const _adjustSetContentHeight = () => {
 	if (setMainRef.value && setContentRef.value) {
-		const setMainHeight = setMainRef.value.offsetHeight
-		setContentRef.value.style.height = `${setMainHeight}px`
+		const setMainHeight = setMainRef.value.offsetHeight;
+		setContentRef.value.style.height = `${setMainHeight}px`;
 	}
-}
+};
 
 // Stadt-Tags abrufen
 function _getItemCityTags(item: Set): Tag[] {
-	const cityTags: Tag[] = []
+	const cityTags: Tag[] = [];
 
 	// Direkte City-Tags
 	if (item?.tags && Array.isArray(item?.tags)) {
 		item?.tags.forEach((tag: Tag) => {
-			if (tag._type === 'tag.city') {
-				cityTags.push(tag)
+			if (tag._type === "tag.city") {
+				cityTags.push(tag);
 			}
-		})
+		});
 	}
 
 	// City-Tags aus parentShow
 	if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
 		item?.parentShow?.tags.forEach((tag: Tag) => {
-			if (tag._type === 'tag.city') {
+			if (tag._type === "tag.city") {
 				if (!cityTags.some((existingTag) => existingTag._id === tag._id)) {
-					cityTags.push(tag)
+					cityTags.push(tag);
 				}
 			}
-		})
+		});
 	}
 
-	return cityTags
+	return cityTags;
 }
 
 // Nicht-Stadt-Tags abrufen
 function getItemNonCityTags(item: Set): Tag[] {
-	if (!item?.tags || !Array.isArray(item?.tags)) return []
-	return item?.tags.filter((tag: Tag) => tag._type !== 'tag.city')
+	if (!item?.tags || !Array.isArray(item?.tags)) return [];
+	return item?.tags.filter((tag: Tag) => tag._type !== "tag.city");
 }
 
 // Lebenszyklus-Hooks
 onMounted(() => {
-	loadArtworkUrl()
-	nextTick()
+	loadArtworkUrl();
+	nextTick();
 
 	// Initiale Messungen
-	updateSetMainHeight()
-	updateWindowWidth()
+	updateSetMainHeight();
+	updateWindowWidth();
 
 	// ResizeObserver für responsive Änderungen
-	if (typeof window !== 'undefined' && setMainRef.value) {
+	if (typeof window !== "undefined" && setMainRef.value) {
 		const resizeObserver = new ResizeObserver(() => {
-			updateSetMainHeight()
-		})
-		resizeObserver.observe(setMainRef.value)
+			updateSetMainHeight();
+		});
+		resizeObserver.observe(setMainRef.value);
 
 		// Window resize listener für Fenstergrößenänderungen
 		const handleResize = () => {
-			updateWindowWidth()
-			updateSetMainHeight()
-		}
-		window.addEventListener('resize', handleResize)
+			updateWindowWidth();
+			updateSetMainHeight();
+		};
+		window.addEventListener("resize", handleResize);
 
 		// MutationObserver für DOM-Änderungen
 		const mutationObserver = new MutationObserver(() => {
-			updateSetMainHeight()
-		})
+			updateSetMainHeight();
+		});
 		mutationObserver.observe(setMainRef.value, {
 			childList: true,
 			subtree: true,
 			attributes: true,
-			attributeFilter: ['style', 'class']
-		})
+			attributeFilter: ["style", "class"],
+		});
 	}
-})
+});
 </script>
 
 <template>

@@ -1,15 +1,15 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-import { ERROR_PAGE_QUERY } from '~~/queries/sanity.queries'
+import { ERROR_PAGE_QUERY } from "~~/queries/sanity.queries";
 
-const query = groq`${ERROR_PAGE_QUERY}`
-const { data } = await useSanityQuery(query)
+const query = groq`${ERROR_PAGE_QUERY}`;
+const { data } = await useSanityQuery(query);
 
-const { favicon } = useUtils()
-favicon()
+const { favicon } = useUtils();
+favicon();
 useSeoMeta({
-	title: data?.value?.title || 'Page Not Found'
-})
+	title: data?.value?.title || "Page Not Found",
+});
 </script>
 
 <template>

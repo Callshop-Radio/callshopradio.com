@@ -1,34 +1,40 @@
-import {HighlightIcon, SearchIcon, StarIcon, TextIcon, EyeOpenIcon} from '@sanity/icons'
-import {validateSlug} from '@/utils/validateSlug'
-import { defineType } from 'sanity'
+import {
+  EyeOpenIcon,
+  HighlightIcon,
+  SearchIcon,
+  StarIcon,
+  TextIcon,
+} from "@sanity/icons";
+import { defineType } from "sanity";
+import { validateSlug } from "@/utils/validateSlug";
 
 export const category = defineType({
-  name: 'category',
-  type: 'document',
-  title: 'Category',
+  name: "category",
+  type: "document",
+  title: "Category",
   icon: HighlightIcon,
   groups: [
     {
-      title: 'SEO',
-      name: 'seo',
+      title: "SEO",
+      name: "seo",
       icon: SearchIcon,
     },
   ],
   fields: [
     {
-      title: 'Titel',
-      name: 'title',
-      type: 'string',
+      title: "Titel",
+      name: "title",
+      type: "string",
     },
     {
-      title: 'Sub Categories',
-      name: 'subCategories',
-      type: 'array',
+      title: "Sub Categories",
+      name: "subCategories",
+      type: "array",
       of: [
         {
-          title: 'Sub Category',
-          type: 'reference',
-          to: [{type: 'category.sub'}],
+          title: "Sub Category",
+          type: "reference",
+          to: [{ type: "category.sub" }],
           options: {
             disableNew: false,
           },
@@ -39,13 +45,13 @@ export const category = defineType({
   ],
   preview: {
     select: {
-      title: 'title',
+      title: "title",
     },
     prepare(selection) {
-      const {title} = selection
+      const { title } = selection;
       return {
         title: title,
-      }
+      };
     },
   },
-})
+});

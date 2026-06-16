@@ -9,224 +9,184 @@
  * - title: Optional section title
  */
 
-import type { ContentItem, Image, Tag } from '~/types/sanity'
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import { useMainStore } from '~/stores/mainStore'
+import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { useMainStore } from "~/stores/mainStore";
+import type { ContentItem, Image, Tag } from "~/types/sanity";
 
-const { locale: _locale } = useI18n()
-const localePath = useLocalePath()
-const mainStore = useMainStore()
+const { locale: _locale } = useI18n();
+const localePath = useLocalePath();
+const mainStore = useMainStore();
+
+const { getItemRoute } = useContentRoute();
+const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 
 const props = defineProps({
 	items: {
 		type: Array as () => ContentItem[],
-		default: () => []
+		default: () => [],
 	},
 	type: {
-		type: String as () => 'pool' | 'shows' | 'words',
-		required: true
+		type: String as () => "pool" | "shows" | "words",
+		required: true,
 	},
 	title: {
 		type: String,
-		default: ''
-	}
-})
+		default: "",
+	},
+});
 
 // State
-const ITEMS_PER_PAGE = 6
-const visibleItemCount = ref(ITEMS_PER_PAGE)
-const artworkUrls = ref(new Map<string, string>())
+const ITEMS_PER_PAGE = 6;
+const visibleItemCount = ref(ITEMS_PER_PAGE);
+const artworkUrls = ref(new Map<string, string>());
 
 // Color and styling based on type
 const typeConfig = computed(() => {
 	const configs: Record<
-    string,
-    { color: string; label: string; cssClass: string }
-  > = {
-  	pool: { color: 'blue', label: 'Pool', cssClass: 'pool' },
-  	shows: { color: 'pink', label: 'Shows', cssClass: 'sets' },
-  	words: { color: 'green', label: 'Words', cssClass: 'words' }
-  }
-	return configs[props.type] || configs.shows
-})
+		string,
+		{ color: string; label: string; cssClass: string }
+	> = {
+		pool: { color: "blue", label: "Pool", cssClass: "pool" },
+		shows: { color: "pink", label: "Shows", cssClass: "sets" },
+		words: { color: "green", label: "Words", cssClass: "words" },
+	};
+	return configs[props.type] || configs.shows;
+});
 
 // Visible items (paginated) - items come pre-sorted from parent
 const visibleItems = computed(() => {
-	return props.items.slice(0, visibleItemCount.value)
-})
+	return props.items.slice(0, visibleItemCount.value);
+});
 
 // Has more items to load
 const hasMoreItems = computed(() => {
-	return props.items.length > visibleItemCount.value
-})
+	return props.items.length > visibleItemCount.value;
+});
 
 // Functions
 function loadMoreItems() {
-	visibleItemCount.value += ITEMS_PER_PAGE
+	visibleItemCount.value += ITEMS_PER_PAGE;
 
 	// Load artwork URLs for newly visible items (for shows/sets)
-	if (props.type === 'shows') {
+	if (props.type === "shows") {
 		nextTick(() => {
 			const newItems = props.items.slice(
 				visibleItemCount.value - ITEMS_PER_PAGE,
-				visibleItemCount.value
-			)
+				visibleItemCount.value,
+			);
 			newItems.forEach((item: ContentItem) => {
 				if (!artworkUrls.value.has(item?._id)) {
-					loadArtworkUrl(item)
+					loadArtworkUrl(item);
 				}
-			})
-		})
+			});
+		});
 	}
 }
 
 function formatDate(dateString: string) {
-	if (!dateString) return ''
-	const date = new Date(dateString)
-	if (isNaN(date.getTime())) return ''
-	return date.toLocaleDateString('de-DE', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric'
-	})
+	if (!dateString) return "";
+	const date = new Date(dateString);
+	if (isNaN(date.getTime())) return "";
+	return date.toLocaleDateString("de-DE", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+	});
 }
 
 function getItemImage(item: ContentItem): Image | undefined {
-	if (item.image) return item.image
-	if (item.mainImage) return item.mainImage
+	if (item.image) return item.image;
+	if (item.mainImage) return item.mainImage;
 
 	const fallbacks: Record<string, Image | undefined> = {
 		person: mainStore.siteFallbacks?.fallbackPerson?.image,
 		venue: mainStore.siteFallbacks?.fallbackVenue?.image,
 		show: mainStore.siteFallbacks?.fallbackShow?.image,
 		set: mainStore.siteFallbacks?.fallbackSet?.image,
-		article: mainStore.siteFallbacks?.fallbackArticle?.image
-	}
+		article: mainStore.siteFallbacks?.fallbackArticle?.image,
+	};
 
-	return fallbacks[item._type ?? ''] ?? mainStore.siteFallbacks?.fallbackSet?.image
-}
-
-function getItemRoute(item: ContentItem) {
-	if (!item || !item?.slug) return '/'
-
-	switch (item?._type) {
-	case 'person':
-	case 'venue':
-		return localePath(`/pool/${item?.slug?.current}`)
-	case 'set':
-		if (item?.parentShow?.slug?.current) {
-			return localePath(
-				`/shows/${item.parentShow.slug.current}/${item?.slug?.current}`
-			)
-		}
-		return localePath(`/shows/${item?.slug?.current}`)
-	case 'article':
-		return localePath(`/words/${item?.slug?.current}`)
-	case 'show':
-		return localePath(`/shows/${item?.slug?.current}`)
-	default:
-		return localePath(`/${item?._type}/${item?.slug?.current}`)
-	}
+	return (
+		fallbacks[item._type ?? ""] ?? mainStore.siteFallbacks?.fallbackSet?.image
+	);
 }
 
 function getItemCityTags(item: ContentItem) {
-	const cityTags: Tag[] = []
+	const cityTags: Tag[] = [];
 
 	if (item?.tags && Array.isArray(item?.tags)) {
 		item.tags.forEach((tag: Tag) => {
-			if (tag._type === 'tag.city') {
-				cityTags.push(tag)
+			if (tag._type === "tag.city") {
+				cityTags.push(tag);
 			}
-		})
+		});
 	}
 
 	if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
 		item.parentShow.tags.forEach((tag: Tag) => {
 			if (
-				tag._type === 'tag.city' &&
+				tag._type === "tag.city" &&
 				!cityTags.some((t) => t._id === tag._id)
 			) {
-				cityTags.push(tag)
+				cityTags.push(tag);
 			}
-		})
+		});
 	}
 
-	return cityTags
+	return cityTags;
 }
 
 function getItemNonCityTags(item: ContentItem) {
-	const tags: Tag[] = []
+	const tags: Tag[] = [];
 
 	const addTags = (sourceTags: Tag[] | undefined) => {
 		if (Array.isArray(sourceTags)) {
 			sourceTags.forEach((tag: Tag) => {
-				if (tag._type !== 'tag.city' && !tags.some((t) => t._id === tag._id)) {
-					tags.push(tag)
+				if (tag._type !== "tag.city" && !tags.some((t) => t._id === tag._id)) {
+					tags.push(tag);
 				}
-			})
+			});
 		}
-	}
+	};
 
-	addTags(item?.tags)
-	addTags(item?.parentShow?.tags)
+	addTags(item?.tags);
+	addTags(item?.parentShow?.tags);
 
-	return tags
+	return tags;
 }
 
 function _checkImage(url: string): Promise<boolean> {
 	return new Promise((resolve) => {
-		const img = new Image()
-		img.onload = () => resolve(true)
-		img.onerror = () => resolve(false)
-		img.src = url
-	})
-}
-
-// Non-blocking artwork URL resolution
-function getSoundcloudArtwork(item: ContentItem): string {
-	const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url as string | undefined
-	if (artworkUrl) {
-		return artworkUrl.replace('-large', '-t500x500')
-	}
-	const parentShowImageUrl = item?.parentShow?.image?.asset?.url
-	const storeFallbackUrl =
-		mainStore.siteFallbacks?.fallbackSet?.image?.asset?.url
-	return parentShowImageUrl || storeFallbackUrl || ''
+		const img = new Image();
+		img.onload = () => resolve(true);
+		img.onerror = () => resolve(false);
+		img.src = url;
+	});
 }
 
 function loadArtworkUrl(item: ContentItem) {
-	if (!item) return
-	const url = getSoundcloudArtwork(item)
-	artworkUrls.value.set(item._id ?? '', url)
-}
-
-function playTrack(item: ContentItem) {
-	if (item?.soundcloud?.tracks?.[0]) {
-		const track = item.soundcloud.tracks[0] as { id?: number; permalink_url?: string }
-		if (!track.permalink_url && track.id) {
-			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
-		}
-		mainStore.currentTrack = track
-	}
+	if (!item) return;
+	const url = getSoundcloudArtwork(item);
+	artworkUrls.value.set(item._id ?? "", url);
 }
 
 // Lifecycle
 onMounted(() => {
-	if (props.type === 'shows') {
+	if (props.type === "shows") {
 		visibleItems.value.forEach((item: ContentItem) => {
-			loadArtworkUrl(item)
-		})
+			loadArtworkUrl(item);
+		});
 	}
-})
+});
 
 // Reset when items change
 watch(
 	() => props.items,
 	() => {
-		visibleItemCount.value = ITEMS_PER_PAGE
+		visibleItemCount.value = ITEMS_PER_PAGE;
 	},
-	{ deep: true }
-)
+	{ deep: true },
+);
 </script>
 
 <template>

@@ -1,125 +1,124 @@
 <script setup lang="ts">
-import type { ContentItem, Tag } from '~/types/sanity'
-import { computed, onMounted, ref } from 'vue'
-import { useMainStore } from '~/stores/mainStore'
+import { computed, onMounted, ref } from "vue";
+import { useMainStore } from "~/stores/mainStore";
 
 // Composables
-const localePath = useLocalePath()
-const router = useRouter()
-const mainStore = useMainStore()
+const localePath = useLocalePath();
+const mainStore = useMainStore();
+const { navigateToTagSearch } = useTagNavigation();
 
 // Type Definitions
 interface Image {
-  asset?: {
-    url?: string;
-  };
+	asset?: {
+		url?: string;
+	};
 }
 
 interface SoundCloudTrack {
-  id?: string;
-  artwork_url?: string;
-  permalink_url?: string;
+	id?: string;
+	artwork_url?: string;
+	permalink_url?: string;
 }
 
 interface ParentShow {
-  title?: string;
-  slug?: {
-    current?: string;
-  };
-  image?: Image;
+	title?: string;
+	slug?: {
+		current?: string;
+	};
+	image?: Image;
 }
 
 interface ContentReference {
-  _id?: string;
-  _type?: string;
-  title?: string;
-  image?: Image;
-  mainImage?: Image;
-  parentShow?: ParentShow;
-  datetime?: string;
-  _updatedAt?: string;
-  useTeaserText?: boolean;
-  textTeaser?: unknown[];
-  text?: unknown[];
-  description?: unknown[];
-  bio?: unknown[];
-  tags?: unknown[];
-  persons?: Array<{
-    _id?: string;
-    title?: string;
-    poolVisibility?: boolean;
-    slug?: {
-      current?: string;
-    };
-  }>;
-  slug?: {
-    current?: string;
-  };
-  soundcloud?: {
-    tracks?: SoundCloudTrack[];
-  };
+	_id?: string;
+	_type?: string;
+	title?: string;
+	image?: Image;
+	mainImage?: Image;
+	parentShow?: ParentShow;
+	datetime?: string;
+	_updatedAt?: string;
+	useTeaserText?: boolean;
+	textTeaser?: unknown[];
+	text?: unknown[];
+	description?: unknown[];
+	bio?: unknown[];
+	tags?: unknown[];
+	persons?: Array<{
+		_id?: string;
+		title?: string;
+		poolVisibility?: boolean;
+		slug?: {
+			current?: string;
+		};
+	}>;
+	slug?: {
+		current?: string;
+	};
+	soundcloud?: {
+		tracks?: SoundCloudTrack[];
+	};
 }
 
 interface Link {
-  title?: string;
-  [key: string]: unknown;
+	title?: string;
+	[key: string]: unknown;
 }
 
 interface Module {
-  title?: string;
-  text?: unknown[];
-  layout?: string;
-  contentReference?: ContentReference;
-  link?: Link;
-  type?: string;
+	title?: string;
+	text?: unknown[];
+	layout?: string;
+	contentReference?: ContentReference;
+	link?: Link;
+	type?: string;
 }
 
 // Props
 const props = defineProps<{
-  module: Module;
-}>()
+	module: Module;
+}>();
 
 // Route Helper Functions
 function getItemRoute(item: ContentReference): string {
-	if (!item?.slug?.current) return '/'
+	if (!item?.slug?.current) return "/";
 
-	const { _type, slug, parentShow } = item
+	const { _type, slug, parentShow } = item;
 
 	switch (_type) {
-	case 'person':
-	case 'venue':
-		return localePath(`/pool/${slug.current}`)
+		case "person":
+		case "venue":
+			return localePath(`/pool/${slug.current}`);
 
-	case 'set':
-		if (parentShow?.slug?.current) {
-			return localePath(`/shows/${parentShow.slug.current}/${slug.current}`)
-		}
-		return localePath(`/shows/${slug.current}`)
+		case "set":
+			if (parentShow?.slug?.current) {
+				return localePath(`/shows/${parentShow.slug.current}/${slug.current}`);
+			}
+			return localePath(`/shows/${slug.current}`);
 
-	case 'article':
-		return localePath(`/words/${slug.current}`)
+		case "article":
+			return localePath(`/words/${slug.current}`);
 
-	case 'show':
-		return localePath(`/shows/${slug.current}`)
+		case "show":
+			return localePath(`/shows/${slug.current}`);
 
-	default:
-		return localePath(`/${_type}/${slug.current}`)
+		default:
+			return localePath(`/${_type}/${slug.current}`);
 	}
 }
 
 // Image Management Composable
 const useImageManagement = () => {
 	function getItemImage(item?: ContentReference): Image | null {
-		if (!item) return null
+		if (!item) return null;
 
 		// Primäres Bild aus dem Item
 		if (item.image || item.mainImage) {
-			return (item.image || item.mainImage) ?? null
+			return (item.image || item.mainImage) ?? null;
 		}
 
 		// Fallback-Bilder basierend auf Content-Typ
-		const fallbacks = mainStore.siteFallbacks
-		if (!fallbacks) return null
+		const fallbacks = mainStore.siteFallbacks;
+		if (!fallbacks) return null;
 
 		const fallbackMap: Record<string, Image | undefined> = {
 			person: fallbacks.fallbackPerson?.image,
@@ -127,151 +126,109 @@ const useImageManagement = () => {
 			show: fallbacks.fallbackShow?.image,
 			set: fallbacks.fallbackSet?.image,
 			word: fallbacks.fallbackArticle?.image,
-			article: fallbacks.fallbackArticle?.image
-		}
+			article: fallbacks.fallbackArticle?.image,
+		};
 
 		return (
-			fallbackMap[item._type || ''] || fallbacks.fallbackPerson?.image || null
-		)
+			fallbackMap[item._type || ""] || fallbacks.fallbackPerson?.image || null
+		);
 	}
 
 	function checkImageExists(url: string): Promise<boolean> {
 		return new Promise((resolve) => {
-			const img = new Image()
-			img.onload = () => resolve(true)
-			img.onerror = () => resolve(false)
-			img.src = url
-		})
+			const img = new Image();
+			img.onload = () => resolve(true);
+			img.onerror = () => resolve(false);
+			img.src = url;
+		});
 	}
 
 	return {
 		getItemImage,
-		checkImageExists
-	}
-}
+		checkImageExists,
+	};
+};
 
 // SoundCloud Composable
 const useSoundCloud = () => {
-	const artworkUrl = ref<string>('')
-	const { checkImageExists: _checkImageExists } = useImageManagement()
+	const artworkUrl = ref<string>("");
+	const { checkImageExists: _checkImageExists } = useImageManagement();
 
 	// Non-blocking artwork URL resolution
 	function getSoundcloudArtwork(item?: ContentReference): string {
-		if (!item) return ''
+		if (!item) return "";
 
-		const track = item.soundcloud?.tracks?.[0]
-		const parentShowImageUrl = item.parentShow?.image?.asset?.url
-		const fallbackUrl = mainStore.siteFallbacks?.fallbackSet?.image?.asset?.url
+		const track = item.soundcloud?.tracks?.[0];
+		const parentShowImageUrl = item.parentShow?.image?.asset?.url;
+		const fallbackUrl = mainStore.siteFallbacks?.fallbackSet?.image?.asset?.url;
 
 		// Try SoundCloud artwork (use -t500x500 for reliability)
 		if (track?.artwork_url) {
-			return track.artwork_url.replace('-large', '-t500x500')
+			return track.artwork_url.replace("-large", "-t500x500");
 		}
 
 		// Fallback chain
-		return parentShowImageUrl || fallbackUrl || ''
+		return parentShowImageUrl || fallbackUrl || "";
 	}
 
 	function loadArtworkUrl(): void {
-		const contentRef = props.module?.contentReference
-		if (!contentRef) return
-		const url = getSoundcloudArtwork(contentRef)
-		artworkUrl.value = url
+		const contentRef = props.module?.contentReference;
+		if (!contentRef) return;
+		const url = getSoundcloudArtwork(contentRef);
+		artworkUrl.value = url;
 	}
 
 	function playTrack(): void {
-		const track = props.module?.contentReference?.soundcloud?.tracks?.[0]
-		if (!track) return
+		const track = props.module?.contentReference?.soundcloud?.tracks?.[0];
+		if (!track) return;
 
 		// Stelle sicher, dass permalink_url gesetzt ist
 		if (!track.permalink_url && track.id) {
-			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`
+			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
 		}
 
-		mainStore.currentTrack = track
+		mainStore.currentTrack = track;
 	}
 
 	return {
 		artworkUrl,
 		loadArtworkUrl,
-		playTrack
-	}
-}
+		playTrack,
+	};
+};
 
 // Initialize Composables
-const { getItemImage } = useImageManagement()
-const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud()
+const { getItemImage } = useImageManagement();
+const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
 
 // Computed Properties
 const contentType = computed<string | null>(() => {
-	return props.module?.contentReference?._type || null
-})
+	return props.module?.contentReference?._type || null;
+});
 
 const layoutClass = computed<string>(() => {
-	return `layout-${contentType.value || 'default'}`
-})
+	return `layout-${contentType.value || "default"}`;
+});
 
 const isAudioContent = computed<boolean>(() => {
-	return contentType.value === 'set'
-})
+	return contentType.value === "set";
+});
 
 const contentReference = computed(() => {
-	return props.module?.contentReference
-})
+	return props.module?.contentReference;
+});
 
 const hasParentShow = computed(() => {
-	const parentShow = contentReference.value?.parentShow
-	return parentShow && parentShow.title !== 'No Show'
-})
+	const parentShow = contentReference.value?.parentShow;
+	return parentShow && parentShow.title !== "No Show";
+});
 
 // Lifecycle
 onMounted(() => {
 	if (isAudioContent.value) {
-		loadArtworkUrl()
+		loadArtworkUrl();
 	}
-})
-
-function navigateToTagSearch(tag: Tag, item: ContentItem | { _type?: string }, isGenre = false) {
-	// Determine search term
-	let tagName = ''
-
-	if (isGenre) {
-		tagName = tag.name || tag.title
-	} else {
-		// For standard tags, prefer title for searching as it matches the search index
-		// If title implies an object/array (i18n), we need to extract the string
-		const titleVal = tag.title || tag.name
-
-		if (Array.isArray(titleVal)) {
-			// Assume portable text / i18n array, take first element value
-			tagName = titleVal[0]?.value || ''
-		} else if (typeof titleVal === 'object') {
-			// Fallback for object without array
-			tagName = ''
-		} else {
-			tagName = titleVal || ''
-		}
-	}
-
-	if (!tagName) return
-
-	// Determine Category
-	let category = 'all'
-	const itemType = item?._type
-
-	if (['show', 'set'].includes(itemType)) category = 'shows'
-	else if (['person', 'venue'].includes(itemType)) category = 'pool'
-	else if (['article'].includes(itemType)) category = 'article'
-
-	// Navigate
-	router.push({
-		path: localePath('/search'),
-		query: {
-			q: tagName,
-			type: category
-		}
-	})
-}
+});
 </script>
 
 <template>

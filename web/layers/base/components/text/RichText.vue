@@ -3,26 +3,26 @@ import {
 	ElementsLink,
 	ModuleCarousel,
 	ModuleMedia,
-	RichTextStyles
-} from '#components'
+	RichTextStyles,
+} from "#components";
 
 const props = defineProps({
 	blocks: {
 		type: Array,
-		default: () => []
-	}
-})
+		default: () => [],
+	},
+});
 
 const serializers = {
 	types: {
-		'module.media': ModuleMedia,
-		'module.carousel': ModuleCarousel
+		"module.media": ModuleMedia,
+		"module.carousel": ModuleCarousel,
 	},
 	marks: {
 		link: ElementsLink,
 		linkCookie: ElementsLink,
-		underline: 'u',
-		'strike-through': 's'
+		underline: "u",
+		"strike-through": "s",
 	},
 	styles: {
 		normal: RichTextStyles,
@@ -31,9 +31,9 @@ const serializers = {
 		h3: RichTextStyles,
 		h4: RichTextStyles,
 		h5: RichTextStyles,
-		h6: RichTextStyles
-	}
-}
+		h6: RichTextStyles,
+	},
+};
 </script>
 
 <template>

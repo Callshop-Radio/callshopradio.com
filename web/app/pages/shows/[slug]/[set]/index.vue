@@ -1,33 +1,32 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-import { SET_QUERY } from '~~/queries/sanity.queries.ts'
+import { SET_QUERY } from "~~/queries/sanity.queries.ts";
 
-const route = useRoute()
+const route = useRoute();
 
-const query = groq`${SET_QUERY}`
+const query = groq`${SET_QUERY}`;
 const { data } = await useCachedSanityQuery(query, {
-	slug: route.params.set
-})
+	slug: route.params.set,
+});
 
 if (!data.value) {
-	console.error('Set nicht gefunden:', route.params.set)
+	console.error("Set nicht gefunden:", route.params.set);
 }
 
 const relatedSets = computed(() => {
 	if (
 		!data.value?.parentShow?.sets ||
-    !Array.isArray(data.value.parentShow?.sets)
+		!Array.isArray(data.value.parentShow?.sets)
 	) {
-		return []
+		return [];
 	}
 
 	return data.value.parentShow?.sets.filter((set) => {
-		return set.slug.current !== route.params.set
-	})
-})
+		return set.slug.current !== route.params.set;
+	});
+});
 
-
-usePageSeo(data?.value?.seo)
+usePageSeo(data?.value?.seo);
 </script>
 
 <template>
@@ -39,28 +38,7 @@ usePageSeo(data?.value?.seo)
 			v-if="data?.modules && data?.modules.length > 0"
 			class="module-section"
 		>
-			<div
-				v-for="module in data.modules"
-				:key="module._key || index"
-				class="module"
-			>
-				<ModuleContentGrid
-					v-if="module._type == 'module.contentReferenceGrid'"
-					:module="module"
-				/>
-				<ModuleContentTeaser
-					v-if="module._type == 'module.contentReferenceSlider'"
-					:module="module"
-				/>
-				<ModuleHeroEntrySolo
-					v-if="module._type == 'module.heroEntry'"
-					:module="module"
-				/>
-				<ModuleHeroSlider
-					v-if="module._type == 'module.heroSlider'"
-					:module="module"
-				/>
-			</div>
+			<ModuleRenderer :modules="data?.modules" />
 		</section>
 		<section
 			v-if="data?.relatedContent.length > 0"

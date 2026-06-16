@@ -1,317 +1,317 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useDocumentVisibility } from '@vueuse/core'
-import { useMainStore } from '~/stores/mainStore'
+import { useDocumentVisibility } from "@vueuse/core";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useMainStore } from "~/stores/mainStore";
 
-const mainStore = useMainStore()
+const mainStore = useMainStore();
 
 // Define stream URLs
-const streamUrl1 = 'https://icecast.callshopradio.com/callshopradio'
-const streamUrl2 = 'https://icecast.callshopradio.com/callshopradio-wien'
+const streamUrl1 = "https://icecast.callshopradio.com/callshopradio";
+const streamUrl2 = "https://icecast.callshopradio.com/callshopradio-wien";
 
 // Store audio elements outside Vue's reactivity system
-let audioEl1 = null
-let audioEl2 = null
+let audioEl1 = null;
+let audioEl2 = null;
 
 // Status refs
-const isPlaying1 = ref(false)
-const isPlaying2 = ref(false)
-const isLoading1 = ref(false)
-const isLoading2 = ref(false)
+const isPlaying1 = ref(false);
+const isPlaying2 = ref(false);
+const isLoading1 = ref(false);
+const isLoading2 = ref(false);
 
 // Separately stored live status that doesn't update automatically
 const liveStatus = ref({
 	stream1: {
 		onAirLight: {},
 		liveData: {},
-		icecastData: {}
+		icecastData: {},
 	},
 	stream2: {
 		onAirLight: {},
-		liveData: {}
-	}
-})
+		liveData: {},
+	},
+});
 
-const config = useRuntimeConfig()
+const config = useRuntimeConfig();
 
 const fetcher = async (url, requiresAuth = false) => {
 	try {
-		const headers = {}
+		const headers = {};
 		if (requiresAuth && config.public.libretimeApiKey) {
-			headers['Authorization'] = `Api-Key ${config.public.libretimeApiKey}`
+			headers["Authorization"] = `Api-Key ${config.public.libretimeApiKey}`;
 		}
-		const response = await $fetch(url, { headers })
-		return response
+		const response = await $fetch(url, { headers });
+		return response;
 	} catch (error) {
-		console.error(`[MusicController] Fetch error for ${url}:`, error)
-		return null
+		console.error(`[MusicController] Fetch error for ${url}:`, error);
+		return null;
 	}
-}
+};
 
 const deriveOnAirLight = (liveData) => {
-	if (!liveData?.sources) return {}
+	if (!liveData?.sources) return {};
 	return {
 		on_air_light:
-			liveData.sources.livedj === 'on' ||
-			liveData.sources.masterdj === 'on',
-		live_stream: liveData.sources.livedj === 'on',
-		live_stream_on_air: liveData.sources.livedj === 'on',
-		master_stream: liveData.sources.masterdj === 'on',
-		master_stream_on_air: liveData.sources.masterdj === 'on'
-	}
-}
+			liveData.sources.livedj === "on" || liveData.sources.masterdj === "on",
+		live_stream: liveData.sources.livedj === "on",
+		live_stream_on_air: liveData.sources.livedj === "on",
+		master_stream: liveData.sources.masterdj === "on",
+		master_stream_on_air: liveData.sources.masterdj === "on",
+	};
+};
 
 const updateLiveStatus = async () => {
 	try {
-		const liveInfoUrl1 = 'https://libretime.callshopradio.com/api/live-info-v2'
-		const icecastUrl = 'https://icecast.callshopradio.com/status-json.xsl'
-		const liveInfoUrl2 = 'https://wien.callshopradio.com/api/live-info-v2?days=7'
+		const liveInfoUrl1 = "https://libretime.callshopradio.com/api/live-info-v2";
+		const icecastUrl = "https://icecast.callshopradio.com/status-json.xsl";
+		const liveInfoUrl2 =
+			"https://wien.callshopradio.com/api/live-info-v2?days=7";
 
 		const [liveData1, icecastData, liveData2] = await Promise.all([
 			fetcher(liveInfoUrl1, true),
 			fetcher(icecastUrl, false).catch(() => null),
-			fetcher(liveInfoUrl2, false)
-		])
+			fetcher(liveInfoUrl2, false),
+		]);
 
 		liveStatus.value = {
 			stream1: {
 				onAirLight: deriveOnAirLight(liveData1),
 				liveData: liveData1 || {},
-				icecastData: icecastData || {}
+				icecastData: icecastData || {},
 			},
 			stream2: {
 				onAirLight: deriveOnAirLight(liveData2),
-				liveData: liveData2 || {}
-			}
-		}
+				liveData: liveData2 || {},
+			},
+		};
 	} catch (error) {
-		console.error('[MusicController] Error updating live status:', error)
+		console.error("[MusicController] Error updating live status:", error);
 	}
-}
+};
 // Function to play and stop stream for Track 1
 
 // Function to play and stop stream for Track 1
 const togglePlay1 = () => {
-	if (!audioEl1) return
+	if (!audioEl1) return;
 
 	if (isPlaying1.value) {
-		audioEl1.pause()
-		isPlaying1.value = false
-		isLoading1.value = false
+		audioEl1.pause();
+		isPlaying1.value = false;
+		isLoading1.value = false;
 	} else {
 		// If Track 2 is playing, pause it
 		if (isPlaying2.value && audioEl2) {
-			audioEl2.pause()
-			isPlaying2.value = false
-			isLoading2.value = false
+			audioEl2.pause();
+			isPlaying2.value = false;
+			isLoading2.value = false;
 		}
 
-		isLoading1.value = true
+		isLoading1.value = true;
 
 		// Set active streaming channel to channelOne
-		mainStore.setActiveStreamingChannel('channelOne')
+		mainStore.setActiveStreamingChannel("channelOne");
 
 		// Reload stream to ensure it starts from beginning
-		audioEl1.src = streamUrl1
-		audioEl1.load()
+		audioEl1.src = streamUrl1;
+		audioEl1.load();
 
 		// Reset SoundCloud player - use the new store method
-		mainStore.resetSoundCloudPlayer()
+		mainStore.resetSoundCloudPlayer();
 
 		// Create new audio context with each play
-		const playPromise = audioEl1.play()
+		const playPromise = audioEl1.play();
 
 		if (playPromise !== undefined) {
 			playPromise
 				.then(() => {
-					isLoading1.value = false
-					isPlaying1.value = true
+					isLoading1.value = false;
+					isPlaying1.value = true;
 
 					// Update MediaSession metadata
-					if ('mediaSession' in navigator) {
-						updateMediaSessionMetadata()
+					if ("mediaSession" in navigator) {
+						updateMediaSessionMetadata();
 					}
 				})
 				.catch((_err) => {
-					isLoading1.value = false
-				})
+					isLoading1.value = false;
+				});
 		}
 	}
-}
+};
 
 // Function to play and stop stream for Track 2
 const togglePlay2 = () => {
-	if (!audioEl2) return
+	if (!audioEl2) return;
 
 	if (isPlaying2.value) {
-		audioEl2.pause()
-		isPlaying2.value = false
-		isLoading2.value = false
+		audioEl2.pause();
+		isPlaying2.value = false;
+		isLoading2.value = false;
 	} else {
 		// If Track 1 is playing, pause it
 		if (isPlaying1.value && audioEl1) {
-			audioEl1.pause()
-			isPlaying1.value = false
-			isLoading1.value = false
+			audioEl1.pause();
+			isPlaying1.value = false;
+			isLoading1.value = false;
 		}
 
-		isLoading2.value = true
+		isLoading2.value = true;
 
 		// Set active streaming channel to channelTwo
-		mainStore.setActiveStreamingChannel('channelTwo')
+		mainStore.setActiveStreamingChannel("channelTwo");
 
 		// Reload stream to ensure it starts from beginning
-		audioEl2.src = streamUrl2
-		audioEl2.load()
+		audioEl2.src = streamUrl2;
+		audioEl2.load();
 
 		// Reset SoundCloud player - use the new store method
-		mainStore.resetSoundCloudPlayer()
+		mainStore.resetSoundCloudPlayer();
 
 		// Create new audio context with each play
-		const playPromise = audioEl2.play()
+		const playPromise = audioEl2.play();
 
 		if (playPromise !== undefined) {
 			playPromise
 				.then(() => {
-					isLoading2.value = false
-					isPlaying2.value = true
+					isLoading2.value = false;
+					isPlaying2.value = true;
 
 					// Update MediaSession metadata
-					if ('mediaSession' in navigator) {
-						updateMediaSessionMetadata()
+					if ("mediaSession" in navigator) {
+						updateMediaSessionMetadata();
 					}
 				})
 				.catch((_err) => {
-					isLoading2.value = false
-				})
+					isLoading2.value = false;
+				});
 		}
 	}
-}
+};
 
 // Parse strings with entities
 const parseString = (string) => {
-	if (!string) return ''
+	if (!string) return "";
 	return string
-		.replace(/&amp;/g, '&')
-		.replace(/&gt;/g, '>')
-		.replace(/&lt;/g, '<')
-		.replace(/&quot;/g, '"')
-}
+		.replace(/&amp;/g, "&")
+		.replace(/&gt;/g, ">")
+		.replace(/&lt;/g, "<")
+		.replace(/&quot;/g, '"');
+};
 
 // Helper functions to check if current show is live
 const isCurrentShowLive1 = computed(() => {
-	const { liveData } = liveStatus.value.stream1
+	const { liveData } = liveStatus.value.stream1;
 	if (liveData?.shows?.current) {
-		const description = liveData.shows.current.description || ''
-		return description.toLowerCase().includes('live')
+		const description = liveData.shows.current.description || "";
+		return description.toLowerCase().includes("live");
 	}
-	return false
-})
+	return false;
+});
 
 const isCurrentShowLive2 = computed(() => {
-	const { liveData } = liveStatus.value.stream2
+	const { liveData } = liveStatus.value.stream2;
 	if (liveData?.shows?.current) {
-		const description = liveData.shows.current.description || ''
-		return description.toLowerCase().includes('live')
+		const description = liveData.shows.current.description || "";
+		return description.toLowerCase().includes("live");
 	}
-	return false
-})
+	return false;
+});
 
 // Helper functions to determine the correct live status
 const getActualLiveStatus1 = computed(() => {
-	const { onAirLight } = liveStatus.value.stream1
-	return onAirLight?.on_air_light && isCurrentShowLive1.value
-})
+	const { onAirLight } = liveStatus.value.stream1;
+	return onAirLight?.on_air_light && isCurrentShowLive1.value;
+});
 
 const getActualLiveStatus2 = computed(() => {
-	const { onAirLight } = liveStatus.value.stream2
-	return onAirLight?.on_air_light && isCurrentShowLive2.value
-})
+	const { onAirLight } = liveStatus.value.stream2;
+	return onAirLight?.on_air_light && isCurrentShowLive2.value;
+});
 
 // Calculate current title for Stream 1
 const getCurrentName1 = computed(() => {
-	const { onAirLight, liveData, icecastData } = liveStatus.value.stream1
+	const { onAirLight, liveData, icecastData } = liveStatus.value.stream1;
 
 	if (onAirLight?.on_air_light) {
 		if (onAirLight?.master_stream) {
-			const title = icecastData?.icestats?.source?.[0]?.title || ''
-			return title ? parseString(title) : 'Live Stream 1'
+			const title = icecastData?.icestats?.source?.[0]?.title || "";
+			return title ? parseString(title) : "Live Stream 1";
 		} else if (liveData?.tracks?.current) {
 			if (liveData.tracks.current.metadata) {
-				const artist = liveData.tracks.current.metadata.artist_name || ''
-				const title = liveData.tracks.current.metadata.track_title || ''
+				const artist = liveData.tracks.current.metadata.artist_name || "";
+				const title = liveData.tracks.current.metadata.track_title || "";
 
 				if (artist && artist !== title) {
-					return parseString(`${title} - ${artist}`)
+					return parseString(`${title} - ${artist}`);
 				}
-				return parseString(title)
+				return parseString(title);
 			} else if (liveData.shows?.current) {
 				return parseString(
-					liveData.shows.current.name.replace(' - Live Stream', '')
-				)
+					liveData.shows.current.name.replace(" - Live Stream", ""),
+				);
 			}
 		}
 	}
 
 	if (liveData?.tracks?.current) {
 		if (liveData.tracks.current.metadata) {
-			const artist = liveData.tracks.current.metadata.artist_name || ''
-			const title = liveData.tracks.current.metadata.track_title || ''
+			const artist = liveData.tracks.current.metadata.artist_name || "";
+			const title = liveData.tracks.current.metadata.track_title || "";
 
 			if (artist && artist !== title) {
-				return parseString(`${title} - ${artist}`)
+				return parseString(`${title} - ${artist}`);
 			}
-			return parseString(title)
+			return parseString(title);
 		}
 	}
 
 	if (liveData?.shows?.current) {
 		return parseString(
-			liveData.shows.current.name.replace(' - Live Stream', '')
-		)
+			liveData.shows.current.name.replace(" - Live Stream", ""),
+		);
 	}
 
 	if (liveData?.shows?.next?.length > 0) {
-		const nextShow = liveData.shows.next[0]
-		const startSplitted = nextShow.starts.split(' ')
-		const date = new Date(`${startSplitted[0]}T${startSplitted[1]}Z`)
+		const nextShow = liveData.shows.next[0];
+		const startSplitted = nextShow.starts.split(" ");
+		const date = new Date(`${startSplitted[0]}T${startSplitted[1]}Z`);
 
-		const hoursNext = date.getUTCHours()
+		const hoursNext = date.getUTCHours();
 		const minutesNext =
-      date.getUTCMinutes() < 10
-      	? '0' + date.getUTCMinutes()
-      	: date.getUTCMinutes()
+			date.getUTCMinutes() < 10
+				? "0" + date.getUTCMinutes()
+				: date.getUTCMinutes();
 
-		return `Next (${hoursNext}:${minutesNext}): ${parseString(nextShow.name)}`
+		return `Next (${hoursNext}:${minutesNext}): ${parseString(nextShow.name)}`;
 	}
 
-	return 'Stream 1'
-})
+	return "Stream 1";
+});
 
 // Calculate current title for Stream 2
 const getCurrentName2 = computed(() => {
-	const { onAirLight, liveData } = liveStatus.value.stream2
+	const { onAirLight, liveData } = liveStatus.value.stream2;
 
 	// Check if there's live streaming first
 	if (onAirLight?.on_air_light) {
 		if (onAirLight?.master_stream) {
 			const title =
-        liveStatus.value.stream1.icecastData?.icestats?.source?.[1]?.title ||
-        ''
-			return title ? parseString(title) : 'Live Stream 2'
+				liveStatus.value.stream1.icecastData?.icestats?.source?.[1]?.title ||
+				"";
+			return title ? parseString(title) : "Live Stream 2";
 		} else if (liveData?.tracks?.current) {
 			if (liveData.tracks.current.metadata) {
-				const artist = liveData.tracks.current.metadata.artist_name || ''
-				const title = liveData.tracks.current.metadata.track_title || ''
+				const artist = liveData.tracks.current.metadata.artist_name || "";
+				const title = liveData.tracks.current.metadata.track_title || "";
 
 				if (artist && artist !== title) {
-					return parseString(`${title} - ${artist}`)
+					return parseString(`${title} - ${artist}`);
 				}
-				return parseString(title)
+				return parseString(title);
 			} else if (liveData.shows?.current) {
 				return parseString(
-					liveData.shows.current.name.replace(' - Live Stream', '')
-				)
+					liveData.shows.current.name.replace(" - Live Stream", ""),
+				);
 			}
 		}
 	}
@@ -319,258 +319,257 @@ const getCurrentName2 = computed(() => {
 	// Check for current tracks even when not live (automatic playlist)
 	if (liveData?.tracks?.current) {
 		if (liveData.tracks.current.metadata) {
-			const artist = liveData.tracks.current.metadata.artist_name || ''
-			const title = liveData.tracks.current.metadata.track_title || ''
+			const artist = liveData.tracks.current.metadata.artist_name || "";
+			const title = liveData.tracks.current.metadata.track_title || "";
 
 			if (artist && artist !== title) {
-				return parseString(`${title} - ${artist}`)
+				return parseString(`${title} - ${artist}`);
 			}
-			return parseString(title)
+			return parseString(title);
 		}
 	}
 
 	// Check for current show (non-live shows)
 	if (liveData?.shows?.current) {
 		return parseString(
-			liveData.shows.current.name.replace(' - Live Stream', '')
-		)
+			liveData.shows.current.name.replace(" - Live Stream", ""),
+		);
 	}
 
 	if (liveData?.shows?.next?.length > 0) {
-		const nextShow = liveData.shows.next[0]
-		const startSplitted = nextShow.starts.split(' ')
-		const date = new Date(`${startSplitted[0]}T${startSplitted[1]}Z`)
+		const nextShow = liveData.shows.next[0];
+		const startSplitted = nextShow.starts.split(" ");
+		const date = new Date(`${startSplitted[0]}T${startSplitted[1]}Z`);
 
-		const hoursNext = date.getUTCHours()
+		const hoursNext = date.getUTCHours();
 		const minutesNext =
-      date.getUTCMinutes() < 10
-      	? '0' + date.getUTCMinutes()
-      	: date.getUTCMinutes()
+			date.getUTCMinutes() < 10
+				? "0" + date.getUTCMinutes()
+				: date.getUTCMinutes();
 
-		return `Next (${hoursNext}:${minutesNext}): ${parseString(nextShow.name)}`
+		return `Next (${hoursNext}:${minutesNext}): ${parseString(nextShow.name)}`;
 	}
 
-	return 'Stream 2'
-})
+	return "Stream 2";
+});
 
 // Configure audio elements
 const setupAudioElement = (audioElement, num) => {
-	if (!audioElement) return
+	if (!audioElement) return;
 
 	// Basic configuration
-	audioElement.volume = 1.0
-	audioElement.preload = 'metadata' // Only preload metadata
-	audioElement.crossOrigin = 'anonymous'
+	audioElement.volume = 1.0;
+	audioElement.preload = "metadata"; // Only preload metadata
+	audioElement.crossOrigin = "anonymous";
 
 	// Event listeners
-	audioElement.addEventListener('play', () => {
+	audioElement.addEventListener("play", () => {
 		if (num === 1) {
-			isPlaying1.value = true
-			isLoading1.value = false
+			isPlaying1.value = true;
+			isLoading1.value = false;
 		} else {
-			isPlaying2.value = true
-			isLoading2.value = false
+			isPlaying2.value = true;
+			isLoading2.value = false;
 		}
-	})
+	});
 
-	audioElement.addEventListener('waiting', () => {
+	audioElement.addEventListener("waiting", () => {
 		if (num === 1) {
-			isLoading1.value = true
+			isLoading1.value = true;
 		} else {
-			isLoading2.value = true
+			isLoading2.value = true;
 		}
-	})
+	});
 
-	audioElement.addEventListener('pause', () => {
+	audioElement.addEventListener("pause", () => {
 		if (num === 1) {
-			isPlaying1.value = false
-			isLoading1.value = false
+			isPlaying1.value = false;
+			isLoading1.value = false;
 		} else {
-			isPlaying2.value = false
-			isLoading2.value = false
+			isPlaying2.value = false;
+			isLoading2.value = false;
 		}
-	})
+	});
 
-	audioElement.addEventListener('ended', () => {
+	audioElement.addEventListener("ended", () => {
 		if (num === 1) {
-			isPlaying1.value = false
+			isPlaying1.value = false;
 		} else {
-			isPlaying2.value = false
+			isPlaying2.value = false;
 		}
-	})
+	});
 
-	audioElement.addEventListener('error', () => {
+	audioElement.addEventListener("error", () => {
 		if (num === 1) {
-			isPlaying1.value = false
-			isLoading1.value = false
+			isPlaying1.value = false;
+			isLoading1.value = false;
 		} else {
-			isPlaying2.value = false
-			isLoading2.value = false
+			isPlaying2.value = false;
+			isLoading2.value = false;
 		}
-	})
+	});
 
 	// Add HLS streaming for better compatibility
 	try {
 		// Audio streams often have MIME type issues. Fallback to common Icecast server options
-		audioElement.addEventListener('canplaythrough', () => {})
+		audioElement.addEventListener("canplaythrough", () => {});
 
 		// Prevent automatic start
-		audioElement.autoplay = false
+		audioElement.autoplay = false;
 	} catch {
 		// Silent error handling
 	}
-}
+};
 
 // Regularly update live status (separate timer)
-let statusUpdateInterval = null
+let statusUpdateInterval = null;
 
 // React to visibility changes
-const visibility = useDocumentVisibility()
+const visibility = useDocumentVisibility();
 
 onMounted(() => {
 	// Get audio elements after mounting
-	audioEl1 = document.getElementById('audioPlayer1')
-	audioEl2 = document.getElementById('audioPlayer2')
+	audioEl1 = document.getElementById("audioPlayer1");
+	audioEl2 = document.getElementById("audioPlayer2");
 
 	// Configure audio elements
-	setupAudioElement(audioEl1, 1)
-	setupAudioElement(audioEl2, 2)
+	setupAudioElement(audioEl1, 1);
+	setupAudioElement(audioEl2, 2);
 
 	// MediaSession API for media control
-	if ('mediaSession' in navigator) {
-		navigator.mediaSession.setActionHandler('play', () => {
+	if ("mediaSession" in navigator) {
+		navigator.mediaSession.setActionHandler("play", () => {
 			if (isPlaying1.value && audioEl1) {
-				audioEl1.play()
+				audioEl1.play();
 			} else if (isPlaying2.value && audioEl2) {
-				audioEl2.play()
+				audioEl2.play();
 			}
-		})
+		});
 
-		navigator.mediaSession.setActionHandler('pause', () => {
+		navigator.mediaSession.setActionHandler("pause", () => {
 			if (isPlaying1.value && audioEl1) {
-				audioEl1.pause()
+				audioEl1.pause();
 			} else if (isPlaying2.value && audioEl2) {
-				audioEl2.pause()
+				audioEl2.pause();
 			}
-		})
+		});
 
 		// Update metadata when stream changes
-		updateMediaSessionMetadata()
+		updateMediaSessionMetadata();
 	}
 
 	// Initially load status data
-	updateLiveStatus()
+	updateLiveStatus();
 
 	// Set up status update timer
 	const startInterval = () => {
-		if (statusUpdateInterval) clearInterval(statusUpdateInterval)
+		if (statusUpdateInterval) clearInterval(statusUpdateInterval);
 		statusUpdateInterval = setInterval(() => {
 			// Only update if visible
-			if (visibility.value === 'visible') {
-				updateLiveStatus()
+			if (visibility.value === "visible") {
+				updateLiveStatus();
 
 				// Update MediaSession metadata
-				if ('mediaSession' in navigator) {
-					updateMediaSessionMetadata()
+				if ("mediaSession" in navigator) {
+					updateMediaSessionMetadata();
 				}
 			}
-		}, 20000) // Update every 20 seconds (increased from 10s)
-	}
+		}, 20000); // Update every 20 seconds (increased from 10s)
+	};
 
-	startInterval()
+	startInterval();
 
 	// Watch visibility to pause/resume strict polling (optional, relying on the check inside interval is safer for simple implementation,
 	// but restarting interval on show ensures immediate update)
 	watch(visibility, (current, previous) => {
-		if (current === 'visible' && previous === 'hidden') {
-			updateLiveStatus() // Immediate update when coming back
+		if (current === "visible" && previous === "hidden") {
+			updateLiveStatus(); // Immediate update when coming back
 		}
-	})
-})
+	});
+});
 
 // Update MediaSession metadata based on current stream
 const updateMediaSessionMetadata = () => {
 	// Wenn SoundCloud abgespielt wird, nicht überschreiben
-	if (!('mediaSession' in navigator)) return
+	if (!("mediaSession" in navigator)) return;
 
-	let title = ''
-	let artist = ''
-	let isLive = false
+	let title = "";
+	let artist = "";
+	let isLive = false;
 
 	// Determine which stream is active
 	if (isPlaying1.value) {
-		title = getCurrentName1.value
-		isLive = liveStatus.value.stream1.onAirLight.on_air_light
+		title = getCurrentName1.value;
+		isLive = liveStatus.value.stream1.onAirLight.on_air_light;
 
 		// Try to extract artist if possible
 		if (liveStatus.value.stream1.liveData?.tracks?.current?.metadata) {
 			title =
-        liveStatus.value.stream1.liveData.tracks.current.metadata.track_title ||
-        title
+				liveStatus.value.stream1.liveData.tracks.current.metadata.track_title ||
+				title;
 			artist =
-        liveStatus.value.stream1.liveData.tracks.current.metadata.artist_name ||
-        ''
+				liveStatus.value.stream1.liveData.tracks.current.metadata.artist_name ||
+				"";
 		}
 	} else if (isPlaying2.value) {
-		title = getCurrentName2.value
-		isLive = liveStatus.value.stream2.onAirLight.on_air_light
+		title = getCurrentName2.value;
+		isLive = liveStatus.value.stream2.onAirLight.on_air_light;
 
 		// Try to extract artist if possible
 		if (liveStatus.value.stream2.liveData?.tracks?.current?.metadata) {
 			title =
-        liveStatus.value.stream2.liveData.tracks.current.metadata.track_title ||
-        title
+				liveStatus.value.stream2.liveData.tracks.current.metadata.track_title ||
+				title;
 			artist =
-        liveStatus.value.stream2.liveData.tracks.current.metadata.artist_name ||
-        ''
+				liveStatus.value.stream2.liveData.tracks.current.metadata.artist_name ||
+				"";
 		}
 	} else {
 		// Nothing is playing
-		return
+		return;
 	}
 
 	// Use "Live" icon when streaming is active
 	const artworkBasePath = isLive
-		? 'https://cdn.sanity.io/images'
-		: 'https://cdn.sanity.io/images'
+		? "https://cdn.sanity.io/images"
+		: "https://cdn.sanity.io/images";
 
 	// Update the media session
 	navigator.mediaSession.metadata = new MediaMetadata({
 		title: title,
-		artist: artist || 'Live',
-		album: 'callshopradio.com',
+		artist: artist || "Live",
+		album: "callshopradio.com",
 		artwork: [
 			{
 				src: `${artworkBasePath}/0smxd0yv/production/8dec3ac90ca85d49ea0ec988878c7ade73076027-128x128.png`,
-				sizes: '128x128',
-				type: 'image/png'
+				sizes: "128x128",
+				type: "image/png",
 			},
 			{
 				src: `${artworkBasePath}/0smxd0yv/production/39cdeb4fe1f225ef9c95f206e4762a7e5b49c02b-256x256.png`,
-				sizes: '256x256',
-				type: 'image/png'
+				sizes: "256x256",
+				type: "image/png",
 			},
 			{
 				src: `${artworkBasePath}/0smxd0yv/production/b093514befc9ed8545037ebfcba4208c81777878-512x512.png`,
-				sizes: '512x512',
-				type: 'image/png'
+				sizes: "512x512",
+				type: "image/png",
 			},
 			{
 				src: `${artworkBasePath}/0smxd0yv/production/27e8b5ea883c05d7b0d1e6fbb0b79bcced14150e-1024x1024.png`,
-				sizes: '1024x1024',
-				type: 'image/png'
-			}
-		]
-	})
-}
+				sizes: "1024x1024",
+				type: "image/png",
+			},
+		],
+	});
+};
 
 // Clean up timer when removing component
 onBeforeUnmount(() => {
 	if (statusUpdateInterval) {
-		clearInterval(statusUpdateInterval)
+		clearInterval(statusUpdateInterval);
 	}
-})
-
+});
 </script>
 
 <template>

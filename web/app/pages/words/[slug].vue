@@ -1,38 +1,25 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-import { ENTRY_QUERY } from '~~/queries/sanity.queries.ts'
+import { ENTRY_QUERY } from "~~/queries/sanity.queries.ts";
 
-const route = useRoute()
+const route = useRoute();
 
-const query = groq`${ENTRY_QUERY}`
+const query = groq`${ENTRY_QUERY}`;
 const { data } = await useCachedSanityQuery(query, {
-	slug: route.params.slug
-})
+	slug: route.params.slug,
+});
 
 if (!data.value) {
-	console.error('Article nicht gefunden:', route.params.slug)
+	console.error("Article nicht gefunden:", route.params.slug);
 }
 
-// const relatedEntries = computed(() => {
-//   if (
-//     !data.value?.parentShow?.entries ||
-//     !Array.isArray(data.value.parentShow?.entries)
-//   ) {
-//     return [];
-//   }
-
-//   return data.value.parentShow?.entries.filter((entry) => {
-//     return entry.slug.current !== route.params.entry;
-//   });
-// });
-
-usePageSeo(data?.value?.seo)
+usePageSeo(data?.value?.seo);
 
 useHead({
 	bodyAttrs: {
-		class: 'page--article-detail'
-	}
-})
+		class: "page--article-detail",
+	},
+});
 </script>
 
 <template>
@@ -55,28 +42,7 @@ useHead({
 				v-if="data?.modules && data?.modules.length > 0"
 				class="module-section"
 			>
-				<div
-					v-for="module in data.modules"
-					:key="module._key || index"
-					class="module"
-				>
-					<ModuleContentGrid
-						v-if="module._type == 'module.contentReferenceGrid'"
-						:module="module"
-					/>
-					<ModuleContentTeaser
-						v-if="module._type == 'module.contentReferenceSlider'"
-						:module="module"
-					/>
-					<ModuleHeroEntrySolo
-						v-if="module._type == 'module.heroEntry'"
-						:module="module"
-					/>
-					<ModuleHeroSlider
-						v-if="module._type == 'module.heroSlider'"
-						:module="module"
-					/>
-				</div>
+				<ModuleRenderer :modules="data?.modules" />
 			</section>
 		</section>
 	</div>

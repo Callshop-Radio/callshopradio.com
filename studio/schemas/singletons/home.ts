@@ -1,48 +1,48 @@
-import { HomeIcon, SearchIcon, TextIcon, CogIcon} from '@sanity/icons'
-import { defineType } from 'sanity'
+import { CogIcon, HomeIcon, SearchIcon, TextIcon } from "@sanity/icons";
+import { defineType } from "sanity";
 
-const TITLE = 'Home'
+const TITLE = "Home";
 
 export const home = defineType({
-  name: 'home',
-  type: 'document',
+  name: "home",
+  type: "document",
   title: TITLE,
   icon: HomeIcon,
   groups: [
     {
-      title: 'Editorial',
-      name: 'editorial',
+      title: "Editorial",
+      name: "editorial",
       icon: TextIcon,
     },
     {
-      title: 'Settings',
-      name: 'settings',
+      title: "Settings",
+      name: "settings",
       icon: CogIcon,
-    },    
-{
-      title: 'SEO',
-      name: 'seo',
+    },
+    {
+      title: "SEO",
+      name: "seo",
       icon: SearchIcon,
     },
   ],
   fields: [
     {
-      title: 'Title',
-      name: 'title',
-      type: 'string',
-      group: 'editorial',
+      title: "Title",
+      name: "title",
+      type: "string",
+      group: "editorial",
     },
     {
-      title: 'Modules',
-      name: 'modules',
-      type: 'modules',
-      group: 'editorial',
+      title: "Modules",
+      name: "modules",
+      type: "modules",
+      group: "editorial",
     },
     {
-      title: 'SEO',
-      name: 'seo',
-      type: 'seo.page',
-      group: 'seo',
+      title: "SEO",
+      name: "seo",
+      type: "seo.page",
+      group: "seo",
     },
     // {
     //   title: 'Animations',
@@ -51,17 +51,17 @@ export const home = defineType({
     //   group: 'settings',
     // },
     {
-      name: 'color',
-      title: 'Page Color',
-      type: 'color',
-      group: 'settings',
+      name: "color",
+      title: "Page Color",
+      type: "color",
+      group: "settings",
     },
   ],
   preview: {
     prepare() {
       return {
         title: TITLE,
-      }
+      };
     },
   },
-})
+});

@@ -1,31 +1,32 @@
 <script setup>
-import { useMainStore } from '~/stores/mainStore'
-const { locale: _locale, locales: _locales } = useI18n()
-const localePath = useLocalePath()
+import { useMainStore } from "~/stores/mainStore";
 
-const mainStore = useMainStore()
-const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu)
+const { locale: _locale, locales: _locales } = useI18n();
+const localePath = useLocalePath();
+
+const mainStore = useMainStore();
+const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 
 // Computed-Properties für den Track
-const currentTrack = computed(() => mainStore.currentTrack)
-const trackTitle = computed(() => currentTrack.value?.title || '')
+const currentTrack = computed(() => mainStore.currentTrack);
+const trackTitle = computed(() => currentTrack.value?.title || "");
 const trackDuration = computed(() => {
-	if (!currentTrack.value?.duration) return ''
+	if (!currentTrack.value?.duration) return "";
 	// Umwandlung von Millisekunden in MM:SS Format
-	const totalSeconds = Math.floor(currentTrack.value.duration / 1000)
-	const minutes = Math.floor(totalSeconds / 60)
-	const seconds = totalSeconds % 60
-	return `${minutes}:${seconds.toString().padStart(2, '0')}`
-})
+	const totalSeconds = Math.floor(currentTrack.value.duration / 1000);
+	const minutes = Math.floor(totalSeconds / 60);
+	const seconds = totalSeconds % 60;
+	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+});
 
 // Status und Sichtbarkeit des Players
-const _isPlaying = computed(() => mainStore.isPlayerPlaying)
-const isVisible = computed(() => mainStore.isPlayerVisible)
+const _isPlaying = computed(() => mainStore.isPlayerPlaying);
+const isVisible = computed(() => mainStore.isPlayerVisible);
 
 // Methode zum Umschalten der Player-Sichtbarkeit
 const togglePlayerVisibility = () => {
-	mainStore.togglePlayerVisibility()
-}
+	mainStore.togglePlayerVisibility();
+};
 </script>
 
 <template>

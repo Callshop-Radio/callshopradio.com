@@ -1,31 +1,29 @@
 <script setup>
-
 const props = defineProps({
 	color: {
 		type: String,
-		default: 'var(--color-pink)'
+		default: "var(--color-pink)",
 	},
 	type: {
 		type: String,
-		default: 'set'
-	}
-})
+		default: "set",
+	},
+});
 
 const gradientColor = computed(() => {
 	switch (props.type) {
-	case 'sets':
-		return 'var(--color-pink)'
-	case 'venue':
-		return 'var(--color-blue'
-	case 'person':
-		return 'var(--color-blue'
-	case 'article':
-		return 'var(--color-green)'
-	default:
-		return props.color
+		case "sets":
+			return "var(--color-pink)";
+		case "venue":
+			return "var(--color-blue";
+		case "person":
+			return "var(--color-blue";
+		case "article":
+			return "var(--color-green)";
+		default:
+			return props.color;
 	}
-})
-
+});
 </script>
 
 <template>

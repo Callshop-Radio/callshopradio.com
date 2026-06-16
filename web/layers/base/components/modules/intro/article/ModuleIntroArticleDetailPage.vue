@@ -1,203 +1,216 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from "vue";
 
-const { locale, setLocale: _setLocale } = useI18n()
-const localePath = useLocalePath()
-const mainStore = useMainStore()
+const { locale, setLocale: _setLocale } = useI18n();
+const localePath = useLocalePath();
+const mainStore = useMainStore();
 
 // Typdefinitionen
 interface Image {
-  asset?: {
-    url?: string;
-  };
+	asset?: {
+		url?: string;
+	};
 }
 
 interface Person {
-  _key?: string;
-  title?: string;
-  slug?: {
-    current?: string;
-  };
-  poolVisibility?: boolean;
+	_key?: string;
+	title?: string;
+	slug?: {
+		current?: string;
+	};
+	poolVisibility?: boolean;
 }
 
 interface Article {
-  _id?: string;
-  _type?: string;
-  title?: string;
-  image?: Image;
-  mainImage?: Image;
-  content?: object;
-  text?: unknown[];
-  slug?: {
-    current?: string;
-  };
-  publishedAt?: string;
-  _updatedAt?: string;
-  authors?: Person[];
-  tags?: import('~/types/sanity').Tag[];
-  excerpt?: string;
+	_id?: string;
+	_type?: string;
+	title?: string;
+	image?: Image;
+	mainImage?: Image;
+	content?: object;
+	text?: unknown[];
+	slug?: {
+		current?: string;
+	};
+	publishedAt?: string;
+	_updatedAt?: string;
+	authors?: Person[];
+	tags?: import("~/types/sanity").Tag[];
+	excerpt?: string;
 }
 
 // Props
 const props = defineProps<{
-  article: Article;
-}>()
+	article: Article;
+}>();
 
 // Composable für Bild-Management
 const useImageManagement = () => {
 	// Helper-Funktion für Bild-Fetching und Fallbacks
 	function getItemImage(item?: Article): Image | null {
-		if (!item) return null
+		if (!item) return null;
 
 		// Bild aus dem Item selbst
 		if (item.image || item.mainImage) {
-			return item.image || item.mainImage || null
+			return item.image || item.mainImage || null;
 		}
 
 		// Fallback für Articles
-		return mainStore?.siteFallbacks?.fallbackArticle?.image
+		return mainStore?.siteFallbacks?.fallbackArticle?.image;
 	}
 
 	function checkImage(url: string): Promise<boolean> {
 		return new Promise((resolve) => {
-			const img = new Image()
-			img.onload = () => resolve(true)
-			img.onerror = () => resolve(false)
-			img.src = url
-		})
+			const img = new Image();
+			img.onload = () => resolve(true);
+			img.onerror = () => resolve(false);
+			img.src = url;
+		});
 	}
 
 	return {
 		getItemImage,
-		checkImage
-	}
-}
+		checkImage,
+	};
+};
 
 // Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
-function _getItemRoute(item: import('~/types/sanity').ContentItem) {
-	if (!item || !item?.slug) return '/'
+function _getItemRoute(item: import("~/types/sanity").ContentItem) {
+	if (!item || !item?.slug) return "/";
 
 	switch (item?._type) {
-	case 'person':
-	case 'venue':
-		return localePath(`/pool/${item?.slug?.current}`)
+		case "person":
+		case "venue":
+			return localePath(`/pool/${item?.slug?.current}`);
 
-	case 'set':
-		// Prüfe, ob parentShow vorhanden ist
-		if (item?.parentShow?.slug?.current) {
-			return localePath(
-				`/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
-			)
-		}
-		// Fallback falls parentShow nicht verfügbar ist
-		return localePath(`/shows/${item?.slug?.current}`)
+		case "set":
+			// Prüfe, ob parentShow vorhanden ist
+			if (item?.parentShow?.slug?.current) {
+				return localePath(
+					`/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`,
+				);
+			}
+			// Fallback falls parentShow nicht verfügbar ist
+			return localePath(`/shows/${item?.slug?.current}`);
 
-	case 'article':
-		return localePath(`/words/${item?.slug?.current}`)
+		case "article":
+			return localePath(`/words/${item?.slug?.current}`);
 
-	case 'show':
-		return localePath(`/shows/${item?.slug?.current}`)
+		case "show":
+			return localePath(`/shows/${item?.slug?.current}`);
 
 		// Standard-Fallback
-	default:
-		return localePath(`/${item?._type}/${item?.slug?.current}`)
+		default:
+			return localePath(`/${item?._type}/${item?.slug?.current}`);
 	}
 }
 
 // Composable für Artikel-spezifische Funktionalität
 const useArticle = () => {
-	const articleImageUrl = ref('')
-	const { getItemImage } = useImageManagement()
+	const articleImageUrl = ref("");
+	const { getItemImage } = useImageManagement();
 
 	async function getArticleImage(item?: Article): Promise<string> {
-		if (!item) return ''
+		if (!item) return "";
 
 		// Verwende das Bild aus dem Artikel
-		const itemImage = getItemImage(item)
+		const itemImage = getItemImage(item);
 		if (itemImage?.asset?.url) {
-			return itemImage.asset.url
+			return itemImage.asset.url;
 		}
 
 		// Fallback auf Store-Fallback
 		const storeFallbackUrl =
-      mainStore?.siteFallbacks?.fallbackArticle?.image?.asset?.url
+			mainStore?.siteFallbacks?.fallbackArticle?.image?.asset?.url;
 
 		if (storeFallbackUrl) {
-			return storeFallbackUrl
+			return storeFallbackUrl;
 		}
 
-		return ''
+		return "";
 	}
 
 	async function loadArticleImageUrl() {
-		if (!props.article) return
+		if (!props.article) return;
 		try {
-			const url = await getArticleImage(props.article)
-			articleImageUrl.value = url
+			const url = await getArticleImage(props.article);
+			articleImageUrl.value = url;
 		} catch (error) {
-			console.error('Fehler beim Laden des Artikel-Bildes:', error)
+			console.error("Fehler beim Laden des Artikel-Bildes:", error);
 		}
 	}
 
 	function navigateToArticle() {
-		const item = props.article
-		if (!item?.slug?.current) return
+		const item = props.article;
+		if (!item?.slug?.current) return;
 
 		// Navigation zum vollständigen Artikel
-		navigateTo(localePath(`/words/${item.slug.current}`))
+		navigateTo(localePath(`/words/${item.slug.current}`));
 	}
 
 	return {
 		articleImageUrl,
 		loadArticleImageUrl,
-		navigateToArticle
-	}
-}
+		navigateToArticle,
+	};
+};
 
 // Anwendung der Composables
-const { getItemImage: _getItemImage } = useImageManagement()
-const { articleImageUrl, loadArticleImageUrl, navigateToArticle: _navigateToArticle } =
-  useArticle()
+const { getItemImage: _getItemImage } = useImageManagement();
+const {
+	articleImageUrl,
+	loadArticleImageUrl,
+	navigateToArticle: _navigateToArticle,
+} = useArticle();
 
 function _getInstagramHandle(url?: string): string {
-	if (!url) return ''
+	if (!url) return "";
 	return url
-		.replace(/^(?:https?:\/\/)?(?:www\.)?instagram\.com\//, '')
-		.replace(/\/$/, '')
+		.replace(/^(?:https?:\/\/)?(?:www\.)?instagram\.com\//, "")
+		.replace(/\/$/, "");
 }
 
 // Lebenszyklus-Hooks
 onMounted(() => {
-	loadArticleImageUrl()
-})
+	loadArticleImageUrl();
+});
 
 const cityTags = computed(() => {
-	return props.article?.tags?.filter((tag: import('~/types/sanity').Tag) => tag._type === 'tag.city') || []
-})
+	return (
+		props.article?.tags?.filter(
+			(tag: import("~/types/sanity").Tag) => tag._type === "tag.city",
+		) || []
+	);
+});
 
 const otherTags = computed(() => {
-	return props.article?.tags?.filter((tag: import('~/types/sanity').Tag) => tag._type !== 'tag.city') || []
-})
+	return (
+		props.article?.tags?.filter(
+			(tag: import("~/types/sanity").Tag) => tag._type !== "tag.city",
+		) || []
+	);
+});
 
 // Article Language Switcher
-const articleLocale = ref(locale.value)
+const articleLocale = ref(locale.value);
 
 watch(locale, (newVal: string) => {
-	articleLocale.value = newVal
-})
+	articleLocale.value = newVal;
+});
 
 const availableLocales = computed(() => {
 	if (Array.isArray(props.article?.text)) {
-		return props.article.text.map((t: { _key?: string }) => t._key)
+		return props.article.text.map((t: { _key?: string }) => t._key);
 	}
-	return []
-})
+	return [];
+});
 
 const currentArticleText = computed(() => {
-	if (!props.article?.text || !Array.isArray(props.article.text)) return null
-	return props.article.text.find((t: { _key?: string; value?: string }) => t._key === articleLocale.value)?.value
-})
+	if (!props.article?.text || !Array.isArray(props.article.text)) return null;
+	return props.article.text.find(
+		(t: { _key?: string; value?: string }) => t._key === articleLocale.value,
+	)?.value;
+});
 </script>
 
 <template>

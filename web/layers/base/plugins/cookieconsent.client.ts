@@ -1,68 +1,68 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import 'vanilla-cookieconsent/dist/cookieconsent.css'
-import * as CookieConsent from 'vanilla-cookieconsent'
-import { useMainStore } from '~/stores/mainStore'
+import "vanilla-cookieconsent/dist/cookieconsent.css";
+import * as CookieConsent from "vanilla-cookieconsent";
+import { useMainStore } from "~/stores/mainStore";
 
 export default defineNuxtPlugin(async () => {
-	const mainStore = useMainStore()
-	const { siteCookieBanner: cookieSettings } = mainStore
+	const mainStore = useMainStore();
+	const { siteCookieBanner: cookieSettings } = mainStore;
 	if (!cookieSettings?.useCookieBanner) {
-		return
+		return;
 	}
 
 	const { sections } = JSON.parse(
-		cookieSettings?.preferencesModal?.sections?.code ?? '{ "sections": [] }'
-	)
-	const { grantConsent, revokeConsent } = useGtag()
+		cookieSettings?.preferencesModal?.sections?.code ?? '{ "sections": [] }',
+	);
+	const { grantConsent, revokeConsent } = useGtag();
 
 	function toggleGtag(cookie) {
-		const hasGoogleConsent = cookie?.categories?.includes('analytics')
-		if (hasGoogleConsent) grantConsent()
-		else revokeConsent()
+		const hasGoogleConsent = cookie?.categories?.includes("analytics");
+		if (hasGoogleConsent) grantConsent();
+		else revokeConsent();
 	}
 	const config = {
 		// https://cookieconsent.orestbida.com/reference/configuration-reference.html#guioptions
 		guiOptions: {
 			consentModal: {
-				layout: 'box',
-				position: 'bottom right'
+				layout: "box",
+				position: "bottom right",
 			},
 			preferencesModal: {
-				layout: 'box'
-			}
+				layout: "box",
+			},
 		},
 
 		onFirstConsent: ({ cookie }) => {
-			toggleGtag(cookie)
+			toggleGtag(cookie);
 		},
 
 		onConsent: ({ cookie }) => {
-			toggleGtag(cookie)
+			toggleGtag(cookie);
 		},
 
 		onChange: ({ cookie }) => {
-			toggleGtag(cookie)
+			toggleGtag(cookie);
 		},
 
 		categories: {
 			necessary: {
 				readOnly: true,
-				enabled: true
+				enabled: true,
 			},
 			analytics: {
 				autoClear: {
 					cookies: [
 						{
-							name: /^(_ga|_gid)/
-						}
-					]
-				}
-			}
+							name: /^(_ga|_gid)/,
+						},
+					],
+				},
+			},
 		},
 
 		language: {
-			default: 'en',
+			default: "en",
 
 			translations: {
 				en: {
@@ -71,21 +71,21 @@ export default defineNuxtPlugin(async () => {
 						title: cookieSettings?.preferencesModal?.title,
 						acceptAllBtn: cookieSettings?.preferencesModal?.acceptAllBtn,
 						acceptNecessaryBtn:
-              cookieSettings?.preferencesModal?.acceptNecessaryBtn,
+							cookieSettings?.preferencesModal?.acceptNecessaryBtn,
 						savePreferencesBtn:
-              cookieSettings?.preferencesModal?.savePreferencesBtn,
-						sections: sections
-					}
-				}
-			}
-		}
-	}
+							cookieSettings?.preferencesModal?.savePreferencesBtn,
+						sections: sections,
+					},
+				},
+			},
+		},
+	};
 
-	await CookieConsent.run(config)
+	await CookieConsent.run(config);
 
 	return {
 		provide: {
-			CC: CookieConsent
-		}
-	}
-})
+			CC: CookieConsent,
+		},
+	};
+});

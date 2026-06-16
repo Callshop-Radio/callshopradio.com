@@ -1,125 +1,87 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useMainStore } from '~/stores/mainStore'
+import { computed } from "vue";
+import { useMainStore } from "~/stores/mainStore";
+import type { Image } from "~/types/sanity";
 
-const { locale: _locale, setLocale: _setLocale } = useI18n()
-const localePath = useLocalePath()
+const { locale: _locale, setLocale: _setLocale } = useI18n();
+const { getItemRoute } = useContentRoute();
 
 // Typdefinitionen
-interface Image {
-  asset?: {
-    url?: string;
-    altText?: string;
-  };
-  alt?: string;
-}
-
 interface Tag {
-  _id?: string;
-  _type?: string;
-  title?: string | unknown;
-  short?: string;
+	_id?: string;
+	_type?: string;
+	title?: string | unknown;
+	short?: string;
 }
 
 interface PoolItem {
-  _id?: string;
-  _type?: string;
-  title?: string;
-  name?: string;
-  slug?: { current?: string };
-  image?: Image;
-  mainImage?: Image;
-  location?: string;
-  tags?: Tag[];
-  bio?: unknown[];
+	_id?: string;
+	_type?: string;
+	title?: string;
+	name?: string;
+	slug?: { current?: string };
+	image?: Image;
+	mainImage?: Image;
+	location?: string;
+	tags?: Tag[];
+	bio?: unknown[];
 }
 
 // Props
 const props = defineProps<{
-  poolItem: PoolItem;
-}>()
-
-// Funktion zum Bestimmen der passenden Route für verschiedene Content-Typen
-function getItemRoute(item) {
-	if (!item || !item?.slug) return '/'
-
-	switch (item?._type) {
-	case 'person':
-	case 'venue':
-		return localePath(`/pool/${item?.slug?.current}`)
-
-	case 'set':
-		// Prüfe, ob parentShow vorhanden ist
-		if (item?.parentShow?.slug?.current) {
-			return localePath(
-				`/shows/${item.parentShow?.slug?.current}/${item?.slug?.current}`
-			)
-		}
-		// Fallback falls parentShow nicht verfügbar ist
-		return localePath(`/shows/${item?.slug?.current}`)
-
-	case 'article':
-		return localePath(`/words/${item?.slug?.current}`)
-
-	case 'show':
-		return localePath(`/shows/${item?.slug?.current}`)
-
-		// Standard-Fallback
-	default:
-		return localePath(`/${item?._type}/${item?.slug?.current}`)
-	}
-}
+	poolItem: PoolItem;
+}>();
 
 // Store
-const mainStore = useMainStore()
+const mainStore = useMainStore();
 
 // Composable für Bild-Management
 const useImageManagement = () => {
 	// Helper-Funktion für Bild-Fetching und Fallbacks
 	function getItemImage(item?: PoolItem): Image | null {
-		if (!item) return null
+		if (!item) return null;
 
 		// Bild aus dem Item selbst
 		if (item.image || item.mainImage) {
-			return item.image || item.mainImage
+			return item.image || item.mainImage;
 		}
 
 		// Fallbacks je nach Content-Typ
-		if (item._type === 'person') {
-			return mainStore?.siteFallbacks?.fallbackPerson?.image
-		} else if (item._type === 'venue') {
-			return mainStore?.siteFallbacks?.fallbackVenue?.image
+		if (item._type === "person") {
+			return mainStore?.siteFallbacks?.fallbackPerson?.image;
+		} else if (item._type === "venue") {
+			return mainStore?.siteFallbacks?.fallbackVenue?.image;
 		}
 
 		// Allgemeines Fallback
-		return mainStore?.siteFallbacks?.fallbackPerson?.image
+		return mainStore?.siteFallbacks?.fallbackPerson?.image;
 	}
 
 	// Computed Property für das Bild
 	const itemImage = computed(() => {
-		return getItemImage(props.poolItem)
-	})
+		return getItemImage(props.poolItem);
+	});
 
 	return {
-		itemImage
-	}
-}
+		itemImage,
+	};
+};
 
 // Anwendung der Composables
-const { itemImage } = useImageManagement()
+const { itemImage } = useImageManagement();
 
 // Formatierte Daten
 const itemTitle = computed(() => {
-	return props.poolItem?.title || props.poolItem?.name || ''
-})
+	return props.poolItem?.title || props.poolItem?.name || "";
+});
 
 const _itemType = computed(() => {
-	return props.poolItem?._type === 'person' ? 'Person' : 'Venue'
-})
+	return props.poolItem?._type === "person" ? "Person" : "Venue";
+});
 
 const _itemLocation = computed(() => {
-	return props.poolItem?.location || ''
-})
+	return props.poolItem?.location || "";
+});
 </script>
 
 <template>

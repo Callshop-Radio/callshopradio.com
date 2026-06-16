@@ -1,22 +1,22 @@
 <script setup>
-import { useSearch } from '~/composables/useSearch'
+import { useSearch } from "~/composables/useSearch";
 
 const props = defineProps({
 	// Whether this is rendered as a modal overlay (quick search) or inline
 	isModal: {
 		type: Boolean,
-		default: false
+		default: false,
 	},
 	// Auto-focus input when mounted/opened
 	autoFocus: {
 		type: Boolean,
-		default: true
-	}
-})
+		default: true,
+	},
+});
 
-const emit = defineEmits(['close', 'select'])
+const emit = defineEmits(["close", "select"]);
 
-const localePath = useLocalePath()
+const localePath = useLocalePath();
 
 const {
 	searchQuery,
@@ -27,84 +27,86 @@ const {
 	getResultPath,
 	getTypeLabel,
 	getTypeColor,
-	clearSearch
-} = useSearch({ maxResults: 20, debounceMs: 150 })
+	clearSearch,
+} = useSearch({ maxResults: 20, debounceMs: 150 });
 
-const inputRef = ref(null)
-const activeIndex = ref(-1)
+const inputRef = ref(null);
+const activeIndex = ref(-1);
 
 // Focus input on mount if autoFocus is true
 onMounted(() => {
 	if (props.autoFocus && inputRef.value) {
 		nextTick(() => {
-			inputRef.value?.focus()
-		})
+			inputRef.value?.focus();
+		});
 	}
-})
+});
 
 // Keyboard navigation
 const handleKeydown = (event) => {
 	switch (event.key) {
-	case 'ArrowDown':
-		event.preventDefault()
-		if (hasResults.value) {
-			activeIndex.value = Math.min(
-				activeIndex.value + 1,
-				results.value.length - 1
-			)
-		}
-		break
-	case 'ArrowUp':
-		event.preventDefault()
-		if (hasResults.value) {
-			activeIndex.value = Math.max(activeIndex.value - 1, -1)
-		}
-		break
-	case 'Enter':
-		event.preventDefault()
-		if (activeIndex.value >= 0 && results.value[activeIndex.value]) {
-			navigateToResult(results.value[activeIndex.value])
-		}
-		break
-	case 'Escape':
-		event.preventDefault()
-		handleClose()
-		break
+		case "ArrowDown":
+			event.preventDefault();
+			if (hasResults.value) {
+				activeIndex.value = Math.min(
+					activeIndex.value + 1,
+					results.value.length - 1,
+				);
+			}
+			break;
+		case "ArrowUp":
+			event.preventDefault();
+			if (hasResults.value) {
+				activeIndex.value = Math.max(activeIndex.value - 1, -1);
+			}
+			break;
+		case "Enter":
+			event.preventDefault();
+			if (activeIndex.value >= 0 && results.value[activeIndex.value]) {
+				navigateToResult(results.value[activeIndex.value]);
+			}
+			break;
+		case "Escape":
+			event.preventDefault();
+			handleClose();
+			break;
 	}
-}
+};
 
 // Navigate to a search result
 const navigateToResult = (result) => {
-	const path = getResultPath(result)
-	emit('select', result)
-	clearSearch()
-	activeIndex.value = -1
+	const path = getResultPath(result);
+	emit("select", result);
+	clearSearch();
+	activeIndex.value = -1;
 
 	if (props.isModal) {
-		emit('close')
+		emit("close");
 	}
 
-	navigateTo(localePath(path))
-}
+	navigateTo(localePath(path));
+};
 
 // Handle close
 const handleClose = () => {
-	clearSearch()
-	activeIndex.value = -1
-	emit('close')
-}
+	clearSearch();
+	activeIndex.value = -1;
+	emit("close");
+};
 
 // Navigate to detailed search page
 const goToDetailedSearch = () => {
-	const query = searchQuery.value.trim()
-	handleClose()
-	navigateTo(localePath(`/search${query ? `?q=${encodeURIComponent(query)}` : ''}`))
-}
+	const query = searchQuery.value.trim();
+	handleClose();
+	navigateTo(
+		localePath(`/search${query ? `?q=${encodeURIComponent(query)}` : ""}`),
+	);
+};
 
 // Reset active index when results change
 watch(results, () => {
-	activeIndex.value = -1
-})
+	activeIndex.value = -1;
+});
 </script>
 
 <template>

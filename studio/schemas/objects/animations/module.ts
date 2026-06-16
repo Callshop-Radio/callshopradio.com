@@ -1,39 +1,39 @@
-import {DashboardIcon} from '@sanity/icons'
-import {defineType} from 'sanity'
+import { DashboardIcon } from "@sanity/icons";
+import { defineType } from "sanity";
 
 export const animationsModule = defineType({
-  title: 'Animations',
-  name: 'animations.module',
-  type: 'object',
+  title: "Animations",
+  name: "animations.module",
+  type: "object",
   icon: DashboardIcon,
   fields: [
     {
-      title: 'Show Airplane',
-      type: 'boolean',
-      name: 'logo',
+      title: "Show Airplane",
+      type: "boolean",
+      name: "logo",
       initialValue: false,
-      options: {layout: 'checkbox'},
+      options: { layout: "checkbox" },
     },
     {
-      title: 'Airplane Size',
-      type: 'string',
-      name: 'size',
-      initialValue: 'small',
+      title: "Airplane Size",
+      type: "string",
+      name: "size",
+      initialValue: "small",
       options: {
         list: [
-          {title: 'Large', value: 'large'},
-          {title: 'Small', value: 'small'}
+          { title: "Large", value: "large" },
+          { title: "Small", value: "small" },
         ],
-        layout: 'radio'
+        layout: "radio",
       },
-      hidden: ({parent}) => parent?.logo !== true,
+      hidden: ({ parent }) => parent?.logo !== true,
     },
     {
-      title: 'Animations active',
-      type: 'boolean',
-      name: 'active',
+      title: "Animations active",
+      type: "boolean",
+      name: "active",
       initialValue: false,
-      options: {layout: 'checkbox'},
+      options: { layout: "checkbox" },
     },
   ],
-})
+});

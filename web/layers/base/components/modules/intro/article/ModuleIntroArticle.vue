@@ -1,81 +1,76 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useMainStore } from '~/stores/mainStore'
+import { computed } from "vue";
+import { useMainStore } from "~/stores/mainStore";
+import type { Image, Tag } from "~/types/sanity";
 
-const { locale: _locale, setLocale: _setLocale } = useI18n()
-const localePath = useLocalePath()
+const { locale: _locale, setLocale: _setLocale } = useI18n();
+const localePath = useLocalePath();
 
 // Typdefinitionen für Artikel
-interface Image {
-  asset?: {
-    url?: string;
-  };
-}
-
 interface Article {
-  _id?: string;
-  _type?: string;
-  title?: string;
-  slug?: {
-    current?: string;
-  };
-  image?: Image;
-  datetime?: string;
-  _updatedAt?: string;
-  text?: unknown[];
-  useTeaserText?: boolean;
-  textTeaser?: unknown[];
-  tags?: import('~/types/sanity').Tag[];
-  socials?: {
-    instagram?: string;
-    soundcloud?: string;
-    nina?: string;
-    bandcamp?: string;
-    web?: string;
-  };
+	_id?: string;
+	_type?: string;
+	title?: string;
+	slug?: {
+		current?: string;
+	};
+	image?: Image;
+	datetime?: string;
+	_updatedAt?: string;
+	text?: unknown[];
+	useTeaserText?: boolean;
+	textTeaser?: unknown[];
+	tags?: Tag[];
+	socials?: {
+		instagram?: string;
+		soundcloud?: string;
+		nina?: string;
+		bandcamp?: string;
+		web?: string;
+	};
 }
 
 // Props
 const props = defineProps<{
-  article: Article;
-}>()
+	article: Article;
+}>();
 
 // Store
-const mainStore = useMainStore()
+const mainStore = useMainStore();
 
 // Composable für Bild-Management
 const useImageManagement = () => {
 	function getItemImage(item?: Article): Image | null {
-		if (!item) return null
+		if (!item) return null;
 
 		// Bild aus dem Artikel
 		if (item.image) {
-			return item.image
+			return item.image;
 		}
 
 		// Fallback für Artikel
-		return mainStore?.siteFallbacks?.fallbackArticle?.image
+		return mainStore?.siteFallbacks?.fallbackArticle?.image;
 	}
 
 	return {
-		getItemImage
-	}
-}
+		getItemImage,
+	};
+};
 
 // Funktion zum Bestimmen der passenden Route
 function getItemRoute(item) {
-	if (!item || !item?.slug) return '/'
-	return localePath(`/words/${item?.slug?.current}`)
+	if (!item || !item?.slug) return "/";
+	return localePath(`/words/${item?.slug?.current}`);
 }
 
 // Anwendung der Composables
-const { getItemImage } = useImageManagement()
+const { getItemImage } = useImageManagement();
 
 // Computed properties
 const articleImage = computed(() => {
-	const image = getItemImage(props.article)
-	return image?.asset?.url || ''
-})
+	const image = getItemImage(props.article);
+	return image?.asset?.url || "";
+});
 </script>
 
 <template>

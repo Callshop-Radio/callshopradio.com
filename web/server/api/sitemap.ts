@@ -1,12 +1,12 @@
-import type { SitemapEntry, SitemapRoute } from '~~/types/sanity'
-import { SITEMAP_QUERY } from '~~/queries/sanity.queries'
+import { SITEMAP_QUERY } from "~~/queries/sanity.queries";
+import type { SitemapEntry, SitemapRoute } from "~~/types/sanity";
 
 export default defineEventHandler(async (_event) => {
-	const sanity = useSanity()
-	const query = groq`${SITEMAP_QUERY}`
+	const sanity = useSanity();
+	const query = groq`${SITEMAP_QUERY}`;
 
 	try {
-		const sitemapData = (await sanity.fetch(query)) as SitemapRoute[]
+		const sitemapData = (await sanity.fetch(query)) as SitemapRoute[];
 
 		// Filter out any invalid routes and handle special cases
 		const validRoutes = sitemapData
@@ -14,125 +14,127 @@ export default defineEventHandler(async (_event) => {
 				// Basic validation
 				if (
 					!route.loc ||
-					route.loc === 'undefined' ||
-					route.loc.startsWith('/api/')
+					route.loc === "undefined" ||
+					route.loc.startsWith("/api/")
 				) {
-					return false
+					return false;
 				}
 
 				// Special handling for sets - they need a parent show
-				if (route._type === 'set') {
-					return route.show && route.show.slug
+				if (route._type === "set") {
+					return route.show && route.show.slug;
 				}
 
-				return true
+				return true;
 			})
 			.map((route: SitemapRoute) => {
 				// Fix set URLs that might have issues
-				if (route._type === 'set' && route.show && route.show.slug) {
-					route.loc = `/shows/${route.show.slug}/${route.slug}`
+				if (route._type === "set" && route.show && route.show.slug) {
+					route.loc = `/shows/${route.show.slug}/${route.slug}`;
 				}
 
-				return route
-			})
+				return route;
+			});
 
 		// Add static routes specific to Callshop Radio
 		const staticRoutes = [
 			{
-				loc: '/pool',
+				loc: "/pool",
 				lastmod: new Date().toISOString(),
-				changefreq: 'daily',
-				priority: 0.9
+				changefreq: "daily",
+				priority: 0.9,
 			},
 			{
-				loc: '/schedule',
+				loc: "/schedule",
 				lastmod: new Date().toISOString(),
-				changefreq: 'daily',
-				priority: 0.9
+				changefreq: "daily",
+				priority: 0.9,
 			},
 			{
-				loc: '/shows',
+				loc: "/shows",
 				lastmod: new Date().toISOString(),
-				changefreq: 'daily',
-				priority: 0.9
+				changefreq: "daily",
+				priority: 0.9,
 			},
 			{
-				loc: '/words',
+				loc: "/words",
 				lastmod: new Date().toISOString(),
-				changefreq: 'weekly',
-				priority: 0.8
-			}
-		]
+				changefreq: "weekly",
+				priority: 0.8,
+			},
+		];
 
 		// Transform data to match @nuxtjs/sitemap format
 		interface RouteWithLoc {
-			loc: string
-			lastmod?: string
-			modifiedAt?: string
-			changefreq?: string
-			priority?: number
+			loc: string;
+			lastmod?: string;
+			modifiedAt?: string;
+			changefreq?: string;
+			priority?: number;
 		}
 		const routes: RouteWithLoc[] = [
 			...validRoutes.map((route: SitemapRoute) => ({
 				loc: route.loc,
-				lastmod: new Date(route.modifiedAt ?? '').toISOString(),
+				lastmod: new Date(route.modifiedAt ?? "").toISOString(),
 				changefreq: route.changefreq,
-				priority: route.priority
+				priority: route.priority,
 			})),
-			...staticRoutes
-		]
+			...staticRoutes,
+		];
 
 		// Remove duplicate routes (just in case)
 		const uniqueRoutes = routes.filter(
 			(route, index, self) =>
-				index === self.findIndex((r) => r.loc === route.loc)
-		)
+				index === self.findIndex((r) => r.loc === route.loc),
+		);
 
 		// Format for Nuxt Sitemap module
 		const _siteUrl =
-			process.env.NUXT_PUBLIC_SITE_URL || 'https://callshopradio.com'
+			process.env.NUXT_PUBLIC_SITE_URL || "https://callshopradio.com";
 
-		return uniqueRoutes.map((route: RouteWithLoc): SitemapEntry => ({
-			url: route.loc,
-			lastmod: route.lastmod ?? route.modifiedAt,
-			changefreq: route.changefreq,
-			priority: route.priority
-		}))
+		return uniqueRoutes.map(
+			(route: RouteWithLoc): SitemapEntry => ({
+				url: route.loc,
+				lastmod: route.lastmod ?? route.modifiedAt,
+				changefreq: route.changefreq,
+				priority: route.priority,
+			}),
+		);
 	} catch (error) {
-		console.error('Error fetching sitemap data from Sanity:', error)
+		console.error("Error fetching sitemap data from Sanity:", error);
 
 		// Fallback with basic routes specific to Callshop Radio
 		return [
 			{
-				loc: '/',
+				loc: "/",
 				lastmod: new Date().toISOString(),
-				changefreq: 'daily',
-				priority: 1.0
+				changefreq: "daily",
+				priority: 1.0,
 			},
 			{
-				loc: '/pool',
+				loc: "/pool",
 				lastmod: new Date().toISOString(),
-				changefreq: 'daily',
-				priority: 0.9
+				changefreq: "daily",
+				priority: 0.9,
 			},
 			{
-				loc: '/schedule',
+				loc: "/schedule",
 				lastmod: new Date().toISOString(),
-				changefreq: 'daily',
-				priority: 0.9
+				changefreq: "daily",
+				priority: 0.9,
 			},
 			{
-				loc: '/shows',
+				loc: "/shows",
 				lastmod: new Date().toISOString(),
-				changefreq: 'daily',
-				priority: 0.9
+				changefreq: "daily",
+				priority: 0.9,
 			},
 			{
-				loc: '/words',
+				loc: "/words",
 				lastmod: new Date().toISOString(),
-				changefreq: 'weekly',
-				priority: 0.8
-			}
-		]
+				changefreq: "weekly",
+				priority: 0.8,
+			},
+		];
 	}
-})
+});

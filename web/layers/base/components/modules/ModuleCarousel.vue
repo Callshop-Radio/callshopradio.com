@@ -1,49 +1,52 @@
 <script setup lang="ts">
-import emblaCarouselVue from 'embla-carousel-vue'
-import { useThrottleFn } from '@vueuse/core'
+import { useThrottleFn } from "@vueuse/core";
+import emblaCarouselVue from "embla-carousel-vue";
 
 interface Slide {
-  _key: string;
-	type: 'image' | 'video';
+	_key: string;
+	type: "image" | "video";
 	image: object;
 	video?: object;
 	videoSettings?: {
 		autoplay?: boolean;
 		controls?: boolean;
-	}
+	};
 }
 
 const props = defineProps({
 	slides: {
 		type: Array as () => Slide[],
-		default: () => []
-	}
-})
+		default: () => [],
+	},
+});
 const [emblaNode, emblaApi] = emblaCarouselVue({
-	align: 'start'
-})
+	align: "start",
+});
 
-const emblaContainer = ref<HTMLElement>()
+const emblaContainer = ref<HTMLElement>();
 
-let containerStyle: string
+let containerStyle: string;
 
 const saveTranslatePositions = useThrottleFn(() => {
-	if (!emblaContainer.value) { return }
-	containerStyle = emblaContainer.value.style.transform
-}, 100)
+	if (!emblaContainer.value) {
+		return;
+	}
+	containerStyle = emblaContainer.value.style.transform;
+}, 100);
 
 async function restoreTranslatePositions() {
-	if (!emblaContainer.value) { return }
-	emblaContainer.value.style.transform = containerStyle
+	if (!emblaContainer.value) {
+		return;
+	}
+	emblaContainer.value.style.transform = containerStyle;
 }
 
 onMounted(() => {
 	if (emblaApi.value) {
-		emblaApi.value.on('scroll', saveTranslatePositions)
-		emblaApi.value.on('destroy', restoreTranslatePositions)
+		emblaApi.value.on("scroll", saveTranslatePositions);
+		emblaApi.value.on("destroy", restoreTranslatePositions);
 	}
-})
-
+});
 </script>
 
 <template>

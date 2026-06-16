@@ -1,35 +1,41 @@
-import {TagIcon, SearchIcon, StarIcon, TextIcon, EyeOpenIcon} from '@sanity/icons'
-import {validateSlug} from '@/utils/validateSlug'
-import { defineType } from 'sanity'
+import {
+  EyeOpenIcon,
+  SearchIcon,
+  StarIcon,
+  TagIcon,
+  TextIcon,
+} from "@sanity/icons";
+import { defineType } from "sanity";
+import { validateSlug } from "@/utils/validateSlug";
 
 export const tagMusician = defineType({
-  name: 'tag.musician',
-  type: 'document',
-  title: 'Musician Tag',
+  name: "tag.musician",
+  type: "document",
+  title: "Musician Tag",
   icon: TagIcon,
   groups: [
     {
-      title: 'SEO',
-      name: 'seo',
+      title: "SEO",
+      name: "seo",
       icon: SearchIcon,
     },
   ],
   fields: [
     {
-      title: 'Title',
-      name: 'title',
-      type: 'string',
+      title: "Title",
+      name: "title",
+      type: "string",
     },
   ],
   preview: {
     select: {
-      title: 'title',
+      title: "title",
     },
     prepare(selection) {
-      const {title} = selection
+      const { title } = selection;
       return {
         title: title,
-      }
+      };
     },
   },
-})
+});

@@ -1,37 +1,37 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { SCHEDULE_QUERY } from '~~/queries/sanity.queries.ts'
-import { useMainStore } from '~/stores/mainStore'
+import { computed, onMounted, ref } from "vue";
+import { useMainStore } from "~/stores/mainStore";
+import { SCHEDULE_QUERY } from "~~/queries/sanity.queries.ts";
 
-const query = groq`${SCHEDULE_QUERY}`
-const { data } = await useCachedSanityQuery(query)
+const query = groq`${SCHEDULE_QUERY}`;
+const { data } = await useCachedSanityQuery(query);
 
 // Store einbinden
-const mainStore = useMainStore()
+const mainStore = useMainStore();
 
 // Status-Variablen
-const loading = ref(true)
-const error = ref(null)
-const dusseldorfInstances = ref([])
-const instanceTracks = ref({})
+const loading = ref(true);
+const error = ref(null);
+const dusseldorfInstances = ref([]);
+const instanceTracks = ref({});
 
 // Current time management
-const _currentTime = ref(new Date())
-const _timeUpdateInterval = ref(null)
+const _currentTime = ref(new Date());
+const _timeUpdateInterval = ref(null);
 
 // Constants for time display
-const GRID_START_HOUR = 7
-const GRID_END_HOUR = 24
-const GRID_TOTAL_HOURS = GRID_END_HOUR - GRID_START_HOUR
-const GRID_SEGMENTS_PER_HOUR = 2 // 30-Minuten-Segmente
+const GRID_START_HOUR = 7;
+const GRID_END_HOUR = 24;
+const GRID_TOTAL_HOURS = GRID_END_HOUR - GRID_START_HOUR;
+const GRID_SEGMENTS_PER_HOUR = 2; // 30-Minuten-Segmente
 const _GRID_TOTAL_SEGMENTS = Math.min(
 	GRID_TOTAL_HOURS * GRID_SEGMENTS_PER_HOUR,
-	35
-) // Maximal 35 Segmente
+	35,
+); // Maximal 35 Segmente
 
 // Service-Composables einbinden
 const { fetchScheduleData, getDusseldorfShows, getWienShows } =
-  useScheduleService()
+	useScheduleService();
 
 const {
 	formatDate,
@@ -42,106 +42,106 @@ const {
 	getShowDescription,
 	isLiveShow,
 	shouldShowInSchedule: _shouldShowInSchedule,
-	groupShowsByDay
-} = useShowFormatters()
+	groupShowsByDay,
+} = useShowFormatters();
 
 // Daten laden
 const loadData = async () => {
-	loading.value = true
-	error.value = null
+	loading.value = true;
+	error.value = null;
 
 	try {
-		await fetchScheduleData()
-		extractDusseldorfInstances()
-		await loadAllInstanceTracks()
+		await fetchScheduleData();
+		extractDusseldorfInstances();
+		await loadAllInstanceTracks();
 	} catch (err) {
-		console.error('❌ Fehler beim Laden der Daten:', err)
+		console.error("❌ Fehler beim Laden der Daten:", err);
 		error.value =
-      'Es ist ein Fehler beim Laden der Daten aufgetreten. Bitte versuche es später erneut.'
+			"Es ist ein Fehler beim Laden der Daten aufgetreten. Bitte versuche es später erneut.";
 	} finally {
-		loading.value = false
+		loading.value = false;
 	}
-}
+};
 
 // Extrahiert die instanceID aus allen Düsseldorf-Shows
 const extractDusseldorfInstances = () => {
-	const allShows = getDusseldorfShows()
-	const instancesSet = new Set()
+	const allShows = getDusseldorfShows();
+	const instancesSet = new Set();
 
 	for (const show of allShows) {
 		if (
-			(!show.description || show.description.trim() === '') &&
-      show.instance_id
+			(!show.description || show.description.trim() === "") &&
+			show.instance_id
 		) {
-			instancesSet.add(show.instance_id)
+			instancesSet.add(show.instance_id);
 		}
 	}
 
-	dusseldorfInstances.value = [...instancesSet]
-}
+	dusseldorfInstances.value = [...instancesSet];
+};
 
 // Alle Tracks für alle Instances parallel laden
 const loadAllInstanceTracks = async () => {
-	const tracksData = {}
+	const tracksData = {};
 
 	const fetchPromises = dusseldorfInstances.value.map(async (instanceId) => {
 		try {
-			const tracks = await fetchTracksForInstance(instanceId)
+			const tracks = await fetchTracksForInstance(instanceId);
 			if (tracks) {
-				return { instanceId, tracks }
+				return { instanceId, tracks };
 			}
-			return null
+			return null;
 		} catch (error) {
 			console.error(
 				`❌ Error loading tracks for instance ${instanceId}:`,
-				error
-			)
-			return null
+				error,
+			);
+			return null;
 		}
-	})
+	});
 
-	const results = await Promise.all(fetchPromises)
+	const results = await Promise.all(fetchPromises);
 
 	for (const result of results) {
 		if (result && result.instanceId && result.tracks) {
-			tracksData[result.instanceId] = result.tracks
+			tracksData[result.instanceId] = result.tracks;
 		}
 	}
 
-	instanceTracks.value = tracksData
-}
+	instanceTracks.value = tracksData;
+};
 // Daten beim Mounting laden
 onMounted(() => {
-	loadData()
-})
+	loadData();
+});
 
 // Tracks für eine Instance-ID laden
 const fetchTracksForInstance = async (instanceId) => {
 	try {
-		const url = `https://libretime.callshopradio.com/api/show-tracks/?instance_id=${instanceId}`
-		const response = await fetch(url)
+		const url = `https://libretime.callshopradio.com/api/show-tracks/?instance_id=${instanceId}`;
+		const response = await fetch(url);
 		if (!response.ok) {
-			throw new Error(`HTTP error! Status: ${response.status}`)
+			throw new Error(`HTTP error! Status: ${response.status}`);
 		}
-		const data = await response.json()
+		const data = await response.json();
 
 		// Log cue points for all tracks in this instance
 		if (data && Array.isArray(data) && data.length > 0) {
 			// reserved for cue-point logging
 		}
 
-		return data
+		return data;
 	} catch (err) {
-		console.error(`❌ Error fetching tracks for instance ${instanceId}:`, err)
-		return null
+		console.error(`❌ Error fetching tracks for instance ${instanceId}:`, err);
+		return null;
 	}
-}
+};
 
 const integrateTracks = (shows, trackData) => {
-	if (!shows || !trackData) return shows
+	if (!shows || !trackData) return shows;
 
 	// Tracks vorab sortieren und in Cache speichern, um wiederholte Sortierungen zu vermeiden
-	const sortedTracksCache = {}
+	const sortedTracksCache = {};
 
 	for (const instanceId in trackData) {
 		if (trackData[instanceId] && Array.isArray(trackData[instanceId])) {
@@ -149,63 +149,63 @@ const integrateTracks = (shows, trackData) => {
 			sortedTracksCache[instanceId] = [...trackData[instanceId]].sort(
 				(a, b) => {
 					if (a.starts && b.starts) {
-						return new Date(a.starts) - new Date(b.starts)
+						return new Date(a.starts) - new Date(b.starts);
 					} else if (a.position !== undefined && b.position !== undefined) {
-						return a.position - b.position
+						return a.position - b.position;
 					} else {
-						return 0
+						return 0;
 					}
-				}
-			)
+				},
+			);
 		}
 	}
 
 	// Shows nur einmal durchlaufen und vorsortierten Cache nutzen
 	return shows.map((show) => {
-		const instanceId = show.instance_id
+		const instanceId = show.instance_id;
 		if (instanceId && sortedTracksCache[instanceId]) {
 			return {
 				...show,
-				tracks: sortedTracksCache[instanceId]
-			}
+				tracks: sortedTracksCache[instanceId],
+			};
 		}
-		return show
-	})
-}
+		return show;
+	});
+};
 
 // Computed Properties für Shows
 const dusseldorfShows = computed(() => {
-	const shows = getDusseldorfShows()
+	const shows = getDusseldorfShows();
 	// Tracks in Shows integrieren vor dem Zurückgeben
-	return integrateTracks(shows, instanceTracks.value)
-})
+	return integrateTracks(shows, instanceTracks.value);
+});
 
-const wienShows = computed(() => getWienShows())
+const wienShows = computed(() => getWienShows());
 
 // Gruppierte Shows für Düsseldorf und Wien
 const groupedDusseldorfShows = computed(() =>
-	groupShowsByDay(dusseldorfShows.value)
-)
+	groupShowsByDay(dusseldorfShows.value),
+);
 
-const groupedWienShows = computed(() => groupShowsByDay(wienShows.value))
+const groupedWienShows = computed(() => groupShowsByDay(wienShows.value));
 
 // Computed Property für die Sichtbarkeit basierend auf dem aktiven Standort
 const isLocationVisible = (location) => {
-	return mainStore.activeScheduleLocation === location
-}
+	return mainStore.activeScheduleLocation === location;
+};
 
 // Neulade-Funktion für manuelles Aktualisieren
 const refreshData = () => {
-	loadData()
-}
+	loadData();
+};
 
-usePageSeo(data?.value?.seo)
+usePageSeo(data?.value?.seo);
 
 useHead({
 	bodyAttrs: {
-		class: 'schedule'
-	}
-})
+		class: "schedule",
+	},
+});
 </script>
 
 <template>
@@ -217,10 +217,7 @@ useHead({
 				class="schedule__background__image"
 			/>
 		</div>
-		<div v-if="loading" class="schedule__loading">
-			<!-- <div class="loading-spinner"></div> -->
-			<!-- <div class="loading-text">Loading</div> -->
-		</div>
+		<div v-if="loading" class="schedule__loading" />
 
 		<div v-else-if="error" class="schedule__error">
 			<div class="error-message">{{ error }}</div>
