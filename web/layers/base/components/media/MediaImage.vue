@@ -111,6 +111,15 @@ const orientation = computed(() => {
 			: "square";
 });
 
+// Default `src` for the eager <img> branch — the browser picks the best
+// match from srcset, this is just the legacy fallback.
+const defaultSrc = computed(() => {
+	if (!props.image?.asset) return undefined;
+	return String(
+		$urlFor(props.image).width(1200).auto(props.auto).fit(props.fit),
+	);
+});
+
 const altText = computed(() => props.alt ?? props.image?.asset?.altText);
 const isLoaded = ref(false);
 const onLoad = () => {
@@ -136,8 +145,27 @@ watchEffect(() => {
 </script>
 
 <template>
+	<!-- Eager LCP path: plain <img> with native eager loading + priority.
+	     Bypasses UnLazyImage because combining loading="eager" with UnLazy
+	     leaves the <img> stuck on its LQIP placeholder (UnLazy keeps the real
+	     URL in data-srcset and never promotes it to srcset). -->
+	<img
+		v-if="hasValidImage && props.eager"
+		:src="defaultSrc"
+		:srcset="srcSet"
+		sizes="100vw"
+		:alt="altText"
+		:width="cropWidth"
+		:height="cropHeight"
+		:class="[orientation, 'loaded']"
+		:style="{ aspectRatio: `${cropWidth} / ${cropHeight}` }"
+		loading="eager"
+		fetchpriority="high"
+		draggable="false"
+		@load="onLoad"
+	>
 	<UnLazyImage
-		v-if="hasValidImage"
+		v-else-if="hasValidImage"
 		:style="{ aspectRatio: `${cropWidth} / ${cropHeight}` }"
 		:placeholder-src="placeholderSrc"
 		:src-set="srcSet"
@@ -148,9 +176,7 @@ watchEffect(() => {
 		:class="[orientation, { loaded: isLoaded }]"
 		:preload="props.preload"
 		draggable="false"
-		:lazy-load="!props.eager"
-		:loading="props.eager ? 'eager' : 'lazy'"
-		:fetchpriority="props.eager ? 'high' : 'auto'"
+		:lazy-load="true"
 		class="fade"
 		@load="onLoad"
 	/>
