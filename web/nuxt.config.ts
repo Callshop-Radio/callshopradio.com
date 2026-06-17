@@ -158,12 +158,22 @@ export default defineNuxtConfig({
 		experimental: {
 			wasm: true,
 		},
-		// Cache storage configuration
+		// Cache storage configuration. On Netlify we use a site-scoped Blob
+		// store so the Sanity-detail cache survives deploys and is shared
+		// across Function instances. Locally we keep LRU so `pnpm dev` works
+		// without Netlify CLI / blob support.
 		storage: {
-			cache: {
-				driver: "lru-cache",
-				max: 1000,
-			},
+			cache: process.env.NETLIFY
+				? {
+						driver: "netlifyBlobs",
+						// Naming the store makes it site-scoped (persistent across
+						// deploys). An unnamed store would be deploy-scoped.
+						name: "sanity-cache",
+					}
+				: {
+						driver: "lru-cache",
+						max: 1000,
+					},
 		},
 		// Development storage (filesystem-based)
 		devStorage: {
