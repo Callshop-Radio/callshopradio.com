@@ -21,7 +21,7 @@ const [_emblaNode, emblaApi] = emblaCarouselVue({
 
 // Dots nav
 const selectedIndex = ref(0);
-// Aktuelle Slide-Position
+// Current slide position
 const currentIndex = ref(0);
 const scrollSnaps = ref<number[]>([]);
 
@@ -43,13 +43,13 @@ async function restoreTranslatePositions() {
 const onSelect = () => {
 	if (!emblaApi.value) return;
 	selectedIndex.value = emblaApi.value.selectedScrollSnap();
-	currentIndex.value = selectedIndex.value; // Aktualisiere currentIndex, wenn sich der Slide ändert
+	currentIndex.value = selectedIndex.value; // Update currentIndex when the slide changes
 };
 
 const scrollTo = (index: number) => {
 	if (!emblaApi.value) return;
 	emblaApi.value.scrollTo(index);
-	currentIndex.value = index; // Aktualisiere currentIndex beim manuellen Scrollen
+	currentIndex.value = index; // Update currentIndex on manual scrolling
 };
 
 const scrollPrev = () => {
@@ -65,18 +65,18 @@ const scrollNext = () => {
 const setupDots = () => {
 	if (!emblaApi.value) return;
 
-	// Scroll snaps für Navigation
+	// Scroll snaps for navigation
 	scrollSnaps.value = emblaApi.value.scrollSnapList();
 
 	// Set current index
 	selectedIndex.value = emblaApi.value.selectedScrollSnap();
-	currentIndex.value = selectedIndex.value; // Initialisiere currentIndex
+	currentIndex.value = selectedIndex.value; // Initialize currentIndex
 
-	// Event-Listener für Aktualisierung des ausgewählten Index
+	// Event listener for updating the selected index
 	emblaApi.value.on("select", onSelect);
 };
 
-// Event-Listener nach dem Mounting
+// Event listener after mounting
 onMounted(() => {
 	if (emblaApi.value) {
 		emblaApi.value.on("scroll", saveTranslatePositions);
@@ -86,13 +86,13 @@ onMounted(() => {
 	}
 });
 
-// Verwende die Sets aus den Props
+// Use the sets from the props
 const slides = computed(() => {
 	const result = [];
-	// Gruppiere Sets in Paare (2 pro Slide)
+	// Group sets into pairs (2 per slide)
 	for (let i = 0; i < props.sets.length; i += 2) {
 		const pair = [props.sets[i]];
-		// Füge das zweite Set hinzu, wenn verfügbar
+		// Add the second set if available
 		if (i + 1 < props.sets.length) {
 			pair.push(props.sets[i + 1]);
 		}
@@ -318,7 +318,7 @@ const slides = computed(() => {
     }
   }
 
-  /* Basis-Styles für den Embla Carousel */
+  /* Base styles for the Embla carousel */
   .embla {
     @apply overflow-hidden;
     max-width: calc(var(--page-max-width));
@@ -331,7 +331,7 @@ const slides = computed(() => {
 
     &__slide {
       @apply flex flex-grow-0 flex-shrink-0 flex-basis-auto min-w-0 relative;
-      width: 100%; /* Jeder Slide nimmt volle Breite ein */
+      width: 100%; /* Each slide takes up the full width */
       padding: 0 calc(var(--big-margin) / 2);
       opacity: 0;
       transition: opacity 0.15s ease !important;
@@ -361,11 +361,11 @@ const slides = computed(() => {
   }
 }
 
-/* Spezifische Stile für die verschiedenen Slider-Varianten */
+/* Specific styles for the different slider variants */
 .slider-item {
   &--default {
     ::v-deep(.set-content) {
-      margin: 0; /* Entferne die Standardränder der Komponente im Slider */
+      margin: 0; /* Remove the component's default margins in the slider */
     }
   }
 

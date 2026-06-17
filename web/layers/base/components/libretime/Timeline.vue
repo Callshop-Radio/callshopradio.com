@@ -25,16 +25,16 @@ const props = defineProps({
 	},
 });
 
-// Zustand
+// State
 const calendar = ref(null);
 const _showWienCalendar = ref("all");
 const eventsToShow = ref([]);
 const windowSize = reactive({ width: undefined, height: undefined });
 
-// Fetch-Funktion für SWRV
+// Fetch function for SWRV
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
-// Hilfsfunktion zur String-Formatierung
+// Helper function for string formatting
 const parseString = (string) => {
 	return string
 		.replace("&amp;", "&")
@@ -43,7 +43,7 @@ const parseString = (string) => {
 		.replace("&quot;", '"');
 };
 
-// Kalender-Initialisierung
+// Calendar initialization
 const init = async () => {
 	const mounted = ref(false);
 
@@ -93,7 +93,7 @@ const init = async () => {
 	});
 };
 
-// Wien-Kalender-Initialisierung
+// Vienna calendar initialization
 const initWien = () => {
 	return props.liveShowsWien.map((value) => {
 		const title = value.instance_description
@@ -111,7 +111,7 @@ const initWien = () => {
 	});
 };
 
-// Kalenderoptionen
+// Calendar options
 const calendarOptions = computed(() => ({
 	plugins: [timeGridPlugin],
 	initialView: windowSize.width < 900 ? "timeGridDay" : "timeGridWeek",
@@ -146,7 +146,7 @@ const calendarOptions = computed(() => ({
 	},
 }));
 
-// Fenstergröße überwachen
+// Monitor window size
 const updateWindowSize = () => {
 	windowSize.width = window.innerWidth;
 	windowSize.height = window.innerHeight;

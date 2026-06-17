@@ -2,7 +2,7 @@
 
 /**
  * SSG Build Validation Script
- * Überprüft die generierten statischen Dateien nach dem Build
+ * Checks the generated static files after the build
  */
 
 import fs from "node:fs";
@@ -16,13 +16,13 @@ const REQUIRED_DIRS = ["pool", "shows", "schedule", "words"];
 function validateBuild() {
 	console.log("🔍 Validating SSG build...");
 
-	// Prüfe ob dist Verzeichnis existiert
+	// Check whether the dist directory exists
 	if (!fs.existsSync(DIST_DIR)) {
 		console.error("❌ dist directory not found!");
 		process.exit(1);
 	}
 
-	// Prüfe erforderliche Dateien
+	// Check required files
 	const missingFiles = [];
 	REQUIRED_FILES.forEach((file) => {
 		const filePath = path.join(DIST_DIR, file);
@@ -33,7 +33,7 @@ function validateBuild() {
 		}
 	});
 
-	// Prüfe erforderliche Verzeichnisse
+	// Check required directories
 	const missingDirs = [];
 	REQUIRED_DIRS.forEach((dir) => {
 		const dirPath = path.join(DIST_DIR, dir);
@@ -44,7 +44,7 @@ function validateBuild() {
 		}
 	});
 
-	// Zähle generierte Dateien
+	// Count generated files
 	const files = getAllFiles(DIST_DIR);
 	const htmlFiles = files.filter((f) => f.endsWith(".html")).length;
 	const jsFiles = files.filter((f) => f.endsWith(".js")).length;
@@ -56,7 +56,7 @@ function validateBuild() {
 	console.log(`   🎨 CSS files: ${cssFiles}`);
 	console.log(`   📁 Total files: ${files.length}`);
 
-	// Finale Validierung
+	// Final validation
 	if (missingFiles.length > 0) {
 		console.error(`❌ Missing required files: ${missingFiles.join(", ")}`);
 		process.exit(1);

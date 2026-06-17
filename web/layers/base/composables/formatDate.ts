@@ -13,7 +13,7 @@ export const formatDate = (
 		return;
 	}
 
-	// Formatierung für Tag, Monat und Jahr
+	// Formatting for day, month and year
 	const day = date.toLocaleString("default", { day: "2-digit" });
 	const month = date.toLocaleString("default", { month: "2-digit" });
 	const year = date.toLocaleString("default", { year: "numeric" });

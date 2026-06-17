@@ -169,28 +169,28 @@ async function loadMoreSelfContent() {
 	}
 }
 
-// State für sichtbare Items
+// State for visible items
 const itemsPerPage = computed(() => (props.module.type === "words" ? 2 : 3));
 const visibleItemCount = ref(itemsPerPage.value);
-const loadMoreClickCount = ref(0); // Zähler für Load More Klicks
+const loadMoreClickCount = ref(0); // Counter for Load More clicks
 
-// Sortierungs-Zustand
-const sortMode = ref("new"); // Standardmäßig "new" (chronologisch)
-const shuffleSeed = ref(Date.now()); // Zufallsseed für Shuffle
+// Sort state
+const sortMode = ref("new"); // Defaults to "new" (chronological)
+const shuffleSeed = ref(Date.now()); // Random seed for shuffle
 
-// Funktion zum Ändern des Sortiermodus
+// Function to change the sort mode
 function changeSortMode(mode: string) {
 	if (mode === "shuffle") {
-		// Bei jedem Klick auf Shuffle einen neuen Seed generieren
+		// Generate a new seed on each click of Shuffle
 		shuffleSeed.value = Date.now();
 	}
 	sortMode.value = mode;
-	// Nach Sortierung Items zurücksetzen
+	// Reset items after sorting
 	visibleItemCount.value = itemsPerPage.value;
-	loadMoreClickCount.value = 0; // Reset des Zählers bei Sortierung
+	loadMoreClickCount.value = 0; // Reset the counter on sorting
 }
 
-// Hilfsfunktion zur Formatierung von Datum/Zeit
+// Helper function for formatting date/time
 function formatDate(dateString: string) {
 	if (!dateString) return "";
 	const date = new Date(dateString);
@@ -202,10 +202,10 @@ function formatDate(dateString: string) {
 	});
 }
 
-// Artwork-URLs für SoundCloud-Tracks
+// Artwork URLs for SoundCloud tracks
 const artworkUrls = ref(new Map());
 
-// Funktion zum Laden weiterer Items
+// Function to load more items
 async function loadMoreItems() {
 	// Simple pagination
 	visibleItemCount.value += itemsPerPage.value;
@@ -222,7 +222,7 @@ async function loadMoreItems() {
 	}
 }
 
-// Funktion zur Navigation zur Übersichtsseite
+// Function to navigate to the overview page
 function _navigateToOverview() {
 	let route = "/";
 
@@ -246,17 +246,17 @@ function _navigateToOverview() {
 	router.push(route);
 }
 
-// Bestimmen, ob mehr Items zum Laden verfügbar sind
+// Determine whether more items are available to load
 const hasMoreItems = computed(() => {
 	return sortedItems.value && sortedItems.value.length > visibleItemCount.value;
 });
 
-// Bestimmen, ob "Show More" angezeigt werden soll
+// Determine whether "Show More" should be displayed
 const shouldShowMoreButton = computed(() => {
 	return loadMoreClickCount.value >= 2 && hasMoreItems.value;
 });
 
-// Alle verfügbaren Items basierend auf Modultyp
+// All available items based on module type
 const allItems = computed(() => {
 	if (!props.module) return [];
 
@@ -298,27 +298,27 @@ const allItems = computed(() => {
 	}
 });
 
-// Sortierte Items basierend auf allItems und sortMode
+// Sorted items based on allItems and sortMode
 const sortedItems = computed(() => {
 	if (!allItems.value || allItems.value.length === 0) return [];
 
 	const sortedArray = [...allItems.value];
 
-	// Sortierung anwenden
+	// Apply sorting
 	if (sortMode.value === "new") {
-		// Chronologisch sortieren (neuste zuerst)
+		// Sort chronologically (newest first)
 		return sortedArray.sort((a, b) => {
 			const dateA = new Date(a.datetime || a._updatedAt || a._createdAt || 0);
 			const dateB = new Date(b.datetime || b._updatedAt || b._createdAt || 0);
 			return dateB.getTime() - dateA.getTime();
 		});
 	} else if (sortMode.value === "shuffle") {
-		// Shuffle mit stabilem Seed für die aktuelle Sitzung
+		// Shuffle with a stable seed for the current session
 		return shuffleArray([...sortedArray], shuffleSeed.value);
 	} else if (sortMode.value === "alpha") {
-		// Alphabetisch nach Titel sortieren
+		// Sort alphabetically by title
 		return sortedArray.sort((a, b) => {
-			// Bestimme den Titel je nach Content-Typ (nullish coalescing für sichere .toLowerCase()-Nutzung)
+			// Determine the title depending on content type (nullish coalescing for safe .toLowerCase() usage)
 			const rawA =
 				a.title ?? a.name ?? (a.parentShow != null ? a.parentShow.title : "");
 			const rawB =
@@ -332,30 +332,30 @@ const sortedItems = computed(() => {
 	return sortedArray;
 });
 
-// Sichtbare Items basierend auf sortierten Items und visibleItemCount
+// Visible items based on sorted items and visibleItemCount
 const visibleItems = computed(() => {
 	return sortedItems.value.slice(0, visibleItemCount.value);
 });
 
-// Content-Typ des aktuellen Moduls
+// Content type of the current module
 const contentType = computed(() => {
 	if (!props.module) return null;
 
-	// Basis-Typ ist der Modultyp
+	// Base type is the module type
 	const type = props.module.type || null;
 
-	// Bei "pool" verwenden wir den spezifischen Pool-Content-Typ
+	// For "pool" we use the specific pool content type
 	if (type === "pool" && props.module.poolContentType) {
-		return props.module.poolContentType; // "persons", "venues" oder "all"
+		return props.module.poolContentType; // "persons", "venues" or "all"
 	}
 
-	return type; // "sets", "shows", "words" oder null
+	return type; // "sets", "shows", "words" or null
 });
 
-// Kategorie-Typ für das UI
+// Category type for the UI
 const categoryType = ref("");
 
-// Watcher für den Content-Typ
+// Watcher for the content type
 watch(
 	contentType,
 	(newValue) => {
@@ -374,7 +374,7 @@ watch(
 	{ immediate: true },
 );
 
-// Type Class Map für CSS-Klassen
+// Type class map for CSS classes
 const typeClassMap: Record<string, string> = {
 	sets: "sets",
 	shows: "shows",
@@ -391,11 +391,11 @@ const typeClassMap: Record<string, string> = {
 	yellow: "sets",
 };
 
-// CSS-Klasse entsprechend dem Typ
+// CSS class corresponding to the type
 const typeClass = computed(() => {
 	return typeClassMap[props.module.type] || "default";
 });
-// Funktion zum Abrufen und Speichern der Artwork-URL
+// Function to retrieve and store the artwork URL
 function loadArtworkUrl(item: ContentItem) {
 	if (!item) return;
 	const url = getSoundcloudArtwork(item);
@@ -411,7 +411,7 @@ function _checkImage(url: string) {
 	});
 }
 
-// Stadt-Tags abrufen
+// Retrieve city tags
 function getItemCityTags(item: ContentItem) {
 	const cityTags: Tag[] = [];
 
@@ -436,24 +436,24 @@ function getItemCityTags(item: ContentItem) {
 	return cityTags;
 }
 
-// Nicht-Stadt-Tags abrufen
+// Retrieve non-city tags
 function getItemNonCityTags(item: ContentItem) {
 	if (!item?.tags || !Array.isArray(item?.tags)) return [];
 	return item?.tags.filter((tag: Tag) => tag._type !== "tag.city");
 }
 
-// Fisher-Yates Shuffle-Algorithmus mit Seed
+// Fisher-Yates shuffle algorithm with seed
 function shuffleArray(array: ContentItem[], seed: number) {
 	const rng = seededRandom(seed);
 	let currentIndex = array.length;
 
-	// Solange noch Elemente vorhanden sind
+	// While elements remain
 	while (currentIndex > 0) {
-		// Ein verbleibendes Element auswählen
+		// Pick a remaining element
 		const randomIndex = Math.floor(rng() * currentIndex);
 		currentIndex--;
 
-		// Mit dem aktuellen Element tauschen
+		// Swap with the current element
 		[array[currentIndex], array[randomIndex]] = [
 			array[randomIndex],
 			array[currentIndex],
@@ -463,7 +463,7 @@ function shuffleArray(array: ContentItem[], seed: number) {
 	return array;
 }
 
-// Einfacher seeded Random-Generator
+// Simple seeded random generator
 function seededRandom(seed: number) {
 	return () => {
 		seed = (seed * 9301 + 49297) % 233280;
@@ -471,7 +471,7 @@ function seededRandom(seed: number) {
 	};
 }
 
-// Watcher für visibleItems, um Artwork-URLs für neue Items zu laden
+// Watcher for visibleItems to load artwork URLs for new items
 watch(
 	visibleItems,
 	(newItems) => {
@@ -549,7 +549,7 @@ onMounted(() => {
 		</div>
 
 		<div class="content-teaser__grid">
-			<!-- Grid-Items -->
+			<!-- Grid items -->
 			<div
 				v-for="item in visibleItems"
 				:key="item?._id"
@@ -557,7 +557,7 @@ onMounted(() => {
 					props.module.style || 'default'
 				} ${typeClass}`"
 			>
-				<!-- Stadt-Tags falls vorhanden -->
+				<!-- City tags if present -->
 				<div
 					v-if="
 						props.module.showTags &&
@@ -576,7 +576,7 @@ onMounted(() => {
 					</button>
 				</div>
 
-				<!-- Bild -->
+				<!-- Image -->
 				<ElementsContentLink :item="item" class="teaser-item__link">
 					<div v-if="props.module.type === 'sets'" class="teaser-item__image">
 						<img
@@ -594,7 +594,7 @@ onMounted(() => {
 							>
 							<div v-else class="track-artwork-placeholder"/>
 						</div>
-						<!-- Zusätzlicher Fallback für Sets ohne Artwork -->
+						<!-- Additional fallback for sets without artwork -->
 						<div v-else class="image-placeholder">
 							<img
 								v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
@@ -625,14 +625,14 @@ onMounted(() => {
 					</div>
 				</ElementsContentLink>
 
-				<!-- Inhalt -->
+				<!-- Content -->
 				<div class="teaser-item__content">
-					<!-- Interaktiver Bereich mit Datum und Play-Button -->
+					<!-- Interactive area with date and play button -->
 					<section
 						v-if="props.module.type !== 'pool'"
 						class="teaser-item__content__interactive"
 					>
-						<!-- Datum (falls vorhanden) -->
+						<!-- Date (if present) -->
 						<div
 							v-if="
 								item?.datetime ||
@@ -652,7 +652,7 @@ onMounted(() => {
 							}}
 						</div>
 
-						<!-- Play-Button für Sets -->
+						<!-- Play button for sets -->
 						<button
 							v-if="props.module.type === 'sets' && item?.soundcloud"
 							class="play-button"
@@ -671,12 +671,12 @@ onMounted(() => {
 						</button>
 					</section>
 
-					<!-- Show-Informationen für Sets -->
+					<!-- Show information for sets -->
 					<div
 						v-if="item?.parentShow && props.module.type === 'sets'"
 						class="teaser-item__content__show"
 					>
-						<!-- Show-Titel (nur anzeigen wenn NICHT no-show) -->
+						<!-- Show title (only display if NOT no-show) -->
 						<ElementsContentLink
 							v-if="
 								item?.parentShow?.title?.toLowerCase() !== 'no-show' &&
@@ -689,7 +689,7 @@ onMounted(() => {
 								{{ item?.parentShow?.title }}
 							</h3>
 						</ElementsContentLink>
-						<!-- Wenn no-show: nur Set-Titel anzeigen -->
+						<!-- If no-show: display only the set title -->
 						<h3
 							v-else-if="
 								item?.parentShow?.title?.toLowerCase() === 'no-show' &&
@@ -699,7 +699,7 @@ onMounted(() => {
 						>
 							{{ item?.title }}
 						</h3>
-						<!-- Fallback für andere Fälle ohne clickableTitle -->
+						<!-- Fallback for other cases without clickableTitle -->
 						<h3
 							v-else-if="item?.parentShow?.title?.toLowerCase() !== 'no-show'"
 							class="teaser-item__title show-title"
@@ -738,7 +738,7 @@ onMounted(() => {
 						>
 					</div>
 
-					<!-- Titel für alle anderen Content-Typen -->
+					<!-- Title for all other content types -->
 					<ElementsContentLink
 						v-if="props.module.type !== 'sets'"
 						:item="item"
@@ -828,7 +828,7 @@ onMounted(() => {
 						"
 					/>
 
-					<!-- Nicht-City Tags anzeigen -->
+					<!-- Display non-city tags -->
 					<div
 						v-if="props.module.showTags && getItemNonCityTags(item).length > 0"
 						class="teaser-item__tags tags"
@@ -843,7 +843,7 @@ onMounted(() => {
 						</button>
 					</div>
 
-					<!-- Genres anzeigen -->
+					<!-- Display genres -->
 					<div
 						v-if="props.module.showTags && item.genres?.length"
 						class="teaser-genres"
@@ -1101,7 +1101,7 @@ onMounted(() => {
       margin: 0 auto 0 0;
     }
 
-    /* Stellen Sie sicher, dass nach jedem dritten Item ein Zeilenumbruch erfolgt */
+    /* Ensure a line break occurs after every third item */
     &:nth-child(3n) {
       margin-right: 0;
     }
@@ -1264,7 +1264,7 @@ onMounted(() => {
     }
   }
 
-  /* Style-Anpassungen basierend auf module.style */
+  /* Style adjustments based on module.style */
   &--cards {
     .teaser-item {
       &__image {
@@ -1420,8 +1420,8 @@ onMounted(() => {
   }
 }
 
-/* Responsive Anpassungen */
-/* Tablet: 2 Spalten */
+/* Responsive adjustments */
+/* Tablet: 2 columns */
 @media (max-width: 900px) {
   .content-teaser {
     &__grid {
@@ -1431,7 +1431,7 @@ onMounted(() => {
     .teaser-item {
       max-width: calc(50% - calc(var(--big-margin) / 2));
 
-      /* Anpassungen für 2er-Grid */
+      /* Adjustments for 2-column grid */
       &:nth-child(3n) {
         margin-right: auto;
       }
@@ -1446,7 +1446,7 @@ onMounted(() => {
       }
     }
 
-    /* Image-Style anpassen für Tablet */
+    /* Adjust image style for tablet */
     &--image {
       .teaser-item {
         flex-direction: column;
@@ -1462,7 +1462,7 @@ onMounted(() => {
       }
     }
 
-    /* Pool & Words: einspaltig auf Mobile */
+    /* Pool & Words: single column on mobile */
     &.pool,
     &.words {
       .teaser-item {
@@ -1474,7 +1474,7 @@ onMounted(() => {
   }
 }
 
-/* Mobil: 1 Spalte */
+/* Mobile: 1 column */
 @media (max-width: 600px) {
   .content-teaser {
     &__grid {

@@ -14,7 +14,7 @@ const { data } = await useDetailSanityQuery(query, {
 	keyPrefix: "show-detail",
 });
 
-// Fehlerbehandlung hinzufügen
+// Add error handling
 if (!data.value) {
 	console.error("Show nicht gefunden:", route.params.slug);
 	throw createError({

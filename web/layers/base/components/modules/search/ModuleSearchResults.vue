@@ -29,7 +29,7 @@ const categoryType = computed(() => {
 const MAIN_CITIES = ["Vienna", "Düsseldorf", "Leipzig"];
 const SCROLL_THRESHOLD = 30;
 
-// Tag-Typ zu Farbe Mapping
+// Tag type to color mapping
 const TAG_TYPE_COLORS: Record<string, string> = {
 	"tag.genre": "pink",
 	"tag.subGenre": "pink",
@@ -42,7 +42,7 @@ const TAG_TYPE_COLORS: Record<string, string> = {
 	"tag.global": "neutral",
 };
 
-// Tag-Typ zu Kategorie Mapping
+// Tag type to category mapping
 const _TAG_CATEGORIES = {
 	shows: ["tag.genre", "tag.subGenre", "tag.mood"],
 	pool: ["tag.musician", "tag.venue", "tag.crafts"],

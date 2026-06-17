@@ -3,7 +3,7 @@ import { computed, nextTick, onMounted, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-// Template-Referenzen
+// Template references
 const setContentRef = ref<HTMLElement | null>(null);
 const setMainRef = ref<HTMLElement | null>(null);
 
@@ -11,7 +11,7 @@ const setMainRef = ref<HTMLElement | null>(null);
 const setMainHeight = ref(0);
 const windowWidth = ref(0);
 
-// Typdefinitionen
+// Type definitions
 interface Image {
 	asset?: {
 		url?: string;
@@ -73,18 +73,18 @@ const props = defineProps<{
 // Store
 const mainStore = useMainStore();
 
-// Composable für Bild-Management
+// Composable for image management
 const useImageManagement = () => {
-	// Helper-Funktion für Bild-Fetching und Fallbacks
+	// Helper function for image fetching and fallbacks
 	function getItemImage(item?: Set): Image | null {
 		if (!item) return null;
 
-		// Bild aus dem Item selbst
+		// Image from the item itself
 		if (item.image || item.mainImage) {
 			return item.image || item.mainImage;
 		}
 
-		// Fallback für Sets
+		// Fallback for sets
 		return mainStore?.siteFallbacks?.fallbackSet?.image;
 	}
 
@@ -103,7 +103,7 @@ const useImageManagement = () => {
 	};
 };
 
-// Composable für SoundCloud-Funktionalität
+// Composable for SoundCloud functionality
 const useSoundCloud = () => {
 	const artworkUrl = ref("");
 	const { checkImage: _checkImage } = useImageManagement();
@@ -135,12 +135,12 @@ const useSoundCloud = () => {
 
 		const track = item.soundcloud.tracks[0];
 
-		// Sicherstellen, dass permalink_url gesetzt ist
+		// Ensure that permalink_url is set
 		if (!track.permalink_url && track.id) {
 			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
 		}
 
-		// Track im Store speichern
+		// Save track in the store
 		mainStore.currentTrack = track;
 	}
 
@@ -151,34 +151,34 @@ const useSoundCloud = () => {
 	};
 };
 
-// Computed property für die Höhe von set-main
+// Computed property for the height of set-main
 const computedSetMainHeight = computed(() => {
-	// Unter 900px Bildschirmbreite soll die Höhe 100% sein
+	// Below 900px screen width the height should be 100%
 	if (windowWidth.value <= 900) {
 		return "100%";
 	}
 	return setMainHeight.value;
 });
 
-// Funktion zum Aktualisieren der Höhe
+// Function to update the height
 const updateSetMainHeight = () => {
 	if (setMainRef.value) {
 		setMainHeight.value = setMainRef.value.offsetHeight;
 	}
 };
 
-// Funktion zum Aktualisieren der Fensterbreite
+// Function to update the window width
 const updateWindowWidth = () => {
 	if (typeof window !== "undefined") {
 		windowWidth.value = window.innerWidth;
 	}
 };
 
-// Anwendung der Composables
+// Application of the composables
 const { getItemImage: _getItemImage } = useImageManagement();
 const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
 
-// Funktion zum Anpassen der Höhe
+// Function to adjust the height
 const _adjustSetContentHeight = () => {
 	if (setMainRef.value && setContentRef.value) {
 		const setMainHeight = setMainRef.value.offsetHeight;
@@ -186,11 +186,11 @@ const _adjustSetContentHeight = () => {
 	}
 };
 
-// Stadt-Tags abrufen
+// Get city tags
 function _getItemCityTags(item: Set): Tag[] {
 	const cityTags: Tag[] = [];
 
-	// Direkte City-Tags
+	// Direct city tags
 	if (item?.tags && Array.isArray(item?.tags)) {
 		item?.tags.forEach((tag: Tag) => {
 			if (tag._type === "tag.city") {
@@ -199,7 +199,7 @@ function _getItemCityTags(item: Set): Tag[] {
 		});
 	}
 
-	// City-Tags aus parentShow
+	// City tags from parentShow
 	if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
 		item?.parentShow?.tags.forEach((tag: Tag) => {
 			if (tag._type === "tag.city") {
@@ -213,36 +213,36 @@ function _getItemCityTags(item: Set): Tag[] {
 	return cityTags;
 }
 
-// Nicht-Stadt-Tags abrufen
+// Get non-city tags
 function getItemNonCityTags(item: Set): Tag[] {
 	if (!item?.tags || !Array.isArray(item?.tags)) return [];
 	return item?.tags.filter((tag: Tag) => tag._type !== "tag.city");
 }
 
-// Lebenszyklus-Hooks
+// Lifecycle hooks
 onMounted(() => {
 	loadArtworkUrl();
 	nextTick();
 
-	// Initiale Messungen
+	// Initial measurements
 	updateSetMainHeight();
 	updateWindowWidth();
 
-	// ResizeObserver für responsive Änderungen
+	// ResizeObserver for responsive changes
 	if (typeof window !== "undefined" && setMainRef.value) {
 		const resizeObserver = new ResizeObserver(() => {
 			updateSetMainHeight();
 		});
 		resizeObserver.observe(setMainRef.value);
 
-		// Window resize listener für Fenstergrößenänderungen
+		// Window resize listener for window size changes
 		const handleResize = () => {
 			updateWindowWidth();
 			updateSetMainHeight();
 		};
 		window.addEventListener("resize", handleResize);
 
-		// MutationObserver für DOM-Änderungen
+		// MutationObserver for DOM changes
 		const mutationObserver = new MutationObserver(() => {
 			updateSetMainHeight();
 		});
@@ -262,7 +262,7 @@ onMounted(() => {
 		ref="setContentRef"
 		class="set-content">
 		<div ref="setMainRef" class="set-main">
-			<!-- Bild/Media-Bereich -->
+			<!-- Image/media area -->
 			<div class="set-media">
 				<ElementsContentLink :item="set" class="grid-item__link">
 					<img
@@ -280,9 +280,9 @@ onMounted(() => {
 				</ElementsContentLink>
 			</div>
 
-			<!-- Content-Bereich -->
+			<!-- Content area -->
 			<div class="set-info">
-				<!-- Play-Button für Audio-Inhalte -->
+				<!-- Play button for audio content -->
 				<button
 					class="play-button"
 					aria-label="Play Audio"
@@ -305,9 +305,9 @@ onMounted(() => {
 				</button>
 
 				<div class="set-info-container">
-					<!-- Titel-Bereich -->
+					<!-- Title area -->
 					<div class="set-header">
-						<!-- Datum -->
+						<!-- Date -->
 						<div class="set-meta">
 							<h3 v-if="set?.datetime" class="set-date">
 								{{ formatDate(set.datetime) }}

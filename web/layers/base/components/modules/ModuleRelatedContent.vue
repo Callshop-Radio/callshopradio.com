@@ -9,12 +9,12 @@ const { navigateToTagSearch } = useTagNavigation();
 const mainStore = useMainStore();
 
 const props = defineProps({
-	// Daten-Array (z.B. data?.parentShow?.sets)
+	// Data array (e.g. data?.parentShow?.sets)
 	items: {
 		type: Array,
 		default: () => [],
 	},
-	// Inhaltstyp (sets, shows, persons, venues, words)
+	// Content type (sets, shows, persons, venues, words)
 	type: {
 		type: String,
 		required: true,
@@ -36,22 +36,22 @@ const props = defineProps({
 			].includes(value);
 		},
 	},
-	// Optionaler Titel
+	// Optional title
 	title: {
 		type: String,
 		default: "",
 	},
-	// Anzahl der ANFÄNGLICH anzuzeigenden Items pro Reihe
+	// Number of items to display INITIALLY per row
 	limit: {
 		type: Number,
 		default: 3,
 	},
-	// Anzahl der Items pro Reihe (Standard: 3)
+	// Number of items per row (default: 3)
 	itemsPerRow: {
 		type: Number,
 		default: 3,
 	},
-	// Anzeige-Stil
+	// Display style
 	style: {
 		type: String,
 		default: "default",
@@ -64,11 +64,11 @@ const props = defineProps({
 	},
 });
 
-// State für sichtbare Items
+// State for visible items
 const itemsPerPage = props.itemsPerRow || 3;
 const visibleItemCount = ref(props.limit || itemsPerPage);
 
-// Computeds und Hooks
+// Computeds and hooks
 const typeClassMap = {
 	sets: "sets",
 	shows: "shows",
@@ -85,25 +85,25 @@ const typeClassMap = {
 	yellow: "sets",
 };
 
-// CSS-Klasse entsprechend dem Typ
+// CSS class corresponding to the type
 const typeClass = computed(() => {
 	return typeClassMap[props.type] || "default";
 });
 
-// Gefilterte Items basierend auf visibleItemCount
+// Filtered items based on visibleItemCount
 const visibleItems = computed(() => {
 	if (!props.items || !Array.isArray(props.items)) return [];
 	return props.items.slice(0, visibleItemCount.value);
 });
 
-// Funktion zum Laden weiterer Items
+// Function to load more items
 function loadMoreItems() {
 	visibleItemCount.value += itemsPerPage;
 
-	// Wichtig: Nach dem Laden neuer Items müssen wir die Artwork-URLs für die neuen Items laden
+	// Important: after loading new items we must load the artwork URLs for the new items
 	nextTick(() => {
 		if (props.type === "sets") {
-			// Lade alle neu hinzugekommenen Items
+			// Load all newly added items
 			const newItems = props.items.slice(
 				visibleItemCount.value - itemsPerPage,
 				visibleItemCount.value,
@@ -117,15 +117,15 @@ function loadMoreItems() {
 	});
 }
 
-// Bestimmen, ob mehr Items zum Laden verfügbar sind
+// Determine whether more items are available to load
 const hasMoreItems = computed(() => {
 	return props.items && props.items.length > visibleItemCount.value;
 });
 
-// Artwork-URLs für SoundCloud-Tracks
+// Artwork URLs for SoundCloud tracks
 const artworkUrls = ref(new Map());
 
-// Hilfsfunktion zur Formatierung von Datum/Zeit
+// Helper function for formatting date/time
 function formatDate(dateString) {
 	if (!dateString) return "";
 	const date = new Date(dateString);
@@ -137,22 +137,22 @@ function formatDate(dateString) {
 	});
 }
 
-// Funktionen für Bild-Handling
+// Functions for image handling
 function getItemImage(item) {
-	// Wenn kein Item existiert, sofort ein Fallback-Bild zurückgeben
+	// If no item exists, immediately return a fallback image
 	if (!item) return mainStore?.siteFallbacks?.fallbackSet?.image;
 
-	// Fallbacks je nach Content-Typ
+	// Fallbacks depending on content type
 	const itemType = item?._type || "";
 	let image = null;
 
-	// Bild aus dem Item selbst
+	// Image from the item itself
 	if (item?.image?.asset) {
 		image = item?.image;
 	} else if (item?.mainImage?.asset) {
 		image = item?.mainImage;
 	} else {
-		// Fallback-Bilder je nach Typ
+		// Fallback images depending on type
 		switch (itemType) {
 			case "person":
 				image = mainStore?.siteFallbacks?.fallbackPerson?.image;
@@ -164,7 +164,7 @@ function getItemImage(item) {
 				image = mainStore?.siteFallbacks?.fallbackShow?.image;
 				break;
 			case "set":
-				// Versuche zuerst das parentShow Bild
+				// Try the parentShow image first
 				if (item?.parentShow?.image?.asset?.url) {
 					image = item?.parentShow?.image;
 				} else {
@@ -176,7 +176,7 @@ function getItemImage(item) {
 				image = mainStore?.siteFallbacks?.fallbackArticle?.image;
 				break;
 			default:
-				// Allgemeines Fallback-Bild
+				// General fallback image
 				image = mainStore?.siteFallbacks?.fallbackSet?.image;
 		}
 	}
@@ -184,10 +184,10 @@ function getItemImage(item) {
 	return image;
 }
 
-// SoundCloud-Artwork laden (synchron ohne checkImage)
+// Load SoundCloud artwork (synchronous without checkImage)
 function loadArtworkUrl(item) {
 	if (!item) return;
-	// Prüfen, ob die URL bereits im Cache ist
+	// Check whether the URL is already in the cache
 	if (artworkUrls.value.has(item?._id)) return;
 	const url = getSoundcloudArtwork(item);
 	artworkUrls.value.set(item?._id, url);
@@ -202,12 +202,12 @@ function _checkImage(url) {
 	});
 }
 
-// Stadt-Tags abrufen (used in template)
+// Retrieve city tags (used in template)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- used in template
 function _getItemCityTags(item) {
 	const cityTags = [];
 
-	// Direkte City-Tags
+	// Direct city tags
 	if (item?.tags && Array.isArray(item?.tags)) {
 		item?.tags.forEach((tag) => {
 			if (tag._type === "tag.city") {
@@ -216,7 +216,7 @@ function _getItemCityTags(item) {
 		});
 	}
 
-	// City-Tags aus parentShow
+	// City tags from parentShow
 	if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
 		item?.parentShow?.tags.forEach((tag) => {
 			if (tag._type === "tag.city") {
@@ -230,13 +230,13 @@ function _getItemCityTags(item) {
 	return cityTags;
 }
 
-// Nicht-Stadt-Tags abrufen
+// Retrieve non-city tags
 function getItemNonCityTags(item) {
 	if (!item?.tags || !Array.isArray(item?.tags)) return [];
 	return item?.tags.filter((tag) => tag._type !== "tag.city");
 }
 
-// Watcher für visibleItems, um Artwork-URLs für neue Items zu laden
+// Watcher for visibleItems to load artwork URLs for new items
 watch(
 	visibleItems,
 	(newItems) => {
@@ -253,7 +253,7 @@ watch(
 
 // Lifecycle Hooks
 onMounted(() => {
-	// Beim ersten Laden die Artworks für sichtbare Items laden
+	// On first load, load the artworks for visible items
 	if (props.type === "sets") {
 		visibleItems.value.forEach((item) => {
 			loadArtworkUrl(item);
@@ -272,13 +272,13 @@ onMounted(() => {
 		<h2 v-if="title" class="related-content__title">{{ title }}</h2>
 
 		<div class="related-content__grid">
-			<!-- Grid-Items -->
+			<!-- Grid items -->
 			<div
 				v-for="item in visibleItems"
 				:key="item?._id"
 				:class="`related-item related-item--${style} ${typeClass}`"
 			>
-				<!-- Bild -->
+				<!-- Image -->
 				<ElementsContentLink :item="item" class="related-item__link">
 					<div v-if="type === 'sets'" class="related-item__image">
 						<img
@@ -296,7 +296,7 @@ onMounted(() => {
 							>
 							<div v-else class="track-artwork-placeholder"/>
 						</div>
-						<!-- Zusätzlicher Fallback für Sets ohne Artwork -->
+						<!-- Additional fallback for sets without artwork -->
 						<div v-else class="image-placeholder">
 							<img
 								v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
@@ -327,14 +327,14 @@ onMounted(() => {
 					</div>
 				</ElementsContentLink>
 
-				<!-- Inhalt -->
+				<!-- Content -->
 				<div class="related-item__content">
-					<!-- Interaktiver Bereich mit Datum und Play-Button -->
+					<!-- Interactive area with date and play button -->
 					<section
 						v-if="type !== 'pool' && type !== 'words'"
 						class="related-item__content__interactive"
 					>
-						<!-- Datum (falls vorhanden) -->
+						<!-- Date (if present) -->
 						<div
 							v-if="
 								item?.datetime ||
@@ -354,7 +354,7 @@ onMounted(() => {
 							}}
 						</div>
 
-						<!-- Play-Button für Sets -->
+						<!-- Play button for sets -->
 						<button
 							v-if="type === 'sets' && item?.soundcloud"
 							class="play-button"
@@ -373,12 +373,12 @@ onMounted(() => {
 						</button>
 					</section>
 
-					<!-- Show-Informationen für Sets -->
+					<!-- Show information for sets -->
 					<div
 						v-if="item?.parentShow && type === 'sets'"
 						class="related-item__content__show"
 					>
-						<!-- Show-Titel (nur anzeigen wenn NICHT no-show) -->
+						<!-- Show title (only display if NOT no-show) -->
 						<ElementsContentLink
 							v-if="item?.parentShow?.title?.toLowerCase() !== 'no-show'"
 							:show="item?.parentShow"
@@ -388,7 +388,7 @@ onMounted(() => {
 								{{ item?.parentShow?.title }}
 							</h3>
 						</ElementsContentLink>
-						<!-- Wenn no-show: nur Set-Titel anzeigen -->
+						<!-- If no-show: display only the set title -->
 						<h3
 							v-else-if="
 								item?.parentShow?.title?.toLowerCase() === 'no-show' &&
@@ -398,12 +398,12 @@ onMounted(() => {
 						>
 							{{ item?.title }}
 						</h3>
-						<!-- Fallback für andere Fälle -->
+						<!-- Fallback for other cases -->
 						<h3 v-else-if="item?.title" class="related-item__title show-title">
 							{{ item?.title }}
 						</h3>
 
-						<!-- Künstler (für Sets) -->
+						<!-- Artists (for sets) -->
 						<div
 							v-if="item?.persons && item?.persons.length > 0"
 							class="show-artists"
@@ -436,7 +436,7 @@ onMounted(() => {
 						>
 					</div>
 
-					<!-- Titel für alle anderen Content-Typen -->
+					<!-- Title for all other content types -->
 					<ElementsContentLink
 						v-if="type !== 'sets'"
 						:item="item"
@@ -487,7 +487,7 @@ onMounted(() => {
 						</button>
 					</div>
 
-					<!-- Nicht-City Tags anzeigen -->
+					<!-- Display non-city tags -->
 					<div
 						v-else-if="getItemNonCityTags(item).length > 0"
 						class="related-item__tags tags"
@@ -606,7 +606,7 @@ onMounted(() => {
       margin: 0 auto 0 0;
     }
 
-    /* Stellen Sie sicher, dass nach jedem dritten Item ein Zeilenumbruch erfolgt */
+    /* Ensure a line break occurs after every third item */
     &:nth-child(3n) {
       margin-right: 0;
     }
@@ -869,7 +869,7 @@ onMounted(() => {
   }
 }
 
-/* Responsive Anpassungen */
+/* Responsive adjustments */
 @media (max-width: 900px) {
   .related-content {
     &__grid {
@@ -902,7 +902,7 @@ onMounted(() => {
       max-width: 100%;
       width: 100%;
 
-      /* Anpassungen für 2er-Grid */
+      /* Adjustments for 2-column grid */
       &:nth-child(3n) {
         margin-right: var(--small-margin);
       }

@@ -4,7 +4,7 @@ import { useMainStore } from "~/stores/mainStore";
 
 const mainStore = useMainStore();
 
-// Computed property für den aktuellen Kanalstatus
+// Computed property for the current channel status
 const _isChannelOne = computed(() => {
 	return mainStore.activeScheduleLocation === "channelOne";
 });

@@ -5,7 +5,7 @@ const { locale, setLocale: _setLocale } = useI18n();
 const { navigateToPath } = useAppPath();
 const mainStore = useMainStore();
 
-// Typdefinitionen
+// Type definitions
 interface Image {
 	asset?: {
 		url?: string;
@@ -44,18 +44,18 @@ const props = defineProps<{
 	article: Article;
 }>();
 
-// Composable für Bild-Management
+// Composable for image management
 const useImageManagement = () => {
-	// Helper-Funktion für Bild-Fetching und Fallbacks
+	// Helper function for image fetching and fallbacks
 	function getItemImage(item?: Article): Image | null {
 		if (!item) return null;
 
-		// Bild aus dem Item selbst
+		// Image from the item itself
 		if (item.image || item.mainImage) {
 			return item.image || item.mainImage || null;
 		}
 
-		// Fallback für Articles
+		// Fallback for articles
 		return mainStore?.siteFallbacks?.fallbackArticle?.image;
 	}
 
@@ -74,7 +74,7 @@ const useImageManagement = () => {
 	};
 };
 
-// Composable für Artikel-spezifische Funktionalität
+// Composable for article-specific functionality
 const useArticle = () => {
 	const articleImageUrl = ref("");
 	const { getItemImage } = useImageManagement();
@@ -82,13 +82,13 @@ const useArticle = () => {
 	async function getArticleImage(item?: Article): Promise<string> {
 		if (!item) return "";
 
-		// Verwende das Bild aus dem Artikel
+		// Use the image from the article
 		const itemImage = getItemImage(item);
 		if (itemImage?.asset?.url) {
 			return itemImage.asset.url;
 		}
 
-		// Fallback auf Store-Fallback
+		// Fall back to store fallback
 		const storeFallbackUrl =
 			mainStore?.siteFallbacks?.fallbackArticle?.image?.asset?.url;
 
@@ -123,7 +123,7 @@ const useArticle = () => {
 	};
 };
 
-// Anwendung der Composables
+// Applying the composables
 const { getItemImage: _getItemImage } = useImageManagement();
 const {
 	articleImageUrl,
@@ -138,7 +138,7 @@ function _getInstagramHandle(url?: string): string {
 		.replace(/\/$/, "");
 }
 
-// Lebenszyklus-Hooks
+// Lifecycle hooks
 onMounted(() => {
 	loadArticleImageUrl();
 });
@@ -325,11 +325,11 @@ const currentArticleText = computed(() =>
 	</div>
 	<div v-if="article" class="article-content">
 		<div class="article-container">
-			<!-- Bild/Media-Bereich -->
-			<!-- Content-Bereich -->
+			<!-- Image/media area -->
+			<!-- Content area -->
 			<div class="article-info">
 				<div class="article-info-container">
-					<!-- Titel-Bereich -->
+					<!-- Title area -->
 					<div class="article-header">
 						<div class="article-title-section">
 							<h2 class="article-title">
@@ -541,7 +541,7 @@ const currentArticleText = computed(() =>
       }
     }
 
-    /* Der Gleiter */
+    /* The slider thumb */
     &::after {
       content: "";
       position: absolute;
@@ -555,7 +555,7 @@ const currentArticleText = computed(() =>
       z-index: 1;
     }
 
-    /* Position des Gleiters wenn der zweite Button aktiv ist */
+    /* Position of the slider thumb when the second button is active */
     &:has(.lang-btn:nth-child(2).lang-btn--active)::after {
       transform: translateX(100%);
     }

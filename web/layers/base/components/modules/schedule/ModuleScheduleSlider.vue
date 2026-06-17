@@ -105,11 +105,11 @@ const shouldShowTimeMarkerForDate = (date: string | Date): boolean => {
 const GRID_START_HOUR = 7;
 const GRID_END_HOUR = 24;
 const GRID_TOTAL_HOURS = GRID_END_HOUR - GRID_START_HOUR;
-const GRID_SEGMENTS_PER_HOUR = 2; // 30-Minuten-Segmente
+const GRID_SEGMENTS_PER_HOUR = 2; // 30-minute segments
 const GRID_TOTAL_SEGMENTS = Math.min(
 	GRID_TOTAL_HOURS * GRID_SEGMENTS_PER_HOUR,
 	35,
-); // Maximal 35 Segmente
+); // Maximum of 35 segments
 
 // Utility functions (memoized)
 const parseTrackLength = (
@@ -810,7 +810,7 @@ watch(
     }
   }
 
-  /* Der Gleiter */
+  /* The slider thumb */
   &::after {
     content: "";
     position: absolute;
@@ -824,7 +824,7 @@ watch(
     z-index: 1;
   }
 
-  /* Position des Gleiters wenn der zweite Button aktiv ist */
+  /* Position of the slider thumb when the second button is active */
   &:has(
       .location-switch__btn:nth-child(2).location-switch__btn--active
     )::after {
@@ -936,7 +936,7 @@ watch(
     grid-template-rows: repeat(
       35,
       var(--schedule-block-height)
-    ); /* Maximal 35 half-hour segments - fixed height */
+    ); /* Maximum of 35 half-hour segments - fixed height */
     grid-template-columns: 1fr;
     gap: var(--schedule-block-gap); /* No gap for precise grid alignment */
     position: relative;

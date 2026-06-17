@@ -18,7 +18,7 @@ export interface CurrentTrack {
 }
 
 export const useMainStore = defineStore("mainStore", () => {
-	// state als refs
+	// state as refs
 	const siteCookieBanner = ref<Record<string, unknown>>({});
 	const siteNav = ref<Record<string, unknown>>({});
 	const siteSettings = ref<Record<string, unknown>>({});
@@ -35,7 +35,7 @@ export const useMainStore = defineStore("mainStore", () => {
 	const isDarkMode = ref<boolean | undefined>(undefined);
 	const menuOpen = ref(false);
 
-	// actions als Funktionen
+	// actions as functions
 	async function nuxtServerInit() {
 		const sanity = useSanity();
 		const query = groq`${SITE_OPTIONS_QUERY}`;
@@ -82,20 +82,20 @@ export const useMainStore = defineStore("mainStore", () => {
 	}
 
 	function detectSystemDarkMode() {
-		// Prüfen ob im Browser-Kontext
+		// Check whether in browser context
 		if (import.meta.client) {
-			// MediaQueryList-Objekt erstellen, um Systemeinstellung zu prüfen
+			// Create MediaQueryList object to check the system setting
 			const darkModeMediaQuery = window.matchMedia(
 				"(prefers-color-scheme: dark)",
 			);
 
-			// isDarkMode anhand des System-Darkmode setzen
+			// Set isDarkMode based on the system dark mode
 			isDarkMode.value = darkModeMediaQuery.matches;
 
-			// Farben aktualisieren
+			// Update colors
 			updateColors();
 
-			// Auf Änderungen reagieren
+			// React to changes
 			darkModeMediaQuery.addEventListener("change", (e) => {
 				isDarkMode.value = e.matches;
 				updateColors();
@@ -143,7 +143,7 @@ export const useMainStore = defineStore("mainStore", () => {
 		isPlayerVisible,
 		activeScheduleLocation,
 		activeStreamingChannel,
-		currentHeroContentType, // Neue Variable exportieren
+		currentHeroContentType, // Export new variable
 		menuOpen,
 		isDarkMode,
 		detectSystemDarkMode,
@@ -153,7 +153,7 @@ export const useMainStore = defineStore("mainStore", () => {
 		togglePlayerVisibility,
 		resetSoundCloudPlayer,
 		setActiveScheduleLocation,
-		setCurrentHeroContentType, // Neue Funktion exportieren
+		setCurrentHeroContentType, // Export new function
 		updateColors,
 		toggleDarkMode,
 		toggleMenu,

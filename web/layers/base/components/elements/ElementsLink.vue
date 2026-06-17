@@ -65,13 +65,13 @@ const linkTarget = computed(() => {
 	return props.href || localePath("/");
 });
 
-// Verbesserte Funktion zur Prüfung, ob eine Route aktiv ist, auch bei mehrfacher Verschachtelung
+// Improved function to check whether a route is active, even with multiple nesting
 const isActive = computed(() => {
 	if (props.type !== "internal" || !props.parentActive) return false;
 
 	const linkPath = linkTarget.value;
 
-	// Pfade ohne Trailing Slash normalisieren
+	// Normalize paths without trailing slash
 	const normalizedLinkPath = linkPath.endsWith("/")
 		? linkPath.slice(0, -1)
 		: linkPath;
@@ -80,12 +80,12 @@ const isActive = computed(() => {
 		? currentRoute.path.slice(0, -1)
 		: currentRoute.path;
 
-	// 1. Prüfe auf exakte Übereinstimmung
+	// 1. Check for an exact match
 	if (normalizedRoutePath === normalizedLinkPath) {
 		return true;
 	}
 
-	// 2. Prüfe, ob die aktuelle Route eine Unterseite des Links ist
+	// 2. Check whether the current route is a sub-page of the link
 	if (
 		normalizedLinkPath !== "/" &&
 		normalizedRoutePath.startsWith(`${normalizedLinkPath}/`)
@@ -93,7 +93,7 @@ const isActive = computed(() => {
 		return true;
 	}
 
-	// 3. Prüfe Haupt-Sektionen der Website
+	// 3. Check main sections of the website
 	const routeSegments = normalizedRoutePath.split("/").filter(Boolean);
 	const linkSegments = normalizedLinkPath.split("/").filter(Boolean);
 
@@ -115,7 +115,7 @@ const isActive = computed(() => {
 		}
 	}
 
-	// 4. Slug-basierte Prüfung
+	// 4. Slug-based check
 	if (props.slug) {
 		return normalizedRoutePath === normalizedLinkPath;
 	}
@@ -161,15 +161,15 @@ const onClick = (func) => {
 </template>
 
 <style lang="postcss" scoped>
-/* Die parent-active Klasse wird für übergeordnete Routen verwendet */
+/* The parent-active class is used for parent routes */
 .parent-active {
 }
 
-/* Normale router-link-active und router-link-exact-active Styles beibehalten */
+/* Keep normal router-link-active and router-link-exact-active styles */
 .router-link-exact-active {
 }
 
-/* Navigations-spezifische Styles */
+/* Navigation-specific styles */
 :where(nav) {
   .router-link-exact-active,
   .router-link-active,

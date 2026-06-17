@@ -10,10 +10,10 @@ definePageMeta({
 const query = groq`${SCHEDULE_QUERY}`;
 const { data } = await useCachedSanityQuery(query);
 
-// Store einbinden
+// Connect store
 const mainStore = useMainStore();
 
-// Status-Variablen
+// Status variables
 const loading = ref(true);
 const error = ref(null);
 const dusseldorfInstances = ref([]);
@@ -27,13 +27,13 @@ const _timeUpdateInterval = ref(null);
 const GRID_START_HOUR = 7;
 const GRID_END_HOUR = 24;
 const GRID_TOTAL_HOURS = GRID_END_HOUR - GRID_START_HOUR;
-const GRID_SEGMENTS_PER_HOUR = 2; // 30-Minuten-Segmente
+const GRID_SEGMENTS_PER_HOUR = 2; // 30-minute segments
 const _GRID_TOTAL_SEGMENTS = Math.min(
 	GRID_TOTAL_HOURS * GRID_SEGMENTS_PER_HOUR,
 	35,
-); // Maximal 35 Segmente
+); // At most 35 segments
 
-// Service-Composables einbinden
+// Connect service composables
 const { fetchScheduleData, getDusseldorfShows, getWienShows } =
 	useScheduleService();
 
@@ -49,7 +49,7 @@ const {
 	groupShowsByDay,
 } = useShowFormatters();
 
-// Daten laden
+// Load data
 const loadData = async () => {
 	loading.value = true;
 	error.value = null;
@@ -67,7 +67,7 @@ const loadData = async () => {
 	}
 };
 
-// Extrahiert die instanceID aus allen Düsseldorf-Shows
+// Extracts the instanceID from all Düsseldorf shows
 const extractDusseldorfInstances = () => {
 	const allShows = getDusseldorfShows();
 	const instancesSet = new Set();
@@ -84,7 +84,7 @@ const extractDusseldorfInstances = () => {
 	dusseldorfInstances.value = [...instancesSet];
 };
 
-// Alle Tracks für alle Instances parallel laden
+// Load all tracks for all instances in parallel
 const loadAllInstanceTracks = async () => {
 	const tracksData = {};
 
@@ -114,12 +114,12 @@ const loadAllInstanceTracks = async () => {
 
 	instanceTracks.value = tracksData;
 };
-// Daten beim Mounting laden
+// Load data on mount
 onMounted(() => {
 	loadData();
 });
 
-// Tracks für eine Instance-ID laden
+// Load tracks for an instance ID
 const fetchTracksForInstance = async (instanceId) => {
 	try {
 		const url = `https://libretime.callshopradio.com/api/show-tracks/?instance_id=${instanceId}`;
@@ -144,12 +144,12 @@ const fetchTracksForInstance = async (instanceId) => {
 const integrateTracks = (shows, trackData) => {
 	if (!shows || !trackData) return shows;
 
-	// Tracks vorab sortieren und in Cache speichern, um wiederholte Sortierungen zu vermeiden
+	// Pre-sort tracks and store them in a cache to avoid repeated sorting
 	const sortedTracksCache = {};
 
 	for (const instanceId in trackData) {
 		if (trackData[instanceId] && Array.isArray(trackData[instanceId])) {
-			// Klonen und sortieren
+			// Clone and sort
 			sortedTracksCache[instanceId] = [...trackData[instanceId]].sort(
 				(a, b) => {
 					if (a.starts && b.starts) {
@@ -164,7 +164,7 @@ const integrateTracks = (shows, trackData) => {
 		}
 	}
 
-	// Shows nur einmal durchlaufen und vorsortierten Cache nutzen
+	// Iterate over shows only once and use the pre-sorted cache
 	return shows.map((show) => {
 		const instanceId = show.instance_id;
 		if (instanceId && sortedTracksCache[instanceId]) {
@@ -177,28 +177,28 @@ const integrateTracks = (shows, trackData) => {
 	});
 };
 
-// Computed Properties für Shows
+// Computed properties for shows
 const dusseldorfShows = computed(() => {
 	const shows = getDusseldorfShows();
-	// Tracks in Shows integrieren vor dem Zurückgeben
+	// Integrate tracks into shows before returning
 	return integrateTracks(shows, instanceTracks.value);
 });
 
 const wienShows = computed(() => getWienShows());
 
-// Gruppierte Shows für Düsseldorf und Wien
+// Grouped shows for Düsseldorf and Vienna
 const groupedDusseldorfShows = computed(() =>
 	groupShowsByDay(dusseldorfShows.value),
 );
 
 const groupedWienShows = computed(() => groupShowsByDay(wienShows.value));
 
-// Computed Property für die Sichtbarkeit basierend auf dem aktiven Standort
+// Computed property for visibility based on the active location
 const isLocationVisible = (location) => {
 	return mainStore.activeScheduleLocation === location;
 };
 
-// Neulade-Funktion für manuelles Aktualisieren
+// Reload function for manual refresh
 const refreshData = () => {
 	loadData();
 };
@@ -223,7 +223,7 @@ usePageSeo(data?.value?.seo);
 		</div>
 
 		<div v-else class="schedule__content">
-			<!-- Düsseldorf Shows -->
+			<!-- Düsseldorf shows -->
 			<ModuleScheduleSlider
 				v-if="isLocationVisible('channelOne')"
 				:groups="groupedDusseldorfShows"
@@ -236,7 +236,7 @@ usePageSeo(data?.value?.seo);
 				:is-live-show="isLiveShow"
 			/>
 
-			<!-- Wien Shows -->
+			<!-- Vienna shows -->
 			<ModuleScheduleSlider
 				v-if="isLocationVisible('channelTwo')"
 				:groups="groupedWienShows"

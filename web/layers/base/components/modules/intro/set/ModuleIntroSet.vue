@@ -3,7 +3,7 @@ import { onMounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-// Typdefinitionen
+// Type definitions
 interface Image {
 	asset?: {
 		url?: string;
@@ -54,18 +54,18 @@ const props = withDefaults(
 // Store
 const mainStore = useMainStore();
 
-// Composable für Bild-Management
+// Composable for image management
 const useImageManagement = () => {
-	// Helper-Funktion für Bild-Fetching und Fallbacks
+	// Helper function for image fetching and fallbacks
 	function _getItemImage(item?: Set): Image | null {
 		if (!item) return null;
 
-		// Bild aus dem Item selbst
+		// Image from the item itself
 		if (item.image || item.mainImage) {
 			return item.image || item.mainImage;
 		}
 
-		// Fallback für Sets
+		// Fallback for sets
 		return mainStore?.siteFallbacks?.fallbackSet?.image;
 	}
 
@@ -84,7 +84,7 @@ const useImageManagement = () => {
 	};
 };
 
-// Composable für SoundCloud-Funktionalität
+// Composable for SoundCloud functionality
 const useSoundCloud = () => {
 	const artworkUrl = ref("");
 	const { checkImage: _checkImage } = useImageManagement();
@@ -118,12 +118,12 @@ const useSoundCloud = () => {
 
 		const track = item.soundcloud.tracks[0];
 
-		// Sicherstellen, dass permalink_url gesetzt ist
+		// Ensure that permalink_url is set
 		if (!track.permalink_url && track.id) {
 			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
 		}
 
-		// Track im Store speichern
+		// Save track in the store
 		mainStore.currentTrack = track;
 	}
 
@@ -134,11 +134,11 @@ const useSoundCloud = () => {
 	};
 };
 
-// Anwendung der Composables
+// Application of the composables
 const { getItemImage: _getItemImage } = useImageManagement();
 const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
 
-// Lebenszyklus-Hooks
+// Lifecycle hooks
 watch(
 	() => [props.mediaActive, props.set?._id] as const,
 	([active]) => {
@@ -159,7 +159,7 @@ onMounted(() => {
 		:class="`set-content--${props.layout}`"
 	>
 		<div class="set-main">
-			<!-- Bild/Media-Bereich -->
+			<!-- Image/media area -->
 			<div class="set-media">
 				<ElementsContentLink :item="set" class="grid-item__link">
 					<img
@@ -178,9 +178,9 @@ onMounted(() => {
 				</ElementsContentLink>
 			</div>
 
-			<!-- Content-Bereich -->
+			<!-- Content area -->
 			<div class="set-info">
-				<!-- Play-Button für Audio-Inhalte -->
+				<!-- Play button for audio content -->
 				<button
 					class="play-button"
 					aria-label="Play Audio"
@@ -203,9 +203,9 @@ onMounted(() => {
 				</button>
 
 				<div class="set-info-container">
-					<!-- Titel-Bereich -->
+					<!-- Title area -->
 					<div class="set-header">
-						<!-- Datum -->
+						<!-- Date -->
 						<div class="set-meta">
 							<h3 v-if="set?.datetime" class="set-date">
 								{{ formatDate(set.datetime) }}

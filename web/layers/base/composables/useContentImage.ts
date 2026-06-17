@@ -14,7 +14,7 @@ type ImageItem = any;
 export const useContentImage = () => {
 	const mainStore = useMainStore();
 
-	// Helper-Funktion für Bild-Fetching und Fallbacks
+	// Helper function for image fetching and fallbacks
 	function getItemImage(item: ImageItem) {
 		if (item.image) return item.image;
 		if (item.mainImage) return item.mainImage;

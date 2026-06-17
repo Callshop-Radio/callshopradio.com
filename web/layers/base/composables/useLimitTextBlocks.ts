@@ -1,22 +1,22 @@
 import type { RichTextBlock } from "~/types/sanity";
 
 /**
- * Limitiert die Textlänge in Rich Text Blöcken und fügt ein Auslassungszeichen hinzu
+ * Limits the text length in rich text blocks and appends an ellipsis
  *
- * @param blocks - Die Rich Text Blöcke, die verarbeitet werden sollen
- * @param maxLength - Die maximale Anzahl der Zeichen (Standard: 100)
- * @returns Die gekürzten Rich Text Blöcke
+ * @param blocks - The rich text blocks to be processed
+ * @param maxLength - The maximum number of characters (default: 100)
+ * @returns The truncated rich text blocks
  */
 export const limitTextBlocks = (blocks: unknown, maxLength = 100): unknown => {
 	if (!blocks || !Array.isArray(blocks)) return blocks;
 
-	// Kopie der Blöcke erstellen, um das Original nicht zu verändern
+	// Create a copy of the blocks so the original is not modified
 	const limitedBlocks = JSON.parse(JSON.stringify(blocks)) as RichTextBlock[];
-	// Für jeden Block mit Text
+	// For each block with text
 	for (const block of limitedBlocks) {
 		if (block.children && Array.isArray(block.children)) {
 			for (const child of block.children) {
-				// Wenn der Text länger als maxLength ist, kürzen und "…" hinzufügen
+				// If the text is longer than maxLength, truncate and append "…"
 				if (child.text && child.text.length > maxLength) {
 					child.text = `${child.text.substring(0, maxLength)}…`;
 				}
@@ -28,7 +28,7 @@ export const limitTextBlocks = (blocks: unknown, maxLength = 100): unknown => {
 };
 
 /**
- * Limitiert Rich-Text auf eine maximale Wortanzahl und fügt „…“ hinzu.
+ * Limits rich text to a maximum number of words and appends „…“.
  */
 export const limitTextBlocksByWords = (
 	blocks: unknown,
@@ -75,9 +75,9 @@ export const limitTextBlocksByWords = (
 };
 
 /**
- * Composable-Hook zum Limitieren von Text in Rich Text Blöcken
+ * Composable hook for limiting text in rich text blocks
  *
- * @returns Eine Funktion zum Limitieren der Textlänge
+ * @returns A function for limiting the text length
  */
 export const useLimitTextBlocks = () => {
 	return {

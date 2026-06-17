@@ -5,7 +5,7 @@ import type { Image, Tag } from "~/types/sanity";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
 
-// Typdefinitionen für Artikel
+// Type definitions for articles
 interface Article {
 	_id?: string;
 	_type?: string;
@@ -45,17 +45,17 @@ const props = withDefaults(
 // Store
 const mainStore = useMainStore();
 
-// Composable für Bild-Management
+// Composable for image management
 const useImageManagement = () => {
 	function getItemImage(item?: Article): Image | null {
 		if (!item) return null;
 
-		// Bild aus dem Artikel
+		// Image from the article
 		if (item.image) {
 			return item.image;
 		}
 
-		// Fallback für Artikel
+		// Fallback for articles
 		return mainStore?.siteFallbacks?.fallbackArticle?.image;
 	}
 
@@ -64,7 +64,7 @@ const useImageManagement = () => {
 	};
 };
 
-// Anwendung der Composables
+// Applying the composables
 const { getItemImage } = useImageManagement();
 
 // Computed properties
@@ -104,7 +104,7 @@ const coverFlowTeaserBlocks = computed(() => {
 		:class="`article-content--${props.layout}`"
 	>
 		<div class="article-container">
-			<!-- Bild/Media-Bereich -->
+			<!-- Image/media area -->
 			<div class="article-media">
 				<ElementsContentLink :item="article" class="grid-item__link">
 					<img
@@ -118,7 +118,7 @@ const coverFlowTeaserBlocks = computed(() => {
 				</ElementsContentLink>
 			</div>
 
-			<!-- Tags auf dem Bild -->
+			<!-- Tags on the image -->
 			<div v-if="article?.tags?.length" class="article-tags tags">
 				<button
 					v-for="tag in article?.tags.slice(0, 3)"
@@ -130,7 +130,7 @@ const coverFlowTeaserBlocks = computed(() => {
 				</button>
 			</div>
 
-			<!-- Content-Bereich -->
+			<!-- Content area -->
 			<div class="article-info">
 				<div v-if="article.useTeaserText || article.text" class="tags read-more">
 					<ElementsContentLink :item="article" class="tag">
@@ -139,9 +139,9 @@ const coverFlowTeaserBlocks = computed(() => {
 				</div>
 
 				<div class="article-info-container">
-					<!-- Titel-Bereich -->
+					<!-- Title area -->
 					<div class="article-header">
-						<!-- Datum -->
+						<!-- Date -->
 						<!-- <div class="article-meta">
               <h3 class="article-date" v-if="article?.datetime">
                 {{ formatDate(article.datetime) }}
@@ -162,7 +162,7 @@ const coverFlowTeaserBlocks = computed(() => {
 						</div>
 					</div>
 
-					<!-- Artikel-Teaser -->
+					<!-- Article teaser -->
 					<div
 						v-if="props.layout === 'cover-flow' && coverFlowTeaserBlocks.length"
 						class="article-teaser"

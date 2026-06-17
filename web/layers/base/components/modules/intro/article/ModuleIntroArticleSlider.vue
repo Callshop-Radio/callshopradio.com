@@ -326,11 +326,11 @@ const { isSwiping: _isSwiping, direction: _direction } = useSwipe(sliderRef, {
   }
 }
 
-/* Spezifische Stile für die verschiedenen Slider-Varianten */
+/* Specific styles for the different slider variants */
 .slider-item {
   &--default {
     ::v-deep(.article-content) {
-      margin: 0; /* Entferne die Standardränder der Komponente im Slider */
+      margin: 0; /* Remove the component's default margins within the slider */
     }
   }
 

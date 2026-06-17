@@ -9,14 +9,14 @@ definePageMeta({
 
 const route = useRoute();
 
-// Den "set"-Parameter aus der URL-Route extrahieren
+// Extract the "set" parameter from the URL route
 const query = groq`${POOL_PROFILE_QUERY}`;
 
 const { data } = await useDetailSanityQuery(query, {
 	keyPrefix: "pool-detail",
 });
 
-// Fehlerbehandlung hinzufügen
+// Add error handling
 if (!data.value) {
 	console.error("Set nicht gefunden:", route.params.slug);
 	throw createError({

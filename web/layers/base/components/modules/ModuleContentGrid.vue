@@ -2368,7 +2368,7 @@ onUnmounted(() => {
 
 
 /* ==================== RESPONSIVE ==================== */
-/* Tablet: 2 Spalten */
+/* Tablet: 2 columns */
 @media (max-width: 1100px) {
   .content-grid {
     --mobile-filter-trigger-height: 29px;
@@ -2829,7 +2829,7 @@ onUnmounted(() => {
       margin-top: 0;
     }
 
-    /* Grid Layout: 2 Spalten */
+    /* Grid layout: 2 columns */
     &__items {
       gap: calc(var(--big-margin) / 2) calc(var(--big-margin));
     }
@@ -2868,7 +2868,7 @@ onUnmounted(() => {
   }
 }
 
-/* Pool & Words: einspaltig auf Mobile */
+/* Pool & Words: single column on mobile */
 @media (max-width: 900px) {
   .content-grid.module-grid {
     &.pool,
@@ -2888,7 +2888,7 @@ onUnmounted(() => {
   }
 }
 
-/* Mobil: 1 Spalte */
+/* Mobile: 1 column */
 @media (max-width: 600px) {
   .content-grid {
     &__filter-section.is-mobile-open {

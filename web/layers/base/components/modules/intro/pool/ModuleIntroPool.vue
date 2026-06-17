@@ -4,7 +4,7 @@ import { useMainStore } from "~/stores/mainStore";
 import type { Image } from "~/types/sanity";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-// Typdefinitionen
+// Type definitions
 interface Tag {
 	_id?: string;
 	_type?: string;
@@ -56,29 +56,29 @@ const props = withDefaults(
 // Store
 const mainStore = useMainStore();
 
-// Composable für Bild-Management
+// Composable for image management
 const useImageManagement = () => {
-	// Helper-Funktion für Bild-Fetching und Fallbacks
+	// Helper function for image fetching and fallbacks
 	function getItemImage(item?: PoolItem): Image | null {
 		if (!item) return null;
 
-		// Bild aus dem Item selbst
+		// Image from the item itself
 		if (item.image || item.mainImage) {
 			return item.image || item.mainImage;
 		}
 
-		// Fallbacks je nach Content-Typ
+		// Fallbacks depending on content type
 		if (item._type === "person") {
 			return mainStore?.siteFallbacks?.fallbackPerson?.image;
 		} else if (item._type === "venue") {
 			return mainStore?.siteFallbacks?.fallbackVenue?.image;
 		}
 
-		// Allgemeines Fallback
+		// General fallback
 		return mainStore?.siteFallbacks?.fallbackPerson?.image;
 	}
 
-	// Computed Property für das Bild
+	// Computed property for the image
 	const itemImage = computed(() => {
 		return getItemImage(props.poolItem);
 	});
@@ -88,10 +88,10 @@ const useImageManagement = () => {
 	};
 };
 
-// Anwendung der Composables
+// Applying the composables
 const { itemImage } = useImageManagement();
 
-// Formatierte Daten
+// Formatted data
 const itemTitle = computed(() => {
 	return props.poolItem?.title || props.poolItem?.name || "";
 });
@@ -245,7 +245,7 @@ const coverFlowDescriptionBlocks = computed(() => {
 	</div>
 	<div v-else-if="poolItem" class="set-content pool-content">
 		<div class="set-main pool-container">
-			<!-- Tags-Icon -->
+			<!-- Tags icon -->
 			<div v-if="poolItem?.tags?.length" class="set-tags pool-tags tags">
 				<button
 					v-for="(tag, index) in poolItem.tags"
@@ -256,7 +256,7 @@ const coverFlowDescriptionBlocks = computed(() => {
 						{{ getI18nLabel(tag?.title) }}
 				</button>
 			</div>
-			<!-- Bild/Media-Bereich -->
+			<!-- Image/media area -->
 			<div class="set-media pool-media">
 				<ElementsContentLink
 					:item="poolItem"
@@ -271,12 +271,12 @@ const coverFlowDescriptionBlocks = computed(() => {
 				</ElementsContentLink>
 			</div>
 
-			<!-- Content-Bereich -->
+			<!-- Content area -->
 			<div class="set-info pool-info">
 				<div class="set-info-container pool-info-container">
-					<!-- Titel-Bereich -->
+					<!-- Title area -->
 					<div class="set-header pool-header">
-						<!-- Typ und Standort -->
+						<!-- Type and location -->
 						<div class="set-show-title pool-item-title">
 							<ElementsContentLink
 								:item="poolItem"
@@ -289,7 +289,7 @@ const coverFlowDescriptionBlocks = computed(() => {
 							</ElementsContentLink>
 						</div>
 					</div>
-					<!-- Hier die Teaser-Text Logik einfügen, analog zum ContentSlider -->
+					<!-- Insert the teaser text logic here, analogous to the ContentSlider -->
 					<RichText
 						v-if="poolItem?.useTeaserText && poolItem?.textTeaser"
 						:blocks="parseI18nObj(poolItem?.textTeaser)"

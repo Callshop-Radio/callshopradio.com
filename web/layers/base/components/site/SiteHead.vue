@@ -7,23 +7,23 @@ const localePath = useLocalePath();
 const mainStore = useMainStore();
 const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 
-// Computed-Properties für den Track
+// Computed properties for the track
 const currentTrack = computed(() => mainStore.currentTrack);
 const trackTitle = computed(() => currentTrack.value?.title || "");
 const trackDuration = computed(() => {
 	if (!currentTrack.value?.duration) return "";
-	// Umwandlung von Millisekunden in MM:SS Format
+	// Conversion from milliseconds to MM:SS format
 	const totalSeconds = Math.floor(currentTrack.value.duration / 1000);
 	const minutes = Math.floor(totalSeconds / 60);
 	const seconds = totalSeconds % 60;
 	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 });
 
-// Status und Sichtbarkeit des Players
+// Status and visibility of the player
 const isPlaying = computed(() => mainStore.isPlayerPlaying);
 const isVisible = computed(() => mainStore.isPlayerVisible);
 
-// Methode zum Umschalten der Player-Sichtbarkeit
+// Method to toggle the player visibility
 const togglePlayerVisibility = () => {
 	mainStore.togglePlayerVisibility();
 };
@@ -143,7 +143,7 @@ const togglePlayerVisibility = () => {
       h1 {
         font-family: var(--font-text);
       }
-      /* Logo Invertierung im Dark Mode */
+      /* Logo inversion in dark mode */
       .logo,
       .text-logo {
         @media (prefers-color-scheme: dark) {
