@@ -38,18 +38,42 @@ interface CacheEntry<T = unknown> {
 	mtime: number;
 }
 
-// Safety net only — the Sanity webhook is the real invalidator. Long enough
-// that final pages effectively never go cold; short enough to self-heal if a
-// webhook is ever missed.
+// Background-revalidate cadence, NOT a coldness cliff: a hit older than this is
+// still served instantly (stale-while-revalidate) and refreshed in the
+// background. The Sanity webhook is the real invalidator; this just self-heals
+// if a webhook is ever missed.
 const MAX_AGE_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 
-// Dedup concurrent misses (e.g. hover-prefetch + the click that follows) so a
-// cold key triggers exactly one Sanity fetch per process.
+// Dedup concurrent fetches for the same key (hover-prefetch + the click that
+// follows, or several stale reads triggering revalidation) → one Sanity fetch.
 const inflight = new Map<string, Promise<unknown>>();
 
 /** Deterministic cache key shared with the /api/revalidate webhook. */
 export function sanityDetailCacheKey(type: string, slug: string): string {
 	return `sanity-detail:${type}:${slug}`;
+}
+
+function fetchAndStore(
+	storage: ReturnType<typeof useStorage>,
+	key: string,
+	query: string,
+	slug: string,
+): Promise<unknown> {
+	let promise = inflight.get(key);
+	if (!promise) {
+		const sanity = useSanity();
+		promise = sanity.client
+			.fetch(query, { slug })
+			.then(async (data) => {
+				await storage
+					.setItem(key, { data, mtime: Date.now() } satisfies CacheEntry)
+					.catch(() => {});
+				return data;
+			})
+			.finally(() => inflight.delete(key));
+		inflight.set(key, promise);
+	}
+	return promise;
 }
 
 export default defineEventHandler(async (event) => {
@@ -73,27 +97,23 @@ export default defineEventHandler(async (event) => {
 	const storage = useStorage("cache");
 	const key = sanityDetailCacheKey(type, slug);
 
-	const cached = await storage
-		.getItem<CacheEntry>(key)
-		.catch(() => null);
-	if (cached && Date.now() - cached.mtime < MAX_AGE_MS) {
+	const cached = await storage.getItem<CacheEntry>(key).catch(() => null);
+	if (cached) {
+		// Stale-while-revalidate: serve the cached value immediately, always. If
+		// it's past the refresh cadence, revalidate in the background — kept alive
+		// via waitUntil so the write finishes before the Function freezes.
+		if (Date.now() - cached.mtime > MAX_AGE_MS) {
+			const revalidation = fetchAndStore(
+				storage,
+				key,
+				config.query,
+				slug,
+			).catch(() => {});
+			event.waitUntil?.(revalidation);
+		}
 		return cached.data;
 	}
 
-	let promise = inflight.get(key);
-	if (!promise) {
-		const sanity = useSanity();
-		promise = sanity.client
-			.fetch(config.query, { slug })
-			.then(async (data) => {
-				await storage
-					.setItem(key, { data, mtime: Date.now() } satisfies CacheEntry)
-					.catch(() => {});
-				return data;
-			})
-			.finally(() => inflight.delete(key));
-		inflight.set(key, promise);
-	}
-
-	return promise;
+	// True miss (first load or after a webhook purge) — must fetch once.
+	return fetchAndStore(storage, key, config.query, slug);
 });
