@@ -32,59 +32,12 @@ const liveStatus = ref({
 	},
 });
 
-// LibreTime calls go through the server proxy (key stays server-side).
-// Other endpoints (icecast, wien) are called directly — no auth needed.
-const fetcher = async (url, requiresAuth = false) => {
-	try {
-		if (requiresAuth) {
-			const u = new URL(url);
-			return await $fetch("/api/libretime-proxy", {
-				query: { path: u.pathname + u.search },
-			});
-		}
-		return await $fetch(url);
-	} catch (error) {
-		console.error(`[MusicController] Fetch error for ${url}:`, error);
-		return null;
-	}
-};
-
-const deriveOnAirLight = (liveData) => {
-	if (!liveData?.sources) return {};
-	return {
-		on_air_light:
-			liveData.sources.livedj === "on" || liveData.sources.masterdj === "on",
-		live_stream: liveData.sources.livedj === "on",
-		live_stream_on_air: liveData.sources.livedj === "on",
-		master_stream: liveData.sources.masterdj === "on",
-		master_stream_on_air: liveData.sources.masterdj === "on",
-	};
-};
-
+// Consolidated stream status: one server endpoint that fans out to LibreTime
+// (auth server-side), Icecast, and LibreTime Wien — cached 15s with SWR.
 const updateLiveStatus = async () => {
 	try {
-		const liveInfoUrl1 = "https://libretime.callshopradio.com/api/live-info-v2";
-		const icecastUrl = "https://icecast.callshopradio.com/status-json.xsl";
-		const liveInfoUrl2 =
-			"https://wien.callshopradio.com/api/live-info-v2?days=7";
-
-		const [liveData1, icecastData, liveData2] = await Promise.all([
-			fetcher(liveInfoUrl1, true),
-			fetcher(icecastUrl, false).catch(() => null),
-			fetcher(liveInfoUrl2, false),
-		]);
-
-		liveStatus.value = {
-			stream1: {
-				onAirLight: deriveOnAirLight(liveData1),
-				liveData: liveData1 || {},
-				icecastData: icecastData || {},
-			},
-			stream2: {
-				onAirLight: deriveOnAirLight(liveData2),
-				liveData: liveData2 || {},
-			},
-		};
+		const status = await $fetch("/api/stream/status");
+		if (status) liveStatus.value = status;
 	} catch (error) {
 		console.error("[MusicController] Error updating live status:", error);
 	}
@@ -485,7 +438,7 @@ onMounted(() => {
 					updateMediaSessionMetadata();
 				}
 			}
-		}, 20000); // Update every 20 seconds (increased from 10s)
+		}, 45000); // Poll every 45s; the cached server endpoint collapses bursts to ~1 upstream call per 15s per warm instance.
 	};
 
 	startInterval();
@@ -501,7 +454,7 @@ onMounted(() => {
 
 // Update MediaSession metadata based on current stream
 const updateMediaSessionMetadata = () => {
-	// Wenn SoundCloud abgespielt wird, nicht überschreiben
+	// If SoundCloud is playing, do not overwrite
 	if (!("mediaSession" in navigator)) return;
 
 	let title = "";
