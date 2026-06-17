@@ -138,18 +138,17 @@ const useSoundCloud = () => {
 const { getItemImage: _getItemImage } = useImageManagement();
 const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
 
-// Lifecycle hooks
+// Resolve the artwork URL synchronously from the set's data (no network) so
+// the image is present on every cover-flow card, not just the active/centred
+// ones. Runs immediately (incl. SSR) and is deterministic, so SSR and client
+// agree — no hydration mismatch.
 watch(
-	() => [props.mediaActive, props.set?._id] as const,
-	([active]) => {
-		if (active) loadArtworkUrl();
-	},
+	() => props.set?._id,
+	() => loadArtworkUrl(),
 	{ immediate: true },
 );
 
-onMounted(() => {
-	if (props.mediaActive) loadArtworkUrl();
-});
+onMounted(() => loadArtworkUrl());
 </script>
 
 <template>
@@ -162,19 +161,22 @@ onMounted(() => {
 			<!-- Image/media area -->
 			<div class="set-media">
 				<ElementsContentLink :item="set" class="grid-item__link">
+					<!-- Render on every card (not just the centred/active one) so
+						 cover-flow side cards show their artwork instead of a grey
+						 placeholder. The URL is resolved synchronously from the set's
+						 data and loading="lazy" still defers off-screen downloads. -->
 					<img
-						v-if="mediaActive && artworkUrl"
+						v-if="artworkUrl"
 						:src="artworkUrl"
 						alt="Audio Artwork"
 						class="set-image track-artwork"
 						loading="lazy"
 					>
 					<div
-						v-else-if="mediaActive"
+						v-else
 						class="track-artwork-placeholder"
 						@vue:mounted="loadArtworkUrl"
 					/>
-					<div v-else class="track-artwork-placeholder" />
 				</ElementsContentLink>
 			</div>
 

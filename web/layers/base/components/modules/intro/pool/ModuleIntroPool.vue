@@ -232,8 +232,12 @@ const coverFlowDescriptionBlocks = computed(() => {
 					class="pool-link"
 					:aria-label="itemTitle"
 				>
+					<!-- Render on every card (not just the centred/active one) so
+						 cover-flow side cards show their image instead of a grey
+						 placeholder. MediaImage lazy-loads on its own, so off-screen
+						 downloads still defer. -->
 					<MediaImage
-						v-if="mediaActive"
+						v-if="itemImage"
 						:image="itemImage"
 						:alt="itemTitle"
 						class="pool-image"

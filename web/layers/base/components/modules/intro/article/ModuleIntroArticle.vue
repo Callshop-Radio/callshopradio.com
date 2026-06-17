@@ -107,8 +107,11 @@ const coverFlowTeaserBlocks = computed(() => {
 			<!-- Image/media area -->
 			<div class="article-media">
 				<ElementsContentLink :item="article" class="grid-item__link">
+					<!-- Render on every card (not just the centred/active one) so
+						 cover-flow side cards show their image instead of a grey
+						 placeholder. loading="lazy" still defers off-screen downloads. -->
 					<img
-						v-if="mediaActive && articleImage"
+						v-if="articleImage"
 						:src="articleImage"
 						alt="Article Image"
 						class="article-image"
