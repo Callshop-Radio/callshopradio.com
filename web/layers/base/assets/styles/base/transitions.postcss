@@ -3,6 +3,16 @@
   @apply transition-opacity duration-400;
 }
 
+/* During a simultaneous crossfade both pages are mounted at once. Pin the
+   leaving page out of flow so it doesn't stack below/above the entering page
+   and shift its layout (caused intermittent missing top spacing on nav). */
+.page-leave-active {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
 .page-enter-from,
 .page-leave-to {
   @apply opacity-0;
