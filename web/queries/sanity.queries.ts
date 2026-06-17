@@ -6,6 +6,7 @@ import {
 	PARENT_SHOW_LINK_FRAGMENT,
 	PERSON_LINK_FRAGMENT,
 	SEO_QUERY,
+	SET_LIST_ITEM_QUERY,
 	SITE_PATH_FRAGMENT,
 	SOUNDCLOUD_TRACKS_QUERY,
 } from "./sanity.snippets";
@@ -188,25 +189,7 @@ export const POOL_PROFILE_QUERY = `
         short
       }| order(lower(title)),
       ${SITE_PATH_FRAGMENT},
-       sets[]->{
-                _id,
-                _type,
-                title,
-                slug,
-                "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
-                persons[]->{
-                    ${PERSON_LINK_FRAGMENT}
-                },
-                "tags": tags[]->{
-                    ...,
-                    _id,
-                    title
-                }| order(lower(title)),
-                "parentShow": *[_type == "show" && references(^._id)][0]{
-                    ${PARENT_SHOW_LINK_FRAGMENT}
-                },
-                ${SITE_PATH_FRAGMENT}
-            } | order(datetime desc)[0...3]
+       sets[]-> ${SET_LIST_ITEM_QUERY} | order(datetime desc)[0...3]
     },
     // Add persons for venues
     _type == 'venue' => {
@@ -244,55 +227,13 @@ export const POOL_PROFILE_QUERY = `
       }
     },
     modules[] ${MODULE_QUERY},
-    "relatedSets": *[_type in ['set'] && references(^._id)] | order(datetime desc) [0...99] {
-      ...,
-      _id,
-      _type,
-      title,
-      slug,
-      image ${IMAGE_QUERY},
-      datetime,
-      "tags": tags[]->{
-        _id,
-        _type,
-        title,
-        short
-      }| order(lower(title)),
-      "parentShow": *[_type == "show" && references(^._id)][0]{
-        ${PARENT_SHOW_LINK_FRAGMENT}
-      },
-      persons[]->{
-        ${PERSON_LINK_FRAGMENT}
-      },
-      ${SITE_PATH_FRAGMENT}
-  },
-  "moreContent": *[_type in ['set',] && references(^._id)] | order(datetime desc) [0...99] {
-      ...,
-      _id,
-      _type,
-      title,
-      slug,
-      image ${IMAGE_QUERY},
-      datetime,
-      "tags": tags[]->{
-        _id,
-        _type,
-        title,
-        short
-      }| order(lower(title)),
-      "parentShow": *[_type == "show" && references(^._id)][0]{
-        ${PARENT_SHOW_LINK_FRAGMENT}
-      },
-      persons[]->{
-        ${PERSON_LINK_FRAGMENT}
-      },
-      ${SITE_PATH_FRAGMENT}
-  },
+    "relatedSets": *[_type in ['set'] && references(^._id)] | order(datetime desc) [0...99] ${SET_LIST_ITEM_QUERY},
+  "moreContent": *[_type in ['set',] && references(^._id)] | order(datetime desc) [0...99] ${SET_LIST_ITEM_QUERY},
 "relatedContent": *[
-    _type in ['person','venue'] && poolVisibility == true && 
-    slug.current != $slug && 
+    _type in ['person','venue'] && poolVisibility == true &&
+    slug.current != $slug &&
     (
-      count((tags[]->._id)[@ in ^.^.tags[]->._id]) > 0 || 
+      count((tags[]->._id)[@ in ^.^.tags[]->._id]) > 0 ||
       count((persons[]->._id)[@ in ^.^.persons[]->._id]) > 0
     )
   ] | order(
@@ -300,34 +241,19 @@ export const POOL_PROFILE_QUERY = `
     count((persons[]->._id)[@ in ^.^.persons[]->._id]) desc,
     datetime desc
   )[0...12] {
-    ...,
     _id,
     _type,
     title,
+    name,
     slug,
-    datetime,
     image ${IMAGE_QUERY},
-    "soundcloud": soundcloud{
-      _type,
-      "tracks": tracks[]{
-        id,
-        artwork_url,
-        stream_url,
-        title
-      }
-    },
-    persons[]->{
-      ${PERSON_LINK_FRAGMENT}
-    },
+    location,
     "tags": tags[]->{
       _id,
       _type,
       title,
       short
     }| order(lower(title)),
-    "parentShow": *[_type == "show" && references(^._id)][0]{
-      ${PARENT_SHOW_LINK_FRAGMENT}
-    },
     ${SITE_PATH_FRAGMENT},
     "matchingTagsCount": count((tags[]->._id)[@ in ^.^.tags[]->._id]),
     "matchingArtistsCount": count((persons[]->._id)[@ in ^.^.persons[]->._id])
@@ -378,29 +304,7 @@ export const SHOW_QUERY = `
   image ${IMAGE_QUERY},
   content[] ${I18N_RICH_TEXT_VALUE_QUERY},
   modules [] ${MODULE_QUERY},
-  sets[]->{
-    ...,
-    _id,
-    _type,
-    title,
-    slug,
-    datetime,
-    image ${IMAGE_QUERY},
-    "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
-    "parentShow": *[_type == "show" && references(^._id)][0]{
-          ${PARENT_SHOW_LINK_FRAGMENT},
-          content[] ${I18N_RICH_TEXT_VALUE_QUERY}
-    },
-    persons[]->{
-      ${PERSON_LINK_FRAGMENT}
-    },
-    "tags": tags[]->{
-      _id,
-      title,
-      short
-    }| order(lower(title)),
-    ${SITE_PATH_FRAGMENT}
-  } | order(datetime desc),
+  sets[]-> ${SET_LIST_ITEM_QUERY} | order(datetime desc),
   persons[]->{
     _id,
     _type,
@@ -474,32 +378,13 @@ export const SET_QUERY = `
     slug,
     image { asset-> },
     ${SITE_PATH_FRAGMENT},
-    sets[]->{
-      ...,
-      _id,
-      _type,
-      title,
-      slug,
-      "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
-      persons[]->{
-          ${PERSON_LINK_FRAGMENT}
-      },
-      "tags": tags[]->{
-          ...,
-          _id,
-          title
-      }| order(lower(title)),
-      "parentShow": *[_type == "show" && references(^._id)][0]{
-          ${PARENT_SHOW_LINK_FRAGMENT}
-      },
-      ${SITE_PATH_FRAGMENT}
-  }
+    sets[]-> ${SET_LIST_ITEM_QUERY}
   },
   "relatedContent": *[
-    _type == 'set' && 
-    slug.current != $slug && 
+    _type == 'set' &&
+    slug.current != $slug &&
     (
-      count((tags[]->._id)[@ in ^.^.tags[]->._id]) > 0 || 
+      count((tags[]->._id)[@ in ^.^.tags[]->._id]) > 0 ||
       count((persons[]->._id)[@ in ^.^.persons[]->._id]) > 0
     )
   ] | order(
@@ -507,7 +392,6 @@ export const SET_QUERY = `
     count((persons[]->._id)[@ in ^.^.persons[]->._id]) desc,
     datetime desc
   )[0...12] {
-    ...,
     _id,
     _type,
     title,
@@ -626,14 +510,13 @@ export const ENTRY_QUERY = `
     },
     modules[] ${MODULE_QUERY},
     "relatedContent": *[
-        _type == 'article' && 
-        slug.current != $slug && 
+        _type == 'article' &&
+        slug.current != $slug &&
         count((tags[]->._id)[@ in ^.^.tags[]->._id]) > 0
     ] | order(
         count((tags[]->._id)[@ in ^.^.tags[]->._id]) desc,
         datetime desc
     )[0...12] {
-        ...,
         _id,
         _type,
         title,

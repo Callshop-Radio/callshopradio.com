@@ -235,6 +235,35 @@ export const I18N_RICH_TEXT_VALUE_QUERY = `{
 	...,
 	value[] ${RICH_TEXT_QUERY}
 }`;
+
+/**
+ * Set projection for "list view" contexts (Related/More sections, sibling
+ * episodes). Deliberately omits content[] and parentShow.content[] which
+ * doubled per-set payload by pulling the show's rich text for every item.
+ * Used inside sets[]-> sub-projections in SHOW_QUERY, SET_QUERY and the
+ * shows[].sets[] chain in POOL_PROFILE_QUERY.
+ */
+export const SET_LIST_ITEM_QUERY = `{
+	_id,
+	_type,
+	title,
+	slug,
+	datetime,
+	image ${IMAGE_QUERY},
+	"soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
+	persons[]->{ ${PERSON_LINK_FRAGMENT} },
+	"tags": tags[]->{
+		_id,
+		_type,
+		title,
+		short
+	} | order(lower(title)),
+	"parentShow": *[_type == "show" && references(^._id)][0]{
+		${PARENT_SHOW_LINK_FRAGMENT}
+	},
+	${SITE_PATH_FRAGMENT}
+}`;
+
 /** Slim set projection for archive cover-flow slider (autoLoad). */
 export const SET_COVER_FLOW_SLIDER_ITEM_QUERY = `{
 	_id,
