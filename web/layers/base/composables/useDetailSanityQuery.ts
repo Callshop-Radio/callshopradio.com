@@ -1,8 +1,9 @@
 /**
  * Sanity query for slug-based detail pages.
  *
- * Re-fetches when the route changes (e.g. related-content navigation
- * between two articles on the same page component).
+ * Reactive key includes the current slug, so SPA navigation between
+ * `/shows/foo` and `/shows/bar` swaps in the cached payload (SSR or
+ * previously fetched) instead of triggering a fresh Sanity request.
  */
 export async function useDetailSanityQuery<T = unknown>(
 	query: string,
@@ -18,23 +19,22 @@ export async function useDetailSanityQuery<T = unknown>(
 	const routeParam = options.routeParam ?? "slug";
 	const queryParam = options.queryParam ?? "slug";
 
-	const routeKey = computed(() => route.fullPath);
-
-	const queryParams = computed(() => {
+	const slug = computed(() => {
 		const raw = route.params[routeParam];
-		const value = String(Array.isArray(raw) ? raw[0] : (raw ?? ""));
-		return { [queryParam]: value };
+		return String(Array.isArray(raw) ? raw[0] : (raw ?? ""));
 	});
 
 	return useAsyncData<T | null>(
-		() => `${options.keyPrefix}-${routeKey.value}`,
+		() => `${options.keyPrefix}-${slug.value}`,
 		async () => {
-			const slugValue = queryParams.value[queryParam];
-			if (!slugValue) return null;
-
+			if (!slug.value) return null;
 			const sanity = useSanity();
-			return sanity.client.fetch<T>(query, queryParams.value);
+			return sanity.client.fetch<T>(query, { [queryParam]: slug.value });
 		},
-		{ watch: [routeKey] },
+		{
+			getCachedData: (key, nuxtApp) =>
+				(nuxtApp.payload.data[key] as T | null | undefined) ??
+				(nuxtApp.static.data[key] as T | null | undefined),
+		},
 	);
 }
