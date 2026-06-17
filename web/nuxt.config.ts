@@ -22,11 +22,15 @@ export default defineNuxtConfig({
 		emitRouteChunkError: "automatic",
 	},
 	app: {
-		// No `mode` → default "simultaneous": leave and enter run in parallel
-		// (crossfade). `out-in` would sequence them and double the perceived
-		// duration. Same-route param changes still animate correctly because
-		// the inner page is keyed via `page-key` in app.vue.
-		pageTransition: { name: "page" },
+		// `out-in`: the leaving page fully unmounts before the entering one
+		// renders. Only one page is ever in the DOM, so there's no two-pages-
+		// in-flow stacking (which shifted the top spacing) and no lingering
+		// leave element capturing clicks (which broke links). Kept snappy via
+		// a short per-phase duration in transitions.postcss; the formerly slow
+		// feel came from the 2-3s Sanity cold-hit between phases, now served
+		// from the persistent Blob cache. Same-route param changes still
+		// animate because the inner page is keyed via `page-key` in app.vue.
+		pageTransition: { name: "page", mode: "out-in" },
 		head: {
 			meta: [
 				{

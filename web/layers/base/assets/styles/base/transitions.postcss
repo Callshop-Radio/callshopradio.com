@@ -1,6 +1,8 @@
 .page-leave-active,
 .page-enter-active {
-  @apply transition-opacity duration-400;
+  /* out-in runs leave then enter sequentially — keep each phase short so the
+     total stays snappy (~300ms). */
+  @apply transition-opacity duration-150;
 }
 
 .page-enter-from,
