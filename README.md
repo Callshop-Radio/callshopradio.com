@@ -16,7 +16,8 @@ licensing questions.
 ## The stack
 
 - **Web** — [Nuxt](https://nuxt.com) 4 + Vue 3, UnoCSS + PostCSS,
-  hybrid SSG/SSR, deployed on Netlify.
+  English + German via `@nuxtjs/i18n`, deployed on Netlify (ISR at the edge,
+  Functions as SSR fallback).
 - **Studio** — [Sanity](https://www.sanity.io) Studio v6.
 - **Live audio** — LibreTime as the scheduling backend (proxied server-side).
 
@@ -37,7 +38,7 @@ GROQ queries in `web/queries/`, and server routes/handlers in `web/server/`.
 
 ## Prerequisites
 
-- **Node** ≥ 18.2.0
+- **Node** ≥ 22.12.0
 - **pnpm** 10.x (this repo is a pnpm workspace)
 
 ## Quick start
@@ -64,7 +65,7 @@ pnpm studio:dev
 | `pnpm build` / `pnpm web:build` | Production build |
 | `pnpm lint` | `biome check .` (lint + format check, whole repo) |
 | `pnpm format` | `biome check --write .` (apply lint/format fixes) |
-| `pnpm typecheck` | `vue-tsc` over the web app |
+| `pnpm typecheck` | `nuxt typecheck` over the web app (vue-tsc under the hood) |
 | `pnpm studio:deploy` | Deploy the Sanity studio |
 
 Useful web-only scripts (`pnpm --filter web run <script>`): `generate:ssg`,
@@ -83,14 +84,25 @@ Web (`web/.env`):
 | `NUXT_LIBRETIME_API_KEY` | LibreTime API key — server-only, never exposed to the client |
 | `SANITY_WEBHOOK_SECRET` | Verifies the cache-revalidation webhook |
 
+Studio (`studio/.env`) — Sanity project + Netlify integration values for the
+embedded build-status widget. See `studio/.env.example` for the full list
+(`SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET`, `SANITY_STUDIO_PREVIEW_URL`,
+plus the `SANITY_STUDIO_NETLIFY_*` trio).
+
 ## Rendering & deploy
 
-Content routes (`/`, `/pool/**`, `/shows/**`, `/words/**`, `/schedule`) are
-prerendered at build time (routes discovered from Sanity via
-`web/lib/fetch-prerender-routes.ts`); `/search` is client-only. Netlify builds
-with `pnpm run build` from `web/` and serves `web/dist`, with Netlify Functions
-as the SSR fallback. Content updates trigger cache revalidation via the Sanity
-webhook (`web/server/api/revalidate.ts`).
+Content routes (`/`, `/pool/**`, `/shows/**`, `/words/**`, `/schedule`, plus
+top-level editorial pages from Sanity) are served as **ISR** at the Netlify
+edge — rendered on demand, tagged with `Netlify-Cache-Tag`, and purged by the
+Sanity webhook at `web/server/api/revalidate.ts`. The page-slug list is
+fetched at build via `web/lib/fetch-page-slugs.ts` and registered as ISR
+routes in a `nitro:config` hook. `/sitemap.xml` is prerendered at build;
+`/search` runs client-side only.
+
+Netlify builds via `pnpm run build` from `web/` (`NITRO_PRESET=netlify`) and
+serves `web/dist`, with Netlify Functions as the SSR fallback. The
+Sanity-detail cache persists across deploys via Netlify Blobs (`sanity-cache`
+store); locally it falls back to an in-memory LRU.
 
 ## Contributing
 
