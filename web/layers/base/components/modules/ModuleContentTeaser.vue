@@ -1462,15 +1462,11 @@ onMounted(() => {
       }
     }
 
-    /* Pool & Words: single column on mobile */
-    &.pool,
-    &.words {
-      .teaser-item {
-        flex: 1 1 100%;
-        max-width: 100%;
-        width: 100%;
-      }
-    }
+    /* All content types collapse together here: pool/words used to drop to a
+       single column at this breakpoint while shows/sets stayed 2-up, which
+       looked inconsistent. Every type is now 2 columns on tablet and only
+       collapses to 1 column at ≤600px below. (Above this breakpoint pool/sets/
+       shows are 3-up; words is always 2-up — never 3 — by its own card design.) */
   }
 }
 

@@ -2868,25 +2868,11 @@ onUnmounted(() => {
   }
 }
 
-/* Pool & Words: single column on mobile */
-@media (max-width: 900px) {
-  .content-grid.module-grid {
-    &.pool,
-    &.words {
-      .grid-item {
-        flex: 1 1 100%;
-        max-width: 100%;
-        width: 100%;
-      }
-    }
-
-    &.words .content-grid__items .grid-item {
-      flex: 1 1 100%;
-      max-width: 100%;
-      width: 100%;
-    }
-  }
-}
+/* Pool/words previously collapsed to a single column at ≤900px while
+   shows/sets stayed 2-up — inconsistent. Responsive behaviour is now uniform:
+   pool/shows go 3 cols (desktop) → 2 cols (≤1100px) → 1 col (≤600px). Words is
+   always 2 cols above 600px — never 3, by its own card design (see &.words
+   above) — and collapses to 1 col at ≤600px like everything else. */
 
 /* Mobile: 1 column */
 @media (max-width: 600px) {
