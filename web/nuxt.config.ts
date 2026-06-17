@@ -22,7 +22,11 @@ export default defineNuxtConfig({
 		emitRouteChunkError: "automatic",
 	},
 	app: {
-		pageTransition: { name: "page", mode: "out-in" },
+		// No `mode` → default "simultaneous": leave and enter run in parallel
+		// (crossfade). `out-in` would sequence them and double the perceived
+		// duration. Same-route param changes still animate correctly because
+		// the inner page is keyed via `page-key` in app.vue.
+		pageTransition: { name: "page" },
 		head: {
 			meta: [
 				{
