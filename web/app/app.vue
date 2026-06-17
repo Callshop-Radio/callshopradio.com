@@ -4,6 +4,11 @@ favicon();
 </script>
 
 <template>
+  <!-- Top progress bar that runs during route changes (incl. the Suspense
+       wait for detail-page Sanity fetches). Rendered as a sibling of the
+       site root so no ancestor containment can affect its fixed position.
+       throttle=50 keeps it visible even on quick cache-hit navigations. -->
+  <NuxtLoadingIndicator color="var(--color-pink)" :height="3" :throttle="50" />
   <div class="site">
     <SiteHead />
     <main>
@@ -20,6 +25,15 @@ favicon();
     <ElementsPreviewMode />
   </div>
 </template>
+
+<style lang="postcss">
+/* SiteHead sets z-index: 999999, same as NuxtLoadingIndicator's default —
+   without this override the indicator renders correctly but stays hidden
+   underneath the sticky header. */
+.nuxt-loading-indicator {
+  z-index: 1000000;
+}
+</style>
 
 <style lang="postcss" scoped>
 .site {
