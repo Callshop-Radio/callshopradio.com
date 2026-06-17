@@ -1,6 +1,7 @@
 .page-leave-active,
 .page-enter-active {
-  @apply transition-opacity duration-400;
+  /* out-in mode runs leave then enter sequentially, so keep each phase short. */
+  @apply transition-opacity duration-200;
 }
 
 .page-enter-from,

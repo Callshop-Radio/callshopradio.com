@@ -22,7 +22,7 @@ export default defineNuxtConfig({
 		emitRouteChunkError: "automatic",
 	},
 	app: {
-		pageTransition: { name: "page" },
+		pageTransition: { name: "page", mode: "out-in" },
 		head: {
 			meta: [
 				{

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const route = useRoute();
 const { favicon } = useUtils();
 favicon();
 </script>
@@ -9,7 +8,12 @@ favicon();
     <SiteHead />
     <main>
       <div class="page-content">
-        <NuxtPage :key="route.fullPath" />
+        <!-- page-key keys the inner page (inside Nuxt's Transition+Suspense),
+             so same-route param changes (e.g. /shows/a → /shows/b via related
+             links) animate the page transition instead of swapping instantly.
+             Keying NuxtPage directly would remount the whole wrapper, killing
+             the transition. -->
+        <NuxtPage :page-key="(route) => route.fullPath" />
       </div>
     </main>
     <SiteFoot class="footer" />
