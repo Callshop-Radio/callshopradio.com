@@ -170,9 +170,13 @@ export default defineNuxtConfig({
 			cache: process.env.NETLIFY
 				? {
 						driver: "netlifyBlobs",
-						// Naming the store makes it site-scoped (persistent across
-						// deploys). An unnamed store would be deploy-scoped.
+						// Named store = site-scoped, persistent across deploys.
 						name: "sanity-cache",
+						// Strong read-after-write — the driver defaults to "eventual",
+						// which made cache writes unreadable on the next request
+						// (different Function instance), so the cache appeared cold
+						// again on every reload despite being written.
+						consistency: "strong",
 					}
 				: {
 						driver: "lru-cache",
