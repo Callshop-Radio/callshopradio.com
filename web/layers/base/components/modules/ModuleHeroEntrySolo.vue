@@ -76,6 +76,7 @@ interface Module {
 // Props
 const props = defineProps<{
 	module: Module;
+	eager?: boolean;
 }>();
 
 // Image Management Composable
@@ -83,12 +84,12 @@ const useImageManagement = () => {
 	function getItemImage(item?: ContentReference): Image | null {
 		if (!item) return null;
 
-		// Primäres Bild aus dem Item
+		// Primary image from the item
 		if (item.image || item.mainImage) {
 			return (item.image || item.mainImage) ?? null;
 		}
 
-		// Fallback-Bilder basierend auf Content-Typ
+		// Fallback images based on content type
 		const fallbacks = mainStore.siteFallbacks;
 		if (!fallbacks) return null;
 
@@ -154,7 +155,7 @@ const useSoundCloud = () => {
 		const track = props.module?.contentReference?.soundcloud?.tracks?.[0];
 		if (!track) return;
 
-		// Stelle sicher, dass permalink_url gesetzt ist
+		// Make sure permalink_url is set
 		if (!track.permalink_url && track.id) {
 			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
 		}
@@ -206,7 +207,7 @@ onMounted(() => {
 <template>
 	<div v-if="module" :class="`module-hero-entry ${layoutClass}`">
 		<div class="hero-entry-container">
-			<!-- Bild/Media-Bereich -->
+			<!-- Image/media area -->
 			<div class="hero-entry-media">
 				<ElementsContentLink
 					:item="contentReference"
@@ -215,6 +216,7 @@ onMounted(() => {
 					<MediaImage
 						v-if="getItemImage(contentReference) && !isAudioContent"
 						:image="getItemImage(contentReference) || undefined"
+						:eager="!!props.eager"
 						class="hero-entry-image"
 					/>
 					<img
@@ -222,7 +224,8 @@ onMounted(() => {
 						:src="artworkUrl"
 						alt="Audio Artwork"
 						class="hero-entry-image track-artwork"
-						loading="lazy"
+						:loading="props.eager ? 'eager' : 'lazy'"
+						:fetchpriority="props.eager ? 'high' : 'auto'"
 					>
 					<div
 						v-else-if="isAudioContent"
@@ -237,9 +240,9 @@ onMounted(() => {
 				<AnimatedLogoBackground class="animated-logo-background" />
 			</div>
 
-			<!-- Content-Bereich -->
+			<!-- Content area -->
 			<div class="hero-entry-content">
-				<!-- Play-Button für Audio-Inhalte -->
+				<!-- Play button for audio content -->
 				<button
 					v-if="isAudioContent"
 					class="play-button"
@@ -263,9 +266,9 @@ onMounted(() => {
 				</button>
 
 				<div class="hero-entry-content-container">
-					<!-- Titel-Bereich -->
+					<!-- Title area -->
 					<div class="hero-entry-header">
-						<!-- Datum oder Update-Datum -->
+						<!-- Date or update date -->
 						<div class="hero-entry-meta">
 							<h3 v-if="contentReference?.datetime" class="hero-date">
 								{{ formatDate(contentReference.datetime) }}
@@ -275,7 +278,7 @@ onMounted(() => {
 							</h3>
 						</div>
 
-						<!-- Set-spezifischer Titel-Bereich -->
+						<!-- Set-specific title area -->
 						<div
 							v-if="contentReference?._type === 'set'"
 							class="hero-entry-title"
@@ -289,7 +292,7 @@ onMounted(() => {
 								</h2>
 							</ElementsContentLink>
 
-							<!-- Künstler (für Sets) -->
+							<!-- Artists (for sets) -->
 							<div
 								v-if="contentReference.persons?.length"
 								class="hero-entry-show-artists"
@@ -319,7 +322,7 @@ onMounted(() => {
 							</div>
 						</div>
 
-						<!-- Standard-Titel -->
+						<!-- Default title -->
 						<h2 v-if="module.title" class="hero-entry-title">
 							{{ module.title }}
 						</h2>
@@ -333,18 +336,18 @@ onMounted(() => {
 						</h2>
 					</div>
 
-					<!-- Text-Bereich (nicht für Sets) -->
+					<!-- Text area (not for sets) -->
 					<div v-if="contentReference?._type !== 'set'" class="hero-entry-text">
-						<!-- Module-Text wenn vorhanden -->
+						<!-- Module text if present -->
 						<RichText
 							v-if="module.text && module.text.length > 0"
 							:blocks="module.text"
 							class="module-text"
 						/>
 
-						<!-- Content-Beschreibung als Fallback -->
+						<!-- Content description as fallback -->
 						<template v-else>
-							<!-- Für Person und Venue -->
+							<!-- For person and venue -->
 							<RichText
 								v-if="contentReference?.description?.length"
 								:blocks="
@@ -353,7 +356,7 @@ onMounted(() => {
 									)
 								"
 							/>
-							<!-- Für andere Inhaltstypen, die möglicherweise ein bio-Feld haben -->
+							<!-- For other content types that may have a bio field -->
 							<RichText
 								v-else-if="contentReference?.bio?.length"
 								:blocks="
@@ -379,7 +382,7 @@ onMounted(() => {
 						</template>
 					</div>
 
-					<!-- Tags-Bereich -->
+					<!-- Tags area -->
 					<div
 						v-if="contentReference?.tags?.length"
 						class="hero-entry-tags tags"
@@ -470,7 +473,7 @@ onMounted(() => {
     }
   }
 
-  /* Einheitliches Layout für alle Content-Typen */
+  /* Uniform layout for all content types */
   .hero-entry-container {
     position: relative;
     height: 100%;
@@ -510,12 +513,12 @@ onMounted(() => {
       transform: translate(0, 12.5%);
     }
 
-    /* Einheitliches Bild-Format für alle Content-Typen */
+    /* Uniform image format for all content types */
     .hero-entry-image,
     .track-artwork,
     .track-artwork-placeholder {
       width: 100%;
-      aspect-ratio: 1 / 1; /* Quadratisches Format für alle */
+      aspect-ratio: 1 / 1; /* Square format for all */
       object-fit: cover;
       background-color: var(--color-grey);
       min-width: 35.3125rem;

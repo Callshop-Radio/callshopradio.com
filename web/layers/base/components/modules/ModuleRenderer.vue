@@ -12,7 +12,7 @@ withDefaults(
 
 <template>
 	<div
-		v-for="module in modules"
+		v-for="(module, index) in modules"
 		:key="module._key"
 		class="module"
 	>
@@ -27,10 +27,12 @@ withDefaults(
 		<ModuleHeroEntrySolo
 			v-if="module._type == 'module.heroEntry'"
 			:module="module"
+			:eager="index === 0"
 		/>
 		<ModuleHeroSlider
 			v-if="module._type == 'module.heroSlider'"
 			:module="module"
+			:eager="index === 0"
 		/>
 	</div>
 </template>

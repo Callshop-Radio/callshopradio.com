@@ -43,6 +43,10 @@ const props = defineProps({
 		type: Boolean,
 		default: () => false,
 	},
+	eager: {
+		type: Boolean,
+		default: () => false,
+	},
 });
 
 const placeholderSrc = computed(() => {
@@ -75,18 +79,18 @@ const srcSet = computed(() => {
 });
 
 const cropWidth = computed(() => {
-	if (!props.image?.asset?.metadata?.dimensions) return 1920; // Standardwert
+	if (!props.image?.asset?.metadata?.dimensions) return 1920; // Default value
 	const originalWidth = props.image?.asset?.metadata?.dimensions?.width || 1920;
 	const cropLeft = props.image?.crop?.left ?? 0;
 	const cropRight = props.image?.crop?.right ?? 0;
 
 	const calculatedWidth =
 		originalWidth - cropLeft * originalWidth - cropRight * originalWidth;
-	return Number.isNaN(calculatedWidth) ? 1920 : calculatedWidth; // Schutz vor NaN
+	return Number.isNaN(calculatedWidth) ? 1920 : calculatedWidth; // Protection against NaN
 });
 
 const cropHeight = computed(() => {
-	if (!props.image?.asset?.metadata?.dimensions) return 1080; // Standardwert
+	if (!props.image?.asset?.metadata?.dimensions) return 1080; // Default value
 	const originalHeight =
 		props.image?.asset?.metadata?.dimensions?.height || 1080;
 	const cropTop = props.image?.crop?.top ?? 0;
@@ -94,7 +98,7 @@ const cropHeight = computed(() => {
 
 	const calculatedHeight =
 		originalHeight - cropTop * originalHeight - cropBottom * originalHeight;
-	return Number.isNaN(calculatedHeight) ? 1080 : calculatedHeight; // Schutz vor NaN
+	return Number.isNaN(calculatedHeight) ? 1080 : calculatedHeight; // Protection against NaN
 });
 
 const orientation = computed(() => {
@@ -117,10 +121,10 @@ const hasValidImage = computed(() => {
 	return props.image?.asset;
 });
 
-// Emittiere ein Event wenn die Bilddimensionen berechnet sind
+// Emit an event when the image dimensions are calculated
 const emit = defineEmits(["dimensions"]);
 
-// Dimensions gleich nach Berechnung emittieren
+// Emit dimensions right after calculation
 watchEffect(() => {
 	if (cropWidth.value && cropHeight.value) {
 		emit("dimensions", {
@@ -144,7 +148,9 @@ watchEffect(() => {
 		:class="[orientation, { loaded: isLoaded }]"
 		:preload="props.preload"
 		draggable="false"
-		:lazy-load="true"
+		:lazy-load="!props.eager"
+		:loading="props.eager ? 'eager' : 'lazy'"
+		:fetchpriority="props.eager ? 'high' : 'auto'"
 		class="fade"
 		@load="onLoad"
 	/>

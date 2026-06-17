@@ -4,7 +4,7 @@ import { useMainStore } from "~/stores/mainStore";
 import type { Image } from "~/types/sanity";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-// Typdefinitionen
+// Type definitions
 interface Tag {
 	_id?: string;
 	_type?: string;
@@ -34,29 +34,29 @@ const props = defineProps<{
 // Store
 const mainStore = useMainStore();
 
-// Composable für Bild-Management
+// Composable for image management
 const useImageManagement = () => {
-	// Helper-Funktion für Bild-Fetching und Fallbacks
+	// Helper function for image fetching and fallbacks
 	function getItemImage(item?: PoolItem): Image | null {
 		if (!item) return null;
 
-		// Bild aus dem Item selbst
+		// Image from the item itself
 		if (item.image || item.mainImage) {
 			return item.image || item.mainImage;
 		}
 
-		// Fallbacks je nach Content-Typ
+		// Fallbacks depending on content type
 		if (item._type === "person") {
 			return mainStore?.siteFallbacks?.fallbackPerson?.image;
 		} else if (item._type === "venue") {
 			return mainStore?.siteFallbacks?.fallbackVenue?.image;
 		}
 
-		// Allgemeines Fallback
+		// General fallback
 		return mainStore?.siteFallbacks?.fallbackPerson?.image;
 	}
 
-	// Computed Property für das Bild
+	// Computed property for the image
 	const itemImage = computed(() => {
 		return getItemImage(props.showItem);
 	});
@@ -66,10 +66,10 @@ const useImageManagement = () => {
 	};
 };
 
-// Anwendung der Composables
+// Application of the composables
 const { itemImage } = useImageManagement();
 
-// Formatierte Daten
+// Formatted data
 const itemTitle = computed(() => {
 	return props.showItem?.title || props.showItem?.name || "";
 });
@@ -86,12 +86,12 @@ const contactLink = computed(() => {
 	const contact = props.showItem?.contact;
 	if (!contact) return "#";
 
-	// E-Mail-Format prüfen
+	// Check email format
 	if (contact.includes("@")) {
 		return `mailto:${contact}`;
 	}
 
-	// Telefonnummer (vereinfachte Prüfung)
+	// Phone number (simplified check)
 	if (/^\+?[0-9\s()-]+$/.test(contact)) {
 		return `tel:${contact.replace(/\s/g, "")}`;
 	}
@@ -103,7 +103,7 @@ const contactLink = computed(() => {
 <template>
 	<div v-if="showItem" class="show-intro-content">
 		<div class="show-intro-container">
-			<!-- Tags-Icon -->
+			<!-- Tags icon -->
 			<div v-if="showItem?.tags?.length" class="city-tags">
 				<button
 					v-for="(tag, index) in showItem.tags"
@@ -115,12 +115,12 @@ const contactLink = computed(() => {
 				</button>
 			</div>
 
-			<!-- Content-Bereich -->
+			<!-- Content area -->
 			<div class="show-intro-info">
 				<div class="show-intro-info-container">
-					<!-- Titel-Bereich -->
+					<!-- Title area -->
 					<div class="show-intro-header">
-						<!-- Typ und Standort -->
+						<!-- Type and location -->
 						<div class="show-intro-title">
 							<ElementsContentLink
 								:item="showItem"
@@ -133,10 +133,10 @@ const contactLink = computed(() => {
 							</ElementsContentLink>
 						</div>
 					</div>
-					<!-- Hier die Teaser-Text Logik einfügen, analog zum ContentSlider -->
+					<!-- Insert the teaser text logic here, analogous to the ContentSlider -->
 					<div v-if="showItem?.content" class="show-intro-text">
-						<!-- Fall 1: Internationalisiertes Array mit mehreren Einträgen -->
-						<!-- Debug-Ausgabe -->
+						<!-- Case 1: Internationalized array with multiple entries -->
+						<!-- Debug output -->
 
 						<RichText
 							v-if="showItem.content"
@@ -146,7 +146,7 @@ const contactLink = computed(() => {
 					</div>
 
 					<div class="show-intro-bottom">
-					<!-- Referenzierte Shows -->
+					<!-- Referenced shows -->
 					<div
 						v-if="showItem.shows && showItem.shows.length > 0"
 						class="show-intro-references-section"
@@ -184,7 +184,7 @@ const contactLink = computed(() => {
 						</div>
 					</div>
 
-					<!-- Referenzierte Personen -->
+					<!-- Referenced persons -->
 					<div
 						v-if="showItem.persons && showItem.persons.length > 0"
 						class="show-intro-references-section"
@@ -242,7 +242,7 @@ const contactLink = computed(() => {
 						</div>
 					</div>
 
-					<!-- Nur für Person: Referenzierte Veranstaltungsorte -->
+					<!-- Only for person: referenced venues -->
 					<div
 						v-if="showItem.venues && showItem.venues.length > 0"
 						class="show-intro-references-section"
@@ -398,7 +398,7 @@ const contactLink = computed(() => {
 					</div>
 				</div>
 			</div>
-			<!-- Bild/Media-Bereich -->
+			<!-- Image/media area -->
 			<div class="show-intro-media">
 				<ElementsContentLink
 					:item="showItem"
@@ -409,6 +409,7 @@ const contactLink = computed(() => {
 						:image="itemImage"
 						:alt="showItem?.title || showItem?.name"
 						class="show-intro-image"
+						:eager="true"
 					/>
 				</ElementsContentLink>
 			</div>

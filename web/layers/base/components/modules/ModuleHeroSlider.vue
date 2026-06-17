@@ -10,6 +10,10 @@ const props = defineProps({
 		type: Object,
 		required: true,
 	},
+	eager: {
+		type: Boolean,
+		default: false,
+	},
 });
 
 // State
@@ -45,7 +49,7 @@ const { isSwiping: _isSwiping, direction: _direction } = useSwipe(sliderRef, {
 	},
 });
 
-// Funktion zum Aktualisieren des aktuellen Content-Typs im Store
+// Function to update the current content type in the store
 const updateCurrentContentType = () => {
 	if (
 		!slides.value ||
@@ -57,11 +61,11 @@ const updateCurrentContentType = () => {
 	const currentSlide = slides.value[currentIndex.value];
 	const contentType = currentSlide?.contentReference?._type || "";
 
-	// Aktualisiere den Content-Typ im Store
+	// Update the content type in the store
 	mainStore.setCurrentHeroContentType(contentType);
 };
 
-// Überwache Änderungen des currentIndex und aktualisiere den Content-Typ
+// Watch for changes to currentIndex and update the content type
 watch(currentIndex, () => {
 	updateCurrentContentType();
 });
@@ -156,9 +160,10 @@ onMounted(() => {
 				class="slide"
 				:class="{ active: index === currentIndex }"
 			>
-				<!-- Verwende die ModuleHeroEntry-Komponente für jeden Slide -->
+				<!-- Use the ModuleHeroEntry component for each slide -->
 				<ModuleHeroEntry
 					:module="slide"
+					:eager="props.eager && index === 0"
 					:class="`slider-item slider-item--${
 						module.style || slide.layout || 'default'
 					}`"
@@ -193,10 +198,10 @@ onMounted(() => {
     align-items: center;
     margin-bottom: var(--small-margin);
     
-    /* Mobile: Kompakteres Padding */
+    /* Mobile: more compact padding */
     padding: 0 var(--mid-margin);
     
-    /* Tablet/Desktop: Standard Padding */
+    /* Tablet/Desktop: standard padding */
     @media screen and (min-width: 600px) {
       padding: 0 calc(var(--big-margin) / 2);
     }
@@ -215,14 +220,14 @@ onMounted(() => {
       .animated-gradient {
         position: absolute;
         
-        /* Mobile: Zentriert für venue/person */
+        /* Mobile: centered for venue/person */
         top: 30%;
         left: -25%;
         width: 190%;
         height: 190%;
         opacity: 0.85;
         
-        /* Tablet: Zentriert mit mehr Coverage */
+        /* Tablet: centered with more coverage */
         @media screen and (min-width: 600px) and (max-width: 1100px) {
           top: 15%;
           left: -35%;
@@ -231,7 +236,7 @@ onMounted(() => {
           opacity: 0.9;
         }
         
-        /* Desktop: Original Position */
+        /* Desktop: original position */
         @media screen and (min-width: 1100px) {
           top: -60%;
           left: -15%;
@@ -245,7 +250,7 @@ onMounted(() => {
       position: absolute;
       z-index: 0;
       
-      /* Mobile: Zentriert hinter dem Bild */
+      /* Mobile: centered behind the image */
       width: 140svw;
       height: 60svh;
       left: 50%;
@@ -253,7 +258,7 @@ onMounted(() => {
       transform: translate(-50%, -50%);
       opacity: 0.8;
       
-      /* Tablet: Zentriert mit mehr Platz */
+      /* Tablet: centered with more space */
       @media screen and (min-width: 600px) and (max-width: 1100px) {
         width: 150svw;
         height: 65svh;
@@ -263,7 +268,7 @@ onMounted(() => {
         opacity: 0.85;
       }
       
-      /* Desktop: Original Position */
+      /* Desktop: original position */
       @media screen and (min-width: 1100px) {
         width: 575px;
         height: 415px;
@@ -281,14 +286,14 @@ onMounted(() => {
       transition: width 0.5s ease, height 0.5s ease, top 0.5s ease,
         left 0.5s ease;
       
-      /* Mobile: Zentriert hinter dem Content */
+      /* Mobile: centered behind the content */
       top: 30%;
       left: -20%;
       width: 180%;
       height: 180%;
       opacity: 0.85;
       
-      /* Tablet: Zentrierter mit mehr Coverage */
+      /* Tablet: more centered with more coverage */
       @media screen and (min-width: 600px) and (max-width: 1100px) {
         top: 20%;
         left: -30%;
@@ -297,7 +302,7 @@ onMounted(() => {
         opacity: 0.9;
       }
       
-      /* Desktop: Original Position */
+      /* Desktop: original position */
       @media screen and (min-width: 1100px) {
         top: -33%;
         left: -45%;
@@ -319,7 +324,7 @@ onMounted(() => {
       position: absolute;
       z-index: 0;
       
-      /* Mobile: Zentriert hinter dem Bild */
+      /* Mobile: centered behind the image */
       width: 140svw;
       height: 60svh;
       left: 50%;
@@ -327,7 +332,7 @@ onMounted(() => {
       transform: translate(-50%, -50%);
       opacity: 0.8;
       
-      /* Tablet: Zentriert mit mehr Platz */
+      /* Tablet: centered with more space */
       @media screen and (min-width: 600px) and (max-width: 1100px) {
         width: 150svw;
         height: 65svh;
@@ -337,7 +342,7 @@ onMounted(() => {
         opacity: 0.85;
       }
       
-      /* Desktop: Original Position */
+      /* Desktop: original position */
       @media screen and (min-width: 1100px) {
         width: 575px;
         height: 415px;
@@ -412,14 +417,14 @@ onMounted(() => {
         @apply flex row items-center;
         margin: 0;
         
-        /* Mobile: Full-width mit space-between */
+        /* Mobile: full-width with space-between */
         @media screen and (max-width: 600px) {
           width: 100%;
           justify-content: space-between;
           gap: 0;
         }
         
-        /* Tablet/Desktop: Kompakte Anordnung */
+        /* Tablet/Desktop: compact arrangement */
         @media screen and (min-width: 601px) {
           gap: 0 var(--mid-margin);
           justify-content: center;
@@ -498,7 +503,7 @@ onMounted(() => {
       z-index: 2;
     }
 
-    /* Mobile: Column Layout, kompaktes Padding */
+    /* Mobile: column layout, compact padding */
     @media screen and (max-width: 600px) {
       flex-flow: column wrap;
       align-items: stretch;
@@ -506,7 +511,7 @@ onMounted(() => {
       padding: 0 var(--mid-margin);
     }
     
-    /* Tablet: Column Layout mit mehr Spacing */
+    /* Tablet: column layout with more spacing */
     @media screen and (min-width: 601px) and (max-width: 1100px) {
       flex-flow: column wrap;
       align-items: center;
@@ -515,7 +520,7 @@ onMounted(() => {
       gap: var(--mid-margin);
     }
     
-    /* Desktop: Row Layout */
+    /* Desktop: row layout */
     @media screen and (min-width: 1101px) {
       flex-flow: row nowrap;
       align-items: flex-start;
@@ -524,7 +529,7 @@ onMounted(() => {
   }
 }
 
-/* Spezifische Stile für die integrierten ModuleHeroEntry-Komponenten */
+/* Specific styles for the integrated ModuleHeroEntry components */
 .slider-item {
   &--default {
     ::v-deep(.module-hero-entry) {

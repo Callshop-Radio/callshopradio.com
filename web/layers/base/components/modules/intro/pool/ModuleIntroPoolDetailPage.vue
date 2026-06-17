@@ -4,13 +4,13 @@ import { useMainStore } from "~/stores/mainStore";
 import type { Image } from "~/types/sanity";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-// Template-Referenzen (wie Set für Höhen-Sync)
+// Template references (like Set for height sync)
 const poolContentRef = ref<HTMLElement | null>(null);
 const poolMainRef = ref<HTMLElement | null>(null);
 const poolMainHeight = ref(0);
 const windowWidth = ref(0);
 
-// Typdefinitionen
+// Type definitions
 interface Tag {
 	_id?: string;
 	_type?: string;
@@ -57,7 +57,7 @@ const props = defineProps<{
 // Store
 const mainStore = useMainStore();
 
-// Composable für Bild-Management
+// Composable for image management
 const useImageManagement = () => {
 	function getItemImage(item?: PoolItem): Image | null {
 		if (!item) return null;
@@ -97,7 +97,7 @@ const contactLink = computed(() => {
 	return contact;
 });
 
-// Höhen-Sync wie bei Set (rechte Spalte = gleiche Höhe wie linke)
+// Height sync like in Set (right column = same height as left)
 const computedPoolMainHeight = computed(() => {
 	if (windowWidth.value <= 900) return "100%";
 	return poolMainHeight.value;
@@ -292,10 +292,10 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Rechte Seite: nur Bild -->
+    <!-- Right side: image only -->
     <div class="pool-media-wrap" :style="poolDetailsStyle">
       <div class="pool-media">
-          <MediaImage :image="itemImage" :alt="itemTitle" class="pool-image" />
+          <MediaImage :image="itemImage" :alt="itemTitle" class="pool-image" :eager="true" />
       </div>
     </div>
   </div>
