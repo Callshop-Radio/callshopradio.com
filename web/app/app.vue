@@ -52,9 +52,6 @@ favicon();
   }
 
   .page-content {
-    /* Positioning context for the absolutely-pinned leaving page during a
-       crossfade transition (see transitions.postcss .page-leave-active). */
-    position: relative;
     width: 100%;
     min-height: calc(100svh - var(--nav-height));
     display: flex;
