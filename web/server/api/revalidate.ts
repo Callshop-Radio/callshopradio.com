@@ -10,11 +10,23 @@ interface SanityWebhookPayload {
 interface RevalidateResponse {
 	success: boolean;
 	purged: string[];
+	detailKeys: string[];
 	tags: string[];
 	edgePurge: "ok" | "skipped" | "failed";
 	timestamp: string;
 	message?: string;
 }
+
+// Maps Sanity _type → keyPrefix used by /api/sanity/detail/{type} so the
+// webhook can purge the matching cached detail responses.
+const DETAIL_KEY_PREFIX_BY_TYPE: Record<string, string> = {
+	show: "show-detail",
+	set: "set-detail",
+	person: "pool-detail",
+	venue: "pool-detail",
+	article: "article-detail",
+	page: "slug-page",
+};
 
 // Maps a Sanity document _type to the Netlify-Cache-Tag(s) set on the
 // affected route group(s). Tags match the headers in nuxt.config.ts routeRules.
@@ -113,12 +125,25 @@ export default defineEventHandler(
 		const uniqueRoutes = [...new Set(routesToPurge)];
 		const tags = TAGS_BY_TYPE[body._type] ?? [];
 
+		// Cached Sanity detail response key (matches name+getKey in
+		// /api/sanity/detail/[type].get.ts → "nitro:functions:sanity-detail:…").
+		const detailKeys: string[] = [];
+		const detailPrefix = DETAIL_KEY_PREFIX_BY_TYPE[body._type];
+		if (detailPrefix && body.slug?.current) {
+			detailKeys.push(`${detailPrefix}:${body.slug.current}`);
+		}
+
 		// Local Nitro LRU purge (handles non-ISR routes, dev, and as a fallback).
 		try {
 			const storage = useStorage("cache");
 			for (const route of uniqueRoutes) {
 				await storage.removeItem(`nitro:routes:${route}.html`);
 				await storage.removeItem(`nitro:routes:${route}`);
+			}
+			for (const detailKey of detailKeys) {
+				await storage.removeItem(
+					`nitro:functions:sanity-detail:${detailKey}.json`,
+				);
 			}
 		} catch (error) {
 			console.error("❌ Error purging local Nitro cache:", error);
@@ -150,10 +175,11 @@ export default defineEventHandler(
 		return {
 			success: true,
 			purged: uniqueRoutes,
+			detailKeys,
 			tags,
 			edgePurge,
 			timestamp: new Date().toISOString(),
-			message: `Invalidated ${uniqueRoutes.length} route(s), ${tags.length} tag(s)`,
+			message: `Invalidated ${uniqueRoutes.length} route(s), ${detailKeys.length} detail key(s), ${tags.length} tag(s)`,
 		};
 	},
 );
