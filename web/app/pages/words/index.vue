@@ -15,7 +15,7 @@ function hasTeaserText(article) {
 }
 
 const slider = computed(() => data.value?.slider);
-const { featured: featuredArticles } = useCoverFlowSliderItems(
+const { featured: featuredArticles } = await useCoverFlowSliderItems(
 	slider,
 	"articles",
 	{

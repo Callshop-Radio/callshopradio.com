@@ -6,7 +6,7 @@ type SliderWithAutoLoad = {
 	autoLoad?: boolean;
 };
 
-export function useCoverFlowSliderItems<T extends { _id?: string }>(
+export async function useCoverFlowSliderItems<T extends { _id?: string }>(
 	slider: Ref<
 		(SliderWithAutoLoad & Record<string, unknown>) | null | undefined
 	>,
@@ -16,6 +16,7 @@ export function useCoverFlowSliderItems<T extends { _id?: string }>(
 		filter?: (item: T) => boolean;
 	},
 ) {
+	const nuxtApp = useNuxtApp();
 	const isAutoLoad = computed(() => slider.value?.autoLoad !== false);
 
 	const manualCandidates = computed(() => {
@@ -23,19 +24,24 @@ export function useCoverFlowSliderItems<T extends { _id?: string }>(
 		return options.filter ? items.filter(options.filter) : items;
 	});
 
-	// SSR-side fetch so the cover-flow items ship in the first paint —
-	// otherwise the container appears empty on initial render and pops in
-	// after hydration, causing a visible layout shift.
-	const { data: randomItems, pending: isLoading } = useAsyncData<T[]>(
-		`cover-flow-${options.contentType}`,
+	// Awaited so the random cover-flow items join the page's blocking Suspense
+	// chain — the slider then ships in the first paint (SSR and client-side
+	// navigation alike) instead of popping in afterwards and shifting layout.
+	// getCachedData reuses the payload on revisits, keeping the random pick
+	// stable (no re-shuffle flicker) and avoiding a refetch.
+	const key = `cover-flow-${options.contentType}`;
+	const { data: randomItems } = await useAsyncData<T[]>(
+		key,
 		() => {
 			if (!isAutoLoad.value) return Promise.resolve([] as T[]);
 			return $fetch<T[]>(`/api/cover-flow/${options.contentType}`);
 		},
 		{
 			default: () => [] as T[],
-			server: true,
-			lazy: false,
+			getCachedData: (cacheKey) =>
+				(nuxtApp.payload.data[cacheKey] ?? nuxtApp.static.data[cacheKey]) as
+					| T[]
+					| undefined,
 		},
 	);
 
@@ -47,5 +53,5 @@ export function useCoverFlowSliderItems<T extends { _id?: string }>(
 		return options.filter ? items.filter(options.filter) : items;
 	});
 
-	return { featured, isAutoLoad, isLoading };
+	return { featured, isAutoLoad };
 }

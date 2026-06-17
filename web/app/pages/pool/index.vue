@@ -11,9 +11,13 @@ const query = groq`${POOLARCHIVE_QUERY}`;
 const { data } = await useCachedSanityQuery(query);
 
 const slider = computed(() => data.value?.slider);
-const { featured: featuredProfiles } = useCoverFlowSliderItems(slider, "pool", {
-	contentType: "pool",
-});
+const { featured: featuredProfiles } = await useCoverFlowSliderItems(
+	slider,
+	"pool",
+	{
+		contentType: "pool",
+	},
+);
 
 usePageSeo(data?.value?.seo);
 </script>
