@@ -1,12 +1,10 @@
 import { soundcloudInput } from "@damianrosellen/sanity-plugin-soundcloud-input";
 import { codeInput } from "@sanity/code-input";
 import { colorInput } from "@sanity/color-input";
-import { dashboardTool } from "@sanity/dashboard";
 import { visionTool } from "@sanity/vision";
 import { defineConfig, isDev } from "sanity";
 import { presentationTool } from "sanity/presentation";
 import { structureTool } from "sanity/structure";
-import { netlifyWidget } from "sanity-plugin-dashboard-widget-netlify";
 import { internationalizedArray } from "sanity-plugin-internationalized-array";
 import { media } from "sanity-plugin-media";
 import { muxInput } from "sanity-plugin-mux-input";
@@ -45,22 +43,6 @@ export default defineConfig({
       clientId: process.env.SANITY_STUDIO_SOUNDCLOUD_CLIENT_ID,
       clientSecret: process.env.SANITY_STUDIO_SOUNDCLOUD_CLIENT_SECRET,
       userId: process.env.SANITY_STUDIO_SOUNDCLOUD_USER_ID,
-    }),
-    dashboardTool({
-      widgets: [
-        netlifyWidget({
-          title: "Netlify deploys",
-          sites: [
-            {
-              title: "Website (Live)",
-              apiId: process.env.SANITY_STUDIO_NETLIFY_API_ID,
-              buildHookId: process.env.SANITY_STUDIO_NETLIFY_BUILD_HOOK_ID,
-              name: process.env.SANITY_STUDIO_NETLIFY_NAME,
-              url: process.env.SANITY_STUDIO_PREVIEW_URL,
-            },
-          ],
-        }),
-      ],
     }),
     colorInput(),
     internationalizedArray({
