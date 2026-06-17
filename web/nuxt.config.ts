@@ -1,4 +1,4 @@
-import { getPrerenderRoutes } from "./lib/fetch-prerender-routes";
+import { getPageSlugs } from "./lib/fetch-page-slugs";
 
 export default defineNuxtConfig({
 	// TODO: Remove this once Nuxt 4 has launched
@@ -15,7 +15,7 @@ export default defineNuxtConfig({
 	},
 	devtools: { enabled: false },
 	ssr: true,
-	// Optimiert für SSG
+	// Optimized for SSG
 	experimental: {
 		payloadExtraction: false,
 		// After deploys, stale tabs may request removed _nuxt/* chunks → hard reload.
@@ -131,9 +131,9 @@ export default defineNuxtConfig({
 		],
 		defaultLocale: "en",
 		detectBrowserLanguage: false,
-		// Bestehende i18n-Konfiguration...
+		// Existing i18n configuration...
 		bundle: {
-			optimizeTranslationDirective: false, // Explizit deaktivieren, um die Warnung zu beseitigen
+			optimizeTranslationDirective: false, // Explicitly disable to get rid of the warning
 		},
 	},
 
@@ -143,23 +143,25 @@ export default defineNuxtConfig({
 		preset:
 			process.env.NITRO_PRESET || (process.env.NETLIFY ? "netlify" : undefined),
 		prerender: {
-			crawlLinks: true,
+			// crawlLinks disabled: content routes are ISR (rendered on-demand at the
+			// edge), only `/sitemap.xml` is statically generated at build.
+			crawlLinks: false,
 			concurrency: 5,
 			failOnError: false,
-			routes: ["/", "/sitemap.xml"],
+			routes: ["/sitemap.xml"],
 			ignore: ["/api/**", "/de/**", "/de"],
 		},
 		experimental: {
 			wasm: true,
 		},
-		// Cache-Storage Konfiguration
+		// Cache storage configuration
 		storage: {
 			cache: {
 				driver: "lru-cache",
 				max: 1000,
 			},
 		},
-		// Entwicklungs-Storage (Filesystem-basiert)
+		// Development storage (filesystem-based)
 		devStorage: {
 			cache: {
 				driver: "fs",
@@ -180,6 +182,10 @@ export default defineNuxtConfig({
 		// Server-only secrets — never exposed to the client bundle.
 		sanityWebhookSecret: process.env.SANITY_WEBHOOK_SECRET,
 		libretimeApiKey: process.env.NUXT_LIBRETIME_API_KEY,
+		// Netlify Personal Access Token + Site ID for edge cache purge (tag-based).
+		// Optional — webhook still clears local Nitro LRU even when these are unset.
+		netlifyPurgeToken: process.env.NETLIFY_PURGE_TOKEN,
+		netlifySiteId: process.env.NETLIFY_SITE_ID,
 		public: {
 			baseUrl: process.env.NUXT_PUBLIC_SITE_URL,
 		},
@@ -235,34 +241,41 @@ export default defineNuxtConfig({
 	},
 
 	routeRules: {
-		// === Statische Seiten (bei Build generiert) ===
-		"/": { prerender: true },
+		// === Sitemap (generated at build time) ===
 		"/sitemap.xml": { prerender: true },
 
-		// === Content-Seiten (alle vorgerendert als statisches HTML) ===
-		"/pool": { prerender: true },
-		"/pool/**": { prerender: true },
-		"/shows": { prerender: true },
-		"/shows/**": { prerender: true },
-		"/words": { prerender: true },
-		"/words/**": { prerender: true },
-		"/schedule": { prerender: true },
+		// === Content pages (ISR on Netlify Edge, tag-based invalidation via /api/revalidate) ===
+		"/": { isr: true, headers: { "Netlify-Cache-Tag": "home" } },
+		"/pool": { isr: true, headers: { "Netlify-Cache-Tag": "pool" } },
+		"/pool/**": { isr: true, headers: { "Netlify-Cache-Tag": "pool" } },
+		"/shows": { isr: true, headers: { "Netlify-Cache-Tag": "shows" } },
+		"/shows/**": { isr: true, headers: { "Netlify-Cache-Tag": "shows" } },
+		"/words": { isr: true, headers: { "Netlify-Cache-Tag": "words" } },
+		"/words/**": { isr: true, headers: { "Netlify-Cache-Tag": "words" } },
+		"/schedule": { isr: true, headers: { "Netlify-Cache-Tag": "schedule" } },
 
-		// === Suche (client-side only, kein Pre-Rendering) ===
+		// === Search (client-side only, no pre-rendering) ===
 		"/search": { ssr: false },
 		"/de/search": { ssr: false },
 
-		// === API-Routen ===
+		// === API routes ===
 		"/api/**": { cors: true },
 	},
 
 	compatibilityDate: "2024-12-19",
 
 	hooks: {
-		async "prerender:routes"(ctx) {
-			const routes = await getPrerenderRoutes();
-			for (const route of routes) {
-				ctx.routes.add(route);
+		// Register every `page`-document slug as an ISR route at build time so
+		// editorial pages share the edge-cache + webhook-invalidation model used
+		// by shows/words/pool. Without this they fall through to uncached SSR.
+		async "nitro:config"(nitroConfig) {
+			const slugs = await getPageSlugs();
+			nitroConfig.routeRules ||= {};
+			for (const slug of slugs) {
+				nitroConfig.routeRules[`/${slug}`] = {
+					isr: true,
+					headers: { "Netlify-Cache-Tag": "page" },
+				};
 			}
 		},
 	},

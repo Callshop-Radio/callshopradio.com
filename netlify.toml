@@ -59,26 +59,9 @@
   [headers.values]
     cache-control = "public, max-age=0, must-revalidate"
 
-[[headers]]
-  for = "/"
-  [headers.values]
-    cache-control = "public, max-age=0, must-revalidate"
-
-# Static Content Pages - revalidate on deploy
-[[headers]]
-  for = "/pool/*"
-  [headers.values]
-    cache-control = "public, max-age=0, must-revalidate"
-
-[[headers]]
-  for = "/shows/*"
-  [headers.values]
-    cache-control = "public, max-age=0, must-revalidate"
-
-[[headers]]
-  for = "/words/*"
-  [headers.values]
-    cache-control = "public, max-age=0, must-revalidate"
+# Content routes (including "/") are ISR — see nuxt.config.ts routeRules.
+# Nitro emits Netlify-CDN-Cache-Control + Netlify-Cache-Tag headers itself.
+# Webhook at /api/revalidate purges by tag on Sanity content changes.
 
 # API Routes - No cache
 [[headers]]

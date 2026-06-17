@@ -10,9 +10,27 @@ interface SanityWebhookPayload {
 interface RevalidateResponse {
 	success: boolean;
 	purged: string[];
+	tags: string[];
+	edgePurge: "ok" | "skipped" | "failed";
 	timestamp: string;
 	message?: string;
 }
+
+// Maps a Sanity document _type to the Netlify-Cache-Tag(s) set on the
+// affected route group(s). Tags match the headers in nuxt.config.ts routeRules.
+const TAGS_BY_TYPE: Record<string, string[]> = {
+	show: ["shows", "home"],
+	set: ["shows"],
+	person: ["pool", "shows"],
+	venue: ["pool"],
+	article: ["words"],
+	home: ["home"],
+	page: ["page"],
+	pool: ["pool"],
+	showsArchive: ["shows"],
+	words: ["words"],
+	timetable: ["schedule"],
+};
 
 export default defineEventHandler(
 	async (event): Promise<RevalidateResponse> => {
@@ -20,7 +38,6 @@ export default defineEventHandler(
 		const signature = getHeader(event, "sanity-webhook-signature");
 		const config = useRuntimeConfig();
 
-		// Verify webhook signature if secret is configured
 		const secret = config.sanityWebhookSecret;
 		if (secret && signature) {
 			const expectedSignature = createHmac("sha256", secret)
@@ -36,26 +53,19 @@ export default defineEventHandler(
 			}
 		}
 
-		// Log incoming webhook for debugging
-
 		const routesToPurge: string[] = [];
 
-		// Determine routes to invalidate based on content type
 		switch (body._type) {
 			case "show":
 				routesToPurge.push("/shows");
 				if (body.slug?.current) {
 					routesToPurge.push(`/shows/${body.slug.current}`);
 				}
-				// Shows may appear on homepage
 				routesToPurge.push("/");
 				break;
 
 			case "set":
-				// Sets appear on show pages and archive
 				routesToPurge.push("/shows");
-				// Note: For set changes, we'd need to fetch parent show slug
-				// For now, invalidate all shows
 				break;
 
 			case "person":
@@ -63,7 +73,6 @@ export default defineEventHandler(
 				if (body.slug?.current) {
 					routesToPurge.push(`/pool/${body.slug.current}`);
 				}
-				// Persons may appear in shows
 				routesToPurge.push("/shows");
 				break;
 
@@ -95,40 +104,56 @@ export default defineEventHandler(
 			case "showsArchive":
 			case "words":
 			case "timetable":
-				// These are singleton documents for archive pages
 				routesToPurge.push("/pool", "/shows", "/words", "/schedule");
 				break;
 
 			default:
 		}
 
-		// Remove duplicate routes
 		const uniqueRoutes = [...new Set(routesToPurge)];
+		const tags = TAGS_BY_TYPE[body._type] ?? [];
 
-		// Purge cache for affected routes
+		// Local Nitro LRU purge (handles non-ISR routes, dev, and as a fallback).
 		try {
 			const storage = useStorage("cache");
-
 			for (const route of uniqueRoutes) {
-				// Clear Nitro route cache
-				const cacheKey = `nitro:routes:${route}.html`;
-				await storage.removeItem(cacheKey);
-
-				// Also try without .html extension
+				await storage.removeItem(`nitro:routes:${route}.html`);
 				await storage.removeItem(`nitro:routes:${route}`);
 			}
 		} catch (error) {
-			console.error("❌ Error purging cache:", error);
-			// Don't throw - still return success as webhook was processed
+			console.error("❌ Error purging local Nitro cache:", error);
 		}
 
-		const response: RevalidateResponse = {
+		// Netlify edge purge by tag — invalidates ISR cache so all users get
+		// fresh content on next request.
+		let edgePurge: RevalidateResponse["edgePurge"] = "skipped";
+		const purgeToken = config.netlifyPurgeToken;
+		const siteId = config.netlifySiteId;
+
+		if (purgeToken && siteId && tags.length > 0) {
+			try {
+				await $fetch("https://api.netlify.com/api/v1/purge", {
+					method: "POST",
+					headers: {
+						Authorization: `Bearer ${purgeToken}`,
+						"Content-Type": "application/json",
+					},
+					body: { site_id: siteId, cache_tags: tags },
+				});
+				edgePurge = "ok";
+			} catch (error) {
+				console.error("❌ Netlify edge purge failed:", error);
+				edgePurge = "failed";
+			}
+		}
+
+		return {
 			success: true,
 			purged: uniqueRoutes,
+			tags,
+			edgePurge,
 			timestamp: new Date().toISOString(),
-			message: `Invalidated ${uniqueRoutes.length} route(s)`,
+			message: `Invalidated ${uniqueRoutes.length} route(s), ${tags.length} tag(s)`,
 		};
-
-		return response;
 	},
 );
