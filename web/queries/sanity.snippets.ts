@@ -268,7 +268,7 @@ export const ARTICLE_COVER_FLOW_SLIDER_ITEM_QUERY = `{
 	image ${IMAGE_QUERY},
 	datetime,
 	useTeaserText,
-	textTeaser[] ${RICH_TEXT_QUERY},
+	textTeaser[] ${I18N_RICH_TEXT_VALUE_QUERY},
 	"tags": tags[]->{
 		_id,
 		title
@@ -291,9 +291,9 @@ export const POOL_COVER_FLOW_SLIDER_ITEM_QUERY = `{
 	} | order(lower(title)),
 	location,
 	useTeaserText,
-	textTeaser[] ${RICH_TEXT_QUERY},
-	text[] ${RICH_TEXT_QUERY},
-	description[] ${RICH_TEXT_QUERY},
+	textTeaser[] ${I18N_RICH_TEXT_VALUE_QUERY},
+	text[] ${I18N_RICH_TEXT_VALUE_QUERY},
+	description[] ${I18N_RICH_TEXT_VALUE_QUERY},
 	${SITE_PATH_FRAGMENT}
 }`;
 
@@ -366,7 +366,7 @@ export const MODULE_QUERY = `{
         layout,
         type,
         title,
-        text[] ${RICH_TEXT_QUERY},
+        text[] ${I18N_RICH_TEXT_VALUE_QUERY},
         link ${SINGLE_LINK_OPTIONAL_QUERY},
         contentReference -> {
             ...,
@@ -376,8 +376,8 @@ export const MODULE_QUERY = `{
             slug,
             image ${IMAGE_QUERY},
             bio ${RICH_TEXT_QUERY},
-            text[] ${RICH_TEXT_QUERY},
-            description[] ${RICH_TEXT_QUERY},
+            text[] ${I18N_RICH_TEXT_VALUE_QUERY},
+            description[] ${I18N_RICH_TEXT_VALUE_QUERY},
             "tags": tags[]->{
                 ...,
                 _id,
@@ -399,7 +399,7 @@ export const MODULE_QUERY = `{
         layout,
         type,
         title,
-        text[] ${RICH_TEXT_QUERY},
+        text[] ${I18N_RICH_TEXT_VALUE_QUERY},
         link ${SINGLE_LINK_OPTIONAL_QUERY},
         contentReference -> {
             ...,

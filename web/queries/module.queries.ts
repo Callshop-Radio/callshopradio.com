@@ -6,10 +6,10 @@
  */
 
 import {
+	I18N_RICH_TEXT_VALUE_QUERY,
 	IMAGE_QUERY,
 	PARENT_SHOW_LINK_FRAGMENT,
 	PERSON_LINK_FRAGMENT,
-	RICH_TEXT_QUERY,
 	SITE_PATH_FRAGMENT,
 } from "./sanity.snippets";
 
@@ -140,9 +140,9 @@ export const ARTICLE_PROJECTION = `{
   slug,
   image ${IMAGE_QUERY},
   useTeaserText,
-  textTeaser[] ${RICH_TEXT_QUERY},
-  text[] ${RICH_TEXT_QUERY},
-  description[] ${RICH_TEXT_QUERY},
+  textTeaser[] ${I18N_RICH_TEXT_VALUE_QUERY},
+  text[] ${I18N_RICH_TEXT_VALUE_QUERY},
+  description[] ${I18N_RICH_TEXT_VALUE_QUERY},
   _updatedAt,
   _createdAt,
   "tags": tags[]->{
@@ -180,7 +180,7 @@ export const SHOW_PROJECTION = `{
   _updatedAt,
   _createdAt,
   image ${IMAGE_QUERY},
-  description[] ${RICH_TEXT_QUERY},
+  description[] ${I18N_RICH_TEXT_VALUE_QUERY},
   "tags": tags[]->{
     ...,
     _id,

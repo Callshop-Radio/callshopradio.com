@@ -1,10 +1,10 @@
 import {
+	I18N_RICH_TEXT_VALUE_QUERY,
 	IMAGE_QUERY,
 	LINK_QUERY,
 	MODULE_QUERY,
 	PARENT_SHOW_LINK_FRAGMENT,
 	PERSON_LINK_FRAGMENT,
-	RICH_TEXT_QUERY,
 	SEO_QUERY,
 	SITE_PATH_FRAGMENT,
 	SOUNDCLOUD_TRACKS_QUERY,
@@ -58,7 +58,7 @@ export const SITEMAP_QUERY = `
     _type == "words" => 0.8,
     0.8
   ),
-  // Zusätzliche Informationen für bessere URL-Generierung
+  // Additional information for better URL generation
   _type == "set" => {
     "show": show->{
       "slug": slug.current
@@ -69,7 +69,7 @@ export const SITEMAP_QUERY = `
 export const HOMEPAGE_QUERY = `
 *[_type == "home"] | order(_updatedAt desc)[0] {
   ...,
-  content[] ${RICH_TEXT_QUERY},
+  content[] ${I18N_RICH_TEXT_VALUE_QUERY},
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY},
 }`;
@@ -77,10 +77,7 @@ export const HOMEPAGE_QUERY = `
 export const SLUG_PAGE_QUERY = `
 *[_type == "page" && slug.current == $slug] | order(_updatedAt desc)[0] {
   ...,
-  content[] {
-    ...,
-    value[] ${RICH_TEXT_QUERY},
-  },
+  content[] ${I18N_RICH_TEXT_VALUE_QUERY},
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY}
 }`;
@@ -89,7 +86,7 @@ export const SCHEDULE_QUERY = `
 *[_type == "timetable"] | order(_updatedAt desc)[0] {
   ...,
   backgroundImage ${IMAGE_QUERY},
-  content[] ${RICH_TEXT_QUERY},
+  content[] ${I18N_RICH_TEXT_VALUE_QUERY},
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY},
 }`;
@@ -98,7 +95,7 @@ export const POOLARCHIVE_QUERY = `
 *[_type == "pool"] | order(_updatedAt desc)[0] {
   ...,
   backgroundImage ${IMAGE_QUERY},
-  content[] ${RICH_TEXT_QUERY},
+  content[] ${I18N_RICH_TEXT_VALUE_QUERY},
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY},
   slider{
@@ -121,9 +118,9 @@ export const POOLARCHIVE_QUERY = `
           }| order(lower(title)),
           location,
           useTeaserText,
-          textTeaser[] ${RICH_TEXT_QUERY},
-          text[] ${RICH_TEXT_QUERY},
-          description[] ${RICH_TEXT_QUERY},
+          textTeaser[] ${I18N_RICH_TEXT_VALUE_QUERY},
+          text[] ${I18N_RICH_TEXT_VALUE_QUERY},
+          description[] ${I18N_RICH_TEXT_VALUE_QUERY},
           socials {
             instagram,
             soundcloud,
@@ -146,7 +143,7 @@ export const POOL_PROFILE_QUERY = `
     name,
     slug,
     image ${IMAGE_QUERY},
-    description[] ${RICH_TEXT_QUERY},
+    description[] ${I18N_RICH_TEXT_VALUE_QUERY},
     "cityTags": *[_id in ^.tags[]._ref && _type == "tag.city"] {
       _id,
       _type,
@@ -167,9 +164,9 @@ export const POOL_PROFILE_QUERY = `
       short
     }| order(lower(title)),
     location,
-    // Kontaktdaten hinzufügen
+    // Add contact data
     contact,
-    // Social Media Profile hinzufügen
+    // Add social media profiles
     socials {
       instagram,
       soundcloud,
@@ -177,7 +174,7 @@ export const POOL_PROFILE_QUERY = `
       bandcamp,
       web
     },
-    // Shows für Personen und Veranstaltungsorte
+    // Shows for persons and venues
     "shows": shows[]->{
       _id,
       _type,
@@ -211,7 +208,7 @@ export const POOL_PROFILE_QUERY = `
                 ${SITE_PATH_FRAGMENT}
             } | order(datetime desc)[0...3]
     },
-    // Personen für Veranstaltungsorte hinzufügen
+    // Add persons for venues
     _type == 'venue' => {
       "persons": persons[]->{
         _id,
@@ -228,7 +225,7 @@ export const POOL_PROFILE_QUERY = `
         ${SITE_PATH_FRAGMENT}
       }
     },
-    // Veranstaltungsorte für Personen hinzufügen
+    // Add venues for persons
     _type == 'person' => {
       "venues": venues[]->{
         _id,
@@ -379,7 +376,7 @@ export const SHOW_QUERY = `
   title,
   slug,
   image ${IMAGE_QUERY},
-  content[] ${RICH_TEXT_QUERY},
+  content[] ${I18N_RICH_TEXT_VALUE_QUERY},
   modules [] ${MODULE_QUERY},
   sets[]->{
     ...,
@@ -392,7 +389,7 @@ export const SHOW_QUERY = `
     "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
     "parentShow": *[_type == "show" && references(^._id)][0]{
           ${PARENT_SHOW_LINK_FRAGMENT},
-          content[] ${RICH_TEXT_QUERY}
+          content[] ${I18N_RICH_TEXT_VALUE_QUERY}
     },
     persons[]->{
       ${PERSON_LINK_FRAGMENT}
@@ -458,7 +455,7 @@ export const SET_QUERY = `
   slug,
   datetime,
   image ${IMAGE_QUERY},
-  content[] ${RICH_TEXT_QUERY},
+  content[] ${I18N_RICH_TEXT_VALUE_QUERY},
   modules[] ${MODULE_QUERY},
   "soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
   "tags": tags[]->{
@@ -561,10 +558,10 @@ export const WORDS_QUERY = `
                 title,
                 slug,
                 image ${IMAGE_QUERY},
-                text[] ${RICH_TEXT_QUERY},
+                text[] ${I18N_RICH_TEXT_VALUE_QUERY},
                 datetime,
                 useTeaserText,
-                textTeaser[] ${RICH_TEXT_QUERY},
+                textTeaser[] ${I18N_RICH_TEXT_VALUE_QUERY},
                 contentReferences[]->{
                     ...,
                 },
@@ -601,13 +598,10 @@ export const ENTRY_QUERY = `
     title,
     slug,
     image ${IMAGE_QUERY},
-    text[] {
-      ...,
-     value[] ${RICH_TEXT_QUERY},
-    },
+    text[] ${I18N_RICH_TEXT_VALUE_QUERY},
     datetime,
     useTeaserText,
-    textTeaser[] ${RICH_TEXT_QUERY},
+    textTeaser[] ${I18N_RICH_TEXT_VALUE_QUERY},
     contentReferences[]->{
         ...,
     },
@@ -647,7 +641,7 @@ export const ENTRY_QUERY = `
         image ${IMAGE_QUERY},
         datetime,
         useTeaserText,
-        textTeaser[] ${RICH_TEXT_QUERY},
+        textTeaser[] ${I18N_RICH_TEXT_VALUE_QUERY},
         persons[]->{
             ${PERSON_LINK_FRAGMENT}
         },
@@ -730,27 +724,27 @@ export const SITE_OPTIONS_QUERY = `{
     fallbackArticle {
         ...,
         image { asset-> },
-        description[] ${RICH_TEXT_QUERY},
+        description[] ${I18N_RICH_TEXT_VALUE_QUERY},
     },
     fallbackPerson {
          ...,
         image { asset-> },
-        description[] ${RICH_TEXT_QUERY},
+        description[] ${I18N_RICH_TEXT_VALUE_QUERY},
     },
     fallbackSet {
       ...,
       image { asset-> },
-      description[] ${RICH_TEXT_QUERY},
+      description[] ${I18N_RICH_TEXT_VALUE_QUERY},
     },
     fallbackShow {
       ...,
       image { asset-> },
-      description[] ${RICH_TEXT_QUERY},
+      description[] ${I18N_RICH_TEXT_VALUE_QUERY},
     },
     fallbackVenue {
         ...,
         image { asset-> },
-        description[] ${RICH_TEXT_QUERY},
+        description[] ${I18N_RICH_TEXT_VALUE_QUERY},
     }
   }
 }`;
@@ -758,7 +752,7 @@ export const SITE_OPTIONS_QUERY = `{
 export const ERROR_PAGE_QUERY = `
 *[_type == "error"][0] {
   ...,
-  content[] ${RICH_TEXT_QUERY},
+  content[] ${I18N_RICH_TEXT_VALUE_QUERY},
 }
 `;
 

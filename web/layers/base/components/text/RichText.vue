@@ -14,6 +14,10 @@ const props = defineProps({
 	},
 });
 
+// Unwrap internationalizedArrayRichText* wrapper items so the component
+// accepts both the i18n wrapper shape (from GROQ) and a flat block array.
+const resolvedBlocks = computed(() => parseI18nObj(props.blocks) ?? []);
+
 const portableTextComponents = {
 	types: {
 		"module.media": flattenProps(ModuleMedia),
@@ -39,7 +43,7 @@ const portableTextComponents = {
 
 <template>
 	<div class="rich-text">
-		<SanityContent :value="props.blocks" :components="portableTextComponents" />
+		<SanityContent :value="resolvedBlocks" :components="portableTextComponents" />
 	</div>
 </template>
 <style lang="postcss" scoped>
