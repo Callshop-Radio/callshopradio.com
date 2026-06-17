@@ -26,8 +26,14 @@ export const isI18nArray = <T = string>(
 	if (!Array.isArray(value) || value.length === 0) return false;
 	const first = value[0];
 	if (typeof first !== "object" || first === null) return false;
-	if (!("value" in first)) return false;
+	// An explicit internationalizedArray* wrapper type is authoritative even when
+	// `value` is missing: an untranslated locale stub (e.g. an empty "de") carries
+	// _type/_key/language but no `value`. Checking _type first means resolveI18nValue
+	// still runs — otherwise the unwrapped wrapper falls straight through
+	// parseI18nObj into PortableText ("Unknown block type" warning) and any other
+	// filled locale on the same field is silently dropped.
 	if (first._type?.includes("internationalizedArray")) return true;
+	if (!("value" in first)) return false;
 	return (
 		"language" in first || (typeof first._key === "string" && !first._type)
 	);

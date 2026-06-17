@@ -19,7 +19,16 @@ export function useIntroCoverFlow(
 	const currentIndex = ref(0);
 	const isAnimating = ref(false);
 	const visualOffsets = ref<Record<string, number>>({});
-	const isCompactLayout = useMediaQuery("(max-width: 900px)");
+
+	// `useMediaQuery` resolves to false during SSR (no window) but reads the real
+	// viewport synchronously on the client — so on a narrow screen the first client
+	// render would diverge from the server HTML (different card shift = hydration
+	// mismatch on .cover-flow__card-wrap). Gate it behind `mounted` so the first
+	// client paint matches SSR (desktop shifts), then adopt the real query after
+	// hydration completes.
+	const mounted = ref(false);
+	const compactQuery = useMediaQuery("(max-width: 900px)");
+	const isCompactLayout = computed(() => mounted.value && compactQuery.value);
 
 	const shiftStops = computed(() => {
 		if (isCompactLayout.value) {
@@ -214,6 +223,7 @@ export function useIntroCoverFlow(
 	};
 
 	onMounted(() => {
+		mounted.value = true;
 		initVisualOffsets(currentIndex.value);
 	});
 

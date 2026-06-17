@@ -74,7 +74,16 @@ const canScrollNext = ref(true);
 const currentTime = ref(new Date());
 const timeUpdateInterval = ref<NodeJS.Timeout | null>(null);
 const visibility = useDocumentVisibility();
-const isMobile = useMediaQuery("(max-width: 900px)");
+
+// `useMediaQuery` is false during SSR (no window) but reads the real viewport
+// synchronously on the client, so on a narrow screen the first client render
+// would diverge from the server HTML (the grid styles below key off it) →
+// hydration mismatch. Gate it behind `mounted` so the first client paint
+// matches SSR, then adopt the real query after hydration. Same pattern as
+// useIntroCoverFlow.
+const mounted = ref(false);
+const isMobileQuery = useMediaQuery("(max-width: 900px)");
+const isMobile = computed(() => mounted.value && isMobileQuery.value);
 
 interface DayGridLayout {
 	rowCount: number;
@@ -482,6 +491,8 @@ const updateCurrentTime = () => {
 
 // Lifecycle
 onMounted(() => {
+	mounted.value = true;
+
 	if (emblaApi.value) {
 		emblaApi.value.on("select", () => {
 			currentSlideIndex.value = emblaApi.value?.selectedScrollSnap() || 0;
@@ -648,9 +659,13 @@ watch(
 											class="events-grid"
 											:style="getEventsGridStyle(group.date)"
 										>
-											<!-- Current Time Marker - only show for today -->
+											<!-- Current Time Marker - only show for today.
+												 Gated on `mounted`: its position derives from
+												 `new Date()`, which differs between SSR and the
+												 client, so render it client-side only (it's a
+												 live indicator that updates every 30s anyway). -->
 											<div
-												v-if="shouldShowTimeMarkerForDate(group.date)"
+												v-if="mounted && shouldShowTimeMarkerForDate(group.date)"
 												class="current-time-marker"
 												:style="getCurrentTimeMarkerStyleForDate(group.date)"
 											>
