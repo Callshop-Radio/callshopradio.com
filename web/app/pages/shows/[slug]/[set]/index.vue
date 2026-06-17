@@ -47,12 +47,12 @@ usePageSeo(data?.value?.seo);
 			<ModuleRenderer :modules="data?.modules" />
 		</section>
 		<section
-			v-if="data?.relatedContent.length > 0"
+			v-if="data?.relatedContent?.length > 0"
 			class="set-detail__related-content"
 		>
 			<h3>Related</h3>
 			<ModuleRelatedContent
-				v-if="data?.relatedContent.length > 0"
+				v-if="data?.relatedContent?.length > 0"
 				:items="data?.relatedContent"
 				type="sets"
 				title=""
