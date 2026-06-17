@@ -25,6 +25,9 @@ logs/
 *.swp
 *.swo
 
+# ── Claude Code (local agent config, preview launch, local settings) ──────
+.claude/
+
 # ── TypeScript build info ─────────────────────────────────────────────────
 *.tsbuildinfo
 
