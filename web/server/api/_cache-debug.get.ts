@@ -22,9 +22,7 @@ export default defineEventHandler(async () => {
 				? (storage as { getMounts: () => unknown }).getMounts()
 				: undefined;
 		result.mounts = JSON.parse(
-			JSON.stringify(mounts, (_k, v) =>
-				typeof v === "function" ? "[fn]" : v,
-			),
+			JSON.stringify(mounts, (_k, v) => (typeof v === "function" ? "[fn]" : v)),
 		);
 	} catch (err) {
 		result.mountsError = (err as Error)?.message;
@@ -50,11 +48,11 @@ export default defineEventHandler(async () => {
 		result.errorName = (err as Error)?.name;
 	}
 
-	// Are real cached detail responses present?
+	// Are real cached detail responses present? (our own key scheme)
 	try {
-		const keys = await storage.getKeys("nitro:functions:sanity-detail");
+		const keys = await storage.getKeys("sanity-detail");
 		result.detailCacheKeyCount = keys.length;
-		result.detailCacheKeysSample = keys.slice(0, 5);
+		result.detailCacheKeysSample = keys.slice(0, 8);
 	} catch (err) {
 		result.detailKeysError = (err as Error)?.message;
 	}

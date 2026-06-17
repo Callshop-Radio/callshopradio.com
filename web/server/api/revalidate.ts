@@ -125,15 +125,15 @@ export default defineEventHandler(
 		const uniqueRoutes = [...new Set(routesToPurge)];
 		const tags = TAGS_BY_TYPE[body._type] ?? [];
 
-		// Cached Sanity detail response key (matches name+getKey in
-		// /api/sanity/detail/[type].get.ts → "nitro:functions:sanity-detail:…").
+		// Cached Sanity detail response keys — must match the deterministic key
+		// in /api/sanity/detail/[type].get.ts (sanityDetailCacheKey).
 		const detailKeys: string[] = [];
 		const detailPrefix = DETAIL_KEY_PREFIX_BY_TYPE[body._type];
 		if (detailPrefix && body.slug?.current) {
-			detailKeys.push(`${detailPrefix}:${body.slug.current}`);
+			detailKeys.push(`sanity-detail:${detailPrefix}:${body.slug.current}`);
 		}
 
-		// Local Nitro LRU purge (handles non-ISR routes, dev, and as a fallback).
+		// Purge the cache store (Netlify Blobs in prod, LRU in dev).
 		try {
 			const storage = useStorage("cache");
 			for (const route of uniqueRoutes) {
@@ -141,12 +141,10 @@ export default defineEventHandler(
 				await storage.removeItem(`nitro:routes:${route}`);
 			}
 			for (const detailKey of detailKeys) {
-				await storage.removeItem(
-					`nitro:functions:sanity-detail:${detailKey}.json`,
-				);
+				await storage.removeItem(detailKey);
 			}
 		} catch (error) {
-			console.error("❌ Error purging local Nitro cache:", error);
+			console.error("❌ Error purging cache:", error);
 		}
 
 		// Netlify edge purge by tag — invalidates ISR cache so all users get
