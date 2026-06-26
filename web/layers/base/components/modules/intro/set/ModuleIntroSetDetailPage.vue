@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-// Template references
+// Template references; height sync keeps the media column level with content.
 const setContentRef = ref<HTMLElement | null>(null);
-const setMainRef = ref<HTMLElement | null>(null);
-
-// Reactive height tracking
-const setMainHeight = ref(0);
-const windowWidth = ref(0);
+const { mainRef: setMainRef, computedHeight: computedSetMainHeight } =
+	useDetailHeightSync();
 
 // Type definitions
 interface Image {
@@ -151,29 +148,6 @@ const useSoundCloud = () => {
 	};
 };
 
-// Computed property for the height of set-main
-const computedSetMainHeight = computed(() => {
-	// Below 900px screen width the height should be 100%
-	if (windowWidth.value <= 900) {
-		return "100%";
-	}
-	return setMainHeight.value;
-});
-
-// Function to update the height
-const updateSetMainHeight = () => {
-	if (setMainRef.value) {
-		setMainHeight.value = setMainRef.value.offsetHeight;
-	}
-};
-
-// Function to update the window width
-const updateWindowWidth = () => {
-	if (typeof window !== "undefined") {
-		windowWidth.value = window.innerWidth;
-	}
-};
-
 // Application of the composables
 const { getItemImage: _getItemImage } = useImageManagement();
 const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
@@ -222,37 +196,6 @@ function getItemNonCityTags(item: Set): Tag[] {
 // Lifecycle hooks
 onMounted(() => {
 	loadArtworkUrl();
-	nextTick();
-
-	// Initial measurements
-	updateSetMainHeight();
-	updateWindowWidth();
-
-	// ResizeObserver for responsive changes
-	if (typeof window !== "undefined" && setMainRef.value) {
-		const resizeObserver = new ResizeObserver(() => {
-			updateSetMainHeight();
-		});
-		resizeObserver.observe(setMainRef.value);
-
-		// Window resize listener for window size changes
-		const handleResize = () => {
-			updateWindowWidth();
-			updateSetMainHeight();
-		};
-		window.addEventListener("resize", handleResize);
-
-		// MutationObserver for DOM changes
-		const mutationObserver = new MutationObserver(() => {
-			updateSetMainHeight();
-		});
-		mutationObserver.observe(setMainRef.value, {
-			childList: true,
-			subtree: true,
-			attributes: true,
-			attributeFilter: ["style", "class"],
-		});
-	}
 });
 </script>
 

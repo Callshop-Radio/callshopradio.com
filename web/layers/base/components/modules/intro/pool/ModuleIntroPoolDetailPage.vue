@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 import type { Image } from "~/types/sanity";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-// Template references (like Set for height sync)
+// Template references; height sync keeps the media column level with content.
 const poolContentRef = ref<HTMLElement | null>(null);
-const poolMainRef = ref<HTMLElement | null>(null);
-const poolMainHeight = ref(0);
-const windowWidth = ref(0);
+const { mainRef: poolMainRef, computedHeight: computedPoolMainHeight } =
+	useDetailHeightSync();
 
 // Type definitions
 interface Tag {
@@ -97,45 +96,11 @@ const contactLink = computed(() => {
 	return contact;
 });
 
-// Height sync like in Set (right column = same height as left)
-const computedPoolMainHeight = computed(() => {
-	if (windowWidth.value <= 900) return "100%";
-	return poolMainHeight.value;
-});
-
+// Right column height matches the left content column (see useDetailHeightSync).
 const poolDetailsStyle = computed(() => {
 	const h = computedPoolMainHeight.value;
 	if (typeof h === "string") return `max-height: ${h}; height: ${h}`;
 	return `max-height: ${h}px; height: ${h}px`;
-});
-
-const updatePoolMainHeight = () => {
-	if (poolMainRef.value) poolMainHeight.value = poolMainRef.value.offsetHeight;
-};
-
-const updateWindowWidth = () => {
-	if (typeof window !== "undefined") windowWidth.value = window.innerWidth;
-};
-
-onMounted(() => {
-	nextTick();
-	updatePoolMainHeight();
-	updateWindowWidth();
-	if (typeof window !== "undefined" && poolMainRef.value) {
-		const resizeObserver = new ResizeObserver(() => updatePoolMainHeight());
-		resizeObserver.observe(poolMainRef.value);
-		window.addEventListener("resize", () => {
-			updateWindowWidth();
-			updatePoolMainHeight();
-		});
-		const mutationObserver = new MutationObserver(() => updatePoolMainHeight());
-		mutationObserver.observe(poolMainRef.value, {
-			childList: true,
-			subtree: true,
-			attributes: true,
-			attributeFilter: ["style", "class"],
-		});
-	}
 });
 </script>
 
