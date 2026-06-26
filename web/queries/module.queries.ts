@@ -8,7 +8,6 @@
 import {
 	I18N_RICH_TEXT_VALUE_QUERY,
 	IMAGE_QUERY,
-	PARENT_SHOW_LINK_FRAGMENT,
 	PERSON_LINK_FRAGMENT,
 	SITE_PATH_FRAGMENT,
 } from "./sanity.snippets";
@@ -198,68 +197,6 @@ export const SHOW_LIST_QUERY = `*[${SHOW_BASE_FILTER}] | order(datetime desc)[$s
 export const SHOW_COUNT_QUERY = `
 count(*[_type == 'show'])
 `;
-
-// ==================== LIGHTWEIGHT MODULE METADATA ====================
-
-/**
- * Module metadata query - replaces heavy MODULE_QUERY for initial page load
- * Content is fetched separately by each module
- */
-export const MODULE_METADATA_QUERY = `{
-  _type == "module.heroSlider" => {
-    _type,
-    _key,
-    // Hero slides still need full data (usually just 1-3 items)
-    slides[] {
-      layout,
-      type,
-      title,
-      contentReference->{ 
-        _id, 
-        _type,
-        title,
-        slug 
-      }
-    }
-  },
-  _type == "module.heroEntry" => {
-    _type,
-    _key,
-    layout,
-    type,
-    title,
-    contentReference->{ 
-      _id, 
-      _type,
-      title,
-      slug 
-    }
-  },
-  _type == "module.contentReferenceSlider" => {
-    _type,
-    _key,
-    title,
-    type,
-    style,
-    count,
-    poolContentType,
-    showTags,
-    autoLoad
-    // NO content items - fetched by module
-  },
-  _type == "module.contentReferenceGrid" => {
-    _type,
-    _key,
-    title,
-    type,
-    style,
-    count,
-    poolContentType,
-    showTags,
-    autoLoad
-    // NO content items - fetched by module
-  }
-}`;
 
 // ==================== QUERY BUILDERS ====================
 
