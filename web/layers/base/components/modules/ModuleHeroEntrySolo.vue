@@ -79,53 +79,9 @@ const props = defineProps<{
 	eager?: boolean;
 }>();
 
-// Image Management Composable
-const useImageManagement = () => {
-	function getItemImage(item?: ContentReference): Image | null {
-		if (!item) return null;
-
-		// Primary image from the item
-		if (item.image || item.mainImage) {
-			return (item.image || item.mainImage) ?? null;
-		}
-
-		// Fallback images based on content type
-		const fallbacks = mainStore.siteFallbacks;
-		if (!fallbacks) return null;
-
-		const fallbackMap: Record<string, Image | undefined> = {
-			person: fallbacks.fallbackPerson?.image,
-			venue: fallbacks.fallbackVenue?.image,
-			show: fallbacks.fallbackShow?.image,
-			set: fallbacks.fallbackSet?.image,
-			word: fallbacks.fallbackArticle?.image,
-			article: fallbacks.fallbackArticle?.image,
-		};
-
-		return (
-			fallbackMap[item._type || ""] || fallbacks.fallbackPerson?.image || null
-		);
-	}
-
-	function checkImageExists(url: string): Promise<boolean> {
-		return new Promise((resolve) => {
-			const img = new Image();
-			img.onload = () => resolve(true);
-			img.onerror = () => resolve(false);
-			img.src = url;
-		});
-	}
-
-	return {
-		getItemImage,
-		checkImageExists,
-	};
-};
-
 // SoundCloud Composable
 const useSoundCloud = () => {
 	const artworkUrl = ref<string>("");
-	const { checkImageExists: _checkImageExists } = useImageManagement();
 
 	// Non-blocking artwork URL resolution
 	function getSoundcloudArtwork(item?: ContentReference): string {
@@ -171,7 +127,7 @@ const useSoundCloud = () => {
 };
 
 // Initialize Composables
-const { getItemImage } = useImageManagement();
+const { getItemImage } = useContentImage();
 const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
 
 // Computed Properties

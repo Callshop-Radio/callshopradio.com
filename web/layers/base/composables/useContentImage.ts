@@ -6,8 +6,10 @@ import { useMainStore } from "~/stores/mainStore";
 // copies that prefer `image` then `mainImage`, then fall back per `_type`,
 // defaulting to the person fallback.
 // NOTE: only the components whose inlined copy was byte-for-byte equivalent in
-// logic adopt this (ModuleContentGrid, ModuleContentTeaser). Components with a
-// divergent fallback chain keep their local copy on purpose.
+// logic adopt this (ModuleContentGrid, ModuleContentTeaser, ModuleHeroEntry,
+// ModuleHeroEntrySolo). Components with a divergent fallback chain (e.g. the
+// pool/show/article intro pages, ModuleRelatedContent) keep their local copy
+// on purpose.
 // biome-ignore lint/suspicious/noExplicitAny: items are loosely typed Sanity docs
 type ImageItem = any;
 
@@ -16,6 +18,7 @@ export const useContentImage = () => {
 
 	// Helper function for image fetching and fallbacks
 	function getItemImage(item: ImageItem) {
+		if (!item) return undefined;
 		if (item.image) return item.image;
 		if (item.mainImage) return item.mainImage;
 
