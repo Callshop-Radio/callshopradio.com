@@ -70,80 +70,12 @@ const props = defineProps<{
 // Store
 const mainStore = useMainStore();
 
-// Composable for image management
-const useImageManagement = () => {
-	// Helper function for image fetching and fallbacks
-	function getItemImage(item?: Set): Image | null {
-		if (!item) return null;
-
-		// Image from the item itself
-		if (item.image || item.mainImage) {
-			return item.image || item.mainImage;
-		}
-
-		// Fallback for sets
-		return mainStore?.siteFallbacks?.fallbackSet?.image;
-	}
-
-	function checkImage(url: string): Promise<boolean> {
-		return new Promise((resolve) => {
-			const img = new Image();
-			img.onload = () => resolve(true);
-			img.onerror = () => resolve(false);
-			img.src = url;
-		});
-	}
-
-	return {
-		getItemImage,
-		checkImage,
-	};
-};
-
 // SoundCloud artwork + playback via the shared useSoundcloudArtwork composable.
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 const artworkUrl = ref("");
 
 function loadArtworkUrl() {
 	if (props.set) artworkUrl.value = getSoundcloudArtwork(props.set);
-}
-
-// Application of the composables
-const { getItemImage: _getItemImage } = useImageManagement();
-
-// Function to adjust the height
-const _adjustSetContentHeight = () => {
-	if (setMainRef.value && setContentRef.value) {
-		const setMainHeight = setMainRef.value.offsetHeight;
-		setContentRef.value.style.height = `${setMainHeight}px`;
-	}
-};
-
-// Get city tags
-function _getItemCityTags(item: Set): Tag[] {
-	const cityTags: Tag[] = [];
-
-	// Direct city tags
-	if (item?.tags && Array.isArray(item?.tags)) {
-		item?.tags.forEach((tag: Tag) => {
-			if (tag._type === "tag.city") {
-				cityTags.push(tag);
-			}
-		});
-	}
-
-	// City tags from parentShow
-	if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
-		item?.parentShow?.tags.forEach((tag: Tag) => {
-			if (tag._type === "tag.city") {
-				if (!cityTags.some((existingTag) => existingTag._id === tag._id)) {
-					cityTags.push(tag);
-				}
-			}
-		});
-	}
-
-	return cityTags;
 }
 
 // Get non-city tags
