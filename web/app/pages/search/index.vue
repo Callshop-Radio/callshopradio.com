@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
 definePageMeta({
 	bodyClass: "search-page",

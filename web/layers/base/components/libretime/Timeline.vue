@@ -1,6 +1,4 @@
 <script setup>
-/* eslint-disable sort-imports -- FullCalendar/timegrid vs vue3 path order conflicts with memberSyntaxSortOrder */
-
 import timeGridPlugin from "@fullcalendar/timegrid";
 import axios from "axios";
 import { computed, onMounted, reactive, ref } from "vue";

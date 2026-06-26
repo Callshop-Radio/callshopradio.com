@@ -1,4 +1,3 @@
-/* eslint-disable sort-imports -- ~~/queries vs ~~/types with type import */
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { SITEMAP_QUERY } from "~~/queries/sanity.queries";

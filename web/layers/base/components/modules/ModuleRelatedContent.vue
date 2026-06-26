@@ -202,34 +202,6 @@ function _checkImage(url) {
 	});
 }
 
-// Retrieve city tags (used in template)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- used in template
-function _getItemCityTags(item) {
-	const cityTags = [];
-
-	// Direct city tags
-	if (item?.tags && Array.isArray(item?.tags)) {
-		item?.tags.forEach((tag) => {
-			if (tag._type === "tag.city") {
-				cityTags.push(tag);
-			}
-		});
-	}
-
-	// City tags from parentShow
-	if (item?.parentShow?.tags && Array.isArray(item?.parentShow?.tags)) {
-		item?.parentShow?.tags.forEach((tag) => {
-			if (tag._type === "tag.city") {
-				if (!cityTags.some((existingTag) => existingTag._id === tag._id)) {
-					cityTags.push(tag);
-				}
-			}
-		});
-	}
-
-	return cityTags;
-}
-
 // Retrieve non-city tags
 function getItemNonCityTags(item) {
 	if (!item?.tags || !Array.isArray(item?.tags)) return [];

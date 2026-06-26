@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
 import { computed } from "vue";
 import { POOLARCHIVE_QUERY } from "~~/queries/sanity.queries.ts";

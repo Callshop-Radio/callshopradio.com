@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
 import { POOL_PROFILE_QUERY } from "~~/queries/sanity.queries.ts";
 
