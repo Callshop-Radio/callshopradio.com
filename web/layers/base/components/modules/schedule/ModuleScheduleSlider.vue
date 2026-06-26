@@ -6,8 +6,9 @@ import {
 } from "@vueuse/core";
 import emblaCarouselVue from "embla-carousel-vue";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
-import { formatScheduleLabel } from "~/composables/useShowFormatters";
 import { useMainStore } from "~/stores/mainStore";
+
+// formatScheduleLabel is provided by Nuxt auto-import (layers/base/composables).
 
 const mainStore = useMainStore();
 
@@ -323,7 +324,7 @@ const processedItems = computed(() => {
 							artist:
 								formatScheduleLabel(
 									track.artist || track.creator || track.performer || "",
-								) || null,
+								) || undefined,
 							startTime,
 							endTime: endTime || startTime,
 							formattedTime: getTrackTimeRange(track),

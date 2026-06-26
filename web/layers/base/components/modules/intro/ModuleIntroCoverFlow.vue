@@ -8,7 +8,8 @@ import {
 	toRef,
 	watch,
 } from "vue";
-import { useIntroCoverFlow } from "~/composables/useIntroCoverFlow";
+
+// useIntroCoverFlow is provided by Nuxt auto-import (layers/base/composables).
 
 const props = withDefaults(
 	defineProps<{

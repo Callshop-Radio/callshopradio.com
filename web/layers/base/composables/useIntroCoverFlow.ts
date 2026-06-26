@@ -1,5 +1,12 @@
 import { useMediaQuery, useSwipe } from "@vueuse/core";
-import { computed, nextTick, onMounted, type Ref, ref } from "vue";
+import {
+	type CSSProperties,
+	computed,
+	nextTick,
+	onMounted,
+	type Ref,
+	ref,
+} from "vue";
 import { COVER_FLOW_ANIMATION_MS } from "./coverFlowUtils";
 
 const COVER_FLOW_SHIFT_1 = 11.5;
@@ -170,7 +177,7 @@ export function useIntroCoverFlow(
 		return 0;
 	}
 
-	function cardStyle(index: number) {
+	function cardStyle(index: number): CSSProperties {
 		const offset = getVisualOffset(index);
 		const abs = Math.abs(offset);
 		const xRem = getShiftMagnitude(abs) * Math.sign(offset);
