@@ -1,6 +1,7 @@
 import { computed, type Ref } from "vue";
 import { COVER_FLOW_ITEM_COUNT } from "./coverFlowUtils";
-import type { CoverFlowContentType } from "./useCoverFlowSliderItems.types";
+
+type CoverFlowContentType = "sets" | "pool" | "articles";
 
 type SliderWithAutoLoad = {
 	autoLoad?: boolean;

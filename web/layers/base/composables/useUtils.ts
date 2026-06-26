@@ -2,10 +2,6 @@
 // @ts-nocheck
 export const useUtils = () => {
 	//
-	// Creates a console log credit
-	const creditLog = () => {};
-
-	//
 	// Uses the favicon provided by the backend / store
 	const favicon = () => {
 		const mainStore = useMainStore();
@@ -50,7 +46,6 @@ export const useUtils = () => {
 	};
 
 	return {
-		creditLog,
 		favicon,
 	};
 };
