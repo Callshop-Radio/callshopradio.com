@@ -272,9 +272,11 @@ export const SET_COVER_FLOW_SLIDER_ITEM_QUERY = `{
 	slug,
 	datetime,
 	_updatedAt,
-	"soundcloud": soundcloud{
-		"tracks": tracks[0]{ id, artwork_url }
-	},
+	// Full track projection (array shape) so the cover-flow play button can set
+	// a playable track on the store — matching SET_LIST_ITEM_QUERY used by the
+	// content grid/teaser. A bare tracks[0]{…} projects an object, so the
+	// consumers' tracks[0] access was undefined and playback never started.
+	"soundcloud": ${SOUNDCLOUD_TRACKS_QUERY},
 	persons[]->{
 		${PERSON_LINK_FRAGMENT}
 	},
