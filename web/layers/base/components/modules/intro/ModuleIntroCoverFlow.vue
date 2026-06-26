@@ -91,9 +91,9 @@ onMounted(() => {
 	resizeObserver = new ResizeObserver(() => measureUniformCardHeight());
 	resizeObserver.observe(stageRef.value);
 
-	stageRef.value
-		.querySelectorAll(".cover-flow__card-wrap")
-		.forEach((wrap) => resizeObserver?.observe(wrap));
+	stageRef.value.querySelectorAll(".cover-flow__card-wrap").forEach((wrap) => {
+		resizeObserver?.observe(wrap);
+	});
 });
 
 onUnmounted(() => {

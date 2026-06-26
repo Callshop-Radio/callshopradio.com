@@ -6,6 +6,7 @@ export const Logo = () => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
+    <title>Callshop Radio</title>
     <rect width="100%" height="100%" fill="#EC5446"></rect>
   </svg>
 );

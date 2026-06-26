@@ -65,7 +65,7 @@ const srcSet = computed(() => {
 	const widths = [400, 750, 1200, 1800, 2400];
 	widths.forEach((width, index) => {
 		if (!props.image?.asset) {
-			return false;
+			return;
 		}
 		srcSet +=
 			$urlFor(props.image).width(width).auto(props.auto).fit(props.fit) +

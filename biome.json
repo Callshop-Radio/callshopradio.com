@@ -24,7 +24,7 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true,
+			"preset": "recommended",
 			"a11y": {
 				"noSvgWithoutTitle": "warn",
 				"useAltText": "warn"
@@ -69,6 +69,20 @@
 					"correctness": {
 						"noUnusedVariables": "off",
 						"noUnusedImports": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"web/app/pages/**",
+				"web/app/error.vue",
+				"web/layers/base/components/libretime/**"
+			],
+			"linter": {
+				"rules": {
+					"style": {
+						"useVueMultiWordComponentNames": "off"
 					}
 				}
 			}

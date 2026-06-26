@@ -19,8 +19,7 @@ export default function ({
 		if (preferMp4 && video.asset.data?.static_renditions?.status === "ready") {
 			// create mp4 version
 			const filesSortedByBitrate = [
-				// eslint-disable-next-line no-unsafe-optional-chaining
-				...video.asset.data?.static_renditions?.files,
+				...(video.asset.data?.static_renditions?.files ?? []),
 			].sort((a, b) => b.bitrate - a.bitrate);
 			const versionString = useSmallResolution
 				? filesSortedByBitrate[1]?.name

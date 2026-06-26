@@ -7,8 +7,8 @@ export default function MediaPreview(props) {
 
   const media =
     isVideo && thumbnailUrl ? (
-      // eslint-disable-next-line jsx-a11y/alt-text
       <img
+        alt="Video preview"
         style={{
           position: "relative",
           width: "100%",

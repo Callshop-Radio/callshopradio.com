@@ -67,7 +67,9 @@ const getUsedTagIdsInItems = computed(() => {
 	const usedTagIds = new Set<string>();
 	const addTags = (tags: Tag[] | undefined) => {
 		if (Array.isArray(tags)) {
-			tags.forEach((tag) => tag?._id && usedTagIds.add(tag._id));
+			tags.forEach((tag) => {
+				if (tag?._id) usedTagIds.add(tag._id);
+			});
 		}
 	};
 	props.results.forEach((item) => {

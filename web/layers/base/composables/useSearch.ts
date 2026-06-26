@@ -158,7 +158,7 @@ export function useSearch(options: UseSearchOptions = {}) {
 			return searchTag(result.title);
 		}
 
-		return to(result.path) ?? to("/")!;
+		return to(result.path) ?? to("/") ?? "/";
 	};
 
 	// Get a friendly label for the content type

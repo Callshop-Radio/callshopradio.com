@@ -166,7 +166,9 @@ const buildQueryConfig = () => {
 			const genre = categorizedTags.value.genres.find(
 				(g: Tag & { subGenres?: Tag[] }) => g._id === genreId,
 			);
-			genre?.subGenres?.forEach((sg: Tag) => genreOrGroup.push(sg._id));
+			genre?.subGenres?.forEach((sg: Tag) => {
+				genreOrGroup.push(sg._id);
+			});
 		});
 		if (genreOrGroup.length > 0) {
 			filterOrTags.push(genreOrGroup);
@@ -391,7 +393,9 @@ const _getUsedTagIdsInItems = computed(() => {
 
 function _collectTagIds(tags: Tag[] | undefined, set: Set<string>) {
 	if (!Array.isArray(tags)) return;
-	tags.forEach((tag) => tag?._id && set.add(tag._id));
+	tags.forEach((tag) => {
+		if (tag?._id) set.add(tag._id);
+	});
 }
 
 const categorizedTags = computed(() => {
@@ -651,7 +655,9 @@ function itemMatchesFilters(item: ContentItem): boolean {
 				allowedIds.add(gId);
 				categorizedTags.value.genres
 					.find((g) => g._id === gId)
-					?.subGenres?.forEach((sg) => allowedIds.add(sg._id));
+					?.subGenres?.forEach((sg) => {
+						allowedIds.add(sg._id);
+					});
 			});
 			if (!getItemTags(item).some((t) => allowedIds.has(t._id))) return false;
 		}
