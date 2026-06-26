@@ -100,57 +100,16 @@ const useImageManagement = () => {
 	};
 };
 
-// Composable for SoundCloud functionality
-const useSoundCloud = () => {
-	const artworkUrl = ref("");
-	const { checkImage: _checkImage } = useImageManagement();
+// SoundCloud artwork + playback via the shared useSoundcloudArtwork composable.
+const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
+const artworkUrl = ref("");
 
-	// Non-blocking - returns URL directly
-	function getSoundcloudArtwork(item?: Set): string {
-		if (!item) return "";
-		// Try SoundCloud artwork first
-		const artworkUrl = item?.soundcloud?.tracks?.[0]?.artwork_url;
-		if (artworkUrl) {
-			return artworkUrl.replace("-large", "-t500x500");
-		}
-		// Fallback chain
-		const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
-		const storeFallbackUrl =
-			mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url;
-		return parentShowImageUrl || storeFallbackUrl || "";
-	}
-
-	function loadArtworkUrl() {
-		if (!props.set) return;
-		const url = getSoundcloudArtwork(props.set);
-		artworkUrl.value = url;
-	}
-
-	function playTrack() {
-		const item = props.set;
-		if (!item?.soundcloud?.tracks?.[0]) return;
-
-		const track = item.soundcloud.tracks[0];
-
-		// Ensure that permalink_url is set
-		if (!track.permalink_url && track.id) {
-			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
-		}
-
-		// Save track in the store
-		mainStore.currentTrack = track;
-	}
-
-	return {
-		artworkUrl,
-		loadArtworkUrl,
-		playTrack,
-	};
-};
+function loadArtworkUrl() {
+	if (props.set) artworkUrl.value = getSoundcloudArtwork(props.set);
+}
 
 // Application of the composables
 const { getItemImage: _getItemImage } = useImageManagement();
-const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
 
 // Function to adjust the height
 const _adjustSetContentHeight = () => {
@@ -230,7 +189,7 @@ onMounted(() => {
 					class="play-button"
 					aria-label="Play Audio"
 					type="button"
-					@click="playTrack"
+					@click="playTrack(set)"
 				>
 					<svg
 						width="16"
