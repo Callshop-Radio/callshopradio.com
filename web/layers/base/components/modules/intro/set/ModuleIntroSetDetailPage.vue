@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
@@ -7,6 +7,15 @@ const { locale: _locale, setLocale: _setLocale } = useI18n();
 const setContentRef = ref<HTMLElement | null>(null);
 const { mainRef: setMainRef, computedHeight: computedSetMainHeight } =
 	useDetailHeightSync();
+
+// computedSetMainHeight is a px number on desktop but the string "100%" below
+// 900px — branch like the pool page so the unit is only appended to numbers
+// (otherwise mobile renders the invalid "100%px").
+const setDetailsStyle = computed(() => {
+	const h = computedSetMainHeight.value;
+	if (typeof h === "string") return `max-height: ${h}; height: ${h}`;
+	return `max-height: ${h}px; height: ${h}px`;
+});
 
 // Type definitions
 interface Image {
@@ -202,7 +211,7 @@ onMounted(() => {
 		</div>
 		<div
 			class="set-details"
-			:style="` max-height: ${computedSetMainHeight}px; height: ${computedSetMainHeight}px`"
+			:style="setDetailsStyle"
 		>
 			<section v-if="set?.parentShow?.content">
 				<h2>{{ set?.parentShow?.title }}</h2>
