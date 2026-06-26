@@ -673,13 +673,14 @@ onMounted(() => {
 
 					<!-- Show information for sets -->
 					<div
-						v-if="item?.parentShow && props.module.type === 'sets'"
+						v-if="props.module.type === 'sets'"
 						class="teaser-item__content__show"
 					>
-						<!-- Show title (only display if NOT no-show) -->
+						<!-- Show title (only display for a real, non-no-show parent show) -->
 						<ElementsContentLink
 							v-if="
-								item?.parentShow?.title?.toLowerCase() !== 'no-show' &&
+								item?.parentShow &&
+									item?.parentShow?.title?.toLowerCase() !== 'no-show' &&
 									item?.clickableTitle
 							"
 							:show="item?.parentShow"
@@ -699,7 +700,7 @@ onMounted(() => {
 						>
 							{{ item?.title }}
 						</h3>
-						<!-- Fallback for other cases without clickableTitle -->
+						<!-- Orphan set (no parent show) or non-clickable show: fall back to the set's own title -->
 						<h3
 							v-else-if="item?.parentShow?.title?.toLowerCase() !== 'no-show'"
 							class="teaser-item__title show-title"

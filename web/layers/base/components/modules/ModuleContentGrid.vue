@@ -1394,6 +1394,14 @@ onUnmounted(() => {
 										loading="lazy"
 									>
 								</div>
+								<img
+									v-else
+									:src="
+										mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
+									"
+									alt="Fallback"
+									loading="lazy"
+								>
 							</template>
 							<template v-else>
 								<img
@@ -1448,10 +1456,13 @@ onUnmounted(() => {
 						</section>
 
 						<!-- Set Content -->
-						<div v-if="item.parentShow && contentType === 'sets'">
-							<!-- Only show parent show link if NOT no-show -->
+						<div v-if="contentType === 'sets'">
+							<!-- Prefer the parent show title (unless it's the no-show placeholder) -->
 							<ElementsContentLink
-								v-if="item.parentShow?.title?.toLowerCase() !== 'no-show'"
+								v-if="
+									item.parentShow &&
+										item.parentShow?.title?.toLowerCase() !== 'no-show'
+								"
 								:show="item.parentShow"
 								class="grid-item__link"
 							>
@@ -1459,7 +1470,7 @@ onUnmounted(() => {
 									{{ item.parentShow?.title }}
 								</h3>
 							</ElementsContentLink>
-							<!-- If no-show: show only set title -->
+							<!-- No real parent show (orphan set or no-show): fall back to the set's own title -->
 							<h3 v-else-if="item?.title" class="grid-item__title show-title">
 								{{ item?.title }}
 							</h3>
