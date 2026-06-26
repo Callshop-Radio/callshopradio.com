@@ -115,6 +115,7 @@ onUnmounted(() => {
 				type="button"
 				:aria-label="`Vorheriger ${navLabel}`"
 				:disabled="isAnimating"
+				@mousedown.prevent
 				@click="scrollPrev"
 			>
 				<svg
@@ -159,6 +160,7 @@ onUnmounted(() => {
 				type="button"
 				:aria-label="`Nächster ${navLabel}`"
 				:disabled="isAnimating"
+				@mousedown.prevent
 				@click="scrollNext"
 			>
 				<svg
@@ -190,6 +192,7 @@ onUnmounted(() => {
 				:aria-label="`${navLabel} ${index + 1}`"
 				:aria-current="index === currentIndex ? 'true' : undefined"
 				:disabled="isAnimating"
+				@mousedown.prevent
 				@click="scrollTo(index)"
 			/>
 		</nav>
