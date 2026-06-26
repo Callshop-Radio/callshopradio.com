@@ -93,61 +93,31 @@ export const show = defineType({
           name: "instagram",
           type: "url",
           title: "Instagram",
-          validation: (Rule) =>
-            Rule.custom((value, context) => {
-              if (context.parent.type === "external" && !value) {
-                return "This field is required";
-              }
-              return true;
-            }).uri({ scheme: ["http", "https", "www"] }),
+          validation: (Rule) => Rule.uri({ scheme: ["http", "https", "www"] }),
         },
         {
           name: "soundcloud",
           type: "url",
           title: "Soundcloud",
-          validation: (Rule) =>
-            Rule.custom((value, context) => {
-              if (context.parent.type === "external" && !value) {
-                return "This field is required";
-              }
-              return true;
-            }).uri({ scheme: ["http", "https", "www"] }),
+          validation: (Rule) => Rule.uri({ scheme: ["http", "https", "www"] }),
         },
         {
           name: "nina",
           type: "url",
           title: "Nina",
-          validation: (Rule) =>
-            Rule.custom((value, context) => {
-              if (context.parent.type === "external" && !value) {
-                return "This field is required";
-              }
-              return true;
-            }).uri({ scheme: ["http", "https", "www"] }),
+          validation: (Rule) => Rule.uri({ scheme: ["http", "https", "www"] }),
         },
         {
           name: "bandcamp",
           type: "url",
           title: "Bandcamp",
-          validation: (Rule) =>
-            Rule.custom((value, context) => {
-              if (context.parent.type === "external" && !value) {
-                return "This field is required";
-              }
-              return true;
-            }).uri({ scheme: ["http", "https", "www"] }),
+          validation: (Rule) => Rule.uri({ scheme: ["http", "https", "www"] }),
         },
         {
           name: "web",
           type: "url",
           title: "Website",
-          validation: (Rule) =>
-            Rule.custom((value, context) => {
-              if (context.parent.type === "external" && !value) {
-                return "This field is required";
-              }
-              return true;
-            }).uri({ scheme: ["http", "https", "www"] }),
+          validation: (Rule) => Rule.uri({ scheme: ["http", "https", "www"] }),
         },
       ],
     },
