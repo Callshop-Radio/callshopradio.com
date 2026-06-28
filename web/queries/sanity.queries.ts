@@ -12,7 +12,7 @@ import {
 	SOUNDCLOUD_TRACKS_QUERY,
 } from "./sanity.snippets";
 
-export const SITEMAP_QUERY = `
+export const SITEMAP_QUERY = defineQuery(`
 *[
   _type in [
     "home", 
@@ -66,34 +66,34 @@ export const SITEMAP_QUERY = `
       "slug": slug.current
     }
   }
-}`;
+}`);
 
-export const HOMEPAGE_QUERY = `
+export const HOMEPAGE_QUERY = defineQuery(`
 *[_type == "home"] | order(_updatedAt desc)[0] {
   ...,
   content[] ${I18N_RICH_TEXT_VALUE_QUERY},
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY},
-}`;
+}`);
 
-export const SLUG_PAGE_QUERY = `
+export const SLUG_PAGE_QUERY = defineQuery(`
 *[_type == "page" && slug.current == $slug] | order(_updatedAt desc)[0] {
   ...,
   content[] ${I18N_RICH_TEXT_VALUE_QUERY},
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY}
-}`;
+}`);
 
-export const SCHEDULE_QUERY = `
+export const SCHEDULE_QUERY = defineQuery(`
 *[_type == "timetable"] | order(_updatedAt desc)[0] {
   ...,
   backgroundImage ${IMAGE_QUERY},
   content[] ${I18N_RICH_TEXT_VALUE_QUERY},
   modules [] ${MODULE_QUERY},
   ${SEO_QUERY},
-}`;
+}`);
 
-export const POOLARCHIVE_QUERY = `
+export const POOLARCHIVE_QUERY = defineQuery(`
 *[_type == "pool"] | order(_updatedAt desc)[0] {
   ...,
   backgroundImage ${IMAGE_QUERY},
@@ -134,9 +134,9 @@ export const POOLARCHIVE_QUERY = `
       }
     ),
   }
-}`;
+}`);
 
-export const POOL_PROFILE_QUERY = `
+export const POOL_PROFILE_QUERY = defineQuery(`
   *[_type in ['person', 'venue'] && slug.current == $slug][0] {
     ...,
     _id,
@@ -261,9 +261,9 @@ export const POOL_PROFILE_QUERY = `
   },
     ${SEO_QUERY}
   }
-`;
+`);
 
-export const SHOWSARCHIVE_QUERY = `
+export const SHOWSARCHIVE_QUERY = defineQuery(`
 *[_type == "showsArchive"] | order(_updatedAt desc)[0] {
   ...,
   modules [] ${MODULE_QUERY},
@@ -293,9 +293,9 @@ export const SHOWSARCHIVE_QUERY = `
             }
         )
   }
-}`;
+}`);
 
-export const SHOW_QUERY = `
+export const SHOW_QUERY = defineQuery(`
 *[_type == "show" && slug.current == $slug] | order(_updatedAt desc)[0] {
   ...,
   _id,
@@ -348,9 +348,9 @@ export const SHOW_QUERY = `
     web
   },
   ${SEO_QUERY}
-}`;
+}`);
 
-export const SET_QUERY = `
+export const SET_QUERY = defineQuery(`
 *[_type == 'set' && slug.current == $slug] | order(_updatedAt desc)[0] {
   ...,
   _id,
@@ -425,9 +425,9 @@ export const SET_QUERY = `
     "matchingArtistsCount": count((persons[]->._id)[@ in ^.^.persons[]->._id])
   },
   ${SEO_QUERY}
-}`;
+}`);
 
-export const WORDS_QUERY = `
+export const WORDS_QUERY = defineQuery(`
 *[_type == "words"] | order(_updatedAt desc)[0] {
   ...,
   modules [] ${MODULE_QUERY},
@@ -473,9 +473,9 @@ export const WORDS_QUERY = `
             }
         )
   }
-}`;
+}`);
 
-export const ENTRY_QUERY = `
+export const ENTRY_QUERY = defineQuery(`
 *[_type == "article" && slug.current == $slug] | order(_updatedAt desc)[0] {
     ...,
     _id,
@@ -539,9 +539,9 @@ export const ENTRY_QUERY = `
         "matchingTagsCount": count((tags[]->._id)[@ in ^.^.tags[]->._id])
     },
     ${SEO_QUERY}
-}`;
+}`);
 
-export const SITE_OPTIONS_QUERY = `{
+export const SITE_OPTIONS_QUERY = defineQuery(`{
   "siteCookieBanner" : *[_type == "siteCookieBanner"][0] {
     ...,
   },
@@ -631,7 +631,7 @@ export const SITE_OPTIONS_QUERY = `{
         description[] ${I18N_RICH_TEXT_VALUE_QUERY},
     }
   }
-}`;
+}`);
 
 export const ERROR_PAGE_QUERY = defineQuery(`
 *[_type == "error"][0] {

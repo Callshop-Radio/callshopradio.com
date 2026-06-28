@@ -4,8 +4,8 @@
  * Wraps useSanityQuery with getCachedData to return cached data immediately
  * on client-side navigation instead of refetching every time.
  */
-export const useCachedSanityQuery = async <_T = unknown>(
-	query: string,
+export const useCachedSanityQuery = async <const Q extends string>(
+	query: Q,
 	params?: Record<string, unknown>,
 	options?: {
 		key?: string;

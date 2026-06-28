@@ -1,3 +1,4 @@
+import { defineQuery } from "groq";
 /**
  * Module-Specific Queries
  *
@@ -78,14 +79,16 @@ export const SET_PROJECTION = `{
 /**
  * Query for set listings - matches original MODULE_QUERY structure
  */
-export const SET_LIST_QUERY = `*[${SET_BASE_FILTER}] | order(datetime desc)[$start...$end] ${SET_PROJECTION}`;
+export const SET_LIST_QUERY = defineQuery(
+	`*[${SET_BASE_FILTER}] | order(datetime desc)[$start...$end] ${SET_PROJECTION}`,
+);
 
 /**
  * Count query for sets pagination
  */
-export const SET_COUNT_QUERY = `
+export const SET_COUNT_QUERY = defineQuery(`
 count(*[_type == 'set' && datetime != null])
-`;
+`);
 
 // ==================== POOL QUERIES ====================
 
@@ -114,14 +117,16 @@ export const POOL_PROJECTION = `{
   ${SITE_PATH_FRAGMENT}
 }`;
 
-export const POOL_LIST_QUERY = `*[${POOL_BASE_FILTER}] | order(_updatedAt desc)[$start...$end] ${POOL_PROJECTION}`;
+export const POOL_LIST_QUERY = defineQuery(
+	`*[${POOL_BASE_FILTER}] | order(_updatedAt desc)[$start...$end] ${POOL_PROJECTION}`,
+);
 
 /**
  * Count query for pool pagination
  */
-export const POOL_COUNT_QUERY = `
+export const POOL_COUNT_QUERY = defineQuery(`
 count(*[_type in $types && poolVisibility == true])
-`;
+`);
 
 // ==================== ARTICLE QUERIES ====================
 
@@ -153,14 +158,16 @@ export const ARTICLE_PROJECTION = `{
   ${SITE_PATH_FRAGMENT}
 }`;
 
-export const ARTICLE_LIST_QUERY = `*[${ARTICLE_BASE_FILTER}] | order(datetime desc)[$start...$end] ${ARTICLE_PROJECTION}`;
+export const ARTICLE_LIST_QUERY = defineQuery(
+	`*[${ARTICLE_BASE_FILTER}] | order(datetime desc)[$start...$end] ${ARTICLE_PROJECTION}`,
+);
 
 /**
  * Count query for articles pagination
  */
-export const ARTICLE_COUNT_QUERY = `
+export const ARTICLE_COUNT_QUERY = defineQuery(`
 count(*[_type == 'article'])
-`;
+`);
 
 // ==================== SHOW QUERIES ====================
 
@@ -189,14 +196,16 @@ export const SHOW_PROJECTION = `{
   ${SITE_PATH_FRAGMENT}
 }`;
 
-export const SHOW_LIST_QUERY = `*[${SHOW_BASE_FILTER}] | order(datetime desc)[$start...$end] ${SHOW_PROJECTION}`;
+export const SHOW_LIST_QUERY = defineQuery(
+	`*[${SHOW_BASE_FILTER}] | order(datetime desc)[$start...$end] ${SHOW_PROJECTION}`,
+);
 
 /**
  * Count query for shows pagination
  */
-export const SHOW_COUNT_QUERY = `
+export const SHOW_COUNT_QUERY = defineQuery(`
 count(*[_type == 'show'])
-`;
+`);
 
 // ==================== QUERY BUILDERS ====================
 
