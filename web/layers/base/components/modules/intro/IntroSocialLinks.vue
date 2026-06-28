@@ -28,13 +28,13 @@ const hasLinks = computed(() =>
 </script>
 
 <template>
-	<div v-if="hasLinks" class="pool-social-links">
+	<div v-if="hasLinks" class="intro-social-links">
 		<a
 			v-if="contact && contactHref"
 			:href="contactHref"
 			target="_blank"
 			rel="noopener noreferrer"
-			class="pool-social-chip pool-social-chip--text"
+			class="intro-social-chip intro-social-chip--text"
 		>
 			Contact
 		</a>
@@ -43,7 +43,7 @@ const hasLinks = computed(() =>
 			:href="socials.nina"
 			target="_blank"
 			rel="noopener noreferrer"
-			class="pool-social-chip pool-social-chip--text"
+			class="intro-social-chip intro-social-chip--text"
 			aria-label="Nina"
 		>
 			Nina
@@ -53,7 +53,7 @@ const hasLinks = computed(() =>
 			:href="socials.bandcamp"
 			target="_blank"
 			rel="noopener noreferrer"
-			class="pool-social-chip pool-social-chip--text"
+			class="intro-social-chip intro-social-chip--text"
 			aria-label="Bandcamp"
 		>
 			Bandcamp
@@ -63,7 +63,7 @@ const hasLinks = computed(() =>
 			:href="socials.instagram"
 			target="_blank"
 			rel="noopener noreferrer"
-			class="pool-social-chip pool-social-chip--icon"
+			class="intro-social-chip intro-social-chip--icon"
 			aria-label="Instagram"
 		>
 			<svg viewBox="0 0 22 22" fill="none" aria-hidden="true">
@@ -87,7 +87,7 @@ const hasLinks = computed(() =>
 			:href="socials.soundcloud"
 			target="_blank"
 			rel="noopener noreferrer"
-			class="pool-social-chip pool-social-chip--icon"
+			class="intro-social-chip intro-social-chip--icon"
 			aria-label="Soundcloud"
 		>
 			<svg viewBox="0 0 22 22" fill="none" aria-hidden="true">
@@ -106,7 +106,7 @@ const hasLinks = computed(() =>
 			:href="socials.web"
 			target="_blank"
 			rel="noopener noreferrer"
-			class="pool-social-chip pool-social-chip--icon"
+			class="intro-social-chip intro-social-chip--icon"
 			aria-label="Website"
 		>
 			<svg viewBox="0 0 22 22" fill="none" aria-hidden="true">
@@ -125,7 +125,7 @@ const hasLinks = computed(() =>
 </template>
 
 <style lang="postcss" scoped>
-.pool-social-links {
+.intro-social-links {
   display: flex;
   flex-flow: row wrap;
   align-items: center;
@@ -133,7 +133,7 @@ const hasLinks = computed(() =>
   width: 100%;
 }
 
-.pool-social-chip {
+.intro-social-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;

@@ -243,7 +243,7 @@ const poolDetailsStyle = computed(() => {
               </div>
             </section>
 
-            <PoolSocialLinks
+            <IntroSocialLinks
               :socials="poolItem.socials"
               :contact="poolItem.contact"
               :contact-href="contactLink"
