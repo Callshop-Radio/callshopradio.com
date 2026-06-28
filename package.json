@@ -14,6 +14,7 @@
 		"web:build": "pnpm --filter web run build",
 		"studio:build": "pnpm --filter studio run build",
 		"studio:deploy": "pnpm --filter studio run deploy",
+		"studio:generate": "pnpm --filter studio run generate",
 		"web:generate": "pnpm --filter studio run generate",
 		"web:preview": "pnpm --filter web run preview",
 		"update": "pnpm up --stream -r",

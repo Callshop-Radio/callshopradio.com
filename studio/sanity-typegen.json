@@ -1,0 +1,5 @@
+{
+  "path": "../web/**/*.{ts,vue}",
+  "schema": "./schema.json",
+  "generates": "../web/types/sanity.types.gen.ts"
+}
