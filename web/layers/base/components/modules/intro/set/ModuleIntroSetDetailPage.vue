@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
+import type { SET_QUERY_RESULT } from "~~/types/sanity.types.gen";
+
+type SetDetail = NonNullable<SET_QUERY_RESULT>;
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
 // Template references; height sync keeps the media column level with content.
@@ -17,63 +20,9 @@ const setDetailsStyle = computed(() => {
 	return `max-height: ${h}px; height: ${h}px`;
 });
 
-// Type definitions
-interface Image {
-	asset?: {
-		url?: string;
-	};
-}
-
-interface Person {
-	_key?: string;
-	title?: string;
-	poolVisibility?: boolean;
-	slug?: {
-		current?: string;
-	};
-}
-
-interface Tag {
-	_id?: string;
-	_type?: string;
-	title?: unknown;
-	short?: unknown;
-}
-
-interface Set {
-	_id?: string;
-	_type?: string;
-	title?: string;
-	image?: Image;
-	content?: unknown;
-	mainImage?: Image;
-	parentShow?: {
-		title?: string;
-		image?: Image;
-		content?: unknown;
-		slug?: {
-			current?: string;
-		};
-		tags?: Tag[];
-	};
-	datetime?: string;
-	_updatedAt?: string;
-	persons?: Person[];
-	tags?: Tag[];
-	tracklistRich?: unknown;
-	tracklist?: unknown[];
-	soundcloud?: {
-		tracks?: Array<{
-			id?: string;
-			artwork_url?: string;
-			permalink_url?: string;
-		}>;
-	};
-}
-
 // Props
 const props = defineProps<{
-	set: Set;
+	set: SetDetail;
 }>();
 
 // Store
@@ -88,9 +37,9 @@ function loadArtworkUrl() {
 }
 
 // Get non-city tags
-function getItemNonCityTags(item: Set): Tag[] {
+function getItemNonCityTags(item: SetDetail) {
 	if (!item?.tags || !Array.isArray(item?.tags)) return [];
-	return item?.tags.filter((tag: Tag) => tag._type !== "tag.city");
+	return item.tags.filter((tag) => tag._type !== "tag.city");
 }
 
 // Lifecycle hooks
@@ -174,8 +123,8 @@ onMounted(() => {
 							</ElementsContentLink>
 							<div>
 								<h3
-									v-for="(artist, index) in set.persons"
-									:key="artist._key"
+									v-for="(artist, index) in set.persons ?? []"
+									:key="artist._id"
 									class="set__artist"
 								>
 									<ElementsContentLink
@@ -184,11 +133,11 @@ onMounted(() => {
 										class="set__artist"
 									>
 										{{ artist.title
-										}}{{ index < set.persons.length - 1 ? "," : "" }}&nbsp;
+										}}{{ index < (set.persons?.length ?? 0) - 1 ? "," : "" }}&nbsp;
 									</ElementsContentLink>
 									<span v-else class="set__artist">
 										{{ artist.title
-										}}{{ index < set.persons.length - 1 ? "," : "" }}&nbsp;
+										}}{{ index < (set.persons?.length ?? 0) - 1 ? "," : "" }}&nbsp;
 									</span>
 								</h3>
 							</div>
@@ -231,7 +180,9 @@ onMounted(() => {
 			<section v-else-if="set?.tracklist" class="tracklist">
 				<h3>Tracklist</h3>
 				<div class="rich-text">
-					<p v-for="track in set?.tracklist" :key="track._key">{{ track }}</p>
+					<p v-for="(track, index) in set?.tracklist" :key="index">
+						{{ track }}
+					</p>
 				</div>
 			</section>
 		</div>
