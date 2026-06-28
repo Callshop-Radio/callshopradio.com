@@ -134,6 +134,9 @@ importers:
       embla-carousel-vue:
         specifier: 8.6.0
         version: 8.6.0(vue@3.5.38(typescript@6.0.3))
+      groq:
+        specifier: 5.31.1
+        version: 5.31.1
       hls.js:
         specifier: ^1.6.16
         version: 1.6.16

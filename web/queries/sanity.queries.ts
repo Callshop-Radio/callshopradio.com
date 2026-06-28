@@ -1,3 +1,4 @@
+import { defineQuery } from "groq";
 import {
 	I18N_RICH_TEXT_VALUE_QUERY,
 	IMAGE_QUERY,
@@ -632,9 +633,9 @@ export const SITE_OPTIONS_QUERY = `{
   }
 }`;
 
-export const ERROR_PAGE_QUERY = `
+export const ERROR_PAGE_QUERY = defineQuery(`
 *[_type == "error"][0] {
   ...,
   content[] ${I18N_RICH_TEXT_VALUE_QUERY},
 }
-`;
+`);

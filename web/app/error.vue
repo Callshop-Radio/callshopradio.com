@@ -1,8 +1,7 @@
 <script setup>
 import { ERROR_PAGE_QUERY } from "~~/queries/sanity.queries";
 
-const query = groq`${ERROR_PAGE_QUERY}`;
-const { data } = await useSanityQuery(query);
+const { data } = await useSanityQuery(ERROR_PAGE_QUERY);
 
 const { favicon } = useUtils();
 const localePath = useLocalePath();

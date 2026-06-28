@@ -45,6 +45,7 @@
 		"@vueuse/nuxt": "^14.3.0",
 		"axios": "^1.18.0",
 		"embla-carousel-vue": "8.6.0",
+		"groq": "5.31.1",
 		"hls.js": "^1.6.16",
 		"normalize.css": "^8.0.1",
 		"pinia": "^3.0.4",

@@ -1541,3 +1541,71 @@ export type AllSanitySchemaTypes =
   | SanityAssetSourceData
   | SanityImageAsset
   | Geopoint;
+
+// Source: ../web/queries/sanity.queries.ts
+// Variable: ERROR_PAGE_QUERY
+// Query: *[_type == "error"][0] {  ...,  content[] {	...,	value[] {	...,	_type == "block" => {		...	},	markDefs[] {		...,			...,	type == "internal" => {		"linkType": "linkInternal",		"title": coalesce(			title,			reference->title		),		"route": select(			reference->_type == "home" => "index",			reference->_type == "page" => "slug",            reference->_type == "showsArchive" => "shows",            reference->_type == "show" => "shows-slug",            reference->_type == "set" => "set-slug",            reference->_type == "words" => "words",            reference->_type == "article" => "words-slug",            reference->_type == "pool" => "pool",            reference->_type == "person" => "pool-slug",            reference->_type == "venue" => "pool-slug",            reference->_type == "timetable" => "schedule",			"index"		),		"slug": reference->slug.current,		"refType": reference->_type,		"parentSlug": select(			reference->_type == "set" => *[_type == "show" && references(^.reference._ref)][0].slug.current,			null		),		"setSlug": select(			reference->_type == "set" => reference->slug.current,			null		),				"path": select(			reference->_type == "home" => "/",			reference->_type == "page" => "/" + reference->slug.current,			reference->_type == "showsArchive" => "/shows",			reference->_type == "show" => "/shows/" + reference->slug.current,			reference->_type == "set" => "/shows/" + *[_type == "show" && references(^.reference._ref)][0].slug.current + "/" + reference->slug.current,			reference->_type == "words" => "/words",			reference->_type == "article" => "/words/" + reference->slug.current,			reference->_type == "pool" => "/pool",			reference->_type == "person" => "/pool/" + reference->slug.current,			reference->_type == "venue" => "/pool/" + reference->slug.current,			reference->_type == "timetable" => "/schedule",			null		)	},	type == "external" => {		...,		"href": url,		"title": coalesce(title, url),	},	type == "download" => {		"href": file.asset->url	},	_type == "linkCookie" => {		"linkType": "linkCookie",	},	},	_type == "module.media" => {		...,		image {  ...,  "alt": asset->altText,	asset->{		...,		metadata	},},		video {  ...,  "alt": asset->altText,	asset->{		...,		metadata	},},	},	_type == "module.carousel" => {		...,		slides[] {			...,			image {  ...,  "alt": asset->altText,	asset->{		...,		metadata	},},			video {  ...,  "alt": asset->altText,	asset->{		...,		metadata	},},		}	},}},}
+export type ERROR_PAGE_QUERY_RESULT = {
+  _id: string;
+  _type: "error";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title?: string;
+  content: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      type?: "download" | "external" | "function" | "internal";
+      reference?:
+        | ArticleReference
+        | CategoryReference
+        | CategorySubReference
+        | HomeReference
+        | PageReference
+        | PersonReference
+        | PoolReference
+        | SetReference
+        | ShowReference
+        | ShowsArchiveReference
+        | TagArticleReference
+        | TagCityReference
+        | TagCraftsReference
+        | TagGenreReference
+        | TagGlobalReference
+        | TagMoodReference
+        | TagMusicianReference
+        | TagServiceReference
+        | TagSubGenreReference
+        | TagVenueReference
+        | TimetableReference
+        | VenueReference
+        | WordsReference;
+      url?: string;
+      blank?: boolean;
+      file?: LinkFile;
+      func?: LinkFunctions;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+    value: null;
+  }> | null;
+  button?: string;
+} | null;
+
+// Query TypeMap
+import "@sanity/client";
+declare module "@sanity/client" {
+  interface SanityQueries {
+    '\n*[_type == "error"][0] {\n  ...,\n  content[] {\n\t...,\n\tvalue[] {\n\t...,\n\t_type == "block" => {\n\t\t...\n\t},\n\tmarkDefs[] {\n\t\t...,\n\t\t\n\t...,\n\ttype == "internal" => {\n\t\t"linkType": "linkInternal",\n\t\t"title": coalesce(\n\t\t\ttitle,\n\t\t\treference->title\n\t\t),\n\t\t"route": select(\n\t\t\treference->_type == "home" => "index",\n\t\t\treference->_type == "page" => "slug",\n            reference->_type == "showsArchive" => "shows",\n            reference->_type == "show" => "shows-slug",\n            reference->_type == "set" => "set-slug",\n            reference->_type == "words" => "words",\n            reference->_type == "article" => "words-slug",\n            reference->_type == "pool" => "pool",\n            reference->_type == "person" => "pool-slug",\n            reference->_type == "venue" => "pool-slug",\n            reference->_type == "timetable" => "schedule",\n\t\t\t"index"\n\t\t),\n\t\t"slug": reference->slug.current,\n\t\t"refType": reference->_type,\n\t\t"parentSlug": select(\n\t\t\treference->_type == "set" => *[_type == "show" && references(^.reference._ref)][0].slug.current,\n\t\t\tnull\n\t\t),\n\t\t"setSlug": select(\n\t\t\treference->_type == "set" => reference->slug.current,\n\t\t\tnull\n\t\t),\n\t\t\n\t\t"path": select(\n\t\t\treference->_type == "home" => "/",\n\t\t\treference->_type == "page" => "/" + reference->slug.current,\n\t\t\treference->_type == "showsArchive" => "/shows",\n\t\t\treference->_type == "show" => "/shows/" + reference->slug.current,\n\t\t\treference->_type == "set" => "/shows/" + *[_type == "show" && references(^.reference._ref)][0].slug.current + "/" + reference->slug.current,\n\t\t\treference->_type == "words" => "/words",\n\t\t\treference->_type == "article" => "/words/" + reference->slug.current,\n\t\t\treference->_type == "pool" => "/pool",\n\t\t\treference->_type == "person" => "/pool/" + reference->slug.current,\n\t\t\treference->_type == "venue" => "/pool/" + reference->slug.current,\n\t\t\treference->_type == "timetable" => "/schedule",\n\t\t\tnull\n\t\t)\n\n\t},\n\ttype == "external" => {\n\t\t...,\n\t\t"href": url,\n\t\t"title": coalesce(title, url),\n\t},\n\ttype == "download" => {\n\t\t"href": file.asset->url\n\t},\n\t_type == "linkCookie" => {\n\t\t"linkType": "linkCookie",\n\t},\n\n\t},\n\t_type == "module.media" => {\n\t\t...,\n\t\timage {\n  ...,\n  "alt": asset->altText,\n\tasset->{\n\t\t...,\n\t\tmetadata\n\t},\n},\n\t\tvideo {\n  ...,\n  "alt": asset->altText,\n\tasset->{\n\t\t...,\n\t\tmetadata\n\t},\n},\n\t},\n\t_type == "module.carousel" => {\n\t\t...,\n\t\tslides[] {\n\t\t\t...,\n\t\t\timage {\n  ...,\n  "alt": asset->altText,\n\tasset->{\n\t\t...,\n\t\tmetadata\n\t},\n},\n\t\t\tvideo {\n  ...,\n  "alt": asset->altText,\n\tasset->{\n\t\t...,\n\t\tmetadata\n\t},\n},\n\t\t}\n\t},\n}\n},\n}\n': ERROR_PAGE_QUERY_RESULT;
+  }
+}
