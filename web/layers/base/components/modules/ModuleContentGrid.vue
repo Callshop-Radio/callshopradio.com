@@ -1463,12 +1463,13 @@ onUnmounted(() => {
 
 						<!-- Set Content -->
 						<div v-if="contentType === 'sets'">
-							<!-- Prefer the parent show title (unless it's the no-show placeholder) -->
+							<!-- Show title only for a real parent show (the "No Show"
+							     placeholder is already excluded at the query layer, so
+							     parentShow is null for showless sets). No real show → no
+							     show-title; the artists block below carries the artist
+							     name(s). -->
 							<ElementsContentLink
-								v-if="
-									item.parentShow &&
-										item.parentShow?.title?.toLowerCase() !== 'no-show'
-								"
+								v-if="item.parentShow"
 								:show="item.parentShow"
 								class="grid-item__link"
 							>
@@ -1476,10 +1477,6 @@ onUnmounted(() => {
 									{{ item.parentShow?.title }}
 								</h3>
 							</ElementsContentLink>
-							<!-- No real parent show (orphan set or no-show): fall back to the set's own title -->
-							<h3 v-else-if="item?.title" class="grid-item__title show-title">
-								{{ item?.title }}
-							</h3>
 							<div v-if="item.persons?.length > 0" class="show-artists">
 								<h3
 									v-for="(artist, index) in item.persons"

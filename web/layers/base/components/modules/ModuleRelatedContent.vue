@@ -346,13 +346,14 @@ onMounted(() => {
 					</section>
 
 					<!-- Show information for sets -->
-					<div
-						v-if="item?.parentShow && type === 'sets'"
-						class="related-item__content__show"
-					>
-						<!-- Show title (only display if NOT no-show) -->
+					<div v-if="type === 'sets'" class="related-item__content__show">
+						<!-- Show title only for a real parent show (the "No Show"
+						     placeholder is already excluded at the query layer, so
+						     parentShow is null for showless sets). No real show → no
+						     show-title; the artists block below carries the artist
+						     name(s). -->
 						<ElementsContentLink
-							v-if="item?.parentShow?.title?.toLowerCase() !== 'no-show'"
+							v-if="item?.parentShow"
 							:show="item?.parentShow"
 							class="related-item__link"
 						>
@@ -360,20 +361,6 @@ onMounted(() => {
 								{{ item?.parentShow?.title }}
 							</h3>
 						</ElementsContentLink>
-						<!-- If no-show: display only the set title -->
-						<h3
-							v-else-if="
-								item?.parentShow?.title?.toLowerCase() === 'no-show' &&
-									item?.title
-							"
-							class="related-item__title show-title"
-						>
-							{{ item?.title }}
-						</h3>
-						<!-- Fallback for other cases -->
-						<h3 v-else-if="item?.title" class="related-item__title show-title">
-							{{ item?.title }}
-						</h3>
 
 						<!-- Artists (for sets) -->
 						<div

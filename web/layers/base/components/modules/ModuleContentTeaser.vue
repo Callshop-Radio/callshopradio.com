@@ -676,13 +676,13 @@ onMounted(() => {
 						v-if="props.module.type === 'sets'"
 						class="teaser-item__content__show"
 					>
-						<!-- Show title (only display for a real, non-no-show parent show) -->
+						<!-- Show title only for a real parent show (the "No Show"
+						     placeholder is already excluded at the query layer, so
+						     parentShow is null for showless sets). No real show → no
+						     show-title; the artists block below carries the artist
+						     name(s). -->
 						<ElementsContentLink
-							v-if="
-								item?.parentShow &&
-									item?.parentShow?.title?.toLowerCase() !== 'no-show' &&
-									item?.clickableTitle
-							"
+							v-if="item?.parentShow && item?.clickableTitle"
 							:show="item?.parentShow"
 							class="teaser-item__link"
 						>
@@ -690,19 +690,8 @@ onMounted(() => {
 								{{ item?.parentShow?.title }}
 							</h3>
 						</ElementsContentLink>
-						<!-- If no-show: display only the set title -->
 						<h3
-							v-else-if="
-								item?.parentShow?.title?.toLowerCase() === 'no-show' &&
-									item?.title
-							"
-							class="teaser-item__title show-title"
-						>
-							{{ item?.title }}
-						</h3>
-						<!-- Orphan set (no parent show) or non-clickable show: fall back to the set's own title -->
-						<h3
-							v-else-if="item?.parentShow?.title?.toLowerCase() !== 'no-show'"
+							v-else-if="item?.parentShow"
 							class="teaser-item__title show-title"
 						>
 							{{ item?.title || item?.parentShow?.title }}
