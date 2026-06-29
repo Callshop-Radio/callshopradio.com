@@ -133,15 +133,19 @@ export default defineEventHandler(
 			detailKeys.push(`sanity-detail:${detailPrefix}:${body.slug.current}`);
 		}
 
-		// Purge the cache store (Netlify Blobs in prod, LRU in dev).
+		// Purge both cache layers. Nitro's in-process render cache lives in the
+		// `cache` mount (LRU, per-instance), the Sanity-detail cache in `sanity`
+		// (Netlify Blobs in prod, LRU/FS in dev). The authoritative invalidation
+		// is the Netlify edge tag purge below; these are best-effort.
 		try {
-			const storage = useStorage("cache");
+			const routeCache = useStorage("cache");
 			for (const route of uniqueRoutes) {
-				await storage.removeItem(`nitro:routes:${route}.html`);
-				await storage.removeItem(`nitro:routes:${route}`);
+				await routeCache.removeItem(`nitro:routes:${route}.html`);
+				await routeCache.removeItem(`nitro:routes:${route}`);
 			}
+			const detailCache = useStorage("sanity");
 			for (const detailKey of detailKeys) {
-				await storage.removeItem(detailKey);
+				await detailCache.removeItem(detailKey);
 			}
 		} catch (error) {
 			console.error("❌ Error purging cache:", error);

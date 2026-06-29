@@ -1,9 +1,12 @@
 // Cached server-side proxy for Sanity detail-page queries.
 //
 // Sanity's CDN can be slow (2–3s cold) for these reference-heavy queries, so
-// responses are cached in `useStorage("cache")` — backed by a site-scoped
+// responses are cached in `useStorage("sanity")` — backed by a site-scoped
 // Netlify Blob store in production (see nuxt.config.ts), which persists across
-// deploys, idle-shutdowns and Function instances.
+// deploys, idle-shutdowns and Function instances. Every Blob op below is
+// wrapped in try/catch so a Blob failure (e.g. an expired token) degrades to a
+// live fetch and can never crash the render — unlike Nitro's own route cache,
+// which is deliberately kept off Blobs (see nuxt.config.ts storage notes).
 //
 // We manage the cache manually (rather than defineCachedEventHandler) so the
 // cache key is fully under our control: a deterministic `sanity-detail:type:slug`.
@@ -94,7 +97,7 @@ export default defineEventHandler(async (event) => {
 
 	setHeader(event, "Netlify-Cache-Tag", config.tag);
 
-	const storage = useStorage("cache");
+	const storage = useStorage("sanity");
 	const key = sanityDetailCacheKey(type, slug);
 
 	const cached = await storage.getItem<CacheEntry>(key).catch(() => null);

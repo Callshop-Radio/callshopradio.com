@@ -162,12 +162,26 @@ export default defineNuxtConfig({
 		experimental: {
 			wasm: true,
 		},
-		// Cache storage configuration. On Netlify we use a site-scoped Blob
-		// store so the Sanity-detail cache survives deploys and is shared
-		// across Function instances. Locally we keep LRU so `pnpm dev` works
-		// without Netlify CLI / blob support.
+		// Cache storage configuration.
+		//
+		// `cache` is Nitro's AUTOMATIC route/render cache (keys `nitro:routes:*`).
+		// It MUST use a driver that never throws on write: Nitro writes the
+		// rendered response inside `renderRoute` WITHOUT guarding that write, so
+		// any storage error there is unhandled and crashes the whole render
+		// (HTTP 500). Netlify Blobs throws "Token expired" on long-lived function
+		// instances (the unstorage driver caches the store + its short-lived
+		// context token for the instance lifetime), which previously 500'd every
+		// cache-miss render. So `cache` stays in-memory. Real cross-instance ISR
+		// is handled by Netlify's edge cache (Netlify-CDN-Cache-Control headers +
+		// tag purge in /api/revalidate), which is independent of this layer.
+		//
+		// `sanity` is the cross-deploy Sanity-detail cache, used EXPLICITLY by
+		// /api/sanity/detail/[type] — which wraps every Blob op in try/catch, so a
+		// Blob failure there only degrades to a live Sanity fetch and never
+		// crashes a render. On Netlify it is a site-scoped Blob store; locally LRU.
 		storage: {
-			cache: process.env.NETLIFY
+			cache: { driver: "lru-cache", max: 1000 },
+			sanity: process.env.NETLIFY
 				? {
 						driver: "netlifyBlobs",
 						// Named store = site-scoped, persistent across deploys.
@@ -188,6 +202,10 @@ export default defineNuxtConfig({
 			cache: {
 				driver: "fs",
 				base: ".cache/nitro",
+			},
+			sanity: {
+				driver: "fs",
+				base: ".cache/sanity",
 			},
 		},
 		rollupConfig: {
