@@ -26,9 +26,10 @@ export const SITEMAP_QUERY = defineQuery(`
     "timetable", 
     "words", 
     "showsArchive"
-  ] && 
-  defined(slug.current) && 
-  !(_id in path("drafts.**"))
+  ] &&
+  defined(slug.current) &&
+  !(_id in path("drafts.**")) &&
+  !(_type == "show" && slug.current == "no-show")
 ] | order(_updatedAt desc) {
   _type,
   "slug": slug.current,
@@ -286,7 +287,7 @@ export const SHOWSARCHIVE_QUERY = defineQuery(`
                     _id,
                     title
                 }| order(lower(title)),
-                "parentShow": *[_type == "show" && references(^._id)][0]{
+                "parentShow": *[_type == "show" && slug.current != "no-show" && references(^._id)][0]{
                     ${PARENT_SHOW_LINK_FRAGMENT}
                 },
                 ${SITE_PATH_FRAGMENT}
@@ -296,7 +297,7 @@ export const SHOWSARCHIVE_QUERY = defineQuery(`
 }`);
 
 export const SHOW_QUERY = defineQuery(`
-*[_type == "show" && slug.current == $slug] | order(_updatedAt desc)[0] {
+*[_type == "show" && slug.current == $slug && slug.current != "no-show"] | order(_updatedAt desc)[0] {
   ...,
   _id,
   _type,
@@ -372,7 +373,7 @@ export const SET_QUERY = defineQuery(`
   persons[]->{
     ${PERSON_LINK_FRAGMENT}
   },
-  "parentShow": *[_type == "show" && references(^._id)][0]{
+  "parentShow": *[_type == "show" && slug.current != "no-show" && references(^._id)][0]{
     ...,
     _id,
     title,
@@ -417,7 +418,7 @@ export const SET_QUERY = defineQuery(`
       title,
       short
     }| order(lower(title)),
-    "parentShow": *[_type == "show" && references(^._id)][0]{
+    "parentShow": *[_type == "show" && slug.current != "no-show" && references(^._id)][0]{
       ${PARENT_SHOW_LINK_FRAGMENT}
     },
     ${SITE_PATH_FRAGMENT},

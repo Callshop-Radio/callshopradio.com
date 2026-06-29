@@ -258,7 +258,7 @@ export const SET_LIST_ITEM_QUERY = `{
 		title,
 		short
 	} | order(lower(title)),
-	"parentShow": *[_type == "show" && references(^._id)][0]{
+	"parentShow": *[_type == "show" && slug.current != "no-show" && references(^._id)][0]{
 		${PARENT_SHOW_LINK_FRAGMENT}
 	},
 	${SITE_PATH_FRAGMENT}
@@ -284,7 +284,7 @@ export const SET_COVER_FLOW_SLIDER_ITEM_QUERY = `{
 		_id,
 		title
 	} | order(lower(title)),
-	"parentShow": *[_type == "show" && references(^._id)][0]{
+	"parentShow": *[_type == "show" && slug.current != "no-show" && references(^._id)][0]{
 		${PARENT_SHOW_LINK_FRAGMENT}
 	},
 	${SITE_PATH_FRAGMENT}
@@ -418,7 +418,7 @@ export const MODULE_QUERY = `{
             persons[]->{
                     ${PERSON_LINK_FRAGMENT}
             },
-            "parentShow": *[_type == "show" && references(^._id)][0]{
+            "parentShow": *[_type == "show" && slug.current != "no-show" && references(^._id)][0]{
                     ${PARENT_SHOW_LINK_FRAGMENT}
             },
             ${SITE_PATH_FRAGMENT}
@@ -449,9 +449,9 @@ export const MODULE_QUERY = `{
             persons[]->{
                     ${PERSON_LINK_FRAGMENT}
             },
-            "parentShow": *[_type == "show" && references(^._id)][0]{
+            "parentShow": *[_type == "show" && slug.current != "no-show" && references(^._id)][0]{
                     ${PARENT_SHOW_LINK_FRAGMENT},
-                     "city": *[_type == "show" && references(^._id)][0]{
+                     "city": *[_type == "show" && slug.current != "no-show" && references(^._id)][0]{
                         ...,
                         title,
                     }

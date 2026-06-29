@@ -58,7 +58,7 @@ export const SET_PROJECTION = `{
   persons[]->{
     ${PERSON_LINK_FRAGMENT}
   },
-  "parentShow": *[_type == "show" && references(^._id)][0]{
+  "parentShow": *[_type == "show" && slug.current != "no-show" && references(^._id)][0]{
     ...,
     _id,
     title,
