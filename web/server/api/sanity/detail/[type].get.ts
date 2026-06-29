@@ -51,9 +51,17 @@ const MAX_AGE_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 // follows, or several stale reads triggering revalidation) → one Sanity fetch.
 const inflight = new Map<string, Promise<unknown>>();
 
+// Cache-key schema version. Bump this whenever a detail GROQ query changes
+// shape, so entries cached under the old query are abandoned (not deleted —
+// they just orphan out and expire) and the next read misses → re-fetches with
+// the new query. Reliable even when the Netlify Blobs token is expired (a stale
+// read fails → treated as a miss), unlike deleting blobs which can silently
+// no-op. v2: no-show parentShow exclusion (2026-06-29).
+const CACHE_VERSION = "v2";
+
 /** Deterministic cache key shared with the /api/revalidate webhook. */
 export function sanityDetailCacheKey(type: string, slug: string): string {
-	return `sanity-detail:${type}:${slug}`;
+	return `sanity-detail:${CACHE_VERSION}:${type}:${slug}`;
 }
 
 function fetchAndStore(
