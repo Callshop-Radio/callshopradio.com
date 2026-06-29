@@ -28,6 +28,16 @@ const props = defineProps<{
 // Store
 const mainStore = useMainStore();
 
+// Description fallback. The two-column card collapses when the right column is
+// empty, so a set with neither show nor episode copy must still render
+// something. Prefer the CMS-managed fallback
+// (fallbackGlobal.fallbackSet.description), else a hardcoded default.
+const FALLBACK_SET_DESCRIPTION = "Press play and tune in.";
+const fallbackDescriptionBlocks = computed(() => {
+	const blocks = mainStore?.siteFallbacks?.fallbackSet?.description;
+	return Array.isArray(blocks) && blocks.length > 0 ? blocks : null;
+});
+
 // SoundCloud artwork + playback via the shared useSoundcloudArtwork composable.
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 const artworkUrl = ref("");
@@ -171,7 +181,11 @@ onMounted(() => {
 				<RichText :blocks="set?.content" />
 			</section>
 			<section v-else>
-				<RichText :blocks="mainStore?.siteFallbacks?.fallbackSet?.description" />
+				<RichText
+					v-if="fallbackDescriptionBlocks"
+					:blocks="fallbackDescriptionBlocks"
+				/>
+				<p v-else>{{ FALLBACK_SET_DESCRIPTION }}</p>
 			</section>
 			<section v-if="set?.tracklistRich" class="tracklist">
 				<h3>Tracklist</h3>
