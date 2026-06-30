@@ -126,12 +126,12 @@ export default defineEventHandler(
 		const tags = TAGS_BY_TYPE[body._type] ?? [];
 
 		// Cached Sanity detail response keys — must match the deterministic key
-		// in /api/sanity/detail/[type].get.ts (sanityDetailCacheKey). The `v2`
+		// in /api/sanity/detail/[type].get.ts (sanityDetailCacheKey). The `v3`
 		// segment is the CACHE_VERSION there; keep both in sync on bumps.
 		const detailKeys: string[] = [];
 		const detailPrefix = DETAIL_KEY_PREFIX_BY_TYPE[body._type];
 		if (detailPrefix && body.slug?.current) {
-			detailKeys.push(`sanity-detail:v2:${detailPrefix}:${body.slug.current}`);
+			detailKeys.push(`sanity-detail:v3:${detailPrefix}:${body.slug.current}`);
 		}
 
 		// Purge both cache layers. Nitro's in-process render cache lives in the

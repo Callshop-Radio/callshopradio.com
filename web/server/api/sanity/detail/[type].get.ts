@@ -56,8 +56,9 @@ const inflight = new Map<string, Promise<unknown>>();
 // they just orphan out and expire) and the next read misses → re-fetches with
 // the new query. Reliable even when the Netlify Blobs token is expired (a stale
 // read fails → treated as a miss), unlike deleting blobs which can silently
-// no-op. v2: no-show parentShow exclusion (2026-06-29).
-const CACHE_VERSION = "v2";
+// no-op. v2: no-show parentShow exclusion. v3: showless-set path "no-show"
+// fallback so orphan sets get a clickable URL (2026-06-29).
+const CACHE_VERSION = "v3";
 
 /** Deterministic cache key shared with the /api/revalidate webhook. */
 export function sanityDetailCacheKey(type: string, slug: string): string {

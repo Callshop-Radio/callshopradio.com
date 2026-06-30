@@ -582,7 +582,7 @@ export const SITE_OPTIONS_QUERY = defineQuery(`{
 			schedulePage->_type == "page" => "/" + schedulePage->slug.current,
 			schedulePage->_type == "showsArchive" => "/shows",
 			schedulePage->_type == "show" => "/shows/" + schedulePage->slug.current,
-			schedulePage->_type == "set" => "/shows/" + *[_type == "show" && references(^.schedulePage._ref)][0].slug.current + "/" + schedulePage->slug.current,
+			schedulePage->_type == "set" => "/shows/" + coalesce(*[_type == "show" && references(^.schedulePage._ref)][0].slug.current, "no-show") + "/" + schedulePage->slug.current,
 			schedulePage->_type == "words" => "/words",
 			schedulePage->_type == "article" => "/words/" + schedulePage->slug.current,
 			schedulePage->_type == "pool" => "/pool",
