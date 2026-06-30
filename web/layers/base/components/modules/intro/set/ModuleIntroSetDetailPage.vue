@@ -6,19 +6,6 @@ import type { SET_QUERY_RESULT } from "~~/types/sanity.types.gen";
 type SetDetail = NonNullable<SET_QUERY_RESULT>;
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-// Template references; height sync keeps the media column level with content.
-const setContentRef = ref<HTMLElement | null>(null);
-const { mainRef: setMainRef, computedHeight: computedSetMainHeight } =
-	useDetailHeightSync();
-
-// computedSetMainHeight is a px number on desktop but the string "100%" below
-// 900px — branch like the pool page so the unit is only appended to numbers
-// (otherwise mobile renders the invalid "100%px").
-const setDetailsStyle = computed(() => {
-	const h = computedSetMainHeight.value;
-	if (typeof h === "string") return `max-height: ${h}; height: ${h}`;
-	return `max-height: ${h}px; height: ${h}px`;
-});
 
 // Props
 const props = defineProps<{
@@ -59,11 +46,8 @@ onMounted(() => {
 </script>
 
 <template>
-	<div
-		v-if="set"
-		ref="setContentRef"
-		class="set-content">
-		<div ref="setMainRef" class="set-main">
+	<div v-if="set" class="set-content">
+		<div class="set-main">
 			<!-- Image/media area -->
 			<div class="set-media">
 				<ElementsContentLink :item="set" class="grid-item__link">
@@ -168,10 +152,7 @@ onMounted(() => {
 				</div>
 			</div>
 		</div>
-		<div
-			class="set-details"
-			:style="setDetailsStyle"
-		>
+		<div class="set-details">
 			<section v-if="set?.parentShow?.content">
 				<h2>{{ set?.parentShow?.title }}</h2>
 				<RichText :blocks="set?.parentShow?.content" />
@@ -210,7 +191,11 @@ onMounted(() => {
   display: flex;
   flex-flow: row wrap;
   justify-content: flex-start;
-  align-items: flex-start;
+  /* Equal-height columns in pure CSS (replaces the old JS height-sync that
+     measured the left column on mount and wrote an inline height onto the
+     right one — the source of the layout shift). The taller column drives;
+     the other stretches to match. */
+  align-items: stretch;
   position: relative;
   border: 0.0625rem solid var(--color-text);
   border-radius: 1.5625rem;
@@ -226,12 +211,11 @@ onMounted(() => {
     align-items: center;
     position: relative;
     width: 100%;
-    height: 100%;
     border-right: 0.0625rem solid var(--color-text);
     /* border: 0.0625rem solid var(--color-text);
     border-top-left-radius: 1.5625rem;
     border-bottom-left-radius: 1.5625rem; */
-    overflow: scroll;
+    overflow: hidden;
     @media screen and (max-width: 900px) {
       max-width: 100%;
       border-right: none;
@@ -241,7 +225,6 @@ onMounted(() => {
       order: 2;
       border-bottom-left-radius: 1.5625rem;
       width: 100%;
-      height: 100%;
       max-width: 100%;
       object-fit: cover;
       overflow: hidden;
@@ -252,7 +235,12 @@ onMounted(() => {
         border-bottom: 1px solid var(--color-text);
       }
       @media screen and (min-width: 900px) {
+        /* Fill the column below the info row; with align-items: stretch the
+           right column equalises to this, so the card stays "big" with or
+           without copy. */
+        flex: 1;
         min-width: calc(var(--page-max-width) / 2.5);
+        min-height: calc(var(--page-max-width) / 2.5);
       }
       .track-artwork,
       .track-artwork-placeholder {
@@ -261,16 +249,15 @@ onMounted(() => {
         object-fit: cover;
         background-color: var(--color-grey);
         max-width: 100%;
-        max-height: 100%;
-        /* Keep the media a fixed "big" square on desktop even when the right
-           column has little content (no description/tracklist). The right
-           column height-syncs to the left, so a collapsing image would shrink
-           the whole card. min-height + max-height:none stop the percentage-
-           height chain from collapsing it. */
+        /* Desktop: fill the media column (which flex-grows to the card height,
+           the right column equalising to it via align-items: stretch). So the
+           image is always the full "big" size — never a collapsed square and
+           never dependent on how much copy the right column has. */
         @media screen and (min-width: 900px) {
+          height: 100%;
+          aspect-ratio: auto;
           min-width: calc(var(--page-max-width) / 2.5);
           min-height: calc(var(--page-max-width) / 2.5);
-          max-height: none;
         }
         @media screen and (max-width: 900px) {
           max-width: 100%;
@@ -391,9 +378,8 @@ onMounted(() => {
     flex-flow: column;
     justify-content: flex-start;
     align-items: flex-start;
-    position: relative;
-    overflow: scroll;
-    height: 100%;
+    /* Height comes from align-items: stretch on .set-content (matches the
+       media column). No JS height, no overflow scroll → no layout shift. */
     width: calc(100% - calc(var(--page-max-width) / 2.5));
     padding: var(--base-margin) var(--big-margin) var(--big-margin);
     gap: var(--base-margin) 0;
