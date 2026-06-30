@@ -262,6 +262,16 @@ onMounted(() => {
         background-color: var(--color-grey);
         max-width: 100%;
         max-height: 100%;
+        /* Keep the media a fixed "big" square on desktop even when the right
+           column has little content (no description/tracklist). The right
+           column height-syncs to the left, so a collapsing image would shrink
+           the whole card. min-height + max-height:none stop the percentage-
+           height chain from collapsing it. */
+        @media screen and (min-width: 900px) {
+          min-width: calc(var(--page-max-width) / 2.5);
+          min-height: calc(var(--page-max-width) / 2.5);
+          max-height: none;
+        }
         @media screen and (max-width: 900px) {
           max-width: 100%;
           max-height: 100%;
