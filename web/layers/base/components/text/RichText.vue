@@ -18,14 +18,22 @@ const props = defineProps({
 // accepts both the i18n wrapper shape (from GROQ) and a flat block array.
 const resolvedBlocks = computed(() => parseI18nObj(props.blocks) ?? []);
 
+// flattenProps drops the default slot — fine for standalone block types, but
+// mark text arrives as slot children, so links rendered empty. This variant
+// flattens the markDef value into props and forwards the slots.
+const flattenMarkProps =
+	(component) =>
+	(markProps, { slots }) =>
+		h(component, { ...markProps.value }, slots);
+
 const portableTextComponents = {
 	types: {
 		"module.media": flattenProps(ModuleMedia),
 		"module.carousel": flattenProps(ModuleCarousel),
 	},
 	marks: {
-		link: flattenProps(PortableTextLink),
-		linkCookie: flattenProps(PortableTextLink),
+		link: flattenMarkProps(PortableTextLink),
+		linkCookie: flattenMarkProps(PortableTextLink),
 		underline: "u",
 		"strike-through": "s",
 	},
