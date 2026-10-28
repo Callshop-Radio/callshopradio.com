@@ -1,10 +1,10 @@
 <script setup lang="ts">
-defineProps<{ title: string; subtitle?: string }>();
+defineProps<{ title: string; subtitle?: string; centered?: boolean }>();
 </script>
 
 <template>
 	<section class="account-page">
-		<div class="account-page__inner">
+		<div class="account-page__inner" :class="{ 'account-page__inner--center': centered }">
 			<header class="account-page__head">
 				<h1>{{ title }}</h1>
 				<p v-if="subtitle">{{ subtitle }}</p>
@@ -26,6 +26,13 @@ defineProps<{ title: string; subtitle?: string }>();
 	margin: 0;
 	display: grid;
 	gap: 1.75rem;
+}
+
+.account-page__inner--center {
+	width: min(520px, 100%);
+	margin: 0 auto;
+	justify-items: center;
+	text-align: center;
 }
 
 .account-page__head h1 {

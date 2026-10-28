@@ -4,6 +4,8 @@ import {
 	createError,
 	defineEventHandler,
 	getHeader,
+	getRequestWebStream,
+	readRawBody,
 	setHeader,
 	setResponseStatus,
 } from "h3";
@@ -32,22 +34,30 @@ async function readLimitedBody(
 	event: H3Event,
 	limit: number,
 ): Promise<Buffer | undefined> {
-	const chunks: Buffer[] = [];
+	const declared = Number(getHeader(event, "content-length") ?? 0);
+	if (declared > limit) {
+		throw createError({ statusCode: 413, statusMessage: "payload_too_large" });
+	}
+	const stream = getRequestWebStream(event);
+	if (!stream) return undefined;
+	const reader = stream.getReader();
+	const chunks: Uint8Array[] = [];
 	let size = 0;
-	for await (const chunk of event.node.req) {
-		const buffer = Buffer.isBuffer(chunk)
-			? chunk
-			: Buffer.from(chunk as Uint8Array);
-		size += buffer.length;
+	for (;;) {
+		const { done, value } = await reader.read();
+		if (done) break;
+		size += value.byteLength;
 		if (size > limit) {
+			await reader.cancel();
 			throw createError({
 				statusCode: 413,
 				statusMessage: "payload_too_large",
 			});
 		}
-		chunks.push(buffer);
+		chunks.push(value);
 	}
-	return chunks.length > 0 ? Buffer.concat(chunks) : undefined;
+	if (chunks.length === 0) return undefined;
+	return Buffer.concat(chunks.map((chunk) => Buffer.from(chunk)));
 }
 
 export default defineEventHandler(async (event) => {
@@ -88,7 +98,10 @@ export default defineEventHandler(async (event) => {
 	// The global /api/** CORS rule would advertise "*" on private data. Any
 	// browser origin other than the allowlist gets "null" instead.
 	const requestOrigin = getHeader(event, "origin");
-	if (requestOrigin && originAllowed(requestOrigin, String(config.accountAllowedOrigins ?? ""))) {
+	if (
+		requestOrigin &&
+		originAllowed(requestOrigin, String(config.accountAllowedOrigins ?? ""))
+	) {
 		setHeader(event, "access-control-allow-origin", requestOrigin);
 		appendResponseHeader(event, "vary", "Origin");
 	} else {

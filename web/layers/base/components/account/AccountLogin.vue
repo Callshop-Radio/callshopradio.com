@@ -100,7 +100,7 @@ onBeforeUnmount(stopCooldown);
 </script>
 
 <template>
-	<AccountShell :title="copy.signInTitle" :subtitle="copy.signInIntro">
+	<AccountShell :title="copy.signInTitle" :subtitle="copy.signInIntro" centered>
 		<Transition name="step" mode="out-in">
 			<form v-if="step === 'email'" key="email" class="login" @submit.prevent="sendCode">
 				<label class="login__field">
@@ -165,7 +165,10 @@ onBeforeUnmount(stopCooldown);
 .login {
 	display: grid;
 	gap: 1rem;
+	width: 100%;
 	max-width: 420px;
+	margin: 0 auto;
+	text-align: left;
 }
 
 .login__field {
