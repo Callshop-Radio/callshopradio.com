@@ -581,7 +581,7 @@ onMounted(() => {
 					<div v-if="props.module.type === 'sets'" class="teaser-item__image">
 						<img
 							v-if="item?.image && item?.image.asset && item?.image.asset.url"
-							:src="item?.image.asset.url"
+							:src="sanityImageUrl(item?.image?.asset?.url)"
 							:alt="item?.title || ''"
 							loading="lazy"
 						>
@@ -598,7 +598,7 @@ onMounted(() => {
 						<div v-else class="image-placeholder">
 							<img
 								v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
-								:src="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
+								:src="sanityImageUrl(mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url)"
 								alt="Fallback Image"
 								class="fallback-image"
 							>
@@ -612,12 +612,13 @@ onMounted(() => {
 									getItemImage(item).asset.url
 							"
 							:image="getItemImage(item)"
+							sizes="(min-width: 1101px) 30vw, (min-width: 721px) 45vw, 90vw"
 							:class="`media-${props.module.style || 'default'}`"
 						/>
 						<div v-else class="image-placeholder">
 							<img
 								v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
-								:src="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
+								:src="sanityImageUrl(mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url)"
 								alt="Fallback Image"
 								class="fallback-image"
 							>

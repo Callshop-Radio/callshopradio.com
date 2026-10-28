@@ -240,7 +240,7 @@ watch(
 						<template v-if="item._type === 'set'">
 							<img
 								v-if="item?.image?.asset?.url"
-								:src="item.image.asset.url"
+								:src="sanityImageUrl(item.image.asset.url)"
 								:alt="item?.title || ''"
 							>
 							<div v-else-if="item?.soundcloud" class="track-artwork">
@@ -255,7 +255,7 @@ watch(
 								v-else-if="
 									mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
 								"
-								:src="mainStore.siteFallbacks.fallbackSet.image.asset.url"
+								:src="sanityImageUrl(mainStore.siteFallbacks.fallbackSet.image.asset.url)"
 								alt="Fallback"
 							>
 						</template>
@@ -263,14 +263,14 @@ watch(
 						<template v-else>
 							<img
 								v-if="getItemImage(item)?.asset?.url"
-								:src="getItemImage(item).asset.url"
+								:src="sanityImageUrl(getItemImage(item).asset.url)"
 								:alt="item?.title || ''"
 							>
 							<img
 								v-else-if="
 									mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
 								"
-								:src="mainStore.siteFallbacks.fallbackSet.image.asset.url"
+								:src="sanityImageUrl(mainStore.siteFallbacks.fallbackSet.image.asset.url)"
 								alt="Fallback"
 							>
 						</template>

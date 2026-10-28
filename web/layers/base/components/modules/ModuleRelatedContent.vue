@@ -18,22 +18,25 @@ const props = defineProps({
 	type: {
 		type: String,
 		required: true,
-		validator: (value) => {
-			return [
-				"sets",
-				"shows",
-				"words",
-				"persons",
-				"venues",
-				"pool",
-				"article",
-				"primary",
-				"secondary",
-				"accent",
-				"blue",
-				"green",
-				"yellow",
-			].includes(value);
+		validator: (value: unknown) => {
+			return (
+				typeof value === "string" &&
+				[
+					"sets",
+					"shows",
+					"words",
+					"persons",
+					"venues",
+					"pool",
+					"article",
+					"primary",
+					"secondary",
+					"accent",
+					"blue",
+					"green",
+					"yellow",
+				].includes(value)
+			);
 		},
 	},
 	// Optional title
@@ -135,6 +138,16 @@ function formatDate(dateString) {
 		month: "2-digit",
 		year: "numeric",
 	});
+}
+
+const RELATED_IMAGE_SIZES =
+	"(min-width: 1101px) 30vw, (min-width: 721px) 45vw, 90vw";
+
+function sanitySrcset(url?: string | null) {
+	if (!url) return undefined;
+	return [400, 750, 1200]
+		.map((width) => `${sanityImageUrl(url, width)} ${width}w`)
+		.join(", ");
 }
 
 // Functions for image handling
@@ -246,18 +259,25 @@ onMounted(() => {
 		<div class="related-content__grid">
 			<!-- Grid items -->
 			<div
-				v-for="item in visibleItems"
+				v-for="(item, index) in visibleItems"
 				:key="item?._id"
 				:class="`related-item related-item--${style} ${typeClass}`"
 			>
 				<!-- Image -->
-				<ElementsContentLink :item="item" class="related-item__link">
+				<ElementsContentLink
+					:item="item"
+					:prefetch-on-proximity="index < 3"
+					class="related-item__link"
+				>
 					<div v-if="type === 'sets'" class="related-item__image">
 						<img
 							v-if="item?.image && item?.image.asset && item?.image.asset.url"
-							:src="item?.image.asset.url"
+							:src="sanityImageUrl(item?.image?.asset?.url)"
+							:srcset="sanitySrcset(item?.image?.asset?.url)"
+							:sizes="RELATED_IMAGE_SIZES"
 							:alt="item?.title || ''"
 							loading="lazy"
+							decoding="async"
 						>
 						<div v-else-if="item?.soundcloud" class="track-artwork">
 							<img
@@ -265,6 +285,8 @@ onMounted(() => {
 								:src="artworkUrls.get(item?._id)"
 								alt="Track Artwork"
 								class="track-image"
+								loading="lazy"
+								decoding="async"
 							>
 							<div v-else class="track-artwork-placeholder"/>
 						</div>
@@ -272,9 +294,13 @@ onMounted(() => {
 						<div v-else class="image-placeholder">
 							<img
 								v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
-								:src="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
+								:src="sanityImageUrl(mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url)"
+								:srcset="sanitySrcset(mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url)"
+								:sizes="RELATED_IMAGE_SIZES"
 								alt="Fallback Image"
 								class="fallback-image"
+								loading="lazy"
+								decoding="async"
 							>
 						</div>
 					</div>
@@ -285,15 +311,23 @@ onMounted(() => {
 									getItemImage(item).asset &&
 									getItemImage(item).asset.url
 							"
-							:src="getItemImage(item).asset.url"
+							:src="sanityImageUrl(getItemImage(item).asset.url)"
+							:srcset="sanitySrcset(getItemImage(item).asset.url)"
+							:sizes="RELATED_IMAGE_SIZES"
 							:alt="item?.title || ''"
+							loading="lazy"
+							decoding="async"
 						>
 						<div v-else class="image-placeholder">
 							<img
 								v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
-								:src="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
+								:src="sanityImageUrl(mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url)"
+								:srcset="sanitySrcset(mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url)"
+								:sizes="RELATED_IMAGE_SIZES"
 								alt="Fallback Image"
 								class="fallback-image"
+								loading="lazy"
+								decoding="async"
 							>
 						</div>
 					</div>

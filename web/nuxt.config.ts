@@ -54,6 +54,10 @@ export default defineNuxtConfig({
 					href: "/fonts/Icona-Sans-Semibold.woff2",
 					crossorigin: "",
 				},
+				// Cover-flow artwork and most content images come from these hosts.
+				{ rel: "preconnect", href: "https://cdn.sanity.io", crossorigin: "" },
+				{ rel: "preconnect", href: "https://i1.sndcdn.com", crossorigin: "" },
+				{ rel: "dns-prefetch", href: "https://w.soundcloud.com" },
 			],
 		},
 	},
@@ -245,20 +249,16 @@ export default defineNuxtConfig({
 	// Note: vue-ssr-carousel should be added to modules array if still needed
 
 	build: {
-		transpile: ["rxjs"],
+		// Transpiling rxjs also excludes it from Vite's dependency pre-bundling,
+		// which served ~180 individual rxjs modules in dev (~10s load). Keep it
+		// for production builds only.
+		transpile: process.env.NODE_ENV === "production" ? ["rxjs"] : [],
 	},
 
 	vite: {
 		build: {
 			chunkSizeWarningLimit: 1000,
 			rollupOptions: {
-				output: {
-					manualChunks: (id) => {
-						if (id.includes("node_modules")) {
-							return "vendor";
-						}
-					},
-				},
 				onwarn(warning, warn) {
 					// Suppress "use client" warnings from framer-motion
 					if (
@@ -277,7 +277,9 @@ export default defineNuxtConfig({
 				"vue-router",
 				"@sanity/client",
 				"@sanity/image-url",
+				"@portabletext/vue",
 				"embla-carousel-vue",
+				"groq",
 				"hls.js",
 				"plyr",
 				"vanilla-cookieconsent",

@@ -44,10 +44,12 @@ const props = withDefaults(
 		set: Set;
 		layout?: "default" | "cover-flow";
 		mediaActive?: boolean;
+		isCenter?: boolean;
 	}>(),
 	{
 		layout: "default",
 		mediaActive: true,
+		isCenter: false,
 	},
 );
 
@@ -170,7 +172,11 @@ onMounted(() => loadArtworkUrl());
 						:src="artworkUrl"
 						alt="Audio Artwork"
 						class="set-image track-artwork"
-						loading="lazy"
+						:loading="isCenter ? 'eager' : 'lazy'"
+						:fetchpriority="isCenter ? 'high' : undefined"
+						decoding="async"
+						width="500"
+						height="500"
 					>
 					<div
 						v-else
@@ -250,8 +256,8 @@ onMounted(() => loadArtworkUrl());
 					</div>
 					<div v-if="set?.tags?.length" class="set-tags tags">
 						<button
-							v-for="tag in set?.tags.slice(0,3)"
-							:key="tag._id || index"
+							v-for="(tag, tagIndex) in set?.tags.slice(0, 3)"
+							:key="tag._id || tagIndex"
 							class="tag"
 							type="button"
 						>
