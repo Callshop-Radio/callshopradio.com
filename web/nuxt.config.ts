@@ -17,6 +17,8 @@ export default defineNuxtConfig({
 			"/konto/**",
 			"/de/konto",
 			"/de/konto/**",
+			"/einladung/**",
+			"/de/einladung/**",
 			"/api/account/**",
 		],
 	},
@@ -331,6 +333,28 @@ export default defineNuxtConfig({
 				"Netlify-CDN-Cache-Control": "no-store",
 			},
 		},
+		// Invitations carry a single-use token: never cached, never indexed,
+		// never prerendered. Both locale prefixes exist (prefix_except_default).
+		"/einladung/**": {
+			isr: false,
+			prerender: false,
+			ssr: true,
+			headers: {
+				"Cache-Control": "no-store, must-revalidate",
+				"Netlify-CDN-Cache-Control": "no-store",
+				"X-Robots-Tag": "noindex, nofollow",
+			},
+		},
+		"/de/einladung/**": {
+			isr: false,
+			prerender: false,
+			ssr: true,
+			headers: {
+				"Cache-Control": "no-store, must-revalidate",
+				"Netlify-CDN-Cache-Control": "no-store",
+				"X-Robots-Tag": "noindex, nofollow",
+			},
+		},
 		"/api/account/**": {
 			cors: false,
 			headers: {
@@ -370,11 +394,15 @@ export default defineNuxtConfig({
 			const slugs = await getPageSlugs();
 			nitroConfig.routeRules ||= {};
 			for (const slug of slugs) {
-				// Account pages must never inherit a CMS page's ISR rule.
+				// Account and invitation pages must never inherit a CMS page's
+				// ISR rule.
 				if (
 					slug === "konto" ||
 					slug.startsWith("konto/") ||
-					slug.startsWith("de/konto")
+					slug.startsWith("de/konto") ||
+					slug === "einladung" ||
+					slug.startsWith("einladung/") ||
+					slug.startsWith("de/einladung")
 				)
 					continue;
 				nitroConfig.routeRules[`/${slug}`] = {
