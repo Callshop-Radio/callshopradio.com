@@ -17,6 +17,7 @@ const props = defineProps({
 });
 
 const mainStore = useMainStore();
+const { track: trackEvent } = useAnalytics();
 const iframeContainer = ref(null);
 const isPlaying = ref(false);
 const isLoading = ref(true);
@@ -93,6 +94,53 @@ const trackId = computed(() => {
 		`track-${Date.now()}`
 	);
 });
+
+// Sanity identity of the loaded set/show, used for analytics events.
+const analyticsContext = computed(() => {
+	const context = mainStore.currentTrackContext || {};
+	return {
+		content_type: context.contentType || "set",
+		set_id: context.contentId || String(localTrack.value?.id || ""),
+		set_title: context.contentTitle || localTrack.value?.title || "",
+		show_id: context.showId || "",
+		show_title: context.showTitle || "",
+	};
+});
+
+// Report each listening milestone at most once per loaded track. `hasTrackedPlay`
+// de-duplicates resumes after a pause, so play_set means "started this set".
+const trackedProgress = new Set();
+let hasTrackedPlay = false;
+
+function trackPlay() {
+	if (hasTrackedPlay) return;
+	hasTrackedPlay = true;
+	trackEvent("play_set", analyticsContext.value);
+}
+
+function trackProgress(relativePosition) {
+	if (typeof relativePosition !== "number") return;
+
+	const percent = Math.floor(relativePosition * 100);
+	for (const milestone of [25, 50, 75]) {
+		if (percent >= milestone && !trackedProgress.has(milestone)) {
+			trackedProgress.add(milestone);
+			trackEvent("audio_progress", {
+				...analyticsContext.value,
+				percent: milestone,
+			});
+		}
+	}
+}
+
+function trackFinish() {
+	if (trackedProgress.has(100)) return;
+	trackedProgress.add(100);
+	trackEvent("audio_progress", {
+		...analyticsContext.value,
+		percent: 100,
+	});
+}
 
 // Load SoundCloud Widget API
 function loadSoundCloudWidget() {
@@ -178,6 +226,8 @@ function setupWidget(Widget) {
 	if (iframe) {
 		try {
 			localWidget.value = Widget(iframe);
+			trackedProgress.clear();
+			hasTrackedPlay = false;
 			setupWidgetEvents();
 		} catch {
 			trackError.value = "Error initializing player.";
@@ -216,6 +266,7 @@ function setupWidgetEvents() {
 		localWidget.value.bind(SC.Widget.Events.PLAY, () => {
 			isPlaying.value = true;
 			mainStore.setPlayerStatus(true); // Update store
+			trackPlay();
 			// Double-check if really playing
 			setTimeout(() => {
 				localWidget.value.isPaused((paused) => {
@@ -227,10 +278,11 @@ function setupWidgetEvents() {
 		});
 
 		// PLAY_PROGRESS Event (important for status tracking)
-		localWidget.value.bind(SC.Widget.Events.PLAY_PROGRESS, () => {
+		localWidget.value.bind(SC.Widget.Events.PLAY_PROGRESS, (progress) => {
 			if (!isPlaying.value) {
 				isPlaying.value = true;
 			}
+			trackProgress(progress?.relativePosition);
 		});
 
 		// PAUSE Event with error handling
@@ -252,11 +304,16 @@ function setupWidgetEvents() {
 		localWidget.value.bind(SC.Widget.Events.FINISH, () => {
 			isPlaying.value = false;
 			mainStore.setPlayerStatus(false); // Update store
+			trackFinish();
 		});
 
 		localWidget.value.bind(SC.Widget.Events.ERROR, () => {
 			trackError.value = "An error occurred during playback.";
 			isPlaying.value = false;
+			trackEvent("audio_error", {
+				...analyticsContext.value,
+				source: "soundcloud",
+			});
 		});
 	} catch {
 		// Silent error handling
@@ -346,6 +403,7 @@ onBeforeUnmount(() => {
 			const events = [
 				window.SC.Widget.Events.READY,
 				window.SC.Widget.Events.PLAY,
+				window.SC.Widget.Events.PLAY_PROGRESS,
 				window.SC.Widget.Events.PAUSE,
 				window.SC.Widget.Events.FINISH,
 				window.SC.Widget.Events.ERROR,
