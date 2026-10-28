@@ -5,7 +5,6 @@ import {
 	defineEventHandler,
 	getHeader,
 	getRequestWebStream,
-	readRawBody,
 	setHeader,
 	setResponseStatus,
 } from "h3";

@@ -74,7 +74,7 @@ export function upstreamHeaders({
 }): Record<string, string> {
 	const headers: Record<string, string> = {
 		"x-site-client": clientSecret,
-		accept: accept && accept.startsWith("image/") ? accept : "application/json",
+		accept: accept?.startsWith("image/") ? accept : "application/json",
 	};
 	if (token) headers.authorization = `Bearer ${token}`;
 	if (ipKey) headers["x-site-ip-key"] = ipKey;

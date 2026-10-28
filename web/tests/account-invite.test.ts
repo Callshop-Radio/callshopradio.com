@@ -21,7 +21,7 @@ test("only a 32-byte invite token from the path is accepted", () => {
 		`inv_${"a".repeat(42)}`,
 		`inv_${"a".repeat(44)}`,
 		`inv_${"a".repeat(42)}+`,
-		"usr_" + "a".repeat(43),
+		`usr_${"a".repeat(43)}`,
 		null,
 		undefined,
 		42,
