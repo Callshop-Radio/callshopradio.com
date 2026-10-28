@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, ref } from "vue";
 
 import { safeNextPath } from "~/utils/accountPaths";
@@ -114,7 +114,7 @@ label {
 
 input {
 	padding: 0.85rem 1rem;
-	border: 1px solid rgb(0 0 0 / 25%);
+	border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
 	border-radius: 10px;
 	font-size: 1.1rem;
 	background: transparent;
@@ -125,8 +125,8 @@ input {
 	padding: 0.9rem 1.2rem;
 	border: 0;
 	border-radius: 999px;
-	background: currentColor;
-	color: var(--color-bg, #fff);
+	background: transparent;
+	color: inherit;
 	font: inherit;
 	font-weight: 600;
 	cursor: pointer;
@@ -150,3 +150,5 @@ input {
 	color: #b02a2a;
 }
 </style>
+
+

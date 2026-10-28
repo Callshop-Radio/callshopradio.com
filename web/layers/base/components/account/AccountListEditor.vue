@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { onMounted, ref } from "vue";
 
 const props = defineProps<{ listId: string }>();
@@ -87,7 +87,7 @@ onMounted(load);
 
 <template>
 	<section class="list-editor">
-		<p v-if="state === 'loading'">…</p>
+		<p v-if="state === 'loading'">â€¦</p>
 		<p v-else-if="state === 'missing'">{{ copy.unavailable }}</p>
 
 		<template v-else-if="list">
@@ -95,7 +95,7 @@ onMounted(load);
 				<input v-model="name" maxlength="60" :aria-label="copy.listName">
 				<button type="submit" class="account-action">{{ copy.rename }}</button>
 			</form>
-			<p class="list-editor__meta">{{ items.length }} Sets</p>
+			<p class="list-editor__meta">{{ items.length === 1 ? "1 Set" : `${items.length} Sets` }}</p>
 			<p v-if="message">{{ message }}</p>
 
 			<ul v-if="items.length > 0" class="list-editor__items">
@@ -129,7 +129,7 @@ onMounted(load);
 .list-editor__rename input {
 	flex: 1;
 	padding: 0.8rem 1rem;
-	border: 1px solid rgb(0 0 0 / 22%);
+	border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
 	border-radius: 10px;
 	background: transparent;
 	color: inherit;
@@ -150,7 +150,7 @@ onMounted(load);
 	align-items: center;
 	gap: 1rem;
 	padding: 0.7rem 0.9rem;
-	border: 1px solid rgb(0 0 0 / 12%);
+	border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
 	border-radius: 10px;
 }
 
@@ -165,8 +165,8 @@ onMounted(load);
 	padding: 0.8rem 1.1rem;
 	border: 0;
 	border-radius: 999px;
-	background: currentColor;
-	color: var(--color-bg, #fff);
+	background: transparent;
+	color: inherit;
 	font: inherit;
 	font-weight: 600;
 	cursor: pointer;
@@ -191,3 +191,6 @@ onMounted(load);
 	opacity: 0.7;
 }
 </style>
+
+
+

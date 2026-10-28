@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { onMounted, ref } from "vue";
 
 definePageMeta({ middleware: "account" });
@@ -50,13 +50,13 @@ onMounted(load);
 		</form>
 		<p v-if="message" class="account-error">{{ message }}</p>
 
-		<p v-if="state === 'loading'">…</p>
+		<p v-if="state === 'loading'">â€¦</p>
 		<p v-else-if="state === 'error'">{{ copy.unavailable }}</p>
 		<ul v-else class="list-grid">
 			<li v-for="list in lists" :key="list.id">
 				<NuxtLink :to="localePath(`/konto/listen/${list.id}`)" class="list-card">
 					<span class="list-card__name">{{ list.name }}</span>
-					<span class="list-card__meta">{{ list.itemCount }} Sets</span>
+					<span class="list-card__meta">{{ list.itemCount === 1 ? "1 Set" : `${list.itemCount} Sets` }}</span>
 				</NuxtLink>
 			</li>
 		</ul>
@@ -72,7 +72,7 @@ onMounted(load);
 .list-create input {
 	flex: 1;
 	padding: 0.8rem 1rem;
-	border: 1px solid rgb(0 0 0 / 22%);
+	border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
 	border-radius: 10px;
 	background: transparent;
 	color: inherit;
@@ -83,8 +83,8 @@ onMounted(load);
 	padding: 0.8rem 1.1rem;
 	border: 0;
 	border-radius: 999px;
-	background: currentColor;
-	color: var(--color-bg, #fff);
+	background: transparent;
+	color: inherit;
 	font: inherit;
 	font-weight: 600;
 	cursor: pointer;
@@ -103,7 +103,7 @@ onMounted(load);
 	display: grid;
 	gap: 0.3rem;
 	padding: 1rem;
-	border: 1px solid rgb(0 0 0 / 15%);
+	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
 	border-radius: 12px;
 	text-decoration: none;
 	color: inherit;
@@ -123,3 +123,6 @@ onMounted(load);
 	color: #b02a2a;
 }
 </style>
+
+
+

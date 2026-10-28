@@ -16,6 +16,7 @@ defineProps<{ title: string; subtitle?: string }>();
 
 <style scoped>
 .account-page {
+	width: 100%;
 	padding: clamp(96px, 14vh, 160px) 1.25rem 4rem;
 }
 

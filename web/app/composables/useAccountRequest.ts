@@ -1,4 +1,4 @@
-import { appendResponseHeader } from "h3";
+import { appendResponseHeader, getRequestHeader } from "h3";
 
 import { copySetCookies } from "../../server/utils/listenerSession";
 
@@ -9,6 +9,10 @@ type RawResponse<T> = {
 	ok: boolean;
 };
 
+type RawFetch = {
+	raw<T>(url: string, options?: Record<string, unknown>): Promise<RawResponse<T>>;
+};
+
 /**
  * Same-origin calls only. On the server the incoming cookie is forwarded so a
  * private SSR render is personalised; the renewal or deletion Set-Cookie is
@@ -16,26 +20,24 @@ type RawResponse<T> = {
  * otherwise drop — including on a 401, which is exactly when it matters.
  */
 export function useAccountRequest() {
-	const request = useRequestFetch() as unknown as {
-		raw<T>(
-			url: string,
-			options?: Record<string, unknown>,
-		): Promise<RawResponse<T>>;
-	};
 	const event = import.meta.server ? useRequestEvent() : null;
+	const origin = import.meta.server ? useRequestURL().origin : "";
 
 	return async function accountRequest<T>(
 		path: string,
 		options: Record<string, unknown> = {},
 	): Promise<T> {
-		const response = await request.raw<T>(
-			`/api/account/${String(path).replace(/^\/+/, "")}`,
-			{
-				...options,
-				credentials: "same-origin",
-				ignoreResponseError: true,
-			},
-		);
+		const url = `/api/account/${String(path).replace(/^\/+/, "")}`;
+		const request = $fetch as unknown as RawFetch;
+
+		const response = await request.raw<T>(import.meta.server ? `${origin}${url}` : url, {
+			...options,
+			credentials: "same-origin",
+			ignoreResponseError: true,
+			...(event
+				? { headers: { ...(options.headers as Record<string, string>), cookie: getRequestHeader(event, "cookie") ?? "" } }
+				: {}),
+		});
 
 		if (event) {
 			copySetCookies(response.headers, (value) =>
@@ -44,13 +46,10 @@ export function useAccountRequest() {
 		}
 
 		if (!response.ok) {
-			throw Object.assign(
-				new Error(`account request failed: ${response.status}`),
-				{
-					statusCode: response.status,
-					data: response._data,
-				},
-			);
+			throw Object.assign(new Error(`account request failed: ${response.status}`), {
+				statusCode: response.status,
+				data: response._data,
+			});
 		}
 
 		return response._data as T;

@@ -85,6 +85,16 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 403, statusMessage: "origin_rejected" });
 	}
 
+	// The global /api/** CORS rule would advertise "*" on private data. Any
+	// browser origin other than the allowlist gets "null" instead.
+	const requestOrigin = getHeader(event, "origin");
+	if (requestOrigin && originAllowed(requestOrigin, String(config.accountAllowedOrigins ?? ""))) {
+		setHeader(event, "access-control-allow-origin", requestOrigin);
+		appendResponseHeader(event, "vary", "Origin");
+	} else {
+		setHeader(event, "access-control-allow-origin", "null");
+	}
+
 	const token = tokenFromCookieHeader(getHeader(event, "cookie"));
 	const isLogin = path.startsWith("auth/");
 	const needsIp = path === "auth/request-code" || path === "auth/verify";

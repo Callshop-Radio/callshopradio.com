@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
 
 const copy = useAccountCopy();
@@ -104,7 +104,7 @@ onMounted(load);
 
 <template>
 	<div class="account-profile">
-		<p v-if="state === 'loading'">…</p>
+		<p v-if="state === 'loading'">â€¦</p>
 		<p v-else-if="state === 'error'">{{ copy.unavailable }}</p>
 
 		<template v-else>
@@ -165,7 +165,7 @@ label {
 input,
 select {
 	padding: 0.8rem 1rem;
-	border: 1px solid rgb(0 0 0 / 22%);
+	border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
 	border-radius: 10px;
 	background: transparent;
 	color: inherit;
@@ -176,8 +176,8 @@ select {
 	padding: 0.85rem 1.2rem;
 	border: 0;
 	border-radius: 999px;
-	background: currentColor;
-	color: var(--color-bg, #fff);
+	background: transparent;
+	color: inherit;
 	font: inherit;
 	font-weight: 600;
 	cursor: pointer;
@@ -214,7 +214,7 @@ select {
 	height: 96px;
 	border-radius: 50%;
 	object-fit: cover;
-	background: rgb(0 0 0 / 8%);
+	background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
 .avatar--empty {
@@ -231,8 +231,19 @@ select {
 	align-items: flex-start;
 }
 
+.avatar-actions label {
+	text-transform: none;
+	letter-spacing: normal;
+	font-size: 1rem;
+	gap: 0;
+}
+
 .account-hint {
 	margin: 0;
 	opacity: 0.75;
 }
 </style>
+
+
+
+

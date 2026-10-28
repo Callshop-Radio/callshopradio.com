@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { onMounted, ref } from "vue";
 
 definePageMeta({ middleware: "account" });
@@ -58,11 +58,11 @@ onMounted(load);
 		<template v-else>
 			<div class="account-cards">
 				<NuxtLink :to="localePath('/konto/listen')" class="account-card">
-					<span class="account-card__value">{{ profile?.counts.lists ?? "–" }}</span>
+					<span class="account-card__value">{{ profile?.counts.lists ?? "â€“" }}</span>
 					<span>{{ copy.openLists }}</span>
 				</NuxtLink>
 				<NuxtLink :to="localePath('/konto/profil')" class="account-card">
-					<span class="account-card__value">{{ profile?.counts.savedSets ?? "–" }}</span>
+					<span class="account-card__value">{{ profile?.counts.savedSets ?? "â€“" }}</span>
 					<span>{{ copy.savedSets }}</span>
 				</NuxtLink>
 			</div>
@@ -82,7 +82,7 @@ onMounted(load);
 	display: grid;
 	gap: 0.35rem;
 	padding: 1.25rem;
-	border: 1px solid rgb(0 0 0 / 15%);
+	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
 	border-radius: 14px;
 	text-decoration: none;
 	color: inherit;
@@ -104,3 +104,4 @@ onMounted(load);
 	font: inherit;
 }
 </style>
+
