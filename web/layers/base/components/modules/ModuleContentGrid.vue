@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 import type { ContentItem, Tag } from "~/types/sanity";
 import {
@@ -20,6 +20,8 @@ const mainStore = useMainStore();
 const { getItemImage } = useContentImage();
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 const { navigateToTagSearch } = useTagNavigation();
+const { track } = useAnalytics();
+const route = useRoute();
 
 const props = defineProps({
 	module: { type: Object, required: true },
@@ -28,7 +30,7 @@ const props = defineProps({
 // ==================== CONSTANTS ====================
 const MAIN_CITIES = ["Düsseldorf", "Leipzig", "Vienna"];
 const ITEMS_PER_PAGE = 9;
-const SCROLL_THRESHOLD = 30;
+const GRID_COLUMN_OPTIONS = [3, 4, 5, 6];
 
 // Color mapping for different content types
 const CONTENT_TYPE_COLORS = {
@@ -45,17 +47,37 @@ const CONTENT_TYPE_COLORS = {
 const activeFilters = ref(new Set<string>());
 const activeGenres = ref(new Set<string>());
 const activeSubGenres = ref(new Set<string>());
+const expandedGenres = ref(new Set<string>());
 const isOtherCitiesActive = ref(false);
 const activeFilterType = ref<string | null>(null);
 const showFilters = ref(true);
 const showMobileFilters = ref(false);
-const lastScrollY = ref(0);
+const mobileSheetActive = ref(false);
+const mobileSheetDragY = ref(0);
+const mobileSheetDragging = ref(false);
+const mobileSheetHeight = ref(0);
+let mobileSheetCloseTimer: ReturnType<typeof setTimeout> | null = null;
+let mobileDragStartY = 0;
+let mobileDragMode: "open" | "close" | null = null;
+let mobileDragMoved = false;
 const sortMode = ref<"new" | "shuffle" | "alpha">("new");
+// Shared across grids and client-side navigations. Defaults to the existing
+// three-column layout on the server; changing it only affects desktop.
+const gridColumns = useState<number>("content-grid-columns", () => 3);
+const activeGridColumns = computed(() =>
+	GRID_COLUMN_OPTIONS.includes(gridColumns.value) ? gridColumns.value : 3,
+);
 const shuffleSeed = ref(Date.now());
 const visibleItemCount = ref(ITEMS_PER_PAGE);
 const artworkUrls = ref(new Map<string, string>());
 const moduleContainer = ref<HTMLElement | null>(null);
 const filterSection = ref<HTMLElement | null>(null);
+const filterDockHeight = ref(0);
+let filterDockObserver: ResizeObserver | null = null;
+const loadMoreSentinel = ref<HTMLElement | null>(null);
+const isLoadingMore = ref(false);
+let loadMoreObserver: IntersectionObserver | null = null;
+let lastFeedScrollCheck = 0;
 
 // ==================== COMPUTED: Content Type ====================
 const contentType = computed(() => {
@@ -156,18 +178,25 @@ const buildQueryConfig = () => {
 	}
 
 	// 2. Handle Genres/Subgenres
-	// If subgenres are active, they are already in activeFilters (handled above).
-	// If only top-level genres are active, we need OR logic for them and their subgenres.
-	if (activeGenres.value.size > 0 && activeSubGenres.value.size === 0) {
+	// Subgenres live in activeFilters and are ANDed by buildModuleQuery, so
+	// selecting e.g. Jazz + Library requires both tags (not either one).
+	// A genre that has a selected subgenre is overridden by those subgenres and
+	// must not add its own OR bucket. Genres without selected subgenres stay one
+	// OR group (genre + all of its subgenres).
+	if (activeGenres.value.size > 0) {
 		const genreOrGroup: string[] = [];
 		activeGenres.value.forEach((genreId) => {
-			genreOrGroup.push(genreId);
-			// Add subgenres of this genre
 			const genre = categorizedTags.value.genres.find(
 				(g: Tag & { subGenres?: Tag[] }) => g._id === genreId,
 			);
-			genre?.subGenres?.forEach((sg: Tag) => {
-				genreOrGroup.push(sg._id);
+			if (!genre) return;
+			const hasSelectedSub = (genre.subGenres || []).some((subGenre: Tag) =>
+				activeSubGenres.value.has(subGenre._id),
+			);
+			if (hasSelectedSub) return;
+			genreOrGroup.push(genreId);
+			genre.subGenres?.forEach((subGenre: Tag) => {
+				genreOrGroup.push(subGenre._id);
 			});
 		});
 		if (genreOrGroup.length > 0) {
@@ -418,6 +447,86 @@ const categorizedTags = computed(() => {
 	};
 });
 
+type GenreCloudItem =
+	| { kind: "genre"; genre: Tag & { subGenres: Tag[] } }
+	| { kind: "subgenre"; subGenre: Tag; pearlIndex: number };
+
+function hasSelectedSubgenres(genreId: string): boolean {
+	const genre = categorizedTags.value.genres.find(
+		(g: Tag & { subGenres?: Tag[] }) => g._id === genreId,
+	);
+	return (genre?.subGenres || []).some((subGenre: Tag) =>
+		activeSubGenres.value.has(subGenre._id),
+	);
+}
+
+// One flat, ordered list: every genre followed by its subgenres when expanded.
+// A collapsed genre still keeps its selected subgenres in the cloud, so a
+// subgenre filter survives collapsing its parent. The flex container wraps this
+// list, so the following genres continue directly behind the inserted subgenres.
+const genreCloud = computed<GenreCloudItem[]>(() => {
+	const items: GenreCloudItem[] = [];
+	for (const genre of categorizedTags.value.genres) {
+		items.push({ kind: "genre", genre });
+		const selectedSubs = (genre.subGenres || []).filter((subGenre: Tag) =>
+			activeSubGenres.value.has(subGenre._id),
+		);
+		const visibleSubs = expandedGenres.value.has(genre._id)
+			? genre.subGenres || []
+			: selectedSubs;
+		visibleSubs.forEach((subGenre: Tag, pearlIndex: number) => {
+			items.push({ kind: "subgenre", subGenre, pearlIndex });
+		});
+	}
+	return items;
+});
+
+function handleGenreCloudClick(item: GenreCloudItem) {
+	if (item.kind === "genre") {
+		toggleGenreFilter(item.genre._id);
+		return;
+	}
+	toggleSubGenreFilter(item.subGenre._id);
+}
+
+function cloudItemKey(item: GenreCloudItem) {
+	return item.kind === "genre" ? item.genre._id : item.subGenre._id;
+}
+
+function cloudItemTitle(item: GenreCloudItem) {
+	return item.kind === "genre" ? item.genre.title : item.subGenre.title;
+}
+
+function cloudItemActive(item: GenreCloudItem) {
+	if (item.kind === "genre") {
+		return (
+			activeGenres.value.has(item.genre._id) &&
+			!hasSelectedSubgenres(item.genre._id)
+		);
+	}
+	return activeSubGenres.value.has(item.subGenre._id);
+}
+
+function cloudItemOverridden(item: GenreCloudItem) {
+	return (
+		item.kind === "genre" &&
+		activeGenres.value.has(item.genre._id) &&
+		hasSelectedSubgenres(item.genre._id)
+	);
+}
+
+function cloudItemExpanded(item: GenreCloudItem) {
+	return item.kind === "genre" && expandedGenres.value.has(item.genre._id);
+}
+
+function cloudItemStyle(
+	item: GenreCloudItem,
+): Record<string, string | number> | undefined {
+	return item.kind === "subgenre"
+		? { "--pearl-index": item.pearlIndex }
+		: undefined;
+}
+
 const availableTags = computed(() => {
 	if (!props.module?.availableTags) return [];
 	// Return all tags flattened
@@ -568,6 +677,14 @@ function removeLastFilter() {
 function toggleFilter(tagId: string) {
 	const isActive = activeFilters.value.has(tagId);
 
+	track("filter_apply", {
+		filter_type: getTagCategory(tagId),
+		filter_value: tagId,
+		filter_label: getTagNameById(tagId),
+		action: isActive ? "remove" : "add",
+		page: route.path,
+	});
+
 	if (isActive) {
 		activeFilters.value.delete(tagId);
 		removeFromHistory("filter", tagId);
@@ -588,49 +705,103 @@ function toggleFilter(tagId: string) {
 }
 
 function toggleGenreFilter(genreId: string) {
-	if (activeGenres.value.has(genreId)) {
-		activeGenres.value.delete(genreId);
-		removeFromHistory("genre", genreId);
+	const isExpanded = expandedGenres.value.has(genreId);
+	const hasSelectedSubs = hasSelectedSubgenres(genreId);
+	const wasActive = activeGenres.value.has(genreId);
 
-		const genre = categorizedTags.value.genres.find(
-			(g: Tag & { subGenres?: Tag[] }) => g._id === genreId,
-		);
-		genre?.subGenres?.forEach((sg: Tag) => {
-			activeSubGenres.value.delete(sg._id);
-			activeFilters.value.delete(sg._id);
-			removeFromHistory("subGenre", sg._id);
-			removeFromHistory("filter", sg._id);
-		});
+	track("filter_apply", {
+		filter_type: "genre",
+		filter_value: genreId,
+		filter_label: getTagNameById(genreId),
+		action: isExpanded ? "collapse" : "expand",
+		page: route.path,
+	});
+
+	if (isExpanded) {
+		expandedGenres.value.delete(genreId);
+		// Selected subgenres stay in the cloud and stay active. Collapsing only
+		// hides the unselected subgenres; the parent keeps its overridden state.
+		// Without selected subgenres, collapsing also removes the genre filter.
+		if (!hasSelectedSubs) {
+			activeGenres.value.delete(genreId);
+			removeFromHistory("genre", genreId);
+		}
 	} else {
-		activeGenres.value.add(genreId);
-		addToHistory("genre", genreId);
+		expandedGenres.value.add(genreId);
+		if (!wasActive) {
+			activeGenres.value.add(genreId);
+			addToHistory("genre", genreId);
+		}
 	}
 	visibleItemCount.value = ITEMS_PER_PAGE;
 }
 
 function toggleSubGenreFilter(subGenreId: string) {
-	if (activeSubGenres.value.has(subGenreId)) {
+	const isActive = activeSubGenres.value.has(subGenreId);
+	const parentGenre = categorizedTags.value.genres.find(
+		(genre: Tag & { subGenres?: Tag[] }) =>
+			(genre.subGenres || []).some(
+				(subGenre: Tag) => subGenre._id === subGenreId,
+			),
+	);
+	const parentId = parentGenre?._id;
+
+	track("filter_apply", {
+		filter_type: "subgenre",
+		filter_value: subGenreId,
+		filter_label: getTagNameById(subGenreId),
+		action: isActive ? "remove" : "add",
+		page: route.path,
+	});
+
+	if (isActive) {
 		activeSubGenres.value.delete(subGenreId);
 		removeFromHistory("subGenre", subGenreId);
 		activeFilters.value.delete(subGenreId);
 		removeFromHistory("filter", subGenreId);
+
+		if (parentId && !hasSelectedSubgenres(parentId)) {
+			// No selected subgenre is left. If the parent is collapsed there is
+			// nothing left to represent the override, so drop the parent filter
+			// too. While expanded, the parent becomes a normal genre bucket.
+			if (!expandedGenres.value.has(parentId)) {
+				activeGenres.value.delete(parentId);
+				removeFromHistory("genre", parentId);
+			}
+		}
 	} else {
 		activeSubGenres.value.add(subGenreId);
 		addToHistory("subGenre", subGenreId);
 		activeFilters.value.add(subGenreId);
 		addToHistory("filter", subGenreId);
+
+		if (parentId && !activeGenres.value.has(parentId)) {
+			activeGenres.value.add(parentId);
+			addToHistory("genre", parentId);
+		}
 	}
 	visibleItemCount.value = ITEMS_PER_PAGE;
 }
 
 function toggleFilterType(type: string) {
-	activeFilterType.value = activeFilterType.value === type ? null : type;
+	const isActive = activeFilterType.value === type;
+
+	track("filter_apply", {
+		filter_type: "pool_type",
+		filter_value: type,
+		filter_label: type,
+		action: isActive ? "remove" : "add",
+		page: route.path,
+	});
+
+	activeFilterType.value = isActive ? null : type;
 }
 
 function resetFilters() {
 	activeFilters.value.clear();
 	activeGenres.value.clear();
 	activeSubGenres.value.clear();
+	expandedGenres.value.clear();
 	filterHistory.value = [];
 	isOtherCitiesActive.value = false;
 }
@@ -641,25 +812,35 @@ function itemHasTag(item: ContentItem, tagId: string): boolean {
 }
 
 function itemMatchesFilters(item: ContentItem): boolean {
-	// Genre filter check
+	// Every selected subgenre must be present (AND), regardless of whether its
+	// parent genre is still expanded.
+	for (const subGenreId of activeSubGenres.value) {
+		if (!itemHasTag(item, subGenreId)) return false;
+	}
+
 	if (activeGenres.value.size > 0) {
-		if (activeSubGenres.value.size > 0) {
-			// SubGenres selected: item must have ALL selected subgenres
-			for (const subGenreId of activeSubGenres.value) {
-				if (!itemHasTag(item, subGenreId)) return false;
-			}
-		} else {
-			// Only genres selected: item must have at least one genre or its subgenres
-			const allowedIds = new Set<string>();
-			activeGenres.value.forEach((gId) => {
-				allowedIds.add(gId);
-				categorizedTags.value.genres
-					.find((g) => g._id === gId)
-					?.subGenres?.forEach((sg) => {
-						allowedIds.add(sg._id);
-					});
+		// Genres with a selected subgenre are overridden and do not contribute a
+		// genre bucket. All remaining genre buckets are ORed together.
+		const genreBucketIds = new Set<string>();
+		activeGenres.value.forEach((gId) => {
+			const genre = categorizedTags.value.genres.find(
+				(g: Tag & { subGenres?: Tag[] }) => g._id === gId,
+			);
+			if (!genre) return;
+			const hasSelectedSub = (genre.subGenres || []).some((subGenre: Tag) =>
+				activeSubGenres.value.has(subGenre._id),
+			);
+			if (hasSelectedSub) return;
+			genreBucketIds.add(gId);
+			genre.subGenres?.forEach((subGenre: Tag) => {
+				genreBucketIds.add(subGenre._id);
 			});
-			if (!getItemTags(item).some((t) => allowedIds.has(t._id))) return false;
+		});
+		if (
+			genreBucketIds.size > 0 &&
+			!getItemTags(item).some((tag) => genreBucketIds.has(tag._id))
+		) {
+			return false;
 		}
 	}
 
@@ -693,6 +874,16 @@ function itemMatchesFilters(item: ContentItem): boolean {
 function changeSortMode(mode: "new" | "shuffle" | "alpha") {
 	if (mode === "shuffle") shuffleSeed.value = Date.now();
 	sortMode.value = mode;
+}
+
+function setGridColumns(columns: number) {
+	gridColumns.value = columns;
+	track("filter_apply", {
+		filter_type: "grid_columns",
+		filter_value: columns,
+		action: "set",
+		page: route.path,
+	});
 }
 
 function seededRandom(seed: number) {
@@ -749,6 +940,7 @@ const hasMoreItems = computed(() => {
 });
 
 async function loadMoreItems() {
+	if (isLoadingSelf.value) return;
 	const nextVisibleCount = visibleItemCount.value + ITEMS_PER_PAGE;
 
 	if (needsSelfLoad.value) {
@@ -763,51 +955,181 @@ async function loadMoreItems() {
 	visibleItemCount.value = nextVisibleCount;
 }
 
+const FEED_PRELOAD_PX = 1200;
+const FEED_MAX_PAGES_PER_TRIGGER = 8;
+
+// Fill a larger batch per trigger. The sentinel moves far below the viewport
+// after one page, so stopping at the preload distance would load only one page
+// per bottom hit; the cap keeps the batch bounded while still making 1953 sets
+// reachable in ~27 scroll stops instead of 200+.
+async function loadMoreForFeed() {
+	if (isLoadingMore.value || !hasMoreItems.value) return;
+	isLoadingMore.value = true;
+
+	try {
+		let pages = 0;
+		do {
+			await loadMoreItems();
+			await nextTick();
+			pages += 1;
+
+			if (!hasMoreItems.value || !loadMoreSentinel.value) break;
+			if (isLoadingSelf.value) break;
+		} while (pages < FEED_MAX_PAGES_PER_TRIGGER);
+	} finally {
+		isLoadingMore.value = false;
+	}
+}
+
+// Fallback for environments where the IntersectionObserver does not re-fire
+// after the sentinel has been re-rendered or the page has grown very tall.
+// The timestamp throttle keeps this cheap during fast scrolling.
+function handleFeedScroll() {
+	const now = performance.now();
+	if (now - lastFeedScrollCheck < 150) return;
+	lastFeedScrollCheck = now;
+
+	if (isLoadingMore.value || !hasMoreItems.value) return;
+	const sentinel = loadMoreSentinel.value;
+	if (!sentinel) return;
+	if (
+		sentinel.getBoundingClientRect().top <=
+		window.innerHeight + FEED_PRELOAD_PX
+	) {
+		loadMoreForFeed();
+	}
+}
+
 // ==================== UI HELPERS ====================
-function toggleFiltersVisibility() {
-	showFilters.value = !showFilters.value;
+function clearMobileSheetTimer() {
+	if (mobileSheetCloseTimer) {
+		clearTimeout(mobileSheetCloseTimer);
+		mobileSheetCloseTimer = null;
+	}
 }
 
-function toggleMobileFilters() {
-	showMobileFilters.value = !showMobileFilters.value;
-	if (showMobileFilters.value) {
-		showFilters.value = true;
-		document.body.style.overflow = "hidden";
-	} else {
+function measureMobileSheet() {
+	mobileSheetHeight.value =
+		filterSection.value?.getBoundingClientRect().height ?? 0;
+}
+
+function snapMobileSheetOpen() {
+	clearMobileSheetTimer();
+	measureMobileSheet();
+	showMobileFilters.value = true;
+	mobileSheetActive.value = true;
+	mobileSheetDragging.value = false;
+	mobileDragMoved = false;
+	mobileSheetDragY.value = 0;
+	document.body.style.overflow = "hidden";
+}
+
+function openMobileFilters() {
+	clearMobileSheetTimer();
+	measureMobileSheet();
+	showMobileFilters.value = true;
+	mobileSheetActive.value = true;
+	mobileSheetDragging.value = false;
+	mobileDragMoved = false;
+	// Start at the bottom and slide up on the next frame.
+	mobileSheetDragY.value = mobileSheetHeight.value || window.innerHeight;
+	document.body.style.overflow = "hidden";
+	nextTick(() => {
+		mobileSheetDragY.value = 0;
+	});
+}
+
+function closeMobileFilters() {
+	clearMobileSheetTimer();
+	showMobileFilters.value = false;
+	// Keep the sheet mounted and visible while it slides down.
+	mobileSheetActive.value = true;
+	mobileSheetDragging.value = false;
+	mobileDragMoved = false;
+	measureMobileSheet();
+	mobileSheetDragY.value = mobileSheetHeight.value || window.innerHeight;
+	mobileSheetCloseTimer = setTimeout(() => {
+		mobileSheetActive.value = false;
+		mobileSheetDragY.value = 0;
 		document.body.style.overflow = "";
-	}
+		mobileSheetCloseTimer = null;
+	}, 420);
 }
 
-function handleScroll() {
-	if (showMobileFilters.value) return;
-
-	const scrollY = window.scrollY;
-	const scrollDiff = scrollY - lastScrollY.value;
-
-	let isStuck = false;
-	if (filterSection.value) {
-		const rect = filterSection.value.getBoundingClientRect();
-		const style = window.getComputedStyle(filterSection.value);
-		const stickyTop = parseInt(style.top, 10);
-
-		// Check if the element is currently stuck (top position matches sticky offset)
-		if (!Number.isNaN(stickyTop) && Math.abs(rect.top - stickyTop) <= 2) {
-			isStuck = true;
-		}
+function handleMobileTabClick() {
+	if (mobileDragMoved) {
+		mobileDragMoved = false;
+		return;
 	}
+	openMobileFilters();
+}
 
-	if (isStuck) {
-		if (scrollDiff > SCROLL_THRESHOLD && showFilters.value) {
-			showFilters.value = false;
-		} else if (scrollDiff < -20 && !showFilters.value) {
-			showFilters.value = true;
+function startMobileDrag(event: PointerEvent, mode: "open" | "close") {
+	if (event.pointerType === "mouse" && event.button !== 0) return;
+	if (mode === "open" && (showMobileFilters.value || mobileSheetActive.value))
+		return;
+
+	clearMobileSheetTimer();
+	mobileDragMode = mode;
+	mobileDragStartY = event.clientY;
+	mobileDragMoved = false;
+	mobileSheetDragging.value = true;
+	measureMobileSheet();
+	mobileSheetDragY.value = mode === "open" ? mobileSheetHeight.value : 0;
+
+	(event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
+	window.addEventListener("pointermove", onMobileDrag, { passive: false });
+	window.addEventListener("pointerup", endMobileDrag);
+	window.addEventListener("pointercancel", endMobileDrag);
+}
+
+function onMobileDrag(event: PointerEvent) {
+	if (!mobileSheetDragging.value || !mobileDragMode) return;
+
+	const delta = event.clientY - mobileDragStartY;
+	if (Math.abs(delta) > 4) mobileDragMoved = true;
+	const height = mobileSheetHeight.value || window.innerHeight;
+
+	if (mobileDragMode === "open") {
+		if (!showMobileFilters.value) {
+			if (delta > -6) return;
+			showMobileFilters.value = true;
+			mobileSheetActive.value = true;
+			document.body.style.overflow = "hidden";
 		}
+		mobileSheetDragY.value = Math.min(height, Math.max(0, height + delta));
 	} else {
-		// If not stuck (e.g. at/near top of page), ensure filters are visible
-		if (!showFilters.value) showFilters.value = true;
+		mobileSheetDragY.value = Math.min(height, Math.max(0, delta));
 	}
 
-	lastScrollY.value = scrollY;
+	event.preventDefault();
+}
+
+function endMobileDrag() {
+	if (!mobileSheetDragging.value) return;
+
+	window.removeEventListener("pointermove", onMobileDrag);
+	window.removeEventListener("pointerup", endMobileDrag);
+	window.removeEventListener("pointercancel", endMobileDrag);
+
+	const height = mobileSheetHeight.value || window.innerHeight;
+	const drag = mobileSheetDragY.value;
+	mobileSheetDragging.value = false;
+
+	if (mobileDragMode === "open") {
+		if (!showMobileFilters.value) {
+			mobileDragMoved = false;
+			mobileDragMode = null;
+			return;
+		}
+		if (drag < height * 0.72) snapMobileSheetOpen();
+		else closeMobileFilters();
+	} else if (mobileDragMode === "close") {
+		if (drag > height * 0.28) closeMobileFilters();
+		else snapMobileSheetOpen();
+	}
+
+	mobileDragMode = null;
 }
 
 function formatDate(dateString: string): string {
@@ -837,15 +1159,46 @@ function loadArtworkUrl(item: ContentItem) {
 }
 
 // ==================== LIFECYCLE ====================
-// Client-side only setup (scroll handling, artwork loading)
+// The desktop filter bar and genre cloud live in a fixed bottom dock. Measure
+// its height so the grid reserves enough bottom space for the last row.
+function measureFilterDock() {
+	if (typeof window === "undefined") return;
+	if (window.innerWidth < 1101 || !filterSection.value) {
+		filterDockHeight.value = 0;
+		return;
+	}
+	filterDockHeight.value = filterSection.value.getBoundingClientRect().height;
+}
+
+// Client-side only setup (artwork loading)
 onMounted(() => {
 	// Load artwork URLs for initially visible items (client-only)
 	if (contentType.value === "sets") {
 		visibleItems.value.forEach(loadArtworkUrl);
 	}
 
-	lastScrollY.value = window.scrollY;
-	window.addEventListener("scroll", handleScroll, { passive: true });
+	if (filterSection.value) {
+		filterDockObserver = new ResizeObserver(() => measureFilterDock());
+		filterDockObserver.observe(filterSection.value);
+		measureFilterDock();
+	}
+
+	if ("IntersectionObserver" in window && loadMoreSentinel.value) {
+		loadMoreObserver = new IntersectionObserver(
+			(entries) => {
+				if (entries.some((entry) => entry.isIntersecting)) {
+					loadMoreForFeed();
+				}
+			},
+			{
+				rootMargin: `0px 0px ${FEED_PRELOAD_PX}px 0px`,
+				threshold: 0,
+			},
+		);
+		loadMoreObserver.observe(loadMoreSentinel.value);
+	}
+
+	window.addEventListener("scroll", handleFeedScroll, { passive: true });
 });
 
 // Load artwork URLs when more items become visible
@@ -860,7 +1213,15 @@ watch(visibleItemCount, () => {
 });
 
 onUnmounted(() => {
-	window.removeEventListener("scroll", handleScroll);
+	window.removeEventListener("scroll", handleFeedScroll);
+	filterDockObserver?.disconnect();
+	filterDockObserver = null;
+	loadMoreObserver?.disconnect();
+	loadMoreObserver = null;
+	clearMobileSheetTimer();
+	window.removeEventListener("pointermove", onMobileDrag);
+	window.removeEventListener("pointerup", endMobileDrag);
+	window.removeEventListener("pointercancel", endMobileDrag);
 	// Reset body overflow on unmount
 	document.body.style.overflow = "";
 });
@@ -882,137 +1243,80 @@ onUnmounted(() => {
 		ref="moduleContainer"
 		:class="`content-grid module-grid module-grid--${
 			module.style || 'default'
-		} ${categoryType.toLowerCase()}`"
+		} ${categoryType.toLowerCase()} content-grid--cols-${activeGridColumns}`"
+		:style="{ '--filter-dock-height': `${filterDockHeight}px` }"
 	>
-		<!-- Mobile: compact filter toggle -->
+		<!-- Mobile: persistent bottom filter tab -->
 		<button
-			class="content-grid__mobile-filter-trigger"
-			:class="{ 'is-open': showMobileFilters }"
+			v-show="
+				(!showMobileFilters && !mobileSheetActive) || mobileSheetDragging
+			"
+			class="content-grid__mobile-filter-tab"
+			type="button"
 			:aria-expanded="showMobileFilters"
-			aria-label="Toggle filters"
-			@click="toggleMobileFilters"
+			aria-label="Open filters"
+			@pointerdown="startMobileDrag($event, 'open')"
+			@click="handleMobileTabClick"
 		>
-			<svg
-				class="content-grid__mobile-filter-trigger__icon"
-				width="35"
-				height="29"
-				viewBox="0 0 35 29"
-				fill="none"
-				xmlns="http://www.w3.org/2000/svg"
-				aria-hidden="true"
+			<span class="content-grid__mobile-filter-tab__chevron" aria-hidden="true">
+				<svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+					<path d="M1 5L5 1L9 5" stroke="currentColor" stroke-width="1.2" />
+				</svg>
+			</span>
+			<span>Filter</span>
+			<span
+				v-if="activeFilters.size > 0"
+				class="content-grid__mobile-filter-tab__count"
 			>
-				<path d="M0 14.5C0 6.49187 6.49187 0 14.5 0H35V29H14.5C6.49187 29 0 22.5081 0 14.5Z" fill="currentColor"/>
-				<path fill-rule="evenodd" clip-rule="evenodd" d="M17.6303 6.88281C21.8519 6.88281 25.2797 10.3106 25.2797 14.5323C25.2797 18.7545 21.8519 22.1823 17.6303 22.1823C13.4081 22.1823 9.98047 18.7545 9.98047 14.5323C9.98047 10.3106 13.4081 6.88281 17.6303 6.88281ZM17.6303 9.18605C14.6791 9.18605 12.2837 11.5817 12.2837 14.5323C12.2837 17.4834 14.6791 19.879 17.6303 19.879C20.5808 19.879 22.9765 17.4834 22.9765 14.5323C22.9765 11.5817 20.5808 9.18605 17.6303 9.18605Z" fill="#2C2C2C"/>
-				<path fill-rule="evenodd" clip-rule="evenodd" d="M26.5871 14.8919C26.3889 14.8919 26.228 14.7313 26.228 14.5327C26.228 14.3349 26.3889 14.1738 26.5871 14.1738H27.7087C27.9068 14.1738 28.0676 14.3349 28.0676 14.5327C28.0676 14.7313 27.9068 14.8919 27.7087 14.8919H26.5871Z" fill="white"/>
-				<path fill-rule="evenodd" clip-rule="evenodd" d="M7.35904 14.8919C7.16092 14.8919 7 14.7313 7 14.5327C7 14.3349 7.16092 14.1738 7.35904 14.1738H8.48066C8.67877 14.1738 8.83953 14.3349 8.83953 14.5327C8.83953 14.7313 8.67877 14.8919 8.48066 14.8919H7.35904Z" fill="white"/>
-				<path fill-rule="evenodd" clip-rule="evenodd" d="M17.8929 5.48081C17.8929 5.67892 17.7322 5.83984 17.5336 5.83984C17.3359 5.83984 17.1748 5.67892 17.1748 5.48081V4.35919C17.1748 4.16107 17.3359 4.00032 17.5336 4.00032C17.7322 4.00032 17.8929 4.16107 17.8929 4.35919V5.48081Z" fill="white"/>
-				<path fill-rule="evenodd" clip-rule="evenodd" d="M17.8929 24.7093C17.8929 24.9074 17.7322 25.0684 17.5336 25.0684C17.3359 25.0684 17.1748 24.9074 17.1748 24.7093V23.5877C17.1748 23.3896 17.3359 23.2288 17.5336 23.2288C17.7322 23.2288 17.8929 23.3896 17.8929 23.5877V24.7093Z" fill="white"/>
-				<path fill-rule="evenodd" clip-rule="evenodd" d="M24.1894 8.38476C24.0493 8.52485 23.8219 8.52502 23.6815 8.3846C23.5417 8.24478 23.5415 8.01707 23.6816 7.87698L24.4747 7.08388C24.6148 6.94379 24.8424 6.94404 24.9822 7.08385C25.1226 7.22428 25.1226 7.45156 24.9825 7.59165L24.1894 8.38476Z" fill="white"/>
-				<path fill-rule="evenodd" clip-rule="evenodd" d="M10.5932 21.9824C10.4531 22.1225 10.2257 22.1227 10.0853 21.9823C9.94547 21.8424 9.94533 21.6147 10.0854 21.4746L10.8785 20.6815C11.0186 20.5414 11.2462 20.5417 11.386 20.6815C11.5264 20.8219 11.5264 21.0492 11.3863 21.1893L10.5932 21.9824Z" fill="white"/>
-				<path fill-rule="evenodd" clip-rule="evenodd" d="M23.6812 21.1874C23.5411 21.0473 23.5409 20.8199 23.6813 20.6795C23.8211 20.5397 24.0488 20.5396 24.1889 20.6797L24.982 21.4728C25.1221 21.6129 25.1219 21.8404 24.9821 21.9803C24.8416 22.1207 24.6144 22.1206 24.4743 21.9805L23.6812 21.1874Z" fill="white"/>
-				<path fill-rule="evenodd" clip-rule="evenodd" d="M10.085 7.59369C9.94488 7.45359 9.94471 7.22619 10.0851 7.08577C10.2249 6.94596 10.4527 6.94582 10.5927 7.08591L11.3858 7.87901C11.5259 8.0191 11.5257 8.2467 11.3859 8.38651C11.2454 8.52693 11.0182 8.52688 10.8781 8.38679L10.085 7.59369Z" fill="white"/>
-				<g class="content-grid__mobile-filter-trigger__knob">
-					<circle cx="17.5" cy="15.5" r="6.5" fill="#4B4A4A"/>
-					<path fill-rule="evenodd" clip-rule="evenodd" d="M16.2842 7.73676C16.2842 6.99383 16.8873 6.39062 17.6304 6.39062C18.373 6.39062 18.9765 6.99383 18.9765 7.73676L18.9765 13.1117C18.9765 13.8549 18.373 14.4578 17.6304 14.4578C16.8873 14.4578 16.2842 13.8549 16.2842 13.1117L16.2842 7.73676Z" fill="white"/>
-				</g>
-			</svg>
-			<span v-if="activeFilters.size > 0" class="filter-count">{{ activeFilters.size }}</span>
+				{{ activeFilters.size }}
+			</span>
 		</button>
 
 		<Transition name="mobile-filter-backdrop">
 			<div
 				v-if="showMobileFilters"
 				class="content-grid__mobile-filter-backdrop"
-				@click="toggleMobileFilters"
+				@click="closeMobileFilters"
 			/>
 		</Transition>
+
+		<!-- Desktop: gradient blur behind the fixed filter dock -->
+		<div class="content-grid__filter-blur" aria-hidden="true" />
 
 		<!-- Desktop Filter Panel -->
 		<div
 			ref="filterSection"
 			class="content-grid__filter-section"
-			:class="{ 'is-mobile-open': showMobileFilters }"
+			:class="{
+				'is-mobile-open': mobileSheetActive,
+				'is-dragging': mobileSheetDragging,
+			}"
+			:style="{ '--mobile-sheet-drag': `${mobileSheetDragY}px` }"
 		>
+			<div
+				class="content-grid__sheet-header"
+				@pointerdown="startMobileDrag($event, 'close')"
+			>
+				<span class="content-grid__sheet-grabber" aria-hidden="true" />
+				<span class="content-grid__sheet-title">Filter</span>
+				<button
+					class="content-grid__sheet-close"
+					type="button"
+					aria-label="Close filters"
+					@pointerdown.stop
+					@click.stop="closeMobileFilters"
+				>
+					<svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+						<path
+							d="M1 1L6 6L11 1"
+							stroke="currentColor"
+							stroke-width="1.2"
+						/>
+					</svg>
+				</button>
+			</div>
 			<div class="content-grid__filter-bar content-grid__filter-bar--desktop">
-				<!-- Active Filters -->
-				<div class="active-filters">
-					<h4
-						class="active-filters__title"
-						:class="{ active: activeFilters.size > 0 }"
-					>
-						<span class="close-cross" @click="removeLastFilter()">
-							<svg
-								width="10"
-								height="10"
-								viewBox="0 0 8 8"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<circle
-									cx="4"
-									cy="4"
-									r="4"
-									fill="black" />
-								<rect
-									x="1.77783"
-									y="2.4082"
-									width="0.888889"
-									height="5.33333"
-									transform="rotate(-45 1.77783 2.4082)"
-									fill="#E8E8E8"
-								/>
-								<path
-									d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
-									fill="#E8E8E8"
-								/>
-							</svg>
-						</span>
-						<span @click="toggleFiltersVisibility"
-						>Tags&nbsp;<span class="toggle-arrow">{{
-							showFilters ? "↑" : "↓"
-						}}</span></span
-						>
-					</h4>
-					<div class="active-filters__list tags">
-						<div
-							v-for="filterId in activeFilters"
-							:key="filterId"
-							class="active-filter tag"
-						>
-							<span class="active-filter__name" @click="toggleFilter(filterId)">
-								{{ getTagNameById(filterId) }}
-								<span class="close-cross">
-									<svg
-										width="10"
-										height="10"
-										viewBox="0 0 8 8"
-										fill="none"
-										xmlns="http://www.w3.org/2000/svg"
-									>
-										<circle
-											cx="4"
-											cy="4"
-											r="4"
-											fill="black" />
-										<rect
-											x="1.77783"
-											y="2.4082"
-											width="0.888889"
-											height="5.33333"
-											transform="rotate(-45 1.77783 2.4082)"
-											fill="#E8E8E8"
-										/>
-										<path
-											d="M2.40625 6.17578L1.77771 5.54724L5.54895 1.77601L6.17749 2.40455L4.29187 4.29016L2.40625 6.17578Z"
-											fill="#E8E8E8"
-										/>
-									</svg>
-								</span>
-							</span>
-						</div>
-					</div>
-				</div>
-
+				<div class="filter-bar__left">
 				<!-- Cities Filter -->
 				<div
 					v-if="categorizedTags.cities?.length > 0"
@@ -1038,6 +1342,15 @@ onUnmounted(() => {
 							Elsewhere
 						</button>
 					</div>
+				</div>
+				</div>
+
+				<div v-if="contentType !== 'words'" class="filter-bar__density">
+					<GridDensityControl
+						:model-value="activeGridColumns"
+						:options="GRID_COLUMN_OPTIONS"
+						@update:model-value="setGridColumns"
+					/>
 				</div>
 
 				<!-- Sort Options -->
@@ -1068,7 +1381,7 @@ onUnmounted(() => {
 			</div>
 
 			<!-- Mobile filter panel -->
-			<div v-if="showMobileFilters" class="content-grid__mobile-filter">
+			<div class="content-grid__mobile-filter">
 				<div
 					v-if="categorizedTags.cities?.length > 0"
 					class="content-grid__mobile-filter-block content-grid__mobile-filter-block--city"
@@ -1212,9 +1525,9 @@ onUnmounted(() => {
 				v-if="module.availableTags"
 				class="content-grid__filters"
 				:class="{
-					'content-grid__filters--in-mobile-panel': showMobileFilters,
+					'content-grid__filters--in-mobile-panel': mobileSheetActive,
 					'content-grid__filters--no-active-above':
-						showMobileFilters && activeFilters.size === 0,
+						mobileSheetActive && activeFilters.size === 0,
 				}"
 			>
 				<div class="filter-container tags">
@@ -1225,49 +1538,65 @@ onUnmounted(() => {
 							class="filter-category tags"
 							:class="{ active: showFilters }"
 						>
-							<div class="filter-genres">
-								<div
-									v-for="genre in categorizedTags.genres"
-									:key="genre._id"
-									class="filter-genre"
+							<TransitionGroup
+								name="pearl"
+								tag="div"
+								class="filter-genres"
+							>
+								<button
+									v-for="item in genreCloud"
+									:key="cloudItemKey(item)"
+									class="tag filter-tag"
+									:class="[
+										item.kind === 'genre'
+											? 'filter-tag--genre'
+											: 'filter-tag--subgenre',
+										{
+											'filter-tag--active':
+												cloudItemActive(item),
+											'filter-tag--overridden':
+												cloudItemOverridden(item),
+											'is-expanded':
+												cloudItemExpanded(item),
+										},
+									]"
+									:aria-expanded="
+										item.kind === 'genre'
+											? cloudItemExpanded(item)
+											: undefined
+									"
+									:aria-pressed="
+										item.kind === 'subgenre'
+											? cloudItemActive(item)
+											: undefined
+									"
+									:style="cloudItemStyle(item)"
+									@click="handleGenreCloudClick(item)"
 								>
-									<button
-										class="tag filter-tag filter-tag--genre"
+									<span>{{ cloudItemTitle(item) }}</span>
+									<span
+										v-if="item.kind === 'genre'"
+										class="filter-genre__chevron"
 										:class="{
-											'filter-tag--active': activeGenres.has(genre._id),
+											'is-open': cloudItemExpanded(item),
 										}"
-										@click="toggleGenreFilter(genre._id)"
+										aria-hidden="true"
 									>
-										{{ genre.title }}
-									</button>
-								</div>
-							</div>
-							<div class="filter-subgenres">
-								<div v-if="activeGenres.size > 0" class="filter-subgenre">
-									<div class="filter-subgenre__tags">
-										<template
-											v-for="genre in categorizedTags.genres.filter((g) =>
-												activeGenres.has(g._id)
-											)"
-											:key="genre._id"
+										<svg
+											width="8"
+											height="5"
+											viewBox="0 0 8 5"
+											fill="none"
 										>
-											<button
-												v-for="subGenre in genre.subGenres || []"
-												:key="subGenre._id"
-												class="tag filter-tag filter-tag--subgenre"
-												:class="{
-													'filter-tag--active': activeSubGenres.has(
-														subGenre._id
-													),
-												}"
-												@click="toggleSubGenreFilter(subGenre._id)"
-											>
-												{{ subGenre.title }}
-											</button>
-										</template>
-									</div>
-								</div>
-							</div>
+											<path
+												d="M1 1L4 4L7 1"
+												stroke="currentColor"
+												stroke-width="1.2"
+											/>
+										</svg>
+									</span>
+								</button>
+							</TransitionGroup>
 						</div>
 					</template>
 
@@ -1384,7 +1713,7 @@ onUnmounted(() => {
 							<template v-if="contentType === 'sets'">
 								<img
 									v-if="item.image?.asset"
-									:src="item.image.asset.url"
+									:src="sanityImageUrl(item.image.asset.url)"
 									:alt="item.title || ''"
 									loading="lazy"
 								>
@@ -1403,7 +1732,7 @@ onUnmounted(() => {
 								<img
 									v-else
 									:src="
-										mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
+										sanityImageUrl(mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url)
 									"
 									alt="Fallback"
 									loading="lazy"
@@ -1412,14 +1741,14 @@ onUnmounted(() => {
 							<template v-else>
 								<img
 									v-if="getItemImage(item)"
-									:src="getItemImage(item).asset?.url"
+									:src="sanityImageUrl(getItemImage(item).asset?.url)"
 									:alt="item.title || ''"
 									loading="lazy"
 								>
 								<img
 									v-else
 									:src="
-										mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
+										sanityImageUrl(mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url)
 									"
 									alt="Fallback"
 									loading="lazy"
@@ -1627,20 +1956,28 @@ onUnmounted(() => {
 				</div>
 			</div>
 
-			<!-- Load More -->
-			<div v-if="hasMoreItems" class="content-grid__load-more">
-				<button class="load-more-button" @click="loadMoreItems">
-					<svg
-						width="15"
-						height="15"
-						viewBox="0 0 15 15"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path d="M7.67578 0.541016V14.8113" stroke-width="5" />
-						<path d="M14.8105 7.67578L0.540276 7.67578" stroke-width="5" />
-					</svg>
-				</button>
+			<!-- Endless feed: show how many of the total are rendered -->
+			<p
+				v-if="needsSelfLoad && selfLoadedCount > 0"
+				class="content-grid__feed-status"
+			>
+				{{ visibleItems.length }} / {{ selfLoadedCount }}
+			</p>
+
+			<!-- Endless feed sentinel -->
+			<div
+				ref="loadMoreSentinel"
+				class="content-grid__feed-sentinel"
+				aria-hidden="true"
+			/>
+			<div
+				v-if="isLoadingMore"
+				class="content-grid__feed-loading"
+				aria-live="polite"
+			>
+				<span class="content-grid__feed-dot" />
+				<span class="content-grid__feed-dot" />
+				<span class="content-grid__feed-dot" />
 			</div>
 		</div>
 	</div>
@@ -1693,12 +2030,38 @@ onUnmounted(() => {
   position: relative;
   max-width: clamp(100%, 100%, var(--page-max-width));
   width: 100%;
+  padding-bottom: var(--filter-dock-height, 0px);
 
   /* Theme colors via CSS custom properties */
   --theme-color: var(--color-pink);
 
-  /* Mobile filter trigger - hidden on desktop */
-  &__mobile-filter-trigger {
+  &__filter-blur {
+    display: none;
+  }
+
+  &--cols-3 {
+    --grid-columns: 3;
+    --grid-gap-x: calc(var(--big-margin) * 1.9875);
+  }
+
+  &--cols-4 {
+    --grid-columns: 4;
+    --grid-gap-x: calc(var(--big-margin) * 1.2);
+  }
+
+  &--cols-5 {
+    --grid-columns: 5;
+    --grid-gap-x: calc(var(--big-margin) * 0.85);
+  }
+
+  &--cols-6 {
+    --grid-columns: 6;
+    --grid-gap-x: calc(var(--big-margin) * 0.65);
+  }
+
+  /* Mobile filter tab/sheet header - hidden on desktop */
+  &__mobile-filter-tab,
+  &__sheet-header {
     display: none;
   }
 
@@ -2024,57 +2387,60 @@ onUnmounted(() => {
       }
     }
 
-    .filter-genres,
-    .filter-tags {
+    .filter-genres {
       display: flex;
       flex-flow: row wrap;
       align-items: center;
       justify-content: center;
       margin: var(--base-padding) auto 0;
-      max-width: 66%;
-      width: 66%;
+      max-width: 94%;
+      width: 94%;
       gap: var(--small-padding);
     }
 
-    .filter-genre,
+    .filter-genre__chevron {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 8px;
+      height: 5px;
+      margin-left: 4px;
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+
+      &.is-open {
+        transform: rotate(180deg);
+      }
+    }
+
+    .filter-tag--genre {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .filter-tag--genre.filter-tag--overridden {
+      background-color: var(--color-darker-grey);
+      border-color: var(--color-dark-grey);
+      color: var(--color-text);
+      opacity: 0.8;
+
+      &:hover {
+        background-color: var(--color-dark-grey);
+        color: var(--color-text);
+      }
+    }
+
     .filter-type {
       display: flex;
       flex-flow: row wrap;
       gap: calc(var(--small-padding) / 2);
-    }
-
-    .filter-type {
       background-color: var(--color-bg);
       color: var(--color-text);
+
       &--active {
         background-color: var(--color-text);
         color: var(--color-bg);
-      }
-    }
-
-    .filter-subgenres {
-      margin-left: var(--mid-padding);
-      display: flex;
-      flex-flow: row wrap;
-      justify-content: center;
-      align-items: center;
-      gap: var(--small-padding);
-
-      .filter-subgenre {
-        width: 100%;
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: center;
-        align-items: center;
-        gap: var(--small-padding);
-
-        &__tags {
-          display: flex;
-          flex-flow: row wrap;
-          justify-content: center;
-          align-items: center;
-          gap: var(--small-padding);
-        }
       }
     }
 
@@ -2107,8 +2473,72 @@ onUnmounted(() => {
         color: var(--color-bg);
       }
 
-      &--subgenre {
-        font-size: var(--small-font-size);
+    }
+
+    .filter-genres .filter-tag--subgenre {
+      position: relative;
+      border: 0.09325rem solid var(--color-pink);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      transition:
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        color var(--transition-fast);
+
+      /* The string sits at the vertical centre, behind the pills; it is only
+         visible in the gaps between them. */
+      &::before {
+        content: "";
+        position: absolute;
+        left: calc(var(--small-padding) * -1);
+        top: 50%;
+        width: var(--small-padding);
+        height: 1px;
+        background: var(--color-pink);
+        opacity: 0.6;
+        transform: translateY(-50%);
+        pointer-events: none;
+      }
+
+      &:hover {
+        border-color: var(--color-pink);
+        background-color: var(--color-pink);
+        color: var(--color-black);
+      }
+
+      &.filter-tag--active {
+        border-color: var(--color-pink);
+        background-color: var(--color-pink);
+        color: var(--color-black);
+      }
+    }
+
+    .pearl-move {
+      transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .pearl-enter-active.filter-tag--subgenre {
+      animation: pearl-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: calc(var(--pearl-index, 0) * 28ms);
+    }
+
+    .pearl-leave-active.filter-tag--subgenre {
+      transition:
+        opacity 0.15s ease,
+        transform 0.15s ease;
+    }
+
+    .pearl-leave-to.filter-tag--subgenre {
+      opacity: 0;
+      transform: translateX(-8px) scale(0.9);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pearl-enter-active.filter-tag--subgenre,
+      .pearl-leave-active.filter-tag--subgenre,
+      .pearl-move {
+        animation: none;
+        transition: none;
       }
     }
   }
@@ -2130,28 +2560,93 @@ onUnmounted(() => {
     gap: calc(var(--big-margin) / 2) calc(var(--big-margin) * 1.9875);
   }
 
-  &__load-more {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: var(--mid-margin);
+  /* Column control: desktop only. Below 1101px the existing 2/1-column flex
+     layout stays in place and the desktop filter bar (which holds the switch)
+     is hidden. Words keeps its two-column article layout. */
+  @media (min-width: 1101px) {
+    &:not(.words) .content-grid__items {
+      display: grid;
+      grid-template-columns: repeat(var(--grid-columns, 3), minmax(0, 1fr));
+      gap: calc(var(--big-margin) / 2)
+        var(--grid-gap-x, calc(var(--big-margin) * 1.9875));
+    }
 
-    .load-more-button {
-      display: flex;
-      align-items: center;
-      gap: var(--small-padding);
-      padding: var(--small-padding) var(--big-padding);
-      margin: 0 calc(var(--big-margin) / 2 + 0.6rem) 0.6rem 0;
-      background-color: var(--color-bg);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: var(--font-text-semibold);
-      border-radius: 100px;
+    &:not(.words) .grid-item {
+      max-width: none;
+      width: 100%;
+      margin: 0;
+    }
 
-      &:hover {
-        @media (min-width: 1024px) {
-          color: var(--color-bg);
+    /* 5/6 columns: keep genre tags subordinate to the artwork and title. */
+    &--cols-5:not(.words),
+    &--cols-6:not(.words) {
+      .grid-item__content .grid-item__tags.tags {
+        gap: calc(var(--small-margin) * 0.45);
+
+        .tag {
+          padding: calc(var(--small-padding) * 0.4)
+            calc(var(--base-padding) * 0.45);
+          border-width: 1px;
+          font-size: calc(var(--small-font-size) * 0.86);
+          line-height: 1.05;
         }
       }
+    }
+
+    &--cols-6:not(.words) {
+      .grid-item__content .grid-item__tags.tags {
+        gap: calc(var(--small-margin) * 0.36);
+
+        .tag {
+          padding: calc(var(--small-padding) * 0.32)
+            calc(var(--base-padding) * 0.36);
+          font-size: calc(var(--small-font-size) * 0.78);
+        }
+      }
+    }
+
+  }
+
+  &__feed-status {
+    width: 100%;
+    margin: 0;
+    padding: var(--mid-padding) 0 0;
+    text-align: center;
+    font-size: var(--small-font-size);
+    letter-spacing: var(--button-letter-spacing);
+    text-transform: uppercase;
+    color: var(--color-text);
+    opacity: 0.45;
+  }
+
+  &__feed-sentinel {
+    width: 100%;
+    height: 1px;
+  }
+
+  &__feed-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    padding: var(--mid-padding) 0 var(--big-margin);
+  }
+
+  &__feed-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--color-text);
+    opacity: 0.3;
+    animation: feed-dot 1s ease-in-out infinite;
+
+    &:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 0.3s;
     }
   }
 }
@@ -2385,52 +2880,77 @@ onUnmounted(() => {
 /* Tablet: 2 columns */
 @media (max-width: 1100px) {
   .content-grid {
-    --mobile-filter-trigger-height: 29px;
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
 
     &__filter-bar--desktop {
       display: none;
     }
 
     &__filter-section {
-      display: none;
-      margin-left: 0;
-      margin-right: 0;
-      padding-left: 0;
-      padding-right: 0;
-      padding-bottom: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--mid-padding);
+      position: fixed;
+      top: auto;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 9998;
+      max-height: 88dvh;
+      margin: 0;
+      padding: 0 var(--mid-padding)
+        calc(var(--mid-padding) + env(safe-area-inset-bottom));
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--color-bg);
+      border-bottom: 0;
+      border-radius: 1.56125rem 1.56125rem 0 0;
+      background-color: var(--color-bg-transparent);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
+      transform: translateY(100%);
+      visibility: hidden;
+      pointer-events: none;
+      transition:
+        transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0.42s;
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-pink) transparent;
 
       &::before {
         display: none;
       }
 
+      &::-webkit-scrollbar {
+        display: block;
+        width: 8px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: var(--color-pink);
+        border: 2px solid transparent;
+        border-radius: 100px;
+        background-clip: padding-box;
+      }
+
+      &::-webkit-scrollbar-thumb:hover {
+        background: var(--color-text);
+      }
+
       &.is-mobile-open {
-        display: flex;
-        flex-direction: column;
-        gap: var(--mid-padding);
-        position: fixed;
-        top: calc(
-          var(--nav-height) + var(--big-padding) +
-            var(--mobile-filter-trigger-height)
-        );
-        left: var(--mid-padding);
-        right: var(--mid-padding);
-        z-index: 9998;
-        max-height: calc(
-          100dvh - var(--nav-height) - var(--big-padding) -
-            var(--mobile-filter-trigger-height) - var(--big-padding)
-        );
-        overflow: hidden;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding: var(--mid-padding);
-        border-radius: 1.56125rem;
-        border: 1px solid var(--color-bg);
-        background-color: var(--color-bg-transparent);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        animation: content-grid-filter-panel-in 0.45s cubic-bezier(0.22, 1, 0.36, 1)
-          both;
+        transform: translateY(var(--mobile-sheet-drag, 0px));
+        visibility: visible;
+        pointer-events: auto;
+      }
+
+      &.is-dragging {
+        transition: none;
       }
     }
 
@@ -2448,64 +2968,104 @@ onUnmounted(() => {
       }
     }
 
-    &__mobile-filter-trigger {
-      display: flex;
+    &__mobile-filter-tab {
+      position: fixed;
+      left: 50%;
+      bottom: calc(var(--small-padding) + env(safe-area-inset-bottom));
+      z-index: 9999;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      position: fixed;
-      top: calc(var(--nav-height) + var(--big-padding));
-      right: 0;
-      z-index: 9999;
-      width: 35px;
-      height: var(--mobile-filter-trigger-height);
-      padding: 0;
-      color: var(--theme-color);
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      transition: opacity 0.2s ease;
+      gap: 7px;
+      padding: 8px 16px;
+      transform: translateX(-50%);
+      border: 1px solid var(--color-text);
+      border-radius: 100px;
+      background-color: var(--color-bg-transparent);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      color: var(--color-text);
+      font-family: var(--font-text-semibold);
+      font-size: var(--small-font-size);
+      text-transform: uppercase;
+      letter-spacing: var(--button-letter-spacing);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.16);
+      cursor: grab;
+      touch-action: none;
 
-      &__icon {
-        display: block;
-        width: 35px;
-        height: var(--mobile-filter-trigger-height);
-      }
-
-      &__knob {
-        transform-box: fill-box;
-        transform-origin: center;
+      &__chevron {
+        display: inline-flex;
         transition: transform 0.2s ease;
       }
 
-      .filter-count {
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        background-color: var(--color-text);
-        color: var(--color-bg);
-        border-radius: 50%;
-        min-width: 16px;
-        height: 16px;
-        display: flex;
+      &__count {
+        display: inline-flex;
         align-items: center;
         justify-content: center;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        border-radius: 100px;
+        background-color: var(--color-pink);
+        color: var(--color-black);
         font-size: 9px;
-        font-family: var(--font-text-semibold);
-        padding: 0 3px;
-        border: 1px solid var(--color-bg);
+        line-height: 1;
       }
 
-      &.is-open {
-        opacity: 0.85;
-
-        .content-grid__mobile-filter-trigger__knob {
-          transform: rotate(-90deg);
-        }
+      &:active {
+        cursor: grabbing;
       }
+    }
 
-      &:hover:not(.is-open) .content-grid__mobile-filter-trigger__knob {
-        transform: scale(1.05);
-      }
+    &__sheet-header {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      height: 52px;
+      margin: 0 calc(var(--mid-padding) * -1);
+      padding: 0 var(--mid-padding);
+      background-color: var(--color-bg-transparent);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--color-grey);
+      touch-action: none;
+    }
+
+    &__sheet-grabber {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      width: 44px;
+      height: 5px;
+      border-radius: 100px;
+      background-color: var(--color-dark-grey);
+      transform: translateX(-50%);
+    }
+
+    &__sheet-title {
+      font-family: var(--font-text-semibold);
+      font-size: var(--small-font-size);
+      text-transform: uppercase;
+      letter-spacing: var(--button-letter-spacing);
+    }
+
+    &__sheet-close {
+      position: absolute;
+      right: var(--mid-padding);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--color-text);
+      cursor: pointer;
     }
 
     &__mobile-filter {
@@ -2716,23 +3276,18 @@ onUnmounted(() => {
     &__filters {
       &--in-mobile-panel {
         order: 3;
-        margin-top: calc(var(--mid-padding) * -1);
-        padding: var(--mid-padding);
-        background-color: rgba(255, 255, 255, 0.45);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid var(--color-bg);
-        border-top: none;
-        border-radius: 0 0 1.56125rem 1.56125rem;
-
-        @media (prefers-color-scheme: dark) {
-          background-color: rgba(0, 0, 0, 0.35);
-        }
+        margin-top: 0;
+        padding: 0;
+        background-color: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        border: 0;
+        border-radius: 0;
 
         &.content-grid__filters--no-active-above {
           margin-top: 0;
-          border-top: 1px solid var(--color-bg);
-          border-radius: 1.56125rem;
+          border-top: 0;
+          border-radius: 0;
         }
 
         .filter-container {
@@ -2763,10 +3318,6 @@ onUnmounted(() => {
           justify-content: flex-start;
         }
 
-        .filter-subgenres {
-          margin-left: 0;
-          width: 100%;
-        }
 
         .filter-type {
           background-color: var(--color-bg);
@@ -2798,6 +3349,23 @@ onUnmounted(() => {
           &.filter-tag--active {
             background-color: var(--color-text);
             color: var(--color-bg);
+          }
+        }
+
+        .filter-tag--genre.filter-tag--overridden {
+          background-color: var(--color-darker-grey);
+          border-color: var(--color-dark-grey);
+          color: var(--color-text);
+        }
+
+        .filter-genres .filter-tag--subgenre {
+          background-color: var(--color-bg);
+          border-color: var(--color-pink);
+
+          &.filter-tag--active {
+            background-color: var(--color-pink);
+            border-color: var(--color-pink);
+            color: var(--color-black);
           }
         }
       }
@@ -2832,10 +3400,6 @@ onUnmounted(() => {
           margin: 0;
         }
 
-        .filter-subgenres {
-          margin-left: 0;
-          width: 100%;
-        }
       }
     }
 
@@ -2891,16 +3455,6 @@ onUnmounted(() => {
 /* Mobile: 1 column */
 @media (max-width: 600px) {
   .content-grid {
-    &__filter-section.is-mobile-open {
-      left: var(--small-padding);
-      right: var(--small-padding);
-      padding: var(--mid-padding) var(--small-padding);
-      max-height: calc(
-        100dvh - var(--nav-height) - var(--big-padding) -
-          var(--mobile-filter-trigger-height) - var(--big-padding)
-      );
-    }
-
     &__mobile-filter-cities {
       &__tags .filter-tag--city {
         font-size: 11px;
@@ -2965,26 +3519,15 @@ onUnmounted(() => {
   opacity: 0;
 }
 
-@keyframes content-grid-filter-panel-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.75rem);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .mobile-filter-backdrop-enter-active,
   .mobile-filter-backdrop-leave-active {
     transition: none;
   }
 
+  .content-grid__filter-section,
   .content-grid__filter-section.is-mobile-open {
-    animation: none;
+    transition: none;
   }
 }
 
@@ -3004,6 +3547,239 @@ onUnmounted(() => {
         calc(var(--card-content-padding-y) * -1 - 50%)
       );
     }
+  }
+}
+@media (min-width: 1101px) {
+  .content-grid {
+    padding-bottom: max(var(--filter-dock-height, 0px), 160px);
+  }
+
+  .content-grid__filter-section {
+    position: fixed;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0 var(--big-margin)
+      calc(var(--small-padding) + env(safe-area-inset-bottom));
+    border-radius: 0;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .content-grid__filter-section::before {
+    display: none;
+  }
+
+  .content-grid__filter-section > * {
+    pointer-events: auto;
+  }
+
+  /* One blurred layer behind the dock, faded by a mask. This reads as a
+     gradient blur without stacking a blur div per level. */
+  .content-grid__filter-blur {
+    display: block;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 9998;
+    height: 30vh;
+    pointer-events: none;
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    mask-image: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 1) 35%,
+      rgba(0, 0, 0, 0.8) 60%,
+      rgba(0, 0, 0, 0.4) 85%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 1) 35%,
+      rgba(0, 0, 0, 0.8) 60%,
+      rgba(0, 0, 0, 0.4) 85%,
+      rgba(0, 0, 0, 0) 100%
+    );
+  }
+
+  .content-grid__filters {
+    order: 2;
+    width: 100%;
+    max-width: var(--page-max-width);
+    max-height: 40vh;
+    margin: 0 auto;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-pink) transparent;
+
+    &::-webkit-scrollbar {
+      display: block;
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--color-pink);
+      border: 2px solid transparent;
+      border-radius: 100px;
+      background-clip: padding-box;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: var(--color-text);
+    }
+  }
+
+  .content-grid__filter-section .filter-category {
+    position: static;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 10px 0 4px;
+    transform: none;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+    opacity: 1;
+  }
+
+  .content-grid__filter-section .filter-category.active {
+    opacity: 1;
+  }
+
+  .content-grid__filters .filter-container {
+    gap: 0;
+  }
+
+  .content-grid__filter-section .filter-genres {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .content-grid__filter-bar--desktop {
+    order: 3;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--small-padding);
+    width: 100%;
+    max-width: var(--page-max-width);
+    margin: 0 auto;
+    padding: 8px 14px;
+    border: 1px solid var(--color-text);
+    border-radius: 100px;
+    background: transparent;
+    backdrop-filter: blur(18px);
+  }
+
+  .content-grid__filter-bar--desktop .filter-bar__left {
+    display: flex;
+    align-items: center;
+    gap: var(--small-padding);
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .content-grid__filter-bar--desktop .filter-cities {
+    width: auto;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0;
+    overflow-x: auto;
+  }
+
+  .content-grid__filter-bar--desktop .filter-cities__title,
+  .content-grid__filter-bar--desktop .sort-options__title {
+    color: var(--color-text);
+  }
+
+  .content-grid__filter-bar--desktop .filter-cities .filter-tag {
+    background-color: var(--color-dark-grey);
+    color: var(--color-white);
+  }
+
+  .content-grid__filter-bar--desktop
+    .filter-cities
+    .filter-tag.filter-tag--active,
+  .content-grid__filter-bar--desktop .filter-cities .filter-tag:hover {
+    background-color: var(--theme-color);
+    color: var(--color-bg);
+  }
+
+  .content-grid__filter-bar--desktop .filter-bar__density {
+    display: flex;
+    justify-content: center;
+  }
+
+  .content-grid__filter-bar--desktop .sort-options {
+    width: auto;
+    justify-content: flex-end;
+    padding: 0;
+    border-left: 0;
+  }
+
+  .content-grid__filter-bar--desktop .sort-options button {
+    color: var(--color-text);
+  }
+
+  .content-grid__filter-bar--desktop .sort-options button .dot {
+    background-color: var(--color-text);
+  }
+
+  .content-grid__filter-bar--desktop .sort-options button.active,
+  .content-grid__filter-bar--desktop .sort-options button:hover {
+    color: var(--theme-color);
+  }
+
+  .content-grid__filter-bar--desktop .sort-options button.active .dot,
+  .content-grid__filter-bar--desktop .sort-options button:hover .dot {
+    background-color: var(--theme-color);
+  }
+}
+
+@keyframes pearl-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px) scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes feed-dot {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content-grid__feed-dot {
+    animation: none;
+    opacity: 0.6;
   }
 }
 </style>
