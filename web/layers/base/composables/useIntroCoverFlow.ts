@@ -4,6 +4,7 @@ import {
 	computed,
 	nextTick,
 	onMounted,
+	onUnmounted,
 	type Ref,
 	ref,
 } from "vue";
@@ -11,10 +12,17 @@ import { COVER_FLOW_ANIMATION_MS } from "./coverFlowUtils";
 
 const COVER_FLOW_SHIFT_1 = 11.5;
 const COVER_FLOW_SHIFT_2 = 21;
+const COVER_FLOW_SHIFT_3 = 26;
 const COVER_FLOW_SHIFT_HIDDEN = 26;
+
+const COVER_FLOW_SHIFT_1_WIDE = 14.75;
+const COVER_FLOW_SHIFT_2_WIDE = 27;
+const COVER_FLOW_SHIFT_3_WIDE = 34;
+const COVER_FLOW_SHIFT_HIDDEN_WIDE = 38;
 
 const COVER_FLOW_SHIFT_1_COMPACT = 8.75;
 const COVER_FLOW_SHIFT_2_COMPACT = 15.5;
+const COVER_FLOW_SHIFT_3_COMPACT = 19;
 const COVER_FLOW_SHIFT_HIDDEN_COMPACT = 19;
 
 type CoverFlowItem = { _id?: string };
@@ -26,6 +34,18 @@ export function useIntroCoverFlow(
 	const currentIndex = ref(0);
 	const isAnimating = ref(false);
 	const visualOffsets = ref<Record<string, number>>({});
+	// Stacking layers are kept separate from the target offsets: a card that
+	// moves outwards keeps its old z-index while it fades/blurs, and a card
+	// that moves inwards comes forward one layer early. The layers settle after
+	// the transition instead of snapping at its start.
+	const zIndices = ref<Record<string, number>>({});
+	const snappingIds = ref<Set<string>>(new Set());
+	// Rapid clicks must not be dropped. Every click advances currentIndex
+	// immediately; only the newest request is allowed to apply its target
+	// offsets, so the cards animate straight to the latest slide.
+	let navigationToken = 0;
+	let animationTimer: ReturnType<typeof setTimeout> | null = null;
+	let zSettleTimer: ReturnType<typeof setTimeout> | null = null;
 
 	// `useMediaQuery` resolves to false during SSR (no window) but reads the real
 	// viewport synchronously on the client — so on a narrow screen the first client
@@ -35,20 +55,33 @@ export function useIntroCoverFlow(
 	// hydration completes.
 	const mounted = ref(false);
 	const compactQuery = useMediaQuery("(max-width: 900px)");
+	const wideQuery = useMediaQuery("(min-width: 1340px)");
 	const isCompactLayout = computed(() => mounted.value && compactQuery.value);
+	const isWideLayout = computed(() => mounted.value && wideQuery.value);
 
 	const shiftStops = computed(() => {
 		if (isCompactLayout.value) {
 			return {
 				shift1: COVER_FLOW_SHIFT_1_COMPACT,
 				shift2: COVER_FLOW_SHIFT_2_COMPACT,
+				shift3: COVER_FLOW_SHIFT_3_COMPACT,
 				shiftHidden: COVER_FLOW_SHIFT_HIDDEN_COMPACT,
+			};
+		}
+
+		if (isWideLayout.value) {
+			return {
+				shift1: COVER_FLOW_SHIFT_1_WIDE,
+				shift2: COVER_FLOW_SHIFT_2_WIDE,
+				shift3: COVER_FLOW_SHIFT_3_WIDE,
+				shiftHidden: COVER_FLOW_SHIFT_HIDDEN_WIDE,
 			};
 		}
 
 		return {
 			shift1: COVER_FLOW_SHIFT_1,
 			shift2: COVER_FLOW_SHIFT_2,
+			shift3: COVER_FLOW_SHIFT_3,
 			shiftHidden: COVER_FLOW_SHIFT_HIDDEN,
 		};
 	});
@@ -76,13 +109,21 @@ export function useIntroCoverFlow(
 		return prev + delta;
 	}
 
+	function zTier(abs: number) {
+		return Math.max(1, 5 - Math.min(4, Math.round(abs)));
+	}
+
 	function initVisualOffsets(center: number) {
 		const next: Record<string, number> = {};
+		const z: Record<string, number> = {};
 		items.value.forEach((item, index) => {
 			if (!item._id) return;
-			next[item._id] = normalizedOffset(index, center);
+			const offset = normalizedOffset(index, center);
+			next[item._id] = offset;
+			z[item._id] = zTier(Math.abs(offset));
 		});
 		visualOffsets.value = next;
+		zIndices.value = z;
 	}
 
 	function buildTargetOffsets(center: number) {
@@ -99,20 +140,34 @@ export function useIntroCoverFlow(
 		return next;
 	}
 
-	function reconcileHiddenOffsets(center: number) {
+	// Cards that are off-screen can be moved to their new relative position
+	// without animating. This is what makes multi-step jumps (rapid clicks)
+	// keep every card on the correct side of the ring instead of sweeping a
+	// hidden card across the whole stage.
+	function snapHiddenToCenter(center: number) {
 		const next = { ...visualOffsets.value };
+		const snapped = new Set<string>();
 
 		items.value.forEach((item, index) => {
 			if (!item._id) return;
-			const target = normalizedOffset(index, center);
-			const current = next[item._id] ?? target;
+			const current = next[item._id];
+			if (current === undefined || Math.abs(current) <= 2.5) return;
 
-			if (Math.abs(current) > 2.5 && Math.abs(target) > 2) {
+			const target = normalizedOffset(index, center);
+			const crossesRing =
+				target !== 0 && Math.sign(target) !== Math.sign(current);
+
+			// Snap cards that would cross the stage or become the new center.
+			// A hidden card entering on the same side (e.g. +3 -> +2) may still
+			// animate, which preserves the normal one-step fade-in.
+			if (crossesRing || target === 0 || Math.abs(target) > 2.5) {
 				next[item._id] = target;
+				snapped.add(item._id);
 			}
 		});
 
 		visualOffsets.value = next;
+		return snapped;
 	}
 
 	function getVisualOffset(index: number) {
@@ -121,6 +176,10 @@ export function useIntroCoverFlow(
 		return (
 			visualOffsets.value[id] ?? normalizedOffset(index, currentIndex.value)
 		);
+	}
+
+	function isSnapping(id: string | undefined) {
+		return id ? snappingIds.value.has(id) : false;
 	}
 
 	function interpolate(value: number, stops: Array<[number, number]>) {
@@ -142,39 +201,55 @@ export function useIntroCoverFlow(
 	}
 
 	function getShiftMagnitude(abs: number) {
-		const { shift1, shift2, shiftHidden } = shiftStops.value;
+		const { shift1, shift2, shift3, shiftHidden } = shiftStops.value;
 		return interpolate(abs, [
 			[0, 0],
 			[1, shift1],
 			[2, shift2],
-			[3, shiftHidden],
+			[3, shift3],
+			[4, shiftHidden],
 		]);
 	}
 
 	function getScale(abs: number) {
+		const scale1 = isWideLayout.value ? 0.84 : 0.86;
+		const scale2 = isWideLayout.value ? 0.7 : 0.74;
+		const farScale = isWideLayout.value ? 0.54 : 0.68;
 		return interpolate(abs, [
 			[0, 1],
-			[1, 0.86],
-			[2, 0.74],
-			[3, 0.68],
+			[1, scale1],
+			[2, scale2],
+			[3, farScale],
 		]);
 	}
 
 	function getBlur(abs: number) {
+		const farBlur = isWideLayout.value ? 7 : 5;
 		return interpolate(abs, [
 			[0, 0],
-			[1, 1.5],
-			[2, 3],
-			[3, 4],
+			[1, 2.5],
+			[2, 4.5],
+			[3, farBlur],
 		]);
 	}
 
 	function getOpacity(abs: number) {
-		if (abs <= 0) return 1;
-		if (abs <= 1) return 0.94;
-		if (abs <= 2) return 0.82;
-		if (abs <= 3) return 0;
-		return 0;
+		const stops: Array<[number, number]> = isWideLayout.value
+			? [
+					[0, 1],
+					[1, 0.78],
+					[2, 0.58],
+					[3, 0.45],
+					[4, 0],
+				]
+			: [
+					[0, 1],
+					[1, 0.78],
+					[2, 0.58],
+					[3, 0],
+				];
+
+		return interpolate(abs, stops);
 	}
 
 	function cardStyle(index: number): CSSProperties {
@@ -182,38 +257,108 @@ export function useIntroCoverFlow(
 		const abs = Math.abs(offset);
 		const xRem = getShiftMagnitude(abs) * Math.sign(offset);
 		const scale = getScale(abs);
+		const id = items.value[index]?._id;
+		const zIndex = id ? (zIndices.value[id] ?? zTier(abs)) : zTier(abs);
 
 		return {
 			transform: `translate3d(calc(-50% + ${xRem}rem), -50%, 0) scale(${scale})`,
 			filter: `blur(${getBlur(abs)}px)`,
 			opacity: getOpacity(abs),
-			zIndex: Math.max(1, 5 - Math.min(4, Math.round(abs))),
+			zIndex,
 			pointerEvents: Math.round(abs) === 0 ? "auto" : "none",
 		};
 	}
 
+	function settleZIndices(offsets: Record<string, number>) {
+		const settled: Record<string, number> = {};
+		items.value.forEach((item) => {
+			if (!item._id) return;
+			settled[item._id] = zTier(Math.abs(offsets[item._id] ?? 0));
+		});
+		zIndices.value = settled;
+	}
+
 	function applyTargetOffsets(center: number) {
-		visualOffsets.value = buildTargetOffsets(center);
+		const previous = { ...visualOffsets.value };
+		const next = buildTargetOffsets(center);
+		const nextZ: Record<string, number> = { ...zIndices.value };
+		let hasOutward = false;
+
+		items.value.forEach((item) => {
+			if (!item._id) return;
+			const id = item._id;
+			const old = previous[id] ?? 0;
+			const target = next[id] ?? 0;
+			const oldAbs = Math.abs(old);
+			const targetAbs = Math.abs(target);
+			const oldZ = nextZ[id] ?? zTier(oldAbs);
+			const targetZ = zTier(targetAbs);
+
+			if (targetAbs === 0) {
+				// The incoming centre must be above the outgoing centre even
+				// when a rapid jump snapped it straight into place.
+				nextZ[id] = 6;
+			} else if (targetAbs > oldAbs + 0.01) {
+				// Moving outwards: stay in the old layer while fading/blurring,
+				// then settle behind after the transition.
+				nextZ[id] = oldZ;
+				hasOutward = true;
+			} else if (targetAbs < oldAbs - 0.01) {
+				// Moving inwards: come forward while still blurred/faded so the
+				// layer change is hidden by the opacity/filter transition.
+				nextZ[id] = Math.min(6, targetZ + 1);
+			} else {
+				nextZ[id] = targetZ;
+			}
+		});
+
+		visualOffsets.value = next;
+		zIndices.value = nextZ;
+
+		if (zSettleTimer) clearTimeout(zSettleTimer);
+		const token = navigationToken;
+
+		if (!hasOutward) {
+			settleZIndices(next);
+			return;
+		}
+
+		zSettleTimer = setTimeout(() => {
+			if (token !== navigationToken) return;
+			settleZIndices(next);
+			zSettleTimer = null;
+		}, COVER_FLOW_ANIMATION_MS);
 	}
 
 	function navigate(nextIndex: number) {
-		if (total.value <= 1 || isAnimating.value) return;
+		if (total.value <= 1) return;
 
 		const normalized = mod(nextIndex, total.value);
 		if (normalized === currentIndex.value) return;
 
-		reconcileHiddenOffsets(currentIndex.value);
+		const token = ++navigationToken;
 		isAnimating.value = true;
 		currentIndex.value = normalized;
 
 		nextTick(() => {
 			requestAnimationFrame(() => {
+				// A newer click superseded this one; applying the old target
+				// would make the cover flow jump backwards for one frame.
+				if (token !== navigationToken) return;
+				snappingIds.value = snapHiddenToCenter(normalized);
 				applyTargetOffsets(normalized);
+				// The snap class disables transitions for one frame. Clear it
+				// after the browser has painted the new position, unless a
+				// newer navigation already took over.
+				requestAnimationFrame(() => {
+					if (token === navigationToken) snappingIds.value = new Set();
+				});
 			});
 		});
 
-		setTimeout(() => {
-			isAnimating.value = false;
+		if (animationTimer) clearTimeout(animationTimer);
+		animationTimer = setTimeout(() => {
+			if (token === navigationToken) isAnimating.value = false;
 		}, COVER_FLOW_ANIMATION_MS);
 	}
 
@@ -234,6 +379,11 @@ export function useIntroCoverFlow(
 		initVisualOffsets(currentIndex.value);
 	});
 
+	onUnmounted(() => {
+		if (animationTimer) clearTimeout(animationTimer);
+		if (zSettleTimer) clearTimeout(zSettleTimer);
+	});
+
 	useSwipe(() => stageRef.value, {
 		threshold: 60,
 		onSwipeEnd(_e, direction) {
@@ -248,6 +398,7 @@ export function useIntroCoverFlow(
 		total,
 		cardStyle,
 		getVisualOffset,
+		isSnapping,
 		scrollNext,
 		scrollPrev,
 		scrollTo,

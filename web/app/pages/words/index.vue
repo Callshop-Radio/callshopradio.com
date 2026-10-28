@@ -47,5 +47,10 @@ usePageSeo(data?.value?.seo);
   flex-flow: column wrap;
   justify-content: flex-start;
   width: 100%;
+
+  .intro-section {
+    width: 100%;
+    max-width: 100%;
+  }
 }
 </style>
