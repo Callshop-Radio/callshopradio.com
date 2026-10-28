@@ -369,11 +369,25 @@ const setupAudioElement = (audioElement, num) => {
 	});
 
 	audioElement.addEventListener("waiting", () => {
+		stopPing(num);
 		if (num === 1) {
 			isLoading1.value = true;
 		} else {
 			isLoading2.value = true;
 		}
+	});
+
+	audioElement.addEventListener("stalled", () => {
+		stopPing(num);
+	});
+
+	audioElement.addEventListener("playing", () => {
+		if (num === 1) {
+			isLoading1.value = false;
+		} else {
+			isLoading2.value = false;
+		}
+		startPing(num, streamName, currentShow);
 	});
 
 	audioElement.addEventListener("pause", () => {
