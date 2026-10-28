@@ -33,6 +33,23 @@ const LIBRETIME_BASE = "https://libretime.callshopradio.com";
 const ICECAST_URL = "https://icecast.callshopradio.com/status-json.xsl";
 const WIEN_URL = "https://wien.callshopradio.com/api/live-info-v2?days=7";
 
+// LibreTime is offline during the PHP zero-day transition. It answers 403 with
+// an HTML error page; normalize anything that is not a JSON object to null so
+// `liveData` never becomes a string. The timeout keeps the endpoint responsive
+// if an origin is unreachable instead of returning an error page.
+const fetchJson = async <T>(
+	url: string,
+	headers?: Record<string, string>,
+): Promise<T | null> => {
+	const data = await $fetch<T>(url, {
+		headers,
+		ignoreResponseError: true,
+		timeout: 3000,
+	}).catch(() => null);
+
+	return data && typeof data === "object" ? data : null;
+};
+
 const deriveOnAirLight = (
 	liveData: LibreTimeLiveInfo | null,
 ): Record<string, boolean> => {
@@ -58,12 +75,12 @@ export default defineCachedEventHandler(
 		}
 
 		const [liveData1, icecastData, liveData2] = await Promise.all([
-			$fetch<LibreTimeLiveInfo>(`${LIBRETIME_BASE}/api/live-info-v2`, {
-				headers: libretimeHeaders,
-				ignoreResponseError: true,
-			}).catch(() => null),
-			$fetch<IcecastStatus>(ICECAST_URL).catch(() => null),
-			$fetch<LibreTimeLiveInfo>(WIEN_URL).catch(() => null),
+			fetchJson<LibreTimeLiveInfo>(
+				`${LIBRETIME_BASE}/api/live-info-v2`,
+				libretimeHeaders,
+			),
+			fetchJson<IcecastStatus>(ICECAST_URL),
+			fetchJson<LibreTimeLiveInfo>(WIEN_URL),
 		]);
 
 		return {
