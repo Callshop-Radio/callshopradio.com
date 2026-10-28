@@ -1,5 +1,5 @@
 ﻿<script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 
 import { safeNextPath } from "~/utils/accountPaths";
 
@@ -15,10 +15,30 @@ const code = ref("");
 const step = ref<"email" | "code">("email");
 const busy = ref(false);
 const message = ref("");
+const cooldown = ref(0);
+const codeInput = ref<HTMLInputElement | null>(null);
+let cooldownTimer: ReturnType<typeof setInterval> | null = null;
 
 const next = computed(() => safeNextPath(route.query.next));
+const maskedEmail = computed(() =>
+	email.value.replace(/^(.).*(@.*)$/, "$1•••$2"),
+);
 
-async function requestCode() {
+function stopCooldown() {
+	if (cooldownTimer) clearInterval(cooldownTimer);
+	cooldownTimer = null;
+}
+
+function startCooldown() {
+	stopCooldown();
+	cooldown.value = 60;
+	cooldownTimer = setInterval(() => {
+		cooldown.value -= 1;
+		if (cooldown.value <= 0) stopCooldown();
+	}, 1000);
+}
+
+async function sendCode() {
 	if (busy.value) return;
 	busy.value = true;
 	message.value = "";
@@ -28,12 +48,17 @@ async function requestCode() {
 			body: { email: email.value, locale: locale.value },
 		});
 		step.value = "code";
+		startCooldown();
 	} catch {
-		// The manager answers generically on purpose; a mail outage is reported.
 		message.value = copy.value.mailFailed;
 	} finally {
 		busy.value = false;
 	}
+}
+
+async function resend() {
+	if (cooldown.value > 0 || busy.value) return;
+	await sendCode();
 }
 
 async function verify() {
@@ -55,100 +80,217 @@ async function verify() {
 		busy.value = false;
 	}
 }
+
+function backToEmail() {
+	stopCooldown();
+	cooldown.value = 0;
+	code.value = "";
+	message.value = "";
+	step.value = "email";
+}
+
+watch(step, async (value) => {
+	if (value === "code") {
+		await nextTick();
+		codeInput.value?.focus();
+	}
+});
+
+onBeforeUnmount(stopCooldown);
 </script>
 
 <template>
-	<AccountShell :title="copy.signInToSave">
-		<form v-if="step === 'email'" class="account-form" @submit.prevent="requestCode">
-			<label>
-				<span>{{ copy.email }}</span>
-				<input
-					v-model="email"
-					type="email"
-					name="email"
-					autocomplete="email"
-					required
-					:disabled="busy"
-				>
-			</label>
-			<button type="submit" class="account-action" :disabled="busy">{{ copy.sendCode }}</button>
-		</form>
+	<AccountShell :title="copy.signInTitle" :subtitle="copy.signInIntro">
+		<Transition name="step" mode="out-in">
+			<form v-if="step === 'email'" key="email" class="login" @submit.prevent="sendCode">
+				<label class="login__field">
+					<span>{{ copy.email }}</span>
+					<input
+						v-model="email"
+						type="email"
+						name="email"
+						autocomplete="email"
+						required
+						:disabled="busy"
+					>
+				</label>
 
-		<form v-else class="account-form" @submit.prevent="verify">
-			<p class="account-hint">{{ copy.codeSent }}</p>
-			<label>
-				<span>{{ copy.code }}</span>
-				<input
-					v-model="code"
-					inputmode="numeric"
-					pattern="[0-9]{6}"
-					maxlength="6"
-					autocomplete="one-time-code"
-					required
-					:disabled="busy"
-				>
-			</label>
-			<button type="submit" class="account-action" :disabled="busy">{{ copy.verify }}</button>
-			<button type="button" class="account-secondary" :disabled="busy" @click="step = 'email'">
-				{{ copy.changeEmail }}
-			</button>
-		</form>
+				<p v-if="message" class="login__error" role="alert">{{ message }}</p>
 
-		<p v-if="message" class="account-message" role="alert">{{ message }}</p>
+				<button type="submit" class="login__primary" :disabled="busy">
+					{{ copy.sendCode }}
+				</button>
+				<p class="login__hint">{{ copy.codeHint }}</p>
+			</form>
+
+			<form v-else key="code" class="login" @submit.prevent="verify">
+				<p class="login__sent">
+					{{ copy.codeSentFor }} <strong>{{ maskedEmail }}</strong>
+				</p>
+
+				<label class="login__field login__field--code">
+					<span>{{ copy.code }}</span>
+					<input
+						ref="codeInput"
+						v-model="code"
+						inputmode="numeric"
+						pattern="[0-9]{6}"
+						maxlength="6"
+						autocomplete="one-time-code"
+						required
+						:disabled="busy"
+					>
+				</label>
+
+				<p v-if="message" class="login__error" role="alert">{{ message }}</p>
+
+				<button type="submit" class="login__primary" :disabled="busy">
+					{{ copy.verify }}
+				</button>
+
+				<div class="login__actions">
+					<button type="button" :disabled="busy || cooldown > 0" @click="resend">
+						{{ cooldown > 0 ? `${copy.resend} (${cooldown}s)` : copy.resend }}
+					</button>
+					<button type="button" :disabled="busy" @click="backToEmail">
+						{{ copy.changeEmail }}
+					</button>
+				</div>
+			</form>
+		</Transition>
 	</AccountShell>
 </template>
 
 <style scoped>
-.account-form {
+.login {
 	display: grid;
 	gap: 1rem;
+	max-width: 420px;
 }
 
-label {
+.login__field {
 	display: grid;
-	gap: 0.4rem;
-	font-size: 0.85rem;
+	gap: 0.45rem;
+	font-size: 0.78rem;
+	letter-spacing: 0.1em;
 	text-transform: uppercase;
-	letter-spacing: 0.08em;
 }
 
-input {
-	padding: 0.85rem 1rem;
-	border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+.login__field input {
+	width: 100%;
+	padding: 0.95rem 1rem;
+	border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
 	border-radius: 10px;
-	font-size: 1.1rem;
-	background: transparent;
-	color: inherit;
-}
-
-.account-action {
-	padding: 0.9rem 1.2rem;
-	border: 0;
-	border-radius: 999px;
 	background: transparent;
 	color: inherit;
 	font: inherit;
-	font-weight: 600;
-	cursor: pointer;
+	font-size: 1.05rem;
+	letter-spacing: normal;
+	text-transform: none;
+	transition:
+		border-color 160ms ease,
+		background 160ms ease;
 }
 
-.account-secondary {
+.login__field input:focus {
+	outline: none;
+	border-color: var(--color-pink);
+	background: color-mix(in srgb, var(--color-pink) 8%, transparent);
+}
+
+.login__field--code input {
+	font-size: 1.5rem;
+	letter-spacing: 0.4em;
+	font-variant-numeric: tabular-nums;
+}
+
+.login__primary {
+	justify-self: start;
+	margin-top: 0.4rem;
+	padding: 0.9rem 1.6rem;
+	border: 0;
+	border-radius: 999px;
+	background: var(--color-pink);
+	color: #0b0b0b;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+	transition:
+		transform 160ms ease,
+		filter 160ms ease;
+}
+
+.login__primary:hover:not(:disabled) {
+	transform: translateY(-1px);
+	filter: brightness(1.08);
+}
+
+.login__primary:disabled {
+	opacity: 0.55;
+	cursor: progress;
+}
+
+.login__hint {
+	margin: 0;
+	max-width: 38ch;
+	font-size: 0.85rem;
+	opacity: 0.6;
+}
+
+.login__sent {
+	margin: 0;
+	font-size: 0.9rem;
+	opacity: 0.75;
+}
+
+.login__error {
+	margin: 0;
+	color: var(--color-pink);
+	font-size: 0.9rem;
+}
+
+.login__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.25rem;
+}
+
+.login__actions button {
+	padding: 0;
 	border: 0;
 	background: none;
 	color: inherit;
+	font: inherit;
+	font-size: 0.85rem;
 	opacity: 0.7;
 	text-decoration: underline;
 	cursor: pointer;
 }
 
-.account-hint,
-.account-message {
-	margin: 0;
+.login__actions button:hover:not(:disabled) {
+	opacity: 1;
 }
 
-.account-message {
-	color: #b02a2a;
+.login__actions button:disabled {
+	opacity: 0.35;
+	cursor: default;
+	text-decoration: none;
+}
+
+.step-enter-active,
+.step-leave-active {
+	transition:
+		opacity 180ms ease,
+		transform 180ms ease;
+}
+
+.step-enter-from {
+	opacity: 0;
+	transform: translateY(6px);
+}
+
+.step-leave-to {
+	opacity: 0;
+	transform: translateY(-6px);
 }
 </style>
-
-

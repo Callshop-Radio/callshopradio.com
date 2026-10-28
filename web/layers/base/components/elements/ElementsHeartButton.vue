@@ -184,8 +184,9 @@ onBeforeUnmount(clearTimers);
 			:disabled="busy"
 			@click.stop.prevent="toggle"
 		>
-			<Transition name="icon" mode="out-in">
-				<svg
+			<span class="heart__icons">
+				<Transition name="icon">
+					<svg
 					v-if="mode === 'plus'"
 					key="plus"
 					width="16"
@@ -216,7 +217,8 @@ onBeforeUnmount(clearTimers);
 						stroke-linejoin="round"
 					/>
 				</svg>
-			</Transition>
+				</Transition>
+			</span>
 		</button>
 
 		<Teleport to="body">
@@ -337,16 +339,29 @@ onBeforeUnmount(clearTimers);
 	}
 }
 
+.heart__icons {
+	display: grid;
+	place-items: center;
+}
+
+.heart__icons > * {
+	grid-area: 1 / 1;
+}
+
 .icon-enter-active,
 .icon-leave-active {
 	transition:
-		transform 160ms ease,
+		transform 220ms cubic-bezier(0.2, 0.8, 0.3, 1.15),
 		opacity 160ms ease;
 }
 
-.icon-enter-from,
+.icon-enter-from {
+	transform: scale(0.55) rotate(-10deg);
+	opacity: 0;
+}
+
 .icon-leave-to {
-	transform: scale(0.6) rotate(-12deg);
+	transform: scale(0.55) rotate(10deg);
 	opacity: 0;
 }
 

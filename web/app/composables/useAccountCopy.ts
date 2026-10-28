@@ -10,6 +10,15 @@ export function useAccountCopy() {
 				: "This set is in more than one list. Remove it from all of them?",
 			signIn: de ? "Anmelden" : "Sign in",
 			signInToSave: de ? "Zum Merken anmelden" : "Sign in to save",
+			signInTitle: de ? "Anmelden" : "Sign in",
+			signInIntro: de
+				? "Mit deiner E-Mail-Adresse. Kein Passwort und kein separater Signup — beim ersten Mal legen wir dein Konto an."
+				: "With your email address. No password and no separate signup — the first sign-in creates your account.",
+			resend: de ? "Code erneut senden" : "Resend code",
+			codeHint: de
+				? "Wir schicken dir einen sechsstelligen Code per Mail."
+				: "We'll email you a six-digit code.",
+			codeSentFor: de ? "Code für" : "Code for",
 			account: de ? "Konto" : "Account",
 			lists: de ? "Listen" : "Lists",
 			savedSets: de ? "Gemerkte Sets" : "Saved sets",
