@@ -247,13 +247,6 @@ strong {
       font-size: var(--h3-size);
       line-height: var(--h3-line-height);
       margin: 0 0 var(--mid-margin);
-      strong,
-      s,
-      em {
-        font-size: var(--h3-size);
-        line-height: var(--h3-line-height);
-        font-family: var(--font-text-regular);
-      }
     }
 
     /* Additive & Follow-Up Styles */
@@ -335,6 +328,39 @@ strong {
     p {
       font-size: var(--base-font-size);
     }
+  }
+}
+
+/* Words Editor Block Styles */
+
+.rich-text {
+  /* Inline marks: the manifest's italic styles are separate families, so the
+     browser must not synthesise an oblique on top of them. */
+  em {
+    font-family: var(--font-text-italic);
+    font-style: normal;
+  }
+
+  .rt-lead em,
+  .rt-quote em {
+    font-family: var(--font-text-medium-italic);
+  }
+
+  .rt-quote {
+    border-left: 2px solid var(--color-pink);
+    padding: 0 0 0 var(--base-padding);
+    margin: 2rem 0;
+    max-width: 80ch;
+  }
+
+  .rt-kicker {
+    color: var(--color-pink);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .rt-small {
+    color: var(--color-dark-grey);
   }
 }
 

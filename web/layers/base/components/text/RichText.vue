@@ -1,4 +1,5 @@
 <script setup>
+import { WORDS_TYPOGRAPHY } from "@callshop/words-typography";
 import { flattenProps } from "@portabletext/vue";
 import {
 	ModuleCarousel,
@@ -26,6 +27,22 @@ const flattenMarkProps =
 	(markProps, { slots }) =>
 		h(component, { ...markProps.value }, slots);
 
+// Every block style renders through RichTextStyles: the standard styles plus
+// each custom style the Words editor offers. Deduplicated, so `normal` and the
+// headings appear exactly once.
+const blockMap = Object.fromEntries(
+	[
+		"normal",
+		"h1",
+		"h2",
+		"h3",
+		"h4",
+		"h5",
+		"h6",
+		...WORDS_TYPOGRAPHY.styles.map((style) => style.key),
+	].map((style) => [style, RichTextStyles]),
+);
+
 const portableTextComponents = {
 	types: {
 		"module.media": flattenProps(ModuleMedia),
@@ -37,15 +54,7 @@ const portableTextComponents = {
 		underline: "u",
 		"strike-through": "s",
 	},
-	block: {
-		normal: RichTextStyles,
-		h1: RichTextStyles,
-		h2: RichTextStyles,
-		h3: RichTextStyles,
-		h4: RichTextStyles,
-		h5: RichTextStyles,
-		h6: RichTextStyles,
-	},
+	block: blockMap,
 };
 </script>
 
