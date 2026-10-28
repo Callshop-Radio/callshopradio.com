@@ -17,7 +17,7 @@ const props = defineProps({
 });
 
 const mainStore = useMainStore();
-const { track: trackEvent } = useAnalytics();
+const { track: trackEvent, trackUmami } = useAnalytics();
 const iframeContainer = ref(null);
 const isPlaying = ref(false);
 const isLoading = ref(true);
@@ -111,6 +111,24 @@ const analyticsContext = computed(() => {
 // de-duplicates resumes after a pause, so play_set means "started this set".
 const trackedProgress = new Set();
 let hasTrackedPlay = false;
+let pingTimer = null;
+
+function stopPing() {
+	if (pingTimer) {
+		clearInterval(pingTimer);
+		pingTimer = null;
+	}
+}
+
+function startPing() {
+	stopPing();
+	pingTimer = setInterval(() => {
+		trackUmami("listen-ping", {
+			...analyticsContext.value,
+			minutes: 1,
+		});
+	}, 60_000);
+}
 
 function trackPlay() {
 	if (hasTrackedPlay) return;
@@ -226,6 +244,7 @@ function setupWidget(Widget) {
 	if (iframe) {
 		try {
 			localWidget.value = Widget(iframe);
+			stopPing();
 			trackedProgress.clear();
 			hasTrackedPlay = false;
 			setupWidgetEvents();
@@ -267,6 +286,7 @@ function setupWidgetEvents() {
 			isPlaying.value = true;
 			mainStore.setPlayerStatus(true); // Update store
 			trackPlay();
+			startPing();
 			// Double-check if really playing
 			setTimeout(() => {
 				localWidget.value.isPaused((paused) => {
@@ -287,6 +307,7 @@ function setupWidgetEvents() {
 
 		// PAUSE Event with error handling
 		localWidget.value.bind(SC.Widget.Events.PAUSE, () => {
+			stopPing();
 			isPlaying.value = false;
 			mainStore.setPlayerStatus(false); // Update store
 
@@ -302,12 +323,14 @@ function setupWidgetEvents() {
 
 		// FINISH Event
 		localWidget.value.bind(SC.Widget.Events.FINISH, () => {
+			stopPing();
 			isPlaying.value = false;
 			mainStore.setPlayerStatus(false); // Update store
 			trackFinish();
 		});
 
 		localWidget.value.bind(SC.Widget.Events.ERROR, () => {
+			stopPing();
 			trackError.value = "An error occurred during playback.";
 			isPlaying.value = false;
 			trackEvent("audio_error", {
@@ -397,6 +420,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+	stopPing();
 	if (localWidget.value && window.SC) {
 		try {
 			// Clean up events

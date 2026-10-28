@@ -34,5 +34,18 @@ export function useAnalytics() {
 		umami?.track(eventName, data);
 	}
 
-	return { track };
+	function trackUmami(eventName: string, params: AnalyticsParams = {}) {
+		if (import.meta.server || !hasAnalyticsConsent()) return;
+
+		const data = Object.fromEntries(
+			Object.entries(params).filter(
+				([, value]) => value !== undefined && value !== null,
+			),
+		);
+
+		const umami = (window as Window & { umami?: UmamiTracker }).umami;
+		umami?.track(eventName, data);
+	}
+
+	return { track, trackUmami };
 }
