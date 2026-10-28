@@ -101,3 +101,8 @@ test("styleList never repeats a value", () => {
 test("manifest hash matches the styles array", () => {
 	assert.equal(computeHash(CUSTOM_STYLES), WORDS_TYPOGRAPHY.hash);
 });
+
+test("the kicker keeps an accessible contrast colour", () => {
+	const kicker = CUSTOM_STYLES.find((style) => style.key === "kicker");
+	assert.equal(kicker.css.color, "#a3145b");
+});

@@ -67,6 +67,7 @@
 			"element": "p",
 			"className": "rt-kicker",
 			"css": {
+				"color": "#a3145b",
 				"font-size": "0.6875rem",
 				"line-height": "1.3",
 				"font-family": "var(--font-text-medium)",
@@ -75,5 +76,5 @@
 			}
 		}
 	],
-	"hash": "sha256:606d4a6fce78056f11dbabd1480900b6f324d16c16a32a30bf0b70ce2477a8af"
+	"hash": "sha256:bfe51bda142b1a0014a3f24cee4c8c07066c23ef77620306bdbf5be55a77f321"
 }
