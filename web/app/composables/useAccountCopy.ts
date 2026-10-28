@@ -15,6 +15,46 @@ export function useAccountCopy() {
 			savedSets: de ? "Gemerkte Sets" : "Saved sets",
 			profile: de ? "Profil" : "Profile",
 			logout: de ? "Abmelden" : "Sign out",
+			email: de ? "E-Mail" : "Email",
+			sendCode: de ? "Code per Mail senden" : "Send code by email",
+			code: de ? "Anmeldecode" : "Sign-in code",
+			verify: de ? "Anmelden" : "Sign in",
+			changeEmail: de ? "Andere E-Mail verwenden" : "Use another email",
+			codeSent: de
+				? "Wir haben einen sechsstelligen Code geschickt. Er ist zehn Minuten gültig."
+				: "We sent a six-digit code. It is valid for ten minutes.",
+			codeFailed: de ? "Code ungültig oder abgelaufen." : "Code invalid or expired.",
+			mailFailed: de
+				? "Anmelde-Mails sind gerade nicht verfügbar. Bitte später erneut."
+				: "Sign-in mail is unavailable right now. Please try again later.",
+			name: de ? "Name" : "Name",
+			language: de ? "Sprache" : "Language",
+			saveChanges: de ? "Speichern" : "Save",
+			saved: de ? "Gespeichert." : "Saved.",
+			avatar: de ? "Profilbild" : "Profile picture",
+			uploadAvatar: de ? "Bild wählen" : "Choose image",
+			removeAvatar: de ? "Bild entfernen" : "Remove picture",
+			exportData: de ? "Meine Daten herunterladen" : "Download my data",
+			deleteAccount: de ? "Konto löschen" : "Delete account",
+			deleteConfirm: de
+				? "Konto wirklich löschen? Listen und gemerkte Sets werden entfernt."
+				: "Delete the account? Lists and saved sets will be removed.",
+			newList: de ? "Neue Liste" : "New list",
+			listName: de ? "Listenname" : "List name",
+			create: de ? "Anlegen" : "Create",
+			rename: de ? "Umbenennen" : "Rename",
+			remove: de ? "Entfernen" : "Remove",
+			delete: de ? "Löschen" : "Delete",
+			emptyList: de ? "Diese Liste ist noch leer." : "This list is still empty.",
+			noLists: de ? "Noch keine eigenen Listen." : "No custom lists yet.",
+			back: de ? "Zurück" : "Back",
+			avatarType: de ? "Nur JPEG, PNG oder WebP." : "Only JPEG, PNG or WebP.",
+			unavailable: de ? "Kontodaten sind gerade nicht erreichbar." : "Account data is unavailable right now.",
+			overview: de ? "Übersicht" : "Overview",
+			manageLists: de ? "Listen verwalten" : "Manage lists",
+			openLists: de ? "Meine Listen" : "My lists",
+			nameTaken: de ? "Diesen Listennamen gibt es schon." : "This list name already exists.",
 		};
 	});
 }
+

@@ -6,6 +6,7 @@ const localePath = useLocalePath();
 
 const mainStore = useMainStore();
 const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
+const copy = useAccountCopy();
 </script>
 
 <template>
@@ -33,6 +34,11 @@ const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 					>
 						{{ item?.title }}
 					</ElementsLink>
+				</li>
+				<li>
+					<NuxtLink :to="localePath('/konto')" class="tag account">
+						{{ copy.account }}
+					</NuxtLink>
 				</li>
 			</ul>
 		</nav>
