@@ -1,16 +1,22 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-
-import { createAccountController } from "../app/stores/accountStore.ts";
 import type { AccountRequest } from "../app/stores/accountStore.ts";
+import { createAccountController } from "../app/stores/accountStore.ts";
 
 function httpError(statusCode: number): Error & { statusCode: number } {
 	return Object.assign(new Error(`http ${statusCode}`), { statusCode });
 }
 
-function recorder(responses: Array<(path: string, options?: Record<string, unknown>) => unknown>) {
+function recorder(
+	responses: Array<
+		(path: string, options?: Record<string, unknown>) => unknown
+	>,
+) {
 	const calls: Array<{ path: string; options?: Record<string, unknown> }> = [];
-	const request: AccountRequest = async <T>(path: string, options?: Record<string, unknown>) => {
+	const request: AccountRequest = async <T>(
+		path: string,
+		options?: Record<string, unknown>,
+	) => {
 		calls.push({ path, options });
 		const handler = responses.shift();
 		if (!handler) throw new Error(`unexpected call ${path}`);
@@ -30,7 +36,9 @@ test("only unknown ids are fetched, in batches of at most 200", async () => {
 
 	await account.loadVisible(ids);
 	assert.equal(calls.length, 3);
-	const sizes = calls.map((call) => (call.path.split("ids=")[1] ?? "").split("%2C").length);
+	const sizes = calls.map(
+		(call) => (call.path.split("ids=")[1] ?? "").split("%2C").length,
+	);
 	assert.deepEqual(sizes, [200, 200, 50]);
 
 	await account.loadVisible(["set-0"]);

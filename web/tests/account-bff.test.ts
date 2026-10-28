@@ -1,18 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-
+import {
+	clientIpFrom,
+	isIp,
+	listenerIpKey,
+} from "../server/utils/listenerClientIp.ts";
+import {
+	copySetCookies,
+	sessionCookieOptions,
+	tokenFromCookieHeader,
+} from "../server/utils/listenerSession.ts";
 import {
 	isAllowedAccountRoute,
 	normalizeAccountPath,
 	originAllowed,
 	upstreamHeaders,
 } from "../server/utils/managerFetch.ts";
-import { clientIpFrom, isIp, listenerIpKey } from "../server/utils/listenerClientIp.ts";
-import {
-	copySetCookies,
-	sessionCookieOptions,
-	tokenFromCookieHeader,
-} from "../server/utils/listenerSession.ts";
 
 const ALLOWED: Array<[string, string]> = [
 	["POST", "auth/request-code"],
@@ -43,7 +46,11 @@ const ALLOWED: Array<[string, string]> = [
 
 test("the BFF exposes exactly the contract routes", () => {
 	for (const [method, path] of ALLOWED) {
-		assert.equal(isAllowedAccountRoute(method, path), true, `${method} ${path}`);
+		assert.equal(
+			isAllowedAccountRoute(method, path),
+			true,
+			`${method} ${path}`,
+		);
 	}
 	for (const [method, path] of [
 		["GET", "auth/verify"],
@@ -57,7 +64,11 @@ test("the BFF exposes exactly the contract routes", () => {
 		["GET", "admin/users"],
 		["GET", "me/../admin"],
 	] as Array<[string, string]>) {
-		assert.equal(isAllowedAccountRoute(method, path), false, `${method} ${path}`);
+		assert.equal(
+			isAllowedAccountRoute(method, path),
+			false,
+			`${method} ${path}`,
+		);
 	}
 });
 
@@ -85,12 +96,24 @@ test("upstream headers carry only the BFF-owned values", () => {
 		"content-type": "application/json",
 		accept: "application/json",
 	});
-	assert.equal(upstreamHeaders({ clientSecret: "secret" }).authorization, undefined);
+	assert.equal(
+		upstreamHeaders({ clientSecret: "secret" }).authorization,
+		undefined,
+	);
 });
 
 test("origins must be on the private allowlist", () => {
-	assert.equal(originAllowed("https://callshopradio.com", "https://callshopradio.com,https://www.callshopradio.com"), true);
-	assert.equal(originAllowed("https://evil.example", "https://callshopradio.com"), false);
+	assert.equal(
+		originAllowed(
+			"https://callshopradio.com",
+			"https://callshopradio.com,https://www.callshopradio.com",
+		),
+		true,
+	);
+	assert.equal(
+		originAllowed("https://evil.example", "https://callshopradio.com"),
+		false,
+	);
 	assert.equal(originAllowed(undefined, "https://callshopradio.com"), false);
 	assert.equal(originAllowed("https://callshopradio.com", ""), false);
 });
@@ -103,11 +126,18 @@ test("the client ip comes from the provider, never from a request header", () =>
 
 	const env = {} as Record<string, string | undefined>;
 	assert.equal(
-		clientIpFrom({ contextIp: "203.0.113.7", headers: { "x-listener-ip-key": "1".repeat(64) }, env }),
+		clientIpFrom({
+			contextIp: "203.0.113.7",
+			headers: { "x-listener-ip-key": "1".repeat(64) },
+			env,
+		}),
 		"203.0.113.7",
 	);
 	assert.equal(
-		clientIpFrom({ headers: { "x-nf-client-connection-ip": "198.51.100.9" }, env }),
+		clientIpFrom({
+			headers: { "x-nf-client-connection-ip": "198.51.100.9" },
+			env,
+		}),
 		null,
 		"header is ignored outside the Netlify runtime",
 	);
@@ -119,12 +149,18 @@ test("the client ip comes from the provider, never from a request header", () =>
 		"198.51.100.9",
 	);
 	assert.equal(
-		clientIpFrom({ headers: {}, env: { NUXT_ACCOUNT_DEV_MODE: "1", NODE_ENV: "production" } }),
+		clientIpFrom({
+			headers: {},
+			env: { NUXT_ACCOUNT_DEV_MODE: "1", NODE_ENV: "production" },
+		}),
 		null,
 		"dev fallback never applies in production",
 	);
 	assert.equal(
-		clientIpFrom({ headers: { "x-listener-dev-ip": "1.2.3.4" }, env: { NUXT_ACCOUNT_DEV_MODE: "1", NODE_ENV: "development" } }),
+		clientIpFrom({
+			headers: { "x-listener-dev-ip": "1.2.3.4" },
+			env: { NUXT_ACCOUNT_DEV_MODE: "1", NODE_ENV: "development" },
+		}),
 		"127.0.0.1",
 		"dev mode ignores caller-supplied values",
 	);
@@ -152,7 +188,10 @@ test("the session cookie is host-only, secure, httponly and lax", () => {
 
 test("only a well-formed listener token is read from the cookie header", () => {
 	const token = `lst_${"a".repeat(43)}`;
-	assert.equal(tokenFromCookieHeader(`a=1; callshop_listener=${token}; b=2`), token);
+	assert.equal(
+		tokenFromCookieHeader(`a=1; callshop_listener=${token}; b=2`),
+		token,
+	);
 	assert.equal(tokenFromCookieHeader(`callshop_listener=short`), null);
 	assert.equal(tokenFromCookieHeader(undefined), null);
 	assert.equal(tokenFromCookieHeader("callshop_session=staff"), null);

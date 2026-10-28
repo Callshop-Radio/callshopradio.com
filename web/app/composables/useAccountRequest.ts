@@ -9,17 +9,28 @@ import { copySetCookies } from "../../server/utils/listenerSession";
  */
 export function useAccountRequest() {
 	const request = useRequestFetch() as unknown as {
-		raw<T>(url: string, options?: Record<string, unknown>): Promise<{ _data: T; headers: Headers }>;
+		raw<T>(
+			url: string,
+			options?: Record<string, unknown>,
+		): Promise<{ _data: T; headers: Headers }>;
 	};
 	const event = import.meta.server ? useRequestEvent() : null;
 
-	return async function accountRequest<T>(path: string, options: Record<string, unknown> = {}): Promise<T> {
-		const response = await request.raw<T>(`/api/account/${String(path).replace(/^\/+/, "")}`, {
-			...options,
-			credentials: "same-origin",
-		});
+	return async function accountRequest<T>(
+		path: string,
+		options: Record<string, unknown> = {},
+	): Promise<T> {
+		const response = await request.raw<T>(
+			`/api/account/${String(path).replace(/^\/+/, "")}`,
+			{
+				...options,
+				credentials: "same-origin",
+			},
+		);
 		if (event) {
-			copySetCookies(response.headers, (value) => appendResponseHeader(event, "set-cookie", value));
+			copySetCookies(response.headers, (value) =>
+				appendResponseHeader(event, "set-cookie", value),
+			);
 		}
 		return response._data as T;
 	};

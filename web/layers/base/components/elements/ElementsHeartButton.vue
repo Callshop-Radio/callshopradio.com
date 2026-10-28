@@ -18,16 +18,24 @@ const busy = ref(false);
 
 const listIds = computed(() => account.saved[props.setId] ?? []);
 const saved = computed(() => props.setId in account.saved);
-const label = computed(() => (saved.value ? copy.value.unsave : copy.value.save));
+const label = computed(() =>
+	saved.value ? copy.value.unsave : copy.value.save,
+);
 
 async function toggle() {
 	if (account.sessionState === "unknown") await account.loadSession();
 	if (account.sessionState !== "authenticated") {
 		// v1 deliberately does not replay the mutation after login.
-		await navigateTo(localePath({ path: "/konto/anmelden", query: { next: route.fullPath } }));
+		await navigateTo(
+			localePath({ path: "/konto/anmelden", query: { next: route.fullPath } }),
+		);
 		return;
 	}
-	if (saved.value && listIds.value.length > 1 && !window.confirm(copy.value.unsaveEverywhere)) {
+	if (
+		saved.value &&
+		listIds.value.length > 1 &&
+		!window.confirm(copy.value.unsaveEverywhere)
+	) {
 		return;
 	}
 

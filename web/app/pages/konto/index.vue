@@ -8,9 +8,11 @@ const request = useAccountRequest();
 const account = useAccountStore();
 const localePath = useLocalePath();
 
-const profile = ref<{ displayName: string | null; email: string | null; counts: { savedSets: number; lists: number } } | null>(
-	null,
-);
+const profile = ref<{
+	displayName: string | null;
+	email: string | null;
+	counts: { savedSets: number; lists: number };
+} | null>(null);
 const state = ref<"loading" | "ready" | "error">("loading");
 
 async function load() {

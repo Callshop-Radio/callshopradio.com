@@ -23,7 +23,9 @@ export function useAccountCopy() {
 			codeSent: de
 				? "Wir haben einen sechsstelligen Code geschickt. Er ist zehn Minuten gültig."
 				: "We sent a six-digit code. It is valid for ten minutes.",
-			codeFailed: de ? "Code ungültig oder abgelaufen." : "Code invalid or expired.",
+			codeFailed: de
+				? "Code ungültig oder abgelaufen."
+				: "Code invalid or expired.",
 			mailFailed: de
 				? "Anmelde-Mails sind gerade nicht verfügbar. Bitte später erneut."
 				: "Sign-in mail is unavailable right now. Please try again later.",
@@ -45,16 +47,21 @@ export function useAccountCopy() {
 			rename: de ? "Umbenennen" : "Rename",
 			remove: de ? "Entfernen" : "Remove",
 			delete: de ? "Löschen" : "Delete",
-			emptyList: de ? "Diese Liste ist noch leer." : "This list is still empty.",
+			emptyList: de
+				? "Diese Liste ist noch leer."
+				: "This list is still empty.",
 			noLists: de ? "Noch keine eigenen Listen." : "No custom lists yet.",
 			back: de ? "Zurück" : "Back",
 			avatarType: de ? "Nur JPEG, PNG oder WebP." : "Only JPEG, PNG or WebP.",
-			unavailable: de ? "Kontodaten sind gerade nicht erreichbar." : "Account data is unavailable right now.",
+			unavailable: de
+				? "Kontodaten sind gerade nicht erreichbar."
+				: "Account data is unavailable right now.",
 			overview: de ? "Übersicht" : "Overview",
 			manageLists: de ? "Listen verwalten" : "Manage lists",
 			openLists: de ? "Meine Listen" : "My lists",
-			nameTaken: de ? "Diesen Listennamen gibt es schon." : "This list name already exists.",
+			nameTaken: de
+				? "Diesen Listennamen gibt es schon."
+				: "This list name already exists.",
 		};
 	});
 }
-

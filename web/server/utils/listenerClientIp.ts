@@ -46,21 +46,36 @@ export function listenerIpKey(ip: string, secret: string): string {
 	return createHmac("sha256", secret).update(ip).digest("hex");
 }
 
-export function listenerClientIp(event: unknown, env = process.env): string | null {
+export function listenerClientIp(
+	event: unknown,
+	env = process.env,
+): string | null {
 	const context = (event as { context?: Record<string, unknown> })?.context;
-	const headers = (event as { node?: { req?: { headers?: Record<string, string | string[]> } } })?.node?.req?.headers;
+	const headers = (
+		event as {
+			node?: { req?: { headers?: Record<string, string | string[]> } };
+		}
+	)?.node?.req?.headers;
 	return clientIpFrom({
-		contextIp: context?.ip ?? (context?.netlify as { ip?: unknown } | undefined)?.ip,
+		contextIp:
+			context?.ip ?? (context?.netlify as { ip?: unknown } | undefined)?.ip,
 		headers: headers ?? {},
 		env,
 	});
 }
 
-export function accountIpKey(event: unknown, secret: string, env = process.env): string | null {
+export function accountIpKey(
+	event: unknown,
+	secret: string,
+	env = process.env,
+): string | null {
 	const ip = listenerClientIp(event, env);
 	return ip ? listenerIpKey(ip, secret) : null;
 }
 
-export function requestHeader(event: unknown, name: string): string | undefined {
+export function requestHeader(
+	event: unknown,
+	name: string,
+): string | undefined {
 	return getHeader(event as never, name) as string | undefined;
 }

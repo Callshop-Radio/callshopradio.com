@@ -23,5 +23,8 @@ test("protocol-relative and absolute urls fall back to the account page", () => 
 	]) {
 		assert.equal(safeNextPath(value), "/konto", String(value));
 	}
-	assert.equal(safeNextPath("//evil.example", "/konto/anmelden"), "/konto/anmelden");
+	assert.equal(
+		safeNextPath("//evil.example", "/konto/anmelden"),
+		"/konto/anmelden",
+	);
 });

@@ -29,10 +29,15 @@ const PATTERN_ROUTES: Array<{ pattern: RegExp; methods: string[] }> = [
 export function normalizeAccountPath(path: string): string {
 	const prefix = "/api/account/";
 	const withoutQuery = String(path ?? "").split("?")[0] ?? "";
-	const rest = withoutQuery.startsWith(prefix) ? withoutQuery.slice(prefix.length) : "";
+	const rest = withoutQuery.startsWith(prefix)
+		? withoutQuery.slice(prefix.length)
+		: "";
 	const trimmed = rest.replace(/\/+$/, "");
 	if (trimmed.length === 0 || trimmed.startsWith("/")) return "";
-	if (trimmed.includes("//") || trimmed.split("/").some((part) => part === ".." || part === ".")) {
+	if (
+		trimmed.includes("//") ||
+		trimmed.split("/").some((part) => part === ".." || part === ".")
+	) {
 		return "";
 	}
 	return trimmed;
@@ -43,7 +48,9 @@ export function isAllowedAccountRoute(method: string, path: string): boolean {
 	const route = path.trim();
 	if (route.length === 0) return false;
 	if (EXACT_ROUTES.has(`${verb} ${route}`)) return true;
-	return PATTERN_ROUTES.some((entry) => entry.methods.includes(verb) && entry.pattern.test(route));
+	return PATTERN_ROUTES.some(
+		(entry) => entry.methods.includes(verb) && entry.pattern.test(route),
+	);
 }
 
 /** Only these headers reach the manager; nothing from the browser is copied. */
@@ -66,11 +73,17 @@ export function upstreamHeaders({
 	};
 	if (token) headers.authorization = `Bearer ${token}`;
 	if (ipKey) headers["x-listener-ip-key"] = ipKey;
-	if (contentType) headers["content-type"] = (contentType.split(";")[0] ?? "").trim().toLowerCase();
+	if (contentType)
+		headers["content-type"] = (contentType.split(";")[0] ?? "")
+			.trim()
+			.toLowerCase();
 	return headers;
 }
 
-export function originAllowed(origin: string | undefined, allowed: string): boolean {
+export function originAllowed(
+	origin: string | undefined,
+	allowed: string,
+): boolean {
 	if (!origin) return false;
 	const list = String(allowed ?? "")
 		.split(",")

@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { copySetCookies, LISTENER_COOKIE } from "../server/utils/listenerSession.ts";
+import {
+	copySetCookies,
+	LISTENER_COOKIE,
+} from "../server/utils/listenerSession.ts";
 
 function headers(...values: string[]): Headers {
 	const instance = new Headers();
@@ -12,7 +15,9 @@ function headers(...values: string[]): Headers {
 test("SSR forwards listener cookie renewals onto the document response", () => {
 	const copied: string[] = [];
 	const count = copySetCookies(
-		headers(`${LISTENER_COOKIE}=lst_${"a".repeat(43)}; Path=/; Max-Age=100; HttpOnly; Secure; SameSite=Lax`),
+		headers(
+			`${LISTENER_COOKIE}=lst_${"a".repeat(43)}; Path=/; Max-Age=100; HttpOnly; Secure; SameSite=Lax`,
+		),
 		(value) => copied.push(value),
 	);
 	assert.equal(count, 1);
@@ -35,6 +40,9 @@ test("SSR copies a deletion but never a staff session cookie", () => {
 
 test("a response without set-cookie forwards nothing", () => {
 	let calls = 0;
-	assert.equal(copySetCookies(headers(), () => (calls += 1)), 0);
+	assert.equal(
+		copySetCookies(headers(), () => (calls += 1)),
+		0,
+	);
 	assert.equal(calls, 0);
 });

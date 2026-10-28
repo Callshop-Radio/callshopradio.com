@@ -51,12 +51,18 @@ async function upload(event: Event) {
 	const input = event.target as HTMLInputElement;
 	const file = input.files?.[0];
 	if (!file) return;
-	const type = ["image/jpeg", "image/png", "image/webp"].includes(file.type) ? file.type : "";
+	const type = ["image/jpeg", "image/png", "image/webp"].includes(file.type)
+		? file.type
+		: "";
 	if (!type) {
 		savedMessage.value = copy.value.avatarType;
 		return;
 	}
-	await request("me/avatar", { method: "PUT", body: file, headers: { "content-type": type } });
+	await request("me/avatar", {
+		method: "PUT",
+		body: file,
+		headers: { "content-type": type },
+	});
 	avatarVersion.value += 1;
 	await load();
 	input.value = "";
@@ -70,7 +76,9 @@ async function removeAvatar() {
 
 async function exportData() {
 	const payload = await request<Record<string, unknown>>("me/export");
-	const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+	const blob = new Blob([JSON.stringify(payload, null, 2)], {
+		type: "application/json",
+	});
 	const link = document.createElement("a");
 	link.href = URL.createObjectURL(blob);
 	link.download = "callshop-konto.json";
@@ -86,7 +94,9 @@ async function removeAccount() {
 }
 
 const avatarSrc = computed(() =>
-	profile.value?.avatarUpdatedAt ? `/api/account/me/avatar?v=${avatarVersion.value}` : "",
+	profile.value?.avatarUpdatedAt
+		? `/api/account/me/avatar?v=${avatarVersion.value}`
+		: "",
 );
 
 onMounted(load);

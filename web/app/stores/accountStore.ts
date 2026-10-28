@@ -1,8 +1,15 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
-export type SessionState = "unknown" | "guest" | "authenticated" | "unavailable";
-export type AccountRequest = <T>(path: string, options?: Record<string, unknown>) => Promise<T>;
+export type SessionState =
+	| "unknown"
+	| "guest"
+	| "authenticated"
+	| "unavailable";
+export type AccountRequest = <T>(
+	path: string,
+	options?: Record<string, unknown>,
+) => Promise<T>;
 
 const BATCH_SIZE = 200;
 
@@ -15,8 +22,15 @@ function chunk<T>(items: T[], size: number): T[][] {
 }
 
 function statusOf(error: unknown): number {
-	const value = (error as { statusCode?: number; status?: number; response?: { status?: number } }) ?? {};
-	return Number(value.statusCode ?? value.status ?? value.response?.status ?? 0);
+	const value =
+		(error as {
+			statusCode?: number;
+			status?: number;
+			response?: { status?: number };
+		}) ?? {};
+	return Number(
+		value.statusCode ?? value.status ?? value.response?.status ?? 0,
+	);
 }
 
 /**
@@ -53,9 +67,9 @@ export function createAccountController(request: AccountRequest) {
 
 	async function loadVisible(ids: string[]): Promise<void> {
 		if (sessionState.value === "guest") return;
-		const unique = [...new Set(ids.filter((id) => typeof id === "string" && id.length > 0))].filter(
-			(id) => !(id in saved.value),
-		);
+		const unique = [
+			...new Set(ids.filter((id) => typeof id === "string" && id.length > 0)),
+		].filter((id) => !(id in saved.value));
 		if (unique.length === 0) return;
 
 		const current = generation.value;
@@ -66,7 +80,8 @@ export function createAccountController(request: AccountRequest) {
 				);
 				if (current !== generation.value) return;
 				saved.value = { ...saved.value, ...(response?.saved ?? {}) };
-				if (sessionState.value === "unknown") sessionState.value = "authenticated";
+				if (sessionState.value === "unknown")
+					sessionState.value = "authenticated";
 			} catch (error) {
 				if (current !== generation.value) return;
 				const status = statusOf(error);
@@ -94,17 +109,25 @@ export function createAccountController(request: AccountRequest) {
 
 			try {
 				if (wasSaved) {
-					await request(`me/saved/${encodeURIComponent(key)}`, { method: "DELETE" });
+					await request(`me/saved/${encodeURIComponent(key)}`, {
+						method: "DELETE",
+					});
 					if (current !== generation.value) return;
 					const next = { ...saved.value };
 					delete next[key];
 					saved.value = next;
 				} else {
-					const response = await request<{ listId: string }>(`me/saved/${encodeURIComponent(key)}`, {
-						method: "PUT",
-					});
+					const response = await request<{ listId: string }>(
+						`me/saved/${encodeURIComponent(key)}`,
+						{
+							method: "PUT",
+						},
+					);
 					if (current !== generation.value) return;
-					saved.value = { ...saved.value, [key]: response?.listId ? [response.listId] : [] };
+					saved.value = {
+						...saved.value,
+						[key]: response?.listId ? [response.listId] : [],
+					};
 				}
 			} catch (error) {
 				if (current !== generation.value) return;

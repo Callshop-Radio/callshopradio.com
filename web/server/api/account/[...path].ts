@@ -1,3 +1,4 @@
+import type { H3Event } from "h3";
 import {
 	appendResponseHeader,
 	createError,
@@ -7,10 +8,12 @@ import {
 	setHeader,
 	setResponseStatus,
 } from "h3";
-import type { H3Event } from "h3";
 
 import { accountIpKey } from "../../utils/listenerClientIp";
-import { LISTENER_COOKIE, tokenFromCookieHeader } from "../../utils/listenerSession";
+import {
+	LISTENER_COOKIE,
+	tokenFromCookieHeader,
+} from "../../utils/listenerSession";
 import {
 	isAllowedAccountRoute,
 	normalizeAccountPath,
@@ -40,10 +43,19 @@ export default defineEventHandler(async (event) => {
 	const base = String(config.managerBaseUrl ?? "").replace(/\/+$/, "");
 	const clientSecret = String(config.accountClientSecret ?? "");
 	if (!base || !clientSecret) {
-		throw createError({ statusCode: 503, statusMessage: "account_unavailable" });
+		throw createError({
+			statusCode: 503,
+			statusMessage: "account_unavailable",
+		});
 	}
 
-	if (!SAFE_METHODS.has(method) && !originAllowed(getHeader(event, "origin"), String(config.accountAllowedOrigins ?? ""))) {
+	if (
+		!SAFE_METHODS.has(method) &&
+		!originAllowed(
+			getHeader(event, "origin"),
+			String(config.accountAllowedOrigins ?? ""),
+		)
+	) {
 		throw createError({ statusCode: 403, statusMessage: "origin_rejected" });
 	}
 
@@ -59,11 +71,16 @@ export default defineEventHandler(async (event) => {
 	if (isLogin) {
 		ipKey = accountIpKey(event, String(config.accountIpSecret ?? ""));
 		if (!ipKey) {
-			throw createError({ statusCode: 503, statusMessage: "client_ip_unavailable" });
+			throw createError({
+				statusCode: 503,
+				statusMessage: "client_ip_unavailable",
+			});
 		}
 	}
 
-	const body = SAFE_METHODS.has(method) ? undefined : await readRawBody(event, false);
+	const body = SAFE_METHODS.has(method)
+		? undefined
+		: await readRawBody(event, false);
 	const queryIndex = String(event.path ?? "").indexOf("?");
 	const search = queryIndex === -1 ? "" : String(event.path).slice(queryIndex);
 
@@ -87,7 +104,10 @@ export default defineEventHandler(async (event) => {
 			return { revoked: false };
 		}
 		// Keep the session: a manager outage is not a logout.
-		throw createError({ statusCode: 502, statusMessage: "upstream_unavailable" });
+		throw createError({
+			statusCode: 502,
+			statusMessage: "upstream_unavailable",
+		});
 	}
 
 	const expiresAt = response.headers.get("x-listener-expires-at");
@@ -127,7 +147,10 @@ export default defineEventHandler(async (event) => {
 });
 
 function writeCookie(event: H3Event, token: string, expiresAt: Date) {
-	const maxAge = Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000));
+	const maxAge = Math.max(
+		0,
+		Math.floor((expiresAt.getTime() - Date.now()) / 1000),
+	);
 	appendResponseHeader(
 		event,
 		"set-cookie",

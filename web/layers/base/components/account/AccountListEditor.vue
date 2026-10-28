@@ -6,8 +6,19 @@ const copy = useAccountCopy();
 const request = useAccountRequest();
 const localePath = useLocalePath();
 
-type Item = { setId: string; position: number; note: string | null; addedAt: string };
-type List = { id: string; name: string; description: string | null; isDefault: boolean; itemCount: number };
+type Item = {
+	setId: string;
+	position: number;
+	note: string | null;
+	addedAt: string;
+};
+type List = {
+	id: string;
+	name: string;
+	description: string | null;
+	isDefault: boolean;
+	itemCount: number;
+};
 
 const list = ref<List | null>(null);
 const items = ref<Item[]>([]);
@@ -17,7 +28,9 @@ const message = ref("");
 
 async function load() {
 	try {
-		const response = await request<{ list: List; items: Item[] }>(`lists/${encodeURIComponent(props.listId)}`);
+		const response = await request<{ list: List; items: Item[] }>(
+			`lists/${encodeURIComponent(props.listId)}`,
+		);
 		list.value = response.list;
 		items.value = response.items;
 		name.value = response.list.name;
@@ -37,15 +50,20 @@ async function rename() {
 }
 
 async function removeItem(setId: string) {
-	await request(`lists/${encodeURIComponent(props.listId)}/items/${encodeURIComponent(setId)}`, {
-		method: "DELETE",
-	});
+	await request(
+		`lists/${encodeURIComponent(props.listId)}/items/${encodeURIComponent(setId)}`,
+		{
+			method: "DELETE",
+		},
+	);
 	await load();
 }
 
 async function removeList() {
 	if (!window.confirm(copy.value.deleteConfirm)) return;
-	await request(`lists/${encodeURIComponent(props.listId)}`, { method: "DELETE" });
+	await request(`lists/${encodeURIComponent(props.listId)}`, {
+		method: "DELETE",
+	});
 	await navigateTo(localePath("/konto/listen"));
 }
 
