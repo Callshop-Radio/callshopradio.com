@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+	ACCOUNT_COOKIE,
 	copySetCookies,
-	LISTENER_COOKIE,
-} from "../server/utils/listenerSession.ts";
+} from "../server/utils/accountSession.ts";
 
 function headers(...values: string[]): Headers {
 	const instance = new Headers();
@@ -12,16 +12,16 @@ function headers(...values: string[]): Headers {
 	return instance;
 }
 
-test("SSR forwards listener cookie renewals onto the document response", () => {
+test("SSR forwards account cookie renewals onto the document response", () => {
 	const copied: string[] = [];
 	const count = copySetCookies(
 		headers(
-			`${LISTENER_COOKIE}=lst_${"a".repeat(43)}; Path=/; Max-Age=100; HttpOnly; Secure; SameSite=Lax`,
+			`${ACCOUNT_COOKIE}=usr_${"a".repeat(43)}; Path=/; Max-Age=100; HttpOnly; Secure; SameSite=Lax`,
 		),
 		(value) => copied.push(value),
 	);
 	assert.equal(count, 1);
-	assert.match(copied[0], /callshop_listener=lst_/);
+	assert.match(copied[0] ?? "", /callshop_user=usr_/);
 });
 
 test("SSR copies a deletion but never a staff session cookie", () => {
@@ -29,12 +29,12 @@ test("SSR copies a deletion but never a staff session cookie", () => {
 	const count = copySetCookies(
 		headers(
 			"callshop_session=staff; Path=/; HttpOnly",
-			`${LISTENER_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`,
+			`${ACCOUNT_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`,
 		),
 		(value) => copied.push(value),
 	);
 	assert.equal(count, 1);
-	assert.match(copied[0], /Max-Age=0/);
+	assert.match(copied[0] ?? "", /Max-Age=0/);
 	assert.ok(copied.every((value) => !value.startsWith("callshop_session=")));
 });
 

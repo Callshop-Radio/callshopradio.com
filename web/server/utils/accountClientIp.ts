@@ -42,11 +42,11 @@ export function clientIpFrom({
 	return null;
 }
 
-export function listenerIpKey(ip: string, secret: string): string {
+export function accountIpKeyFor(ip: string, secret: string): string {
 	return createHmac("sha256", secret).update(ip).digest("hex");
 }
 
-export function listenerClientIp(
+export function accountClientIp(
 	event: unknown,
 	env = process.env,
 ): string | null {
@@ -69,8 +69,8 @@ export function accountIpKey(
 	secret: string,
 	env = process.env,
 ): string | null {
-	const ip = listenerClientIp(event, env);
-	return ip ? listenerIpKey(ip, secret) : null;
+	const ip = accountClientIp(event, env);
+	return ip ? accountIpKeyFor(ip, secret) : null;
 }
 
 export function requestHeader(

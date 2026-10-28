@@ -1,6 +1,6 @@
 import { appendResponseHeader, getRequestHeader } from "h3";
 
-import { copySetCookies } from "../../server/utils/listenerSession";
+import { copySetCookies } from "../../server/utils/accountSession";
 
 type RawResponse<T> = {
 	_data: T;
@@ -10,7 +10,10 @@ type RawResponse<T> = {
 };
 
 type RawFetch = {
-	raw<T>(url: string, options?: Record<string, unknown>): Promise<RawResponse<T>>;
+	raw<T>(
+		url: string,
+		options?: Record<string, unknown>,
+	): Promise<RawResponse<T>>;
 };
 
 /**
@@ -30,14 +33,22 @@ export function useAccountRequest() {
 		const url = `/api/account/${String(path).replace(/^\/+/, "")}`;
 		const request = $fetch as unknown as RawFetch;
 
-		const response = await request.raw<T>(import.meta.server ? `${origin}${url}` : url, {
-			...options,
-			credentials: "same-origin",
-			ignoreResponseError: true,
-			...(event
-				? { headers: { ...(options.headers as Record<string, string>), cookie: getRequestHeader(event, "cookie") ?? "" } }
-				: {}),
-		});
+		const response = await request.raw<T>(
+			import.meta.server ? `${origin}${url}` : url,
+			{
+				...options,
+				credentials: "same-origin",
+				ignoreResponseError: true,
+				...(event
+					? {
+							headers: {
+								...(options.headers as Record<string, string>),
+								cookie: getRequestHeader(event, "cookie") ?? "",
+							},
+						}
+					: {}),
+			},
+		);
 
 		if (event) {
 			copySetCookies(response.headers, (value) =>
@@ -46,10 +57,13 @@ export function useAccountRequest() {
 		}
 
 		if (!response.ok) {
-			throw Object.assign(new Error(`account request failed: ${response.status}`), {
-				statusCode: response.status,
-				data: response._data,
-			});
+			throw Object.assign(
+				new Error(`account request failed: ${response.status}`),
+				{
+					statusCode: response.status,
+					data: response._data,
+				},
+			);
 		}
 
 		return response._data as T;

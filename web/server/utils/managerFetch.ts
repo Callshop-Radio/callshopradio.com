@@ -2,6 +2,8 @@ const EXACT_ROUTES = new Set([
 	"POST auth/request-code",
 	"POST auth/verify",
 	"POST auth/logout",
+	"POST invites/check",
+	"POST invites/accept",
 	"GET status",
 	"GET me",
 	"PATCH me",
@@ -10,6 +12,9 @@ const EXACT_ROUTES = new Set([
 	"GET me/avatar",
 	"PUT me/avatar",
 	"DELETE me/avatar",
+	"POST me/2fa/confirm",
+	"GET me/live",
+	"POST me/live/token",
 	"GET me/saved",
 	"GET me/saved-ids",
 	"GET lists",
@@ -68,11 +73,11 @@ export function upstreamHeaders({
 	accept?: string;
 }): Record<string, string> {
 	const headers: Record<string, string> = {
-		"x-listener-client": clientSecret,
+		"x-site-client": clientSecret,
 		accept: accept && accept.startsWith("image/") ? accept : "application/json",
 	};
 	if (token) headers.authorization = `Bearer ${token}`;
-	if (ipKey) headers["x-listener-ip-key"] = ipKey;
+	if (ipKey) headers["x-site-ip-key"] = ipKey;
 	if (contentType)
 		headers["content-type"] = (contentType.split(";")[0] ?? "")
 			.trim()

@@ -10,11 +10,11 @@ import {
 	setResponseStatus,
 } from "h3";
 
-import { accountIpKey } from "../../utils/listenerClientIp";
+import { accountIpKey } from "../../utils/accountClientIp";
 import {
-	LISTENER_COOKIE,
+	ACCOUNT_COOKIE,
 	tokenFromCookieHeader,
-} from "../../utils/listenerSession";
+} from "../../utils/accountSession";
 import {
 	isAllowedAccountRoute,
 	normalizeAccountPath,
@@ -110,8 +110,13 @@ export default defineEventHandler(async (event) => {
 
 	const token = tokenFromCookieHeader(getHeader(event, "cookie"));
 	const isLogin = path.startsWith("auth/");
-	const needsIp = path === "auth/request-code" || path === "auth/verify";
-	const isPublic = isLogin || path === "status";
+	const isInvite = path === "invites/check" || path === "invites/accept";
+	const needsIp =
+		path === "auth/request-code" ||
+		path === "auth/verify" ||
+		path === "invites/check" ||
+		path === "invites/accept";
+	const isPublic = isLogin || isInvite || path === "status";
 
 	if (!isPublic && !token) {
 		throw createError({ statusCode: 401, statusMessage: "unauthenticated" });
@@ -136,7 +141,7 @@ export default defineEventHandler(async (event) => {
 
 	let response: Response;
 	try {
-		response = await fetch(`${base}/api/listener/v1/${path}${search}`, {
+		response = await fetch(`${base}/api/site/v1/${path}${search}`, {
 			method,
 			headers: upstreamHeaders({
 				token,
@@ -160,7 +165,7 @@ export default defineEventHandler(async (event) => {
 		});
 	}
 
-	const expiresAt = response.headers.get("x-listener-expires-at");
+	const expiresAt = response.headers.get("x-user-expires-at");
 	if (token && expiresAt) {
 		writeCookie(event, token, new Date(expiresAt));
 	}
@@ -190,6 +195,12 @@ export default defineEventHandler(async (event) => {
 			writeCookie(event, data.token, new Date(String(data.expiresAt)));
 			delete data.token;
 		}
+		if (path === "invites/accept" && response.ok && data?.token) {
+			// The invite proves mailbox control, so the manager hands out a
+			// normal website session for the two-factor step.
+			writeCookie(event, data.token, new Date(String(data.expiresAt)));
+			delete data.token;
+		}
 		return data;
 	}
 
@@ -204,7 +215,7 @@ function writeCookie(event: H3Event, token: string, expiresAt: Date) {
 	appendResponseHeader(
 		event,
 		"set-cookie",
-		`${LISTENER_COOKIE}=${encodeURIComponent(token)}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Lax`,
+		`${ACCOUNT_COOKIE}=${encodeURIComponent(token)}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Lax`,
 	);
 }
 
@@ -212,6 +223,6 @@ function clearCookie(event: H3Event) {
 	appendResponseHeader(
 		event,
 		"set-cookie",
-		`${LISTENER_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`,
+		`${ACCOUNT_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`,
 	);
 }

@@ -1,6 +1,6 @@
-export const LISTENER_COOKIE = "callshop_listener";
+export const ACCOUNT_COOKIE = "callshop_user";
 
-const TOKEN_SHAPE = /^lst_[A-Za-z0-9_-]{43}$/;
+const TOKEN_SHAPE = /^usr_[A-Za-z0-9_-]{43}$/;
 
 export function tokenFromCookieHeader(
 	cookieHeader: string | undefined,
@@ -9,7 +9,7 @@ export function tokenFromCookieHeader(
 	for (const part of cookieHeader.split(";")) {
 		const index = part.indexOf("=");
 		if (index === -1) continue;
-		if (part.slice(0, index).trim() !== LISTENER_COOKIE) continue;
+		if (part.slice(0, index).trim() !== ACCOUNT_COOKIE) continue;
 		const value = decodeURIComponent(part.slice(index + 1).trim());
 		return TOKEN_SHAPE.test(value) ? value : null;
 	}
@@ -43,10 +43,7 @@ export function copySetCookies(
 			: [];
 	let copied = 0;
 	for (const value of values) {
-		if (
-			value.includes(`${LISTENER_COOKIE}=`) ||
-			value.startsWith("callshop_listener=")
-		) {
+		if (value.includes(`${ACCOUNT_COOKIE}=`)) {
 			append(value);
 			copied += 1;
 		}

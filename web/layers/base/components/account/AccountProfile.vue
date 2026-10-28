@@ -7,9 +7,10 @@ const account = useAccountStore();
 const localePath = useLocalePath();
 
 type Profile = {
-	id: string;
+	id: number;
 	email: string | null;
 	displayName: string | null;
+	role: string;
 	locale: "de" | "en";
 	avatarUpdatedAt: string | null;
 	counts: { savedSets: number; lists: number };
@@ -23,10 +24,10 @@ const avatarVersion = ref(0);
 
 async function load() {
 	try {
-		const response = await request<{ listener: Profile }>("me");
-		profile.value = response.listener;
-		form.displayName = response.listener.displayName ?? "";
-		form.locale = response.listener.locale;
+		const response = await request<{ user: Profile }>("me");
+		profile.value = response.user;
+		form.displayName = response.user.displayName ?? "";
+		form.locale = response.user.locale;
 		state.value = "ready";
 	} catch {
 		state.value = "error";
@@ -36,11 +37,11 @@ async function load() {
 async function save() {
 	savedMessage.value = "";
 	try {
-		const response = await request<{ listener: Profile }>("me", {
+		const response = await request<{ user: Profile }>("me", {
 			method: "PATCH",
 			body: { displayName: form.displayName || null, locale: form.locale },
 		});
-		profile.value = response.listener;
+		profile.value = response.user;
 		savedMessage.value = copy.value.saved;
 	} catch {
 		savedMessage.value = copy.value.codeFailed;

@@ -121,7 +121,7 @@ test("a late response after reset cannot restore old data", async () => {
 test("loading the session distinguishes guest, member and outage", async () => {
 	const { request } = recorder([
 		() => Promise.reject(httpError(401)),
-		() => ({ listener: {} }),
+		() => ({ user: {} }),
 		() => Promise.reject(httpError(502)),
 	]);
 	const account = createAccountController(request);

@@ -76,6 +76,45 @@ export function useAccountCopy() {
 				: "Signed out locally, but the server could not revoke the session.",
 			addToList: de ? "Zu Liste hinzufügen" : "Add to list",
 			add: de ? "Hinzufügen" : "Add",
+			role: de ? "Rolle" : "Role",
+			inviteTitle: de ? "Einladung" : "Invitation",
+			inviteIntro: de
+				? "Du wurdest in den Show Manager eingeladen. Setze zuerst ein Passwort."
+				: "You have been invited to the Show Manager. Set a password first.",
+			inviteChecking: de
+				? "Einladung wird geprüft …"
+				: "Checking the invitation …",
+			inviteInvalid: de
+				? "Diese Einladung ist ungültig, abgelaufen oder schon benutzt."
+				: "This invitation is invalid, expired or already used.",
+			invitePassword: de ? "Neues Passwort" : "New password",
+			invitePasswordHint: de
+				? "Mindestens 12 Zeichen. Es gibt keine weiteren Regeln."
+				: "At least 12 characters. There are no further rules.",
+			invitePasswordTooShort: de
+				? "Das Passwort braucht mindestens 12 Zeichen."
+				: "The password needs at least 12 characters.",
+			inviteAccept: de ? "Passwort speichern" : "Save password",
+			inviteTwoFactorTitle: de ? "Zwei-Faktor einrichten" : "Set up two-factor",
+			inviteTwoFactorIntro: de
+				? "Trage diesen Schlüssel in deiner Authenticator-App ein und bestätige den sechsstelligen Code."
+				: "Add this key to your authenticator app and confirm the six-digit code.",
+			inviteSecret: de ? "Schlüssel" : "Key",
+			inviteOpenApp: de ? "In der App öffnen" : "Open in the app",
+			inviteCode: de ? "Code aus der App" : "Code from the app",
+			inviteConfirm: de ? "Bestätigen" : "Confirm",
+			inviteCodeFailed: de
+				? "Der Code stimmt nicht. Uhrzeit der App prüfen und erneut versuchen."
+				: "The code is wrong. Check the app's clock and try again.",
+			inviteDone: de ? "Zwei-Faktor ist aktiv" : "Two-factor is active",
+			inviteDoneIntro: de
+				? "Speichere die Wiederherstellungscodes. Sie werden nur einmal angezeigt."
+				: "Save the recovery codes. They are shown only once.",
+			inviteRecoveryCodes: de ? "Wiederherstellungscodes" : "Recovery codes",
+			inviteManagerLogin: de
+				? "Melde dich jetzt im Show Manager mit Passwort und Zwei-Faktor an."
+				: "Now sign in to the Show Manager with your password and two-factor code.",
+			inviteGoAccount: de ? "Zum Konto" : "Go to the account",
 		};
 	});
 }
