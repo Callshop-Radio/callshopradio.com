@@ -21,7 +21,8 @@ defineProps<{ title: string; subtitle?: string }>();
 }
 
 .account-page__inner {
-	width: 100%;
+	width: var(--page-max-width);
+	max-width: 100%;
 	margin: 0;
 	display: grid;
 	gap: 1.75rem;
