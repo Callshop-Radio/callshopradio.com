@@ -57,6 +57,7 @@ const togglePlayerVisibility = () => {
 				<SiteSearchButton />
 				<SiteDiscordButton v-if="mainStore?.siteNav?.discordLink" />
 				<SiteScheduleButton v-if="mainStore?.siteNav?.schedulePage" />
+				<SiteAccountButton />
 				<SiteMenuButton />
 			</div>
 		</section>

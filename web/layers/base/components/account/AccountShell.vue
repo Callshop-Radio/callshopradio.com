@@ -17,12 +17,12 @@ defineProps<{ title: string; subtitle?: string }>();
 <style scoped>
 .account-page {
 	width: 100%;
-	padding: clamp(96px, 14vh, 160px) 1.25rem 4rem;
+	padding: clamp(96px, 14vh, 160px) 0 4rem;
 }
 
 .account-page__inner {
-	width: min(760px, 100%);
-	margin: 0 auto;
+	width: 100%;
+	margin: 0;
 	display: grid;
 	gap: 1.75rem;
 }
