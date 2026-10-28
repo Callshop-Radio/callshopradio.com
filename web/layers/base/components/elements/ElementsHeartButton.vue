@@ -15,6 +15,7 @@ const copy = useAccountCopy();
 const route = useRoute();
 const localePath = useLocalePath();
 const busy = ref(false);
+const { track } = useAccountTracking();
 
 const listIds = computed(() => account.saved[props.setId] ?? []);
 const saved = computed(() => props.setId in account.saved);
@@ -45,10 +46,17 @@ async function toggle() {
 	}
 
 	busy.value = true;
+	const wasSaved = saved.value;
 	try {
 		await account.toggle(props.setId);
 	} finally {
 		busy.value = false;
+	}
+	if (saved.value !== wasSaved) {
+		track(saved.value ? "set-saved" : "set-unsaved", {
+			setId: props.setId,
+			source: "heart",
+		});
 	}
 }
 </script>

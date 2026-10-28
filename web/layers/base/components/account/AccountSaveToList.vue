@@ -10,6 +10,7 @@ type List = { id: string; name: string; isDefault: boolean };
 const lists = ref<List[]>([]);
 const selected = ref("");
 const message = ref("");
+const { track } = useAccountTracking();
 
 onMounted(async () => {
 	if (account.sessionState === "unknown") await account.loadSession();
@@ -32,6 +33,11 @@ async function add() {
 			body: { setId: props.setId },
 		});
 		await account.refresh([props.setId]);
+		track("set-saved", {
+			setId: props.setId,
+			source: "list",
+			listId: selected.value,
+		});
 		message.value = copy.value.saved;
 	} catch {
 		message.value = copy.value.unavailable;
