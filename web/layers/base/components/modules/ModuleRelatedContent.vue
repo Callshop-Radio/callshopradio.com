@@ -363,19 +363,11 @@ onMounted(() => {
 						<!-- Play button for sets -->
 						<button
 							v-if="type === 'sets' && item?.soundcloud"
-							class="play-button"
+							class="play-button" type="button"
 							@click.prevent="playTrack(item)"
 						>
 							<span class="sr-only">Play</span>
-							<svg
-								width="9"
-								height="12"
-								viewBox="0 0 9 12"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path d="M9 6L0 11.1962L0 0.803847L9 6Z" fill="currentColor" />
-							</svg>
+							<img src="/icons/play-button.svg" alt="" aria-hidden="true" width="65" height="65" />
 						</button>
 					</section>
 

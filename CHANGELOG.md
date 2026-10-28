@@ -116,6 +116,30 @@ deployed yet.
   `100vw` default, and the infinite feed’s set images still use the single
   `w=750` URL.
 
+#### Branded play button across the site
+
+- **Fix:** Replaced every custom inline 9×12 play triangle with the supplied
+  `public/icons/play-button.svg` (65×65 light-grey circle + black triangle) in
+  the four card components, the four hero/intro components, and both header
+  stream buttons.
+- **Styling:** `.play-button` is now transparent with zero padding; its image
+  fills the button, uses `object-fit: contain`, and scales to `1.05` on hover.
+  `prefers-reduced-motion` disables that scale. The Plyr video overlay uses the
+  same asset at `4rem` (`3rem` ≤900px), with its inner SVG hidden.
+- **Accessibility:** The four card buttons gained `type="button"`; both header
+  stream buttons have dynamic `aria-label` / `aria-pressed`; the existing
+  `sr-only` play labels remain. Pause icons and offline styling are unchanged
+  (stream 2 stays greyed out).
+- **Verified:** `/shows` has 19 play buttons, all pointing at
+  `/icons/play-button.svg`, with **0** inline play SVGs; hero buttons measure
+  `64/55/47/44px`, grid cards `17px`, all with transparent background and
+  `padding: 0`. `/shows/beat-the-rich` has 9/9 related buttons on the asset.
+  Header stream images are `13×13` (stream 2 scales to `8×8` while offline) and
+  expose `Play stream 1/2`. A synthetic `.plyr__control--overlaid` resolves to
+  `64×64`, the asset background, radius `100px`, inner SVG `display:none`.
+- **Known limitation:** The SoundCloud iframe keeps its native play button; it
+  cannot be replaced from the host page.
+
 #### Archive heroes: full-width cover flow
 
 - **Symptom:** The cover flow on `/shows`, `/pool` and `/words` was capped at
@@ -581,6 +605,8 @@ web/app/pages/shows/index.vue
 web/app/pages/words/index.vue
 web/app/stores/mainStore.ts
 web/layers/base/assets/styles/base/layout.postcss
+web/layers/base/assets/styles/modules/main.postcss
+web/public/icons/play-button.svg (new)
 web/layers/base/components/elements/ElementsContentLink.vue
 web/layers/base/components/media/MediaImage.vue
 web/layers/base/components/media/MusicController.vue
@@ -589,7 +615,10 @@ web/layers/base/components/modules/GridDensityControl.vue (new)
 web/layers/base/components/modules/ModuleContentGrid.vue
 web/layers/base/components/modules/intro/ModuleIntroCoverFlow.vue
 web/layers/base/components/modules/intro/set/ModuleIntroSet.vue
+web/layers/base/components/modules/intro/set/ModuleIntroSetDetailPage.vue
 web/layers/base/components/modules/ModuleContentTeaser.vue
+web/layers/base/components/modules/ModuleHeroEntry.vue
+web/layers/base/components/modules/ModuleHeroEntrySolo.vue
 web/layers/base/components/modules/ModuleHeroSlider.vue
 web/layers/base/components/modules/ModuleRelatedContent.vue
 web/layers/base/components/modules/intro/article/ModuleIntroArticle.vue

@@ -680,7 +680,11 @@ onBeforeUnmount(() => {
 				@click="togglePlay1"
 			>
 				<h2>1</h2>
-				<button>
+				<button
+					type="button"
+					:aria-label="isPlaying1 ? 'Pause stream 1' : 'Play stream 1'"
+					:aria-pressed="isPlaying1"
+				>
 					<div v-if="isLoading1" class="loading-indicator">
 						<span class="dot"/>
 						<span class="dot"/>
@@ -701,20 +705,15 @@ onBeforeUnmount(() => {
 							width="3"
 							height="10" />
 					</svg>
-					<svg
+					<img
 						v-else
 						class="play"
-						width="9"
-						height="12"
-						viewBox="0 0 9 12"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							d="M9 6L-4.89399e-07 11.1962L-3.51373e-08 0.803847L9 6Z"
-							fill="black"
-						/>
-					</svg>
+						src="/icons/play-button.svg"
+						alt=""
+						aria-hidden="true"
+						width="65"
+						height="65"
+					/>
 				</button>
 				<p class="track-name">{{ getCurrentName1 }}</p>
 				<p
@@ -823,7 +822,11 @@ onBeforeUnmount(() => {
 				@click="togglePlay2"
 			>
 				<h2>2</h2>
-				<button>
+				<button
+					type="button"
+					:aria-label="isPlaying2 ? 'Pause stream 2' : 'Play stream 2'"
+					:aria-pressed="isPlaying2"
+				>
 					<div v-if="isLoading2" class="loading-indicator">
 						<span class="dot"/>
 						<span class="dot"/>
@@ -848,20 +851,15 @@ onBeforeUnmount(() => {
 							height="10"
 							fill="black" />
 					</svg>
-					<svg
+					<img
 						v-else
 						class="play"
-						width="9"
-						height="12"
-						viewBox="0 0 9 12"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							d="M9 6L-4.89399e-07 11.1962L-3.51373e-08 0.803847L9 6Z"
-							fill="black"
-						/>
-					</svg>
+						src="/icons/play-button.svg"
+						alt=""
+						aria-hidden="true"
+						width="65"
+						height="65"
+					/>
 				</button>
 				<p class="track-name">{{ getCurrentName2 }}</p>
 				<p
@@ -1017,6 +1015,11 @@ onBeforeUnmount(() => {
             }
           }
         }
+
+        .play {
+          opacity: 0.5;
+          filter: grayscale(1);
+        }
       }
     }
     button {
@@ -1034,6 +1037,12 @@ onBeforeUnmount(() => {
         path {
           fill: var(--color-text);
         }
+      }
+
+      .play {
+        display: block;
+        width: var(--base-font-size);
+        height: var(--base-font-size);
       }
 
       .loading-indicator {

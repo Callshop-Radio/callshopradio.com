@@ -91,19 +91,7 @@ onMounted(() => {
 					type="button"
 					@click="playTrack(set)"
 				>
-					<svg
-						width="16"
-						height="18"
-						viewBox="0 0 9 12"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-						aria-hidden="true"
-					>
-						<path
-							d="M9 6L-4.89399e-07 11.1962L-3.51373e-08 0.803847L9 6Z"
-							fill="currentColor"
-						/>
-					</svg>
+					<img src="/icons/play-button.svg" alt="" aria-hidden="true" width="65" height="65" />
 				</button>
 
 				<div class="set-info-container">
