@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 import type { SET_QUERY_RESULT } from "~~/types/sanity.types.gen";
@@ -12,7 +12,7 @@ const { mainRef: setMainRef, computedHeight: computedSetMainHeight } =
 	useDetailHeightSync();
 
 // computedSetMainHeight is a px number on desktop but the string "100%" below
-// 900px — branch like the pool page so the unit is only appended to numbers
+// 900px â€” branch like the pool page so the unit is only appended to numbers
 // (otherwise mobile renders the invalid "100%px").
 const setDetailsStyle = computed(() => {
 	const h = computedSetMainHeight.value;
@@ -113,15 +113,23 @@ onMounted(() => {
 					<div class="set-header">
 						<!-- Date -->
 						<div class="set-meta">
-							<h3 v-if="set?.datetime" class="set-date">
-								{{ formatDate(set.datetime) }}
-							</h3>
-							<h3 v-else-if="set?._updatedAt" class="set-date">
-								{{ formatDate(set._updatedAt) }}
-							</h3>
-							<h3 v-else-if="set?.title" class="set-date">
-								{{ set.title }}
-							</h3>
+							<div class="set-date-row">
+								<h3 v-if="set?.datetime" class="set-date">
+									{{ formatDate(set.datetime) }}
+								</h3>
+								<h3 v-else-if="set?._updatedAt" class="set-date">
+									{{ formatDate(set._updatedAt) }}
+								</h3>
+								<h3 v-else-if="set?.title" class="set-date">
+									{{ set.title }}
+								</h3>
+								<ElementsHeartButton
+									v-if="set?._id"
+									:set-id="set._id"
+									variant="inline"
+									class="set-heart"
+								/>
+							</div>
 						</div>
 						<div class="set-show-title">
 							<ElementsContentLink
@@ -154,17 +162,6 @@ onMounted(() => {
 								</h3>
 							</div>
 						</div>
-						<ElementsHeartButton
-							v-if="set?._id"
-							:set-id="set._id"
-							variant="inline"
-							class="set-heart"
-						/>
-						<AccountSaveToList
-							v-if="set?._id"
-							:set-id="set._id"
-							class="set-save-to-list"
-						/>
 					</div>
 					<div v-if="getItemNonCityTags(set).length > 0" class="set-tags tags">
 						<button
@@ -389,6 +386,13 @@ onMounted(() => {
         display: flex;
         justify-content: space-between;
         align-items: center;
+
+        .set-date-row {
+          display: flex;
+          align-items: center;
+          gap: var(--small-padding, 0.5rem);
+          min-width: 0;
+        }
 
         .set-date {
           font-size: var(--small-font-size);
