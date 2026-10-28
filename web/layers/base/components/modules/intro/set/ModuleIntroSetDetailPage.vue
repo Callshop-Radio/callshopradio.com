@@ -27,6 +27,7 @@ const props = defineProps<{
 
 // Store
 const mainStore = useMainStore();
+const account = useAccountStore();
 
 // Description fallback. The two-column card collapses when the right column is
 // empty, so a set with neither show nor episode copy must still render
@@ -55,6 +56,7 @@ function getItemNonCityTags(item: SetDetail) {
 // Lifecycle hooks
 onMounted(() => {
 	loadArtworkUrl();
+	if (props.set?._id) account.loadVisible([props.set._id]);
 });
 </script>
 
@@ -152,6 +154,12 @@ onMounted(() => {
 								</h3>
 							</div>
 						</div>
+						<ElementsHeartButton
+							v-if="set?._id"
+							:set-id="set._id"
+							variant="inline"
+							class="set-heart"
+						/>
 					</div>
 					<div v-if="getItemNonCityTags(set).length > 0" class="set-tags tags">
 						<button

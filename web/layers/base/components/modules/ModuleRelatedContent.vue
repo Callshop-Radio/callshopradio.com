@@ -64,6 +64,21 @@ const props = defineProps({
 	},
 });
 
+// Personalised hearts are client-only: the public HTML stays identical for
+// every visitor and is safe to cache.
+const account = useAccountStore();
+watch(
+	() => props.items,
+	(items) => {
+		if (!import.meta.client || !Array.isArray(items) || items.length === 0) return;
+		const ids = (items as Array<{ _id?: string }>)
+			.map((item) => item?._id)
+			.filter((id): id is string => typeof id === "string");
+		if (ids.length > 0) account.loadVisible(ids);
+	},
+	{ immediate: true },
+);
+
 // State for visible items
 const itemsPerPage = props.itemsPerRow || 3;
 const visibleItemCount = ref(props.limit || itemsPerPage);
@@ -250,6 +265,10 @@ onMounted(() => {
 				:key="item?._id"
 				:class="`related-item related-item--${style} ${typeClass}`"
 			>
+				<ElementsHeartButton
+					v-if="type === 'sets' && item?._id"
+					:set-id="item._id"
+				/>
 				<!-- Image -->
 				<ElementsContentLink :item="item" class="related-item__link">
 					<div v-if="type === 'sets'" class="related-item__image">

@@ -34,6 +34,21 @@ const props = defineProps({
 	},
 });
 
+// Client-only hearts; the SSR payload stays account-free.
+const account = useAccountStore();
+watch(
+	() => props.items,
+	(items) => {
+		if (!import.meta.client || !Array.isArray(items) || items.length === 0) return;
+		const ids = (items as Array<{ _id?: string; _type?: string }>)
+			.filter((item) => item?._type === "set")
+			.map((item) => item?._id)
+			.filter((id): id is string => typeof id === "string");
+		if (ids.length > 0) account.loadVisible(ids);
+	},
+	{ immediate: true },
+);
+
 // State
 const ITEMS_PER_PAGE = 6;
 const visibleItemCount = ref(ITEMS_PER_PAGE);
@@ -219,6 +234,10 @@ watch(
 				:key="item._id"
 				:class="['teaser-item', `teaser-item--${typeConfig?.cssClass}`]"
 			>
+				<ElementsHeartButton
+					v-if="item._type === 'set' && item._id"
+					:set-id="item._id"
+				/>
 				<!-- City Tags (displayed above image like in ModuleContentTeaser/ModuleContentGrid) -->
 				<div
 					v-if="getItemCityTags(item).length > 0"
