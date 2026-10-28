@@ -39,7 +39,8 @@ const account = useAccountStore();
 watch(
 	() => props.items,
 	(items) => {
-		if (!import.meta.client || !Array.isArray(items) || items.length === 0) return;
+		if (!import.meta.client || !Array.isArray(items) || items.length === 0)
+			return;
 		const ids = (items as Array<{ _id?: string; _type?: string }>)
 			.filter((item) => item?._type === "set")
 			.map((item) => item?._id)

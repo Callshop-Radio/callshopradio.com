@@ -4,7 +4,6 @@ import {
 	createError,
 	defineEventHandler,
 	getHeader,
-	readRawBody,
 	setHeader,
 	setResponseStatus,
 } from "h3";
@@ -22,7 +21,34 @@ import {
 } from "../../utils/managerFetch";
 
 const TIMEOUT_MS = 15_000;
+const BODY_LIMIT = 3 * 1024 * 1024;
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+
+/**
+ * The manager enforces 64 KB for JSON and 2 MB for avatars, but a function
+ * must not buffer an unbounded upload before that check can run.
+ */
+async function readLimitedBody(
+	event: H3Event,
+	limit: number,
+): Promise<Buffer | undefined> {
+	const chunks: Buffer[] = [];
+	let size = 0;
+	for await (const chunk of event.node.req) {
+		const buffer = Buffer.isBuffer(chunk)
+			? chunk
+			: Buffer.from(chunk as Uint8Array);
+		size += buffer.length;
+		if (size > limit) {
+			throw createError({
+				statusCode: 413,
+				statusMessage: "payload_too_large",
+			});
+		}
+		chunks.push(buffer);
+	}
+	return chunks.length > 0 ? Buffer.concat(chunks) : undefined;
+}
 
 export default defineEventHandler(async (event) => {
 	const method = String(event.method ?? "GET").toUpperCase();
@@ -61,6 +87,7 @@ export default defineEventHandler(async (event) => {
 
 	const token = tokenFromCookieHeader(getHeader(event, "cookie"));
 	const isLogin = path.startsWith("auth/");
+	const needsIp = path === "auth/request-code" || path === "auth/verify";
 	const isPublic = isLogin || path === "status";
 
 	if (!isPublic && !token) {
@@ -68,7 +95,7 @@ export default defineEventHandler(async (event) => {
 	}
 
 	let ipKey: string | null = null;
-	if (isLogin) {
+	if (needsIp) {
 		ipKey = accountIpKey(event, String(config.accountIpSecret ?? ""));
 		if (!ipKey) {
 			throw createError({
@@ -80,7 +107,7 @@ export default defineEventHandler(async (event) => {
 
 	const body = SAFE_METHODS.has(method)
 		? undefined
-		: await readRawBody(event, false);
+		: await readLimitedBody(event, BODY_LIMIT);
 	const queryIndex = String(event.path ?? "").indexOf("?");
 	const search = queryIndex === -1 ? "" : String(event.path).slice(queryIndex);
 

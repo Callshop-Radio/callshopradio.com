@@ -7,6 +7,13 @@ const localePath = useLocalePath();
 const mainStore = useMainStore();
 const mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 const copy = useAccountCopy();
+const account = useAccountStore();
+const accountEnabled = ref(false);
+
+// The menu entry appears only when the manager says listener accounts are on.
+onMounted(async () => {
+	accountEnabled.value = await account.loadStatus();
+});
 </script>
 
 <template>
@@ -35,7 +42,7 @@ const copy = useAccountCopy();
 						{{ item?.title }}
 					</ElementsLink>
 				</li>
-				<li>
+				<li v-if="accountEnabled">
 					<NuxtLink :to="localePath('/konto')" class="tag account">
 						{{ copy.account }}
 					</NuxtLink>

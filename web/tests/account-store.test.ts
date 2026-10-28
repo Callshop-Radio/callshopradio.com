@@ -135,3 +135,33 @@ test("loading the session distinguishes guest, member and outage", async () => {
 	await account.loadSession();
 	assert.equal(account.sessionState.value, "unavailable");
 });
+
+test("the default list id separates the heart from named lists", async () => {
+	const { request } = recorder([
+		() => ({ saved: { "set-a": ["named"] }, defaultListId: "default" }),
+	]);
+	const account = createAccountController(request);
+
+	await account.loadVisible(["set-a"]);
+	assert.equal(account.defaultListId.value, "default");
+
+	account.reset();
+	assert.equal(account.defaultListId.value, null);
+});
+
+test("refresh reloads an id that was already known", async () => {
+	const { calls, request } = recorder([
+		() => ({ saved: { "set-a": ["default"] }, defaultListId: "default" }),
+		() => ({
+			saved: { "set-a": ["default", "named"] },
+			defaultListId: "default",
+		}),
+	]);
+	const account = createAccountController(request);
+
+	await account.loadVisible(["set-a"]);
+	await account.refresh(["set-a"]);
+
+	assert.equal(calls.length, 2);
+	assert.deepEqual(account.saved.value["set-a"], ["default", "named"]);
+});

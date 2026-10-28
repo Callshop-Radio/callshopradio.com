@@ -26,11 +26,23 @@ async function load() {
 }
 
 async function logout() {
+	let revoked = true;
 	try {
-		await request("auth/logout", { method: "POST" });
+		const result = await request<{ revoked?: boolean }>("auth/logout", {
+			method: "POST",
+		});
+		revoked = result?.revoked !== false;
+	} catch {
+		revoked = false;
 	} finally {
 		account.reset();
-		await navigateTo(localePath("/"));
+		// The cookie is cleared locally even when the manager cannot revoke the
+		// token; say so instead of pretending the logout was clean.
+		await navigateTo(
+			revoked
+				? localePath("/")
+				: localePath({ path: "/konto/anmelden", query: { revoked: "0" } }),
+		);
 	}
 }
 

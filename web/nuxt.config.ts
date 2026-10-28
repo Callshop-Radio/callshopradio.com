@@ -12,7 +12,13 @@ export default defineNuxtConfig({
 
 	sitemap: {
 		sources: ["/api/sitemap"],
-		exclude: ["/konto", "/konto/**", "/de/konto", "/de/konto/**", "/api/account/**"],
+		exclude: [
+			"/konto",
+			"/konto/**",
+			"/de/konto",
+			"/de/konto/**",
+			"/api/account/**",
+		],
 	},
 	devtools: { enabled: false },
 	ssr: true,
@@ -289,11 +295,49 @@ export default defineNuxtConfig({
 
 	routeRules: {
 		// === Account pages: never cached, always SSR (personal data) ===
-		"/konto": { isr: false, prerender: false, ssr: true, headers: { "Cache-Control": "no-store, must-revalidate" } },
-		"/konto/**": { isr: false, prerender: false, ssr: true, headers: { "Cache-Control": "no-store, must-revalidate" } },
-		"/de/konto": { isr: false, prerender: false, ssr: true, headers: { "Cache-Control": "no-store, must-revalidate" } },
-		"/de/konto/**": { isr: false, prerender: false, ssr: true, headers: { "Cache-Control": "no-store, must-revalidate" } },
-		"/api/account/**": { cors: false, headers: { "Cache-Control": "no-store" } },
+		"/konto": {
+			isr: false,
+			prerender: false,
+			ssr: true,
+			headers: {
+				"Cache-Control": "no-store, must-revalidate",
+				"Netlify-CDN-Cache-Control": "no-store",
+			},
+		},
+		"/konto/**": {
+			isr: false,
+			prerender: false,
+			ssr: true,
+			headers: {
+				"Cache-Control": "no-store, must-revalidate",
+				"Netlify-CDN-Cache-Control": "no-store",
+			},
+		},
+		"/de/konto": {
+			isr: false,
+			prerender: false,
+			ssr: true,
+			headers: {
+				"Cache-Control": "no-store, must-revalidate",
+				"Netlify-CDN-Cache-Control": "no-store",
+			},
+		},
+		"/de/konto/**": {
+			isr: false,
+			prerender: false,
+			ssr: true,
+			headers: {
+				"Cache-Control": "no-store, must-revalidate",
+				"Netlify-CDN-Cache-Control": "no-store",
+			},
+		},
+		"/api/account/**": {
+			cors: false,
+			headers: {
+				"Cache-Control": "no-store",
+				"Netlify-CDN-Cache-Control": "no-store",
+			},
+		},
 
 		// === Sitemap (generated at build time) ===
 		"/sitemap.xml": { prerender: true },
@@ -326,6 +370,13 @@ export default defineNuxtConfig({
 			const slugs = await getPageSlugs();
 			nitroConfig.routeRules ||= {};
 			for (const slug of slugs) {
+				// Account pages must never inherit a CMS page's ISR rule.
+				if (
+					slug === "konto" ||
+					slug.startsWith("konto/") ||
+					slug.startsWith("de/konto")
+				)
+					continue;
 				nitroConfig.routeRules[`/${slug}`] = {
 					isr: true,
 					headers: { "Netlify-Cache-Tag": "page" },

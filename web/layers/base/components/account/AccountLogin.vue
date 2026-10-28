@@ -45,6 +45,8 @@ async function verify() {
 			method: "POST",
 			body: { email: email.value, code: code.value },
 		});
+		// A different account may be signing in: drop every cached id first.
+		account.reset();
 		await account.loadSession();
 		await navigateTo(localePath(next.value));
 	} catch {

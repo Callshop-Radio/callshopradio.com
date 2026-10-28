@@ -160,6 +160,11 @@ onMounted(() => {
 							variant="inline"
 							class="set-heart"
 						/>
+						<AccountSaveToList
+							v-if="set?._id"
+							:set-id="set._id"
+							class="set-save-to-list"
+						/>
 					</div>
 					<div v-if="getItemNonCityTags(set).length > 0" class="set-tags tags">
 						<button

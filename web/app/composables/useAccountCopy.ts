@@ -62,6 +62,11 @@ export function useAccountCopy() {
 			nameTaken: de
 				? "Diesen Listennamen gibt es schon."
 				: "This list name already exists.",
+			logoutFailed: de
+				? "Lokal abgemeldet, aber der Server konnte die Sitzung nicht widerrufen."
+				: "Signed out locally, but the server could not revoke the session.",
+			addToList: de ? "Zu Liste hinzufügen" : "Add to list",
+			add: de ? "Hinzufügen" : "Add",
 		};
 	});
 }

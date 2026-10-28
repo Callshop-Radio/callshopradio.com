@@ -28,12 +28,27 @@ const message = ref("");
 
 async function load() {
 	try {
-		const response = await request<{ list: List; items: Item[] }>(
-			`lists/${encodeURIComponent(props.listId)}`,
-		);
-		list.value = response.list;
-		items.value = response.items;
-		name.value = response.list.name;
+		const all: Item[] = [];
+		let cursor: string | null = null;
+		let header: List | null = null;
+		do {
+			const suffix: string = cursor
+				? `?cursor=${encodeURIComponent(cursor)}`
+				: "";
+			const response: { list: List; items: Item[]; nextCursor: string | null } =
+				await request<{
+					list: List;
+					items: Item[];
+					nextCursor: string | null;
+				}>(`lists/${encodeURIComponent(props.listId)}${suffix}`);
+			header = response.list;
+			all.push(...response.items);
+			cursor = response.nextCursor;
+		} while (cursor);
+
+		list.value = header;
+		items.value = all;
+		name.value = header?.name ?? "";
 		state.value = "ready";
 	} catch {
 		state.value = "missing";

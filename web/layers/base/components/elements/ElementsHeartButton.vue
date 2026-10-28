@@ -18,6 +18,11 @@ const busy = ref(false);
 
 const listIds = computed(() => account.saved[props.setId] ?? []);
 const saved = computed(() => props.setId in account.saved);
+// Removing a heart empties the set from every list, so a membership in any
+// named list needs an explicit confirmation.
+const hasNamedList = computed(() =>
+	listIds.value.some((id) => id !== account.defaultListId),
+);
 const label = computed(() =>
 	saved.value ? copy.value.unsave : copy.value.save,
 );
@@ -33,7 +38,7 @@ async function toggle() {
 	}
 	if (
 		saved.value &&
-		listIds.value.length > 1 &&
+		hasNamedList.value &&
 		!window.confirm(copy.value.unsaveEverywhere)
 	) {
 		return;

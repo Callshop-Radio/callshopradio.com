@@ -43,9 +43,19 @@ function statusOf(error: unknown): number {
  */
 export function createAccountController(request: AccountRequest) {
 	const saved = ref<Record<string, string[]>>({});
+	const defaultListId = ref<string | null>(null);
 	const sessionState = ref<SessionState>("unknown");
 	const generation = ref(0);
 	const inFlight = new Map<string, Promise<void>>();
+
+	async function loadStatus(): Promise<boolean> {
+		try {
+			const response = await request<{ enabled: boolean }>("status");
+			return Boolean(response?.enabled);
+		} catch {
+			return false;
+		}
+	}
 
 	async function loadSession(): Promise<void> {
 		const current = generation.value;
@@ -75,11 +85,14 @@ export function createAccountController(request: AccountRequest) {
 		const current = generation.value;
 		for (const batch of chunk(unique, BATCH_SIZE)) {
 			try {
-				const response = await request<{ saved: Record<string, string[]> }>(
-					`me/saved-ids?ids=${encodeURIComponent(batch.join(","))}`,
-				);
+				const response = await request<{
+					saved: Record<string, string[]>;
+					defaultListId?: string | null;
+				}>(`me/saved-ids?ids=${encodeURIComponent(batch.join(","))}`);
 				if (current !== generation.value) return;
 				saved.value = { ...saved.value, ...(response?.saved ?? {}) };
+				if (response?.defaultListId)
+					defaultListId.value = response.defaultListId;
 				if (sessionState.value === "unknown")
 					sessionState.value = "authenticated";
 			} catch (error) {
@@ -153,14 +166,32 @@ export function createAccountController(request: AccountRequest) {
 		await tracked;
 	}
 
+	async function refresh(ids: string[]): Promise<void> {
+		const next = { ...saved.value };
+		for (const id of ids) delete next[id];
+		saved.value = next;
+		await loadVisible(ids);
+	}
+
 	function reset(): void {
 		generation.value += 1;
 		saved.value = {};
+		defaultListId.value = null;
 		sessionState.value = "guest";
 		inFlight.clear();
 	}
 
-	return { saved, sessionState, loadSession, loadVisible, toggle, reset };
+	return {
+		saved,
+		defaultListId,
+		sessionState,
+		loadStatus,
+		loadSession,
+		loadVisible,
+		refresh,
+		toggle,
+		reset,
+	};
 }
 
 export const useAccountStore = defineStore("account", () => {
