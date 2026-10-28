@@ -798,6 +798,14 @@ function toggleFilterType(type: string) {
 }
 
 function resetFilters() {
+	const activeCount =
+		activeFilters.value.size +
+		activeGenres.value.size +
+		activeSubGenres.value.size;
+	track("filter_reset", {
+		page: route.path,
+		active_filters: activeCount,
+	});
 	activeFilters.value.clear();
 	activeGenres.value.clear();
 	activeSubGenres.value.clear();
@@ -874,6 +882,7 @@ function itemMatchesFilters(item: ContentItem): boolean {
 function changeSortMode(mode: "new" | "shuffle" | "alpha") {
 	if (mode === "shuffle") shuffleSeed.value = Date.now();
 	sortMode.value = mode;
+	track("sort_apply", { sort: mode, page: route.path });
 }
 
 function setGridColumns(columns: number) {

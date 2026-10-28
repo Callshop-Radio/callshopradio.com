@@ -4,7 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const mainStore = useMainStore();
-const { track } = useAnalytics();
+const { track, trackUmami } = useAnalytics();
 
 // Define stream URLs
 const streamUrl1 = "https://icecast.callshopradio.com/callshopradio";
@@ -13,6 +13,39 @@ const streamUrl2 = "https://icecast.callshopradio.com/callshopradio-wien";
 // Store audio elements outside Vue's reactivity system
 let audioEl1 = null;
 let audioEl2 = null;
+
+// One heartbeat per audio element. The first ping is sent after 60 seconds of
+// audible playback; pausing stops the timer so silence is never counted.
+const pingTimers = { 1: null, 2: null };
+
+function stopPing(num) {
+	if (pingTimers[num]) {
+		clearInterval(pingTimers[num]);
+		pingTimers[num] = null;
+	}
+}
+
+function stopAllPings() {
+	stopPing(1);
+	stopPing(2);
+}
+
+function startPing(num, streamName, currentShow) {
+	stopPing(num);
+	const audio = num === 1 ? audioEl1 : audioEl2;
+	if (!audio) return;
+	pingTimers[num] = setInterval(() => {
+		if (audio.paused) return;
+		const show = currentShow();
+		trackUmami("listen-ping", {
+			content_type: "live",
+			stream: streamName,
+			now_playing: show,
+			show_title: show,
+			minutes: 1,
+		});
+	}, 60_000);
+}
 
 // Status refs
 const isPlaying1 = ref(false);
@@ -393,6 +426,8 @@ const setupAudioElement = (audioElement, num) => {
 			stream: streamName,
 			now_playing: currentShow(),
 		});
+
+		startPing(num, streamName, currentShow);
 	});
 
 	audioElement.addEventListener("waiting", () => {
@@ -404,6 +439,7 @@ const setupAudioElement = (audioElement, num) => {
 	});
 
 	audioElement.addEventListener("pause", () => {
+		stopPing(num);
 		if (num === 1) {
 			isPlaying1.value = false;
 			isLoading1.value = false;
@@ -414,6 +450,7 @@ const setupAudioElement = (audioElement, num) => {
 	});
 
 	audioElement.addEventListener("ended", () => {
+		stopPing(num);
 		if (num === 1) {
 			isPlaying1.value = false;
 		} else {
@@ -422,6 +459,7 @@ const setupAudioElement = (audioElement, num) => {
 	});
 
 	audioElement.addEventListener("error", () => {
+		stopPing(num);
 		if (num === 1) {
 			isPlaying1.value = false;
 			isLoading1.value = false;
@@ -613,6 +651,7 @@ const updateMediaSessionMetadata = () => {
 
 // Clean up timer when removing component
 onBeforeUnmount(() => {
+	stopAllPings();
 	if (statusUpdateInterval) {
 		clearInterval(statusUpdateInterval);
 	}

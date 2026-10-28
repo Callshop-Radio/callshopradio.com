@@ -371,6 +371,10 @@ watch(searchQuery, (newQuery) => {
 });
 
 const clearSearch = () => {
+	track("filter_reset", {
+		page: "search",
+		active_filters: activeContentTypes.value.size,
+	});
 	searchQuery.value = "";
 	results.value = [];
 	autocompleteResults.value = [];
