@@ -12,6 +12,7 @@ export default defineNuxtConfig({
 
 	sitemap: {
 		sources: ["/api/sitemap"],
+		exclude: ["/konto", "/konto/**", "/de/konto", "/de/konto/**", "/api/account/**"],
 	},
 	devtools: { enabled: false },
 	ssr: true,
@@ -222,6 +223,12 @@ export default defineNuxtConfig({
 		// Server-only secrets — never exposed to the client bundle.
 		sanityWebhookSecret: process.env.SANITY_WEBHOOK_SECRET,
 		libretimeApiKey: process.env.NUXT_LIBRETIME_API_KEY,
+		// Listener accounts: the BFF talks to the Show Manager with a shared
+		// secret and hashes the provider-verified client IP itself.
+		managerBaseUrl: process.env.NUXT_MANAGER_BASE_URL,
+		accountClientSecret: process.env.NUXT_ACCOUNT_CLIENT_SECRET,
+		accountIpSecret: process.env.NUXT_ACCOUNT_IP_SECRET,
+		accountAllowedOrigins: process.env.NUXT_ACCOUNT_ALLOWED_ORIGINS,
 		// Netlify Personal Access Token + Site ID for edge cache purge (tag-based).
 		// Optional — webhook still clears local Nitro LRU even when these are unset.
 		netlifyPurgeToken: process.env.NETLIFY_PURGE_TOKEN,
@@ -281,6 +288,13 @@ export default defineNuxtConfig({
 	},
 
 	routeRules: {
+		// === Account pages: never cached, always SSR (personal data) ===
+		"/konto": { isr: false, prerender: false, ssr: true, headers: { "Cache-Control": "no-store, must-revalidate" } },
+		"/konto/**": { isr: false, prerender: false, ssr: true, headers: { "Cache-Control": "no-store, must-revalidate" } },
+		"/de/konto": { isr: false, prerender: false, ssr: true, headers: { "Cache-Control": "no-store, must-revalidate" } },
+		"/de/konto/**": { isr: false, prerender: false, ssr: true, headers: { "Cache-Control": "no-store, must-revalidate" } },
+		"/api/account/**": { cors: false, headers: { "Cache-Control": "no-store" } },
+
 		// === Sitemap (generated at build time) ===
 		"/sitemap.xml": { prerender: true },
 
