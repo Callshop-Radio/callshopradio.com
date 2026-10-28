@@ -35,8 +35,13 @@ importers:
         specifier: ^9.1.7
         version: 9.1.7
 
+  packages/words-typography: {}
+
   studio:
     dependencies:
+      '@callshop/words-typography':
+        specifier: workspace:*
+        version: link:../packages/words-typography
       '@damianrosellen/sanity-plugin-soundcloud-input':
         specifier: ^1.0.1
         version: 1.0.1(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.7(react@19.2.7))(react-is@19.2.7)(react@19.2.7)(sanity@6.1.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@emotion/is-prop-valid@1.4.0)(@noble/hashes@2.2.0)(@oclif/core@4.11.6)(@sanity/cli-core@2.0.1(@noble/hashes@2.2.0)(@types/node@25.9.3)(esbuild@0.28.1)(terser@5.48.0)(yaml@2.9.0))(@types/node@25.9.3)(@types/react@19.2.17)(esbuild@0.28.1)(immer@11.1.8)(jiti@2.7.0)(prismjs@1.30.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.0.3)(styled-components@6.4.2(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(terser@5.48.0)(typescript@6.0.3))(styled-components@6.4.2(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))
@@ -104,6 +109,9 @@ importers:
 
   web:
     dependencies:
+      '@callshop/words-typography':
+        specifier: workspace:*
+        version: link:../packages/words-typography
       '@netlify/blobs':
         specifier: ^10.7.9
         version: 10.7.9
