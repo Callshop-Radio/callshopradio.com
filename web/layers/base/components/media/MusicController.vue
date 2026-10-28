@@ -345,6 +345,8 @@ const getCurrentName2 = computed(() => {
 const setupAudioElement = (audioElement, num) => {
 	if (!audioElement) return;
 
+	const streamName = num === 1 ? "stream1" : "stream2";
+
 	// Basic configuration
 	audioElement.volume = 1.0;
 	audioElement.preload = "metadata"; // Only preload metadata
