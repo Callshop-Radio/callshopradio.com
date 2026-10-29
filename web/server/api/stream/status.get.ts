@@ -27,11 +27,29 @@ interface StreamStatusResponse {
 		onAirLight: Record<string, boolean>;
 		liveData: LibreTimeLiveInfo;
 	};
+	liveGate: LiveGate | null;
+}
+
+interface LiveGateTrack {
+	title: string;
+	artist: string | null;
+}
+
+interface LiveGate {
+	live: boolean;
+	show: { id: string | null; title: string | null } | null;
+	city: { id: string | null; name: string } | null;
+	genres: string[];
+	artists: { id: string; name: string; slug: string | null }[];
+	currentTrack: LiveGateTrack | null;
+	lastTrack: LiveGateTrack | null;
+	tracklist: LiveGateTrack[];
 }
 
 const LIBRETIME_BASE = "https://libretime.callshopradio.com";
 const ICECAST_URL = "https://icecast.callshopradio.com/status-json.xsl";
 const WIEN_URL = "https://wien.callshopradio.com/api/live-info-v2?days=7";
+const LIVE_GATE_URL = "https://air.callshopradio.live/api/public/live";
 
 const deriveOnAirLight = (
 	liveData: LibreTimeLiveInfo | null,
@@ -57,13 +75,16 @@ export default defineCachedEventHandler(
 			libretimeHeaders.Authorization = `Api-Key ${config.libretimeApiKey}`;
 		}
 
-		const [liveData1, icecastData, liveData2] = await Promise.all([
+		const [liveData1, icecastData, liveData2, liveGate] = await Promise.all([
 			$fetch<LibreTimeLiveInfo>(`${LIBRETIME_BASE}/api/live-info-v2`, {
 				headers: libretimeHeaders,
 				ignoreResponseError: true,
 			}).catch(() => null),
 			$fetch<IcecastStatus>(ICECAST_URL).catch(() => null),
 			$fetch<LibreTimeLiveInfo>(WIEN_URL).catch(() => null),
+			$fetch<LiveGate>(LIVE_GATE_URL, { ignoreResponseError: true }).catch(
+				() => null,
+			),
 		]);
 
 		return {
@@ -76,6 +97,7 @@ export default defineCachedEventHandler(
 				onAirLight: deriveOnAirLight(liveData2),
 				liveData: liveData2 ?? {},
 			},
+			liveGate: liveGate ?? null,
 		};
 	},
 	{

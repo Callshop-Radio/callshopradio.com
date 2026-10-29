@@ -76,6 +76,15 @@ const updateLiveStatus = async () => {
 		console.error("[MusicController] Error updating live status:", error);
 	}
 };
+
+// The Live Gate feed carries the manual live tracklist. The player shows the
+// last added track; the full list stays behind a toggle.
+const showTracklist = ref(false);
+const liveGate = computed(() => liveStatus.value.liveGate ?? null);
+const lastTrackLabel = computed(() => {
+	const track = liveGate.value?.lastTrack;
+	return track ? [track.title, track.artist].filter(Boolean).join(" — ") : "";
+});
 // Function to play and stop stream for Track 1
 
 // Function to play and stop stream for Track 1
@@ -894,6 +903,35 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 
+		<!-- Live Gate: the last added track, full tracklist behind a toggle -->
+		<div
+			v-if="liveGate?.live && liveGate?.lastTrack"
+			class="live-gate"
+			@click.stop
+		>
+			<div class="live-gate__bar">
+				<span class="live-gate__label">Last Track</span>
+				<span class="live-gate__track">{{ lastTrackLabel }}</span>
+				<button
+					type="button"
+					class="live-gate__toggle"
+					:aria-expanded="showTracklist"
+					@click="showTracklist = !showTracklist"
+				>
+					{{ showTracklist ? "Tracklist verbergen" : "Tracklist" }}
+				</button>
+			</div>
+			<ol v-if="showTracklist" class="live-gate__list">
+				<li
+					v-for="(track, index) in liveGate.tracklist"
+					:key="`${track.title}-${index}`"
+				>
+					<span>{{ track.title }}</span>
+					<span v-if="track.artist" class="live-gate__artist">{{ track.artist }}</span>
+				</li>
+			</ol>
+		</div>
+
 		<!-- Audio elements completely outside Vue's reactivity system -->
 		<audio id="audioPlayer1" :src="streamUrl1"/>
 		<audio id="audioPlayer2" :src="streamUrl2"/>
@@ -1094,6 +1132,76 @@ onBeforeUnmount(() => {
   /* Audio-Elemente verstecken */
   audio {
     display: none;
+  }
+}
+
+.live-gate {
+  width: 100%;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--small-padding) 0 0;
+  font-family: var(--font-text-semibold);
+
+  &__bar {
+    display: flex;
+    align-items: baseline;
+    gap: var(--small-padding);
+    flex-wrap: wrap;
+    border-top: 1px solid var(--color-dark-grey);
+    padding-top: var(--small-padding);
+  }
+
+  &__label {
+    color: var(--color-pink);
+    text-transform: uppercase;
+    letter-spacing: var(--menu-letter-spacing);
+    font-size: 0.75em;
+  }
+
+  &__track {
+    text-transform: uppercase;
+    letter-spacing: var(--menu-letter-spacing);
+  }
+
+  &__toggle {
+    margin-left: auto;
+    border: none;
+    background: none;
+    color: var(--color-dark-grey);
+    font: inherit;
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: var(--menu-letter-spacing);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-pink);
+    }
+  }
+
+  &__list {
+    list-style: none;
+    margin: var(--small-padding) 0 0;
+    padding: 0;
+    display: grid;
+    gap: 4px;
+    max-height: 280px;
+    overflow: auto;
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--small-padding);
+      border-bottom: 1px solid var(--color-dark-grey);
+      padding: 4px 0;
+      font-size: 0.85em;
+      text-transform: uppercase;
+      letter-spacing: var(--menu-letter-spacing);
+    }
+  }
+
+  &__artist {
+    color: var(--color-dark-grey);
   }
 }
 
