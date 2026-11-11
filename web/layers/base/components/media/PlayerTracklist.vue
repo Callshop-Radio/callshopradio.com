@@ -77,8 +77,8 @@ onBeforeUnmount(() => {
   font-size: var(--small-font-size);
 
   button {
-    width: 28px;
-    height: 28px;
+    width: 44px;
+    height: 44px;
     border: 0;
     border-radius: 50%;
     background: transparent;

@@ -1,4 +1,8 @@
-import type { PlayerFeed, PlayerTrack, PlayerVideo } from "../../types/player.ts";
+import type {
+	PlayerFeed,
+	PlayerTrack,
+	PlayerVideo,
+} from "../../types/player.ts";
 
 interface FeedOptions {
 	audioUrl: string;
@@ -47,10 +51,19 @@ function baseFeed({
 }
 
 /** AzuraCast now playing is display data only; it carries no editorial links. */
-export function feedFromAzuraCast(np: unknown, options: FeedOptions): PlayerFeed {
+export function feedFromAzuraCast(
+	np: unknown,
+	options: FeedOptions,
+): PlayerFeed {
 	const station = Array.isArray(np) ? np[0] : np;
-	const song = (station as { now_playing?: { song?: { title?: unknown; artist?: unknown } } } | null)
-		?.now_playing?.song;
+	if ((station as { is_online?: unknown } | null)?.is_online === false) {
+		return offlineFeed(options);
+	}
+	const song = (
+		station as {
+			now_playing?: { song?: { title?: unknown; artist?: unknown } };
+		} | null
+	)?.now_playing?.song;
 	const title = text(song?.title) || "AutoDJ";
 	const artist = text(song?.artist) || null;
 	return baseFeed({
@@ -64,20 +77,29 @@ export function feedFromAzuraCast(np: unknown, options: FeedOptions): PlayerFeed
 	});
 }
 
-function mainIcecastSource(status: unknown): { title?: unknown; artist?: unknown } | null {
-	const raw = (status as { icestats?: { source?: unknown } } | null)?.icestats?.source;
+function mainIcecastSource(
+	status: unknown,
+): { title?: unknown; artist?: unknown } | null {
+	const raw = (status as { icestats?: { source?: unknown } } | null)?.icestats
+		?.source;
 	const sources = Array.isArray(raw) ? raw : raw ? [raw] : [];
 	return (
 		(sources.find((source) => {
 			const url = text((source as { listenurl?: unknown } | null)?.listenurl);
-			return url.includes("/callshopradio") && !url.includes("callshopradio-wien");
+			return (
+				url.includes("/callshopradio") && !url.includes("callshopradio-wien")
+			);
 		}) as { title?: unknown; artist?: unknown } | undefined) ?? null
 	);
 }
 
 /** Icecast status JSON is the last metadata fallback; no links. */
-export function feedFromIcecast(status: unknown, options: FeedOptions): PlayerFeed {
+export function feedFromIcecast(
+	status: unknown,
+	options: FeedOptions,
+): PlayerFeed {
 	const source = mainIcecastSource(status);
+	if (!source) return offlineFeed(options);
 	const title = text(source?.title) || "Callshop Radio";
 	const artist = text(source?.artist) || null;
 	return baseFeed({
@@ -91,6 +113,18 @@ export function feedFromIcecast(status: unknown, options: FeedOptions): PlayerFe
 	});
 }
 
+export function offlineFeed(options: FeedOptions): PlayerFeed {
+	return baseFeed({
+		state: "offline",
+		title: "Callshop Radio",
+		subtitle: "Stream nicht erreichbar",
+		track: null,
+		audio: { url: options.audioUrl, fallbackUrl: options.fallbackUrl },
+		video: options.video ?? null,
+		source: "fallback",
+	});
+}
+
 export function videoFromStatus(
 	payload: unknown,
 	options: { hlsUrl: string; title?: string },
@@ -99,7 +133,9 @@ export function videoFromStatus(
 	if (live !== true && live !== false) return null;
 	const sinceRaw = (payload as { since?: unknown } | null)?.since;
 	const since =
-		typeof sinceRaw === "string" && sinceRaw && !Number.isNaN(Date.parse(sinceRaw))
+		typeof sinceRaw === "string" &&
+		sinceRaw &&
+		!Number.isNaN(Date.parse(sinceRaw))
 			? sinceRaw
 			: null;
 	return {

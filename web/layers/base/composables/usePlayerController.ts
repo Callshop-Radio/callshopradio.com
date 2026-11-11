@@ -49,13 +49,23 @@ export function usePlayerController() {
 				if (store.mode === "set") soundcloud.pause();
 				else stream.pause();
 			});
+			navigator.mediaSession.setActionHandler("seekto", (details) => {
+				if (
+					store.mode !== "set" ||
+					typeof details.seekTime !== "number" ||
+					!store.progress?.durationMs
+				) {
+					return;
+				}
+				soundcloud.seek((details.seekTime * 1000) / store.progress.durationMs);
+			});
 		}
 	}
 
 	async function playSet(item: unknown, cover: string | null = null) {
 		const playable = toSetPlayable(item, cover);
 		if (!playable.soundcloudUrl) {
-			store.setError("Kein Audio fÃ¼r dieses Set");
+			store.setError("Kein Audio für dieses Set");
 			return;
 		}
 		if (store.mode === "stream" && store.playing) stream.pause();
@@ -64,8 +74,26 @@ export function usePlayerController() {
 		store.clearError();
 		try {
 			await soundcloud.load(playable.soundcloudUrl);
-		} catch {
-			store.setError("Set konnte nicht geladen werden");
+		} catch (error) {
+			if ((error as { code?: string } | null)?.code !== "cancelled") {
+				store.setError("Set konnte nicht geladen werden");
+			}
+		} finally {
+			store.setLoading(false);
+		}
+	}
+
+	async function retrySet() {
+		const current = store.set;
+		if (!current?.soundcloudUrl) return;
+		store.clearError();
+		store.setLoading(true);
+		try {
+			await soundcloud.load(current.soundcloudUrl);
+		} catch (error) {
+			if ((error as { code?: string } | null)?.code !== "cancelled") {
+				store.setError("Set konnte nicht geladen werden");
+			}
 		} finally {
 			store.setLoading(false);
 		}
@@ -86,6 +114,10 @@ export function usePlayerController() {
 
 	function toggle() {
 		if (store.mode === "set") {
+			if (store.error) {
+				void retrySet();
+				return;
+			}
 			if (store.playing) soundcloud.pause();
 			else soundcloud.play();
 			return;
@@ -134,5 +166,14 @@ export function usePlayerController() {
 		});
 	}
 
-	return { playSet, playStream, toggle, closeSet, seek, pauseForVideo, syncMediaSession };
+	return {
+		playSet,
+		playStream,
+		toggle,
+		closeSet,
+		seek,
+		pauseForVideo,
+		retrySet,
+		syncMediaSession,
+	};
 }

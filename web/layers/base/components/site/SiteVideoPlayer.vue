@@ -12,6 +12,7 @@ const {
 	open,
 	minimized,
 	muted,
+	fullscreen,
 	width,
 	toggleMinimize,
 	close,
@@ -118,6 +119,9 @@ function onResizeKey(event: KeyboardEvent) {
 	} else if (event.key === "Home") {
 		event.preventDefault();
 		setWidth(360);
+	} else if (event.key === "End") {
+		event.preventDefault();
+		setWidth(640);
 	}
 }
 
@@ -164,7 +168,7 @@ onBeforeUnmount(() => {
 					<button type="button" class="video-panel__icon" :aria-label="muted ? 'Ton an' : 'Ton aus'" @click="toggleMute">
 						{{ muted ? "Ton an" : "Ton aus" }}
 					</button>
-					<button type="button" class="video-panel__icon" aria-label="Vollbild" @click="enterFullscreen">⤢</button>
+					<button type="button" class="video-panel__icon" :aria-label="fullscreen ? 'Vollbild verlassen' : 'Vollbild'" @click="enterFullscreen">⤢</button>
 				</template>
 				<button type="button" class="video-panel__icon" :aria-label="minimized ? 'Video vergrößern' : 'Video minimieren'" @click="toggleMinimize">
 					{{ minimized ? "▢" : "–" }}
@@ -200,6 +204,8 @@ onBeforeUnmount(() => {
 					class="video-panel__resize"
 					role="separator"
 					aria-label="Videogröße ändern"
+					aria-valuemin="280"
+					aria-valuemax="640"
 					:aria-valuenow="width"
 					tabindex="0"
 					@pointerdown="startResize"

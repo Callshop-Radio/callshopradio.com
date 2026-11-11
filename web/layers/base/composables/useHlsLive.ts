@@ -1,9 +1,8 @@
-import { ref, watch, type Ref } from "vue";
+import { type Ref, ref, watch } from "vue";
+import { hlsRetryDelay } from "~~/layers/base/utils/videoPanel";
 
 type HlsPlayer = typeof import("hls.js").default;
 type HlsInstance = InstanceType<HlsPlayer>;
-
-const RETRY_DELAYS = [2000, 4000, 8000];
 
 export function useHlsLive(
 	videoEl: Ref<HTMLVideoElement | null>,
@@ -14,6 +13,7 @@ export function useHlsLive(
 	let hls: HlsInstance | null = null;
 	let attempt = 0;
 	let retryTimer: ReturnType<typeof setTimeout> | null = null;
+	let generation = 0;
 
 	function clearRetry() {
 		if (retryTimer) {
@@ -23,6 +23,7 @@ export function useHlsLive(
 	}
 
 	function stop() {
+		generation += 1;
 		clearRetry();
 		hls?.destroy();
 		hls = null;
@@ -35,15 +36,16 @@ export function useHlsLive(
 	}
 
 	function scheduleRetry() {
-		const delay = RETRY_DELAYS[attempt];
-		if (delay === undefined) {
+		if (retryTimer) return;
+		const delay = hlsRetryDelay(attempt);
+		if (delay === null) {
 			state.value = "error";
 			error.value = "Video nicht verfügbar";
 			return;
 		}
 		attempt += 1;
-		clearRetry();
 		retryTimer = setTimeout(() => {
+			retryTimer = null;
 			void start();
 		}, delay);
 	}
@@ -60,6 +62,7 @@ export function useHlsLive(
 
 	async function start() {
 		stop();
+		const token = generation;
 		const url = hlsUrl.value;
 		const video = videoEl.value;
 		if (!url || !video) return;
@@ -69,8 +72,9 @@ export function useHlsLive(
 
 		try {
 			const { default: Hls } = await import("hls.js");
+			if (token !== generation) return;
 			if (Hls.isSupported()) {
-				hls = new Hls({
+				const instance = new Hls({
 					enableWorker: true,
 					lowLatencyMode: false,
 					liveSyncDuration: 4,
@@ -78,17 +82,19 @@ export function useHlsLive(
 					maxBufferLength: 6,
 					maxMaxBufferLength: 12,
 				});
-				hls.loadSource(url);
-				hls.attachMedia(video);
-				hls.on(Hls.Events.MANIFEST_PARSED, () => {
+				hls = instance;
+				instance.loadSource(url);
+				instance.attachMedia(video);
+				instance.on(Hls.Events.MANIFEST_PARSED, () => {
+					if (instance !== hls) return;
 					void video.play().catch(() => {
 						state.value = "idle";
 					});
 				});
-				hls.on(Hls.Events.ERROR, (_event, data) => {
-					if (!data?.fatal || !hls) return;
+				instance.on(Hls.Events.ERROR, (_event, data) => {
+					if (instance !== hls || !data?.fatal) return;
 					if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-						hls.recoverMediaError();
+						instance.recoverMediaError();
 						return;
 					}
 					scheduleRetry();
@@ -102,6 +108,7 @@ export function useHlsLive(
 			state.value = "error";
 			error.value = "Video wird von diesem Browser nicht unterstützt";
 		} catch {
+			if (token !== generation) return;
 			state.value = "error";
 			error.value = "Video nicht verfügbar";
 		}

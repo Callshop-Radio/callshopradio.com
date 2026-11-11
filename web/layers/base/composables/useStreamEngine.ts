@@ -32,10 +32,15 @@ function ensureAudio() {
 		audio = element;
 		element.preload = "none";
 		element.addEventListener("playing", () => {
-			clearTimer();
 			emit("playing");
 		});
-		element.addEventListener("pause", () => emit("pause"));
+		element.addEventListener("pause", () => {
+			clearTimer();
+			emit("pause");
+		});
+		element.addEventListener("timeupdate", () => {
+			if (element.currentTime > 0.1) clearTimer();
+		});
 		element.addEventListener("error", () => {
 			clearTimer();
 			if (!usingFallback && fallbackUrl) {
@@ -70,14 +75,8 @@ export function useStreamEngine() {
 		clearTimer();
 		el.src = primary;
 		el.load();
-		try {
-			await el.play();
-		} catch {
-			emit("error");
-			return;
-		}
 		fallbackTimer = setTimeout(() => {
-			if (usingFallback || !el.paused) return;
+			if (usingFallback || el.currentTime > 0.1) return;
 			if (!fallback) {
 				emit("error");
 				return;
@@ -87,6 +86,11 @@ export function useStreamEngine() {
 			el.load();
 			void el.play().catch(() => emit("error"));
 		}, 12_000);
+		try {
+			await el.play();
+		} catch {
+			emit("error");
+		}
 	}
 
 	function pause() {

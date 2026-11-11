@@ -38,6 +38,16 @@ export function useVideoPlayer() {
 		() => demoVideo ?? store.feed?.video ?? null,
 	);
 
+	if (import.meta.client) {
+		const storedWidth = Number(localStorage.getItem(WIDTH_KEY));
+		if (Number.isFinite(storedWidth) && storedWidth > 0) {
+			width.value = clampVideoWidth(storedWidth, window.innerWidth);
+		}
+		minimized.value = sessionStorage.getItem(MINIMIZED_KEY) === "1";
+		const dismissed = sessionStorage.getItem(DISMISSED_KEY);
+		if (dismissed) dismissedSince.value = dismissed;
+	}
+
 	watch(
 		video,
 		(value) => {
@@ -57,6 +67,13 @@ export function useVideoPlayer() {
 			}
 		},
 		{ immediate: true },
+	);
+
+	watch(
+		() => video.value?.since,
+		(since, previous) => {
+			if (since !== previous) minimized.value = false;
+		},
 	);
 
 	watch(
@@ -107,13 +124,25 @@ export function useVideoPlayer() {
 		videoElement: HTMLVideoElement | null,
 	) {
 		if (!import.meta.client) return;
+		const native = videoElement as
+			| (HTMLVideoElement & {
+					webkitDisplayingFullscreen?: boolean;
+					webkitExitFullscreen?: () => void;
+					webkitEnterFullscreen?: () => void;
+			  })
+			| null;
+		if (document.fullscreenElement) {
+			await document.exitFullscreen();
+			return;
+		}
+		if (native?.webkitDisplayingFullscreen) {
+			native.webkitExitFullscreen?.();
+			return;
+		}
 		if (panel?.requestFullscreen) {
 			await panel.requestFullscreen();
 			return;
 		}
-		const native = videoElement as
-			| (HTMLVideoElement & { webkitEnterFullscreen?: () => void })
-			| null;
 		native?.webkitEnterFullscreen?.();
 	}
 
@@ -123,13 +152,6 @@ export function useVideoPlayer() {
 
 	onMounted(() => {
 		if (!import.meta.client) return;
-		const storedWidth = Number(localStorage.getItem(WIDTH_KEY));
-		if (Number.isFinite(storedWidth) && storedWidth > 0) {
-			width.value = clampVideoWidth(storedWidth, window.innerWidth);
-		}
-		minimized.value = sessionStorage.getItem(MINIMIZED_KEY) === "1";
-		const dismissed = sessionStorage.getItem(DISMISSED_KEY);
-		if (dismissed) dismissedSince.value = dismissed;
 		document.addEventListener("fullscreenchange", onFullscreenChange);
 	});
 

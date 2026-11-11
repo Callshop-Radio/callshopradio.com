@@ -1,4 +1,4 @@
-import assert from "node:assert/strict";
+﻿import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
@@ -8,6 +8,7 @@ import {
 import { toSetPlayable } from "../layers/base/utils/setPlayable.ts";
 import {
 	clampVideoWidth,
+	hlsRetryDelay,
 	shouldOpenVideo,
 	videoHeightForWidth,
 } from "../layers/base/utils/videoPanel.ts";
@@ -83,4 +84,11 @@ test("shouldOpenVideo ignores a dismissed session", () => {
 		shouldOpenVideo({ live: false, since: "s2", dismissedSince: "s1" }),
 		false,
 	);
+});
+
+test("hlsRetryDelay stops after three retries", () => {
+	assert.equal(hlsRetryDelay(0), 2000);
+	assert.equal(hlsRetryDelay(1), 4000);
+	assert.equal(hlsRetryDelay(2), 8000);
+	assert.equal(hlsRetryDelay(3), null);
 });

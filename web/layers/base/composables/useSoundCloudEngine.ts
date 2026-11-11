@@ -21,6 +21,12 @@ let iframe: HTMLIFrameElement | null = null;
 let widget: WidgetApi | null = null;
 let apiPromise: Promise<unknown> | null = null;
 let durationMs = 0;
+let generation = 0;
+let cancelLoad: (() => void) | null = null;
+
+class SoundCloudCancelledError extends Error {
+	code = "cancelled";
+}
 
 function emit(event: SoundCloudEvent, payload?: unknown) {
 	for (const listener of listeners.get(event) || []) listener(payload);
@@ -42,8 +48,12 @@ function loadApi(): Promise<unknown> {
 		const script = document.createElement("script");
 		script.src = "https://w.soundcloud.com/player/api.js";
 		script.onload = () => resolve((window as unknown as { SC?: unknown }).SC);
-		script.onerror = () => reject(new Error("SoundCloud API konnte nicht geladen werden"));
+		script.onerror = () =>
+			reject(new Error("SoundCloud API konnte nicht geladen werden"));
 		document.body.appendChild(script);
+	}).catch((error) => {
+		apiPromise = null;
+		throw error;
 	});
 	return apiPromise;
 }
@@ -54,6 +64,11 @@ function emitProgress(positionMs: number) {
 }
 
 function destroy() {
+	generation += 1;
+	if (cancelLoad) {
+		cancelLoad();
+		cancelLoad = null;
+	}
 	widget = null;
 	durationMs = 0;
 	if (container) {
@@ -65,9 +80,11 @@ function destroy() {
 
 async function load(url: string) {
 	destroy();
-	const SC = (await loadApi()) as
-		| { Widget?: (element: HTMLIFrameElement) => WidgetApi }
-		| null;
+	const token = generation;
+	const SC = (await loadApi()) as {
+		Widget?: (element: HTMLIFrameElement) => WidgetApi;
+	} | null;
+	if (token !== generation) throw new SoundCloudCancelledError();
 	if (!SC?.Widget) throw new Error("SoundCloud Widget API fehlt");
 
 	container = document.createElement("div");
@@ -88,19 +105,27 @@ async function load(url: string) {
 	document.body.appendChild(container);
 
 	await new Promise<void>((resolve, reject) => {
-		const timer = setTimeout(
-			() => reject(new Error("SoundCloud Player antwortet nicht")),
-			10_000,
-		);
+		const timer = setTimeout(() => {
+			cancelLoad = null;
+			reject(new Error("SoundCloud Player antwortet nicht"));
+		}, 10_000);
+		cancelLoad = () => {
+			clearTimeout(timer);
+			cancelLoad = null;
+			reject(new SoundCloudCancelledError());
+		};
 		iframe?.addEventListener(
 			"load",
 			() => {
 				clearTimeout(timer);
+				cancelLoad = null;
 				resolve();
 			},
 			{ once: true },
 		);
 	});
+
+	if (token !== generation || !iframe) throw new SoundCloudCancelledError();
 
 	const instance = SC.Widget(iframe);
 	widget = instance;

@@ -14,6 +14,7 @@ const store = usePlayerStore();
 const controller = usePlayerController();
 const analytics = usePlayerAnalytics();
 const localePath = useLocalePath();
+const playerRef = ref<HTMLElement | null>(null);
 
 const isSet = computed(() => store.mode === "set" && Boolean(store.set));
 const tracklistOpen = ref(false);
@@ -27,7 +28,10 @@ watch(
 		() => store.mode,
 		() => store.set?.id,
 		() => store.set?.title,
+		() => store.set?.cover,
 		() => store.feed?.title,
+		() => store.feed?.subtitle,
+		() => store.feed?.cover,
 		() => store.feed?.track?.title,
 		() => store.playing,
 	],
@@ -130,7 +134,9 @@ function seek(event: MouseEvent) {
 }
 
 function onKeydown(event: KeyboardEvent) {
-	if (event.key === "Escape" && isSet.value) controller.closeSet();
+	if (event.key !== "Escape" || !isSet.value || tracklistOpen.value) return;
+	const target = event.target as Node | null;
+	if (target && playerRef.value?.contains(target)) controller.closeSet();
 }
 
 onMounted(() => {
@@ -146,6 +152,7 @@ onBeforeUnmount(() => {
 
 <template>
 	<section
+		ref="playerRef"
 		class="site-player"
 		:class="{ 'is-set': isSet, 'is-live': isLive }"
 		role="region"
@@ -196,7 +203,7 @@ onBeforeUnmount(() => {
 		</Transition>
 
 		<div class="site-player__viewport">
-			<div class="site-player__layer site-player__layer--stream" :aria-hidden="isSet">
+			<div class="site-player__layer site-player__layer--stream" :aria-hidden="isSet" :inert="isSet">
 				<div class="site-player__meta">
 					<div class="site-player__title">
 						<NuxtLink
@@ -210,7 +217,7 @@ onBeforeUnmount(() => {
 					</div>
 					<div v-if="streamLinks.length" class="site-player__sub">
 						<template v-for="(link, index) in streamLinks" :key="`${link.label}-${index}`">
-							<span v-if="index" class="site-player__separator" aria-hidden="true">Â·</span>
+							<span v-if="index" class="site-player__separator" aria-hidden="true">·</span>
 							<NuxtLink v-if="link.path" :to="localePath(link.path)" @click.stop>
 								{{ link.label }}
 							</NuxtLink>
@@ -226,6 +233,7 @@ onBeforeUnmount(() => {
 						:aria-expanded="tracklistOpen"
 						aria-controls="player-tracklist"
 						aria-label="Live-Tracklist"
+						@pointerdown.stop
 						@click.stop="tracklistOpen = !tracklistOpen"
 					>
 						☰
@@ -237,7 +245,7 @@ onBeforeUnmount(() => {
 				</div>
 			</div>
 
-			<div class="site-player__layer site-player__layer--set" :aria-hidden="!isSet">
+			<div class="site-player__layer site-player__layer--set" :aria-hidden="!isSet" :inert="!isSet">
 				<div class="site-player__meta">
 					<div class="site-player__title">
 						<NuxtLink v-if="setTitle.path" :to="localePath(setTitle.path)" @click.stop>
@@ -247,7 +255,7 @@ onBeforeUnmount(() => {
 					</div>
 					<div v-if="setLinks.length" class="site-player__sub">
 						<template v-for="(link, index) in setLinks" :key="`${link.label}-${index}`">
-							<span v-if="index" class="site-player__separator" aria-hidden="true">Â·</span>
+							<span v-if="index" class="site-player__separator" aria-hidden="true">·</span>
 							<NuxtLink v-if="link.path" :to="localePath(link.path)" @click.stop>
 								{{ link.label }}
 							</NuxtLink>
@@ -256,11 +264,21 @@ onBeforeUnmount(() => {
 					</div>
 				</div>
 				<div class="site-player__side">
+					<a
+						v-if="store.set?.soundcloudUrl"
+						class="site-player__source"
+						:href="store.set.soundcloudUrl"
+						target="_blank"
+						rel="noopener"
+						@click.stop
+					>
+						SoundCloud
+					</a>
 					<span v-if="progressTime" class="site-player__time">{{ progressTime }}</span>
 					<button
 						type="button"
 						class="site-player__close"
-						aria-label="Set schlieÃŸen"
+						aria-label="Set schließen"
 						@click.stop="controller.closeSet()"
 					>
 						<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
@@ -288,7 +306,10 @@ onBeforeUnmount(() => {
 			@close="tracklistOpen = false"
 		/>
 
-		<p v-if="store.error" class="site-player__error" role="status">{{ store.error }}</p>
+		<p v-if="store.error" class="site-player__error" role="status">
+			<span>{{ store.error }}</span>
+			<button v-if="isSet" type="button" @click="controller.retrySet()">Erneut versuchen</button>
+		</p>
 	</section>
 </template>
 
@@ -315,8 +336,8 @@ onBeforeUnmount(() => {
 .site-player__play {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   flex: none;
   border: 0;
   border-radius: 50%;
@@ -523,8 +544,8 @@ onBeforeUnmount(() => {
 .site-player__close {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border: 0;
   border-radius: 50%;
   background: transparent;
@@ -544,8 +565,8 @@ onBeforeUnmount(() => {
 .site-player__icon {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border: 0;
   border-radius: 50%;
   background: transparent;
@@ -582,13 +603,37 @@ onBeforeUnmount(() => {
   }
 }
 
+.site-player__source {
+  color: var(--color-dark-grey);
+  font-size: 0.625rem;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+}
+
 .site-player__error {
   position: absolute;
   right: var(--page-gutter);
   bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin: 0;
   color: var(--color-dark-grey);
   font-size: 0.625rem;
+
+  button {
+    padding: 0.125rem 0.5rem;
+    border: 1px solid currentColor;
+    border-radius: 100px;
+    background: transparent;
+    color: inherit;
+    font-size: inherit;
+    cursor: pointer;
+  }
 }
 
 .site-player-cover-enter-active,

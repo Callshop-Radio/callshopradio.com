@@ -46,13 +46,12 @@ export async function usePlayerFeed() {
 	);
 
 	const visible = useDocumentVisibility();
-	useIntervalFn(
-		() => {
-			if (visible.value === "visible") void refresh();
-		},
-		20_000,
-		{ immediate: false },
-	);
+	useIntervalFn(() => {
+		if (visible.value === "visible") void refresh();
+	}, 20_000);
+	watch(visible, (value) => {
+		if (value === "visible") void refresh();
+	});
 	useEventListener("online", () => {
 		void refresh();
 	});

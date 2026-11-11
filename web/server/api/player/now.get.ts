@@ -32,6 +32,18 @@ async function fetchJson<T>(url: string, timeout: number): Promise<T | null> {
 	}
 }
 
+let lastGoodFeed: PlayerFeed | null = null;
+let lastGoodAt = 0;
+const LAST_GOOD_MS = 5 * 60_000;
+const TOTAL_BUDGET_MS = 3_000;
+
+function lastGoodOrUnknown(audioUrl: string, fallbackUrl: string): PlayerFeed {
+	if (lastGoodFeed && Date.now() - lastGoodAt < LAST_GOOD_MS) {
+		return { ...lastGoodFeed, updatedAt: new Date().toISOString() };
+	}
+	return unknownFeed({ audioUrl, fallbackUrl });
+}
+
 /**
  * One cached endpoint for the row and the video panel. The manager is the only
  * source with editorial links; AzuraCast, the static copy and Icecast keep the
@@ -60,9 +72,19 @@ export default defineCachedEventHandler(
 
 		setHeader(event, "cache-control", "no-store");
 
+		const deadline = Date.now() + TOTAL_BUDGET_MS;
+		async function fetchWithin<T>(
+			url: string,
+			maxTimeout: number,
+		): Promise<T | null> {
+			const remaining = deadline - Date.now();
+			if (remaining <= 0) return null;
+			return fetchJson<T>(url, Math.min(maxTimeout, remaining));
+		}
+
 		let managerFallback: PlayerFeed | null = null;
 		try {
-			const manager = await fetchJson<PlayerFeed>(
+			const manager = await fetchWithin<PlayerFeed>(
 				`${managerBase}${MANAGER_FEED}`,
 				1_500,
 			);
@@ -73,6 +95,8 @@ export default defineCachedEventHandler(
 						...manager.audio,
 						fallbackUrl: manager.audio?.fallbackUrl || fallbackUrl,
 					};
+					lastGoodFeed = manager;
+					lastGoodAt = Date.now();
 					return manager;
 				}
 				managerFallback = manager;
@@ -80,7 +104,7 @@ export default defineCachedEventHandler(
 
 			let feed: PlayerFeed | null = null;
 
-			const nowPlaying = await fetchJson<unknown[] | Record<string, unknown>>(
+			const nowPlaying = await fetchWithin<unknown[] | Record<string, unknown>>(
 				`${STREAM_BASE}/api/nowplaying`,
 				1_000,
 			);
@@ -90,7 +114,7 @@ export default defineCachedEventHandler(
 			}
 
 			if (!feed) {
-				const staticNowPlaying = await fetchJson<Record<string, unknown>>(
+				const staticNowPlaying = await fetchWithin<Record<string, unknown>>(
 					`${STREAM_BASE}/api/nowplaying_static/callshopradio.json`,
 					1_000,
 				);
@@ -100,7 +124,7 @@ export default defineCachedEventHandler(
 			}
 
 			if (!feed) {
-				const icecast = await fetchJson<Record<string, unknown>>(
+				const icecast = await fetchWithin<Record<string, unknown>>(
 					`${STREAM_BASE}/status-json.xsl`,
 					500,
 				);
@@ -109,7 +133,13 @@ export default defineCachedEventHandler(
 				}
 			}
 
-			const chosen = feed || managerFallback || unknownFeed({ audioUrl, fallbackUrl });
+			const chosen =
+				feed || managerFallback || lastGoodOrUnknown(audioUrl, fallbackUrl);
+
+			if (chosen.state !== "unknown") {
+				lastGoodFeed = chosen;
+				lastGoodAt = Date.now();
+			}
 
 			if (chosen.source !== "manager" && !chosen.video) {
 				const videoPayload = await fetchJson<Record<string, unknown>>(
@@ -118,14 +148,16 @@ export default defineCachedEventHandler(
 				);
 				const video: PlayerVideo | null = videoFromStatus(videoPayload, {
 					hlsUrl: videoHlsUrl,
-					title: chosen.title,
+					title: chosen.show?.title || "Live Video",
 				});
 				if (video?.live) chosen.video = video;
 			}
 
-			return chosen;
+			return chosen.state === "unknown"
+				? lastGoodOrUnknown(audioUrl, fallbackUrl)
+				: chosen;
 		} catch {
-			return managerFallback || unknownFeed({ audioUrl, fallbackUrl });
+			return managerFallback || lastGoodOrUnknown(audioUrl, fallbackUrl);
 		}
 	},
 	{ maxAge: 10, swr: true, name: "public-player" },

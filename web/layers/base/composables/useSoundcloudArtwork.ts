@@ -27,7 +27,6 @@ export const useSoundcloudArtwork = () => {
 	}
 
 	function playTrack(item: ArtworkItem) {
-		if (!item?.soundcloud?.tracks?.[0]) return;
 		void controller.playSet(item, getSoundcloudArtwork(item) || null);
 	}
 
@@ -36,4 +35,3 @@ export const useSoundcloudArtwork = () => {
 		playTrack,
 	};
 };
-

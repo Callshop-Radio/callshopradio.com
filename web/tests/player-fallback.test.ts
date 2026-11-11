@@ -34,8 +34,16 @@ test("Icecast picks the /callshopradio source from an array", () => {
 	const status = {
 		icestats: {
 			source: [
-				{ listenurl: "/listen/callshopradio/radio.mp3", title: "Set", artist: "Artist" },
-				{ listenurl: "/listen/callshopradio-wien/radio.mp3", title: "Wien", artist: "X" },
+				{
+					listenurl: "/listen/callshopradio/radio.mp3",
+					title: "Set",
+					artist: "Artist",
+				},
+				{
+					listenurl: "/listen/callshopradio-wien/radio.mp3",
+					title: "Wien",
+					artist: "X",
+				},
 			],
 		},
 	};
@@ -62,10 +70,36 @@ test("video status rejects a non-boolean live value", () => {
 });
 
 test("unknown feed keeps the audio URL and has no links", () => {
-	const feed = unknownFeed({ audioUrl, fallbackUrl: "https://legacy.example/radio" });
+	const feed = unknownFeed({
+		audioUrl,
+		fallbackUrl: "https://legacy.example/radio",
+	});
 	assert.equal(feed.state, "unknown");
 	assert.equal(feed.audio.url, audioUrl);
 	assert.equal(feed.audio.fallbackUrl, "https://legacy.example/radio");
 	assert.equal(feed.show, null);
 	assert.deepEqual(feed.artists, []);
+});
+
+test("AzuraCast offline is an offline feed", () => {
+	const feed = feedFromAzuraCast(
+		{ is_online: false, now_playing: { song: { title: "X" } } },
+		{ audioUrl },
+	);
+	assert.equal(feed.state, "offline");
+	assert.equal(feed.track, null);
+	assert.equal(feed.title, "Callshop Radio");
+});
+
+test("Icecast without a matching source is offline", () => {
+	const feed = feedFromIcecast(
+		{
+			icestats: {
+				source: [{ listenurl: "/callshopradio-wien/radio.mp3", title: "Wien" }],
+			},
+		},
+		{ audioUrl },
+	);
+	assert.equal(feed.state, "offline");
+	assert.equal(feed.track, null);
 });
