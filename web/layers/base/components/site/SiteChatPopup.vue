@@ -358,10 +358,11 @@ onBeforeUnmount(() => {
 
 .chat-popup__grip {
   flex: none;
-  height: 0.375rem;
-  margin: 0.25rem 0.75rem 0;
+  width: 2.25rem;
+  height: 0.25rem;
+  margin: 0.4375rem auto 0;
   border-radius: 999px;
-  background-color: transparent;
+  background-color: color-mix(in srgb, var(--color-text) 20%, transparent);
   cursor: ns-resize;
   touch-action: none;
   transition: background-color var(--transition-fast);

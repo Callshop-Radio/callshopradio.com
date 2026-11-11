@@ -1,139 +1,142 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
-import { roleLabel } from "~/utils/accountRole";
-
 definePageMeta({ middleware: "account" });
 
 const copy = useAccountCopy();
 const request = useAccountRequest();
 const account = useAccountStore();
+const route = useRoute();
+const router = useRouter();
 const localePath = useLocalePath();
-const { locale } = useI18n();
 
-const profile = ref<{
-	id: number;
-	displayName: string | null;
-	email: string | null;
-	role: string;
-	counts: { savedSets: number; lists: number };
-} | null>(null);
-const state = ref<"loading" | "ready" | "error">("loading");
-const badge = computed(() => roleLabel(profile.value?.role, locale.value));
+type Tab = "saves" | "profile";
 
-async function load() {
+const activeTab = computed<Tab>(() =>
+	route.query.tab === "profile" ? "profile" : "saves",
+);
+
+function selectTab(tab: Tab) {
+	router.replace({
+		query: tab === "profile" ? { tab: "profile" } : {},
+	});
+}
+
+const displayName = ref("");
+
+async function loadName() {
 	try {
-		const response = await request<{ user: typeof profile.value }>("me");
-		profile.value = response.user;
-		state.value = "ready";
+		const response = await request<{
+			user: { displayName: string | null; email: string | null };
+		}>("me");
+		displayName.value = response.user.displayName || response.user.email || "";
 	} catch {
-		state.value = "error";
+		// The tabs already render their own error state.
 	}
 }
 
 async function logout() {
-	let revoked = true;
 	try {
-		const result = await request<{ revoked?: boolean }>("auth/logout", {
-			method: "POST",
-		});
-		revoked = result?.revoked !== false;
+		await request("auth/logout", { method: "POST" });
 	} catch {
-		revoked = false;
-	} finally {
-		account.reset();
-		// The cookie is cleared locally even when the manager cannot revoke the
-		// token; say so instead of pretending the logout was clean.
-		await navigateTo(
-			revoked
-				? localePath("/")
-				: localePath({ path: "/konto/anmelden", query: { revoked: "0" } }),
-		);
+		// The local session is dropped regardless.
 	}
+	account.reset();
+	await navigateTo(localePath("/"));
 }
 
-onMounted(load);
+onMounted(loadName);
 </script>
 
 <template>
-	<AccountShell
-		:title="copy.account"
-		:subtitle="profile?.displayName || profile?.email || ''"
-	>
-		<p v-if="state === 'error'">{{ copy.unavailable }}</p>
-		<template v-else>
-			<p v-if="badge" class="account-role">
-				<span class="account-role__label">{{ copy.role }}</span>
-				<span class="account-role__value">{{ badge }}</span>
-			</p>
-			<div class="account-cards">
-				<NuxtLink :to="localePath('/konto/listen')" class="account-card">
-					<span class="account-card__value">{{ profile?.counts.lists ?? "â€“" }}</span>
-					<span>{{ copy.openLists }}</span>
-				</NuxtLink>
-				<NuxtLink :to="localePath('/konto/profil')" class="account-card">
-					<span class="account-card__value">{{ profile?.counts.savedSets ?? "â€“" }}</span>
-					<span>{{ copy.savedSets }}</span>
-				</NuxtLink>
-			</div>
-			<button type="button" class="account-secondary" @click="logout">{{ copy.logout }}</button>
-		</template>
+	<AccountShell :title="copy.account" :subtitle="displayName">
+		<div class="account-tabs" role="tablist" aria-label="Konto">
+			<button
+				type="button"
+				role="tab"
+				class="account-tab"
+				:class="{ 'is-active': activeTab === 'saves' }"
+				:aria-selected="activeTab === 'saves'"
+				@click="selectTab('saves')"
+			>
+				{{ copy.savedSets }}
+			</button>
+			<button
+				type="button"
+				role="tab"
+				class="account-tab"
+				:class="{ 'is-active': activeTab === 'profile' }"
+				:aria-selected="activeTab === 'profile'"
+				@click="selectTab('profile')"
+			>
+				{{ copy.profile }}
+			</button>
+		</div>
+
+		<section v-if="activeTab === 'saves'" class="account-tab-panel">
+			<AccountSaves />
+		</section>
+		<section v-else class="account-tab-panel">
+			<AccountProfile />
+		</section>
+
+		<button type="button" class="account-signout" @click="logout">
+			{{ copy.logout }}
+		</button>
 	</AccountShell>
 </template>
 
 <style scoped>
-.account-role {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.6rem;
-	margin: 0;
-	padding: 0.4rem 0.9rem;
-	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
-	border-radius: 999px;
-	font-size: 0.85rem;
+.account-tabs {
+	display: flex;
+	flex-flow: row wrap;
+	gap: 0.4rem;
+	max-width: 46rem;
+	padding-bottom: var(--mid-padding);
+	border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
 }
 
-.account-role__label {
-	opacity: 0.6;
+.account-tab {
+	padding: 0.45rem 0.9rem;
+	border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+	border-radius: var(--pill-radius);
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-size: 0.8rem;
 	text-transform: uppercase;
 	letter-spacing: 0.08em;
-	font-size: 0.7rem;
+	cursor: pointer;
+	transition:
+		background-color var(--transition-fast),
+		color var(--transition-fast),
+		border-color var(--transition-fast);
+
+	&:hover {
+		border-color: currentColor;
+	}
+
+	&.is-active {
+		background: var(--color-text);
+		border-color: var(--color-text);
+		color: var(--color-bg);
+	}
 }
 
-.account-role__value {
-	font-weight: 600;
+.account-tab-panel {
+	max-width: 46rem;
+	padding-top: var(--small-padding);
 }
 
-.account-cards {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-	gap: 1rem;
-}
-
-.account-card {
-	display: grid;
-	gap: 0.35rem;
-	padding: 1.25rem;
-	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
-	border-radius: 14px;
-	text-decoration: none;
-	color: inherit;
-}
-
-.account-card__value {
-	font-size: 2rem;
-	font-weight: 600;
-}
-
-.account-secondary {
+.account-signout {
 	justify-self: start;
+	margin-top: var(--base-margin);
 	border: 0;
 	background: none;
 	color: inherit;
-	opacity: 0.75;
+	opacity: 0.7;
 	text-decoration: underline;
 	cursor: pointer;
 	font: inherit;
 }
 </style>
-

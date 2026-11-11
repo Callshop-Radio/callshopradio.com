@@ -1342,9 +1342,6 @@ onUnmounted(() => {
 			/>
 		</Transition>
 
-		<!-- Desktop: gradient blur behind the fixed filter dock -->
-		<div class="content-grid__filter-blur" aria-hidden="true" />
-
 		<!-- Desktop Filter Panel -->
 		<div
 			ref="filterSection"

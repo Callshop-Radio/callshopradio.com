@@ -12,8 +12,7 @@ const props = withDefaults(
 
 const account = useAccountStore();
 const copy = useAccountCopy();
-const route = useRoute();
-const localePath = useLocalePath();
+const { openLogin } = useAccountUi();
 const request = useAccountRequest();
 const { track } = useAccountTracking();
 
@@ -67,9 +66,7 @@ async function toggle() {
 	if (account.sessionState === "unknown") await account.loadSession();
 	if (account.sessionState !== "authenticated") {
 		// v1 deliberately does not replay the mutation after login.
-		await navigateTo(
-			localePath({ path: "/konto/anmelden", query: { next: route.fullPath } }),
-		);
+		openLogin();
 		return;
 	}
 

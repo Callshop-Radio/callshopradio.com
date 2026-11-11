@@ -1,50 +1,119 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted } from "vue";
 import { useAccountStore } from "~/stores/accountStore";
 
 const localePath = useLocalePath();
 const account = useAccountStore();
-const enabled = ref(false);
+const { openLogin } = useAccountUi();
 
-// The icon only appears when the manager reports listener accounts as on.
+const authenticated = computed(() => account.sessionState === "authenticated");
+
+// Always visible: guests open the sign-in popup, signed-in listeners go to
+// their account page.
 onMounted(async () => {
-	enabled.value = await account.loadStatus();
+	if (account.sessionState === "unknown") {
+		await account.loadSession().catch(() => {});
+	}
 });
 </script>
 
 <template>
-	<NuxtLink v-if="enabled" :to="localePath('/konto')" :aria-label="'Konto'">
-		<svg
-			width="24"
-			height="24"
-			viewBox="0 0 24 24"
-			fill="none"
-			xmlns="http://www.w3.org/2000/svg"
+	<span class="account-trigger">
+		<NuxtLink
+			v-if="authenticated"
+			class="account-trigger__link"
+			:to="localePath('/konto')"
+			aria-label="Konto"
 		>
-			<circle cx="12" cy="12" r="11.5" stroke="currentColor" />
-			<circle cx="12" cy="9.2" r="2.7" fill="currentColor" />
-			<path
-				d="M6.7 17.4c.5-2.5 2.7-4.1 5.3-4.1s4.8 1.6 5.3 4.1"
-				stroke="currentColor"
-				stroke-width="1.7"
-				stroke-linecap="round"
-			/>
-		</svg>
-	</NuxtLink>
+			<svg
+				width="24"
+				height="24"
+				viewBox="0 0 24 24"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<circle cx="12" cy="12" r="11.5" stroke="currentColor" />
+				<circle
+					cx="12"
+					cy="9.2"
+					r="2.9"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.5"
+				/>
+				<path
+					d="M6.7 17.4c.5-2.5 2.7-4.1 5.3-4.1s4.8 1.6 5.3 4.1"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.5"
+					stroke-linecap="round"
+				/>
+			</svg>
+		</NuxtLink>
+		<button
+			v-else
+			type="button"
+			class="account-trigger__button"
+			aria-label="Anmelden"
+			@click="openLogin"
+		>
+			<svg
+				width="24"
+				height="24"
+				viewBox="0 0 24 24"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<circle cx="12" cy="12" r="11.5" stroke="currentColor" />
+				<circle
+					cx="12"
+					cy="9.2"
+					r="2.9"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.5"
+				/>
+				<path
+					d="M6.7 17.4c.5-2.5 2.7-4.1 5.3-4.1s4.8 1.6 5.3 4.1"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.5"
+					stroke-linecap="round"
+				/>
+			</svg>
+		</button>
+	</span>
 </template>
 
 <style lang="postcss" scoped>
-svg {
-	overflow: visible;
-	width: calc(var(--base-font-size) + var(--small-padding) * 2);
-	height: calc(var(--base-font-size) + var(--small-padding) * 2);
-	cursor: pointer;
-	color: var(--color-text);
+.account-trigger {
+  display: inline-flex;
 
-	&:hover {
-		@media (min-width: 1024px) {
-			color: var(--color-pink);
-		}
-	}
+  &__link,
+  &__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  svg {
+    overflow: visible;
+    width: calc(var(--base-font-size) + var(--small-padding) * 2);
+    height: calc(var(--base-font-size) + var(--small-padding) * 2);
+    cursor: pointer;
+    color: inherit;
+  }
+
+  &__link:hover,
+  &__button:hover {
+    @media (min-width: 1024px) {
+      color: var(--color-pink);
+    }
+  }
 }
 </style>

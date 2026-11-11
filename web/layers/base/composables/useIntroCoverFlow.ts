@@ -27,10 +27,20 @@ const COVER_FLOW_SHIFT_HIDDEN_COMPACT = 19;
 
 type CoverFlowItem = { _id?: string };
 
+type CoverFlowOrientation = "horizontal" | "vertical";
+
+const VERTICAL_STOPS = {
+	default: { shift1: 0.6, shift2: 1.6, shift3: 2.8, shiftHidden: 4 },
+	wide: { shift1: 0.7, shift2: 1.8, shift3: 3.1, shiftHidden: 4.4 },
+	compact: { shift1: 0.4, shift2: 1, shift3: 1.7, shiftHidden: 2.6 },
+};
+
 export function useIntroCoverFlow(
 	items: Ref<CoverFlowItem[]>,
 	stageRef: Ref<HTMLElement | null>,
+	options: { orientation?: CoverFlowOrientation } = {},
 ) {
+	const orientation = options.orientation ?? "horizontal";
 	const currentIndex = ref(0);
 	const isAnimating = ref(false);
 	const visualOffsets = ref<Record<string, number>>({});
@@ -87,6 +97,14 @@ export function useIntroCoverFlow(
 	});
 
 	const total = computed(() => items.value.length);
+
+	// The card-file stack only fades downward in small steps; horizontal
+	// coverflow keeps its wide sideways offsets.
+	const verticalStops = computed(() => {
+		if (isCompactLayout.value) return VERTICAL_STOPS.compact;
+		if (isWideLayout.value) return VERTICAL_STOPS.wide;
+		return VERTICAL_STOPS.default;
+	});
 
 	function mod(index: number, count: number) {
 		return ((index % count) + count) % count;
@@ -201,7 +219,8 @@ export function useIntroCoverFlow(
 	}
 
 	function getShiftMagnitude(abs: number) {
-		const { shift1, shift2, shift3, shiftHidden } = shiftStops.value;
+		const { shift1, shift2, shift3, shiftHidden } =
+			orientation === "vertical" ? verticalStops.value : shiftStops.value;
 		return interpolate(abs, [
 			[0, 0],
 			[1, shift1],
@@ -212,6 +231,17 @@ export function useIntroCoverFlow(
 	}
 
 	function getScale(abs: number) {
+		if (orientation === "vertical") {
+			// The pulled-out card takes the full stage width; the pile sits
+			// slightly inset and lower behind it.
+			return interpolate(abs, [
+				[0, 1],
+				[1, 0.97],
+				[2, 0.94],
+				[3, 0.91],
+			]);
+		}
+
 		const scale1 = isWideLayout.value ? 0.84 : 0.86;
 		const scale2 = isWideLayout.value ? 0.7 : 0.74;
 		const farScale = isWideLayout.value ? 0.54 : 0.68;
@@ -255,10 +285,26 @@ export function useIntroCoverFlow(
 	function cardStyle(index: number): CSSProperties {
 		const offset = getVisualOffset(index);
 		const abs = Math.abs(offset);
-		const xRem = getShiftMagnitude(abs) * Math.sign(offset);
+		const shift = getShiftMagnitude(abs);
 		const scale = getScale(abs);
 		const id = items.value[index]?._id;
 		const zIndex = id ? (zIndices.value[id] ?? zTier(abs)) : zTier(abs);
+
+		if (orientation === "vertical") {
+			// The active card sits at the top of the stage; every other card
+			// stacks below it with a small baseline gap so the pile is visible.
+			const baseline = abs < 0.5 ? 0 : 1.6;
+			const yRem = shift + baseline;
+			return {
+				transform: `translate3d(-50%, ${yRem}rem, 0) scale(${scale})`,
+				filter: `blur(${getBlur(abs)}px)`,
+				opacity: getOpacity(abs),
+				zIndex,
+				pointerEvents: Math.round(abs) === 0 ? "auto" : "none",
+			};
+		}
+
+		const xRem = shift * Math.sign(offset);
 
 		return {
 			transform: `translate3d(calc(-50% + ${xRem}rem), -50%, 0) scale(${scale})`,
@@ -387,6 +433,11 @@ export function useIntroCoverFlow(
 	useSwipe(() => stageRef.value, {
 		threshold: 60,
 		onSwipeEnd(_e, direction) {
+			if (orientation === "vertical") {
+				if (direction === "up") scrollNext();
+				if (direction === "down") scrollPrev();
+				return;
+			}
 			if (direction === "left") scrollNext();
 			if (direction === "right") scrollPrev();
 		},

@@ -5,9 +5,19 @@ defineProps<{
 </script>
 
 <template>
-	<ModuleIntroCoverFlow :items="profiles" nav-label="Profil" area="pool">
+	<ModuleIntroCoverFlow
+		:items="profiles"
+		nav-label="Profil"
+		area="pool"
+		orientation="vertical"
+	>
 		<template #default="{ item, mediaActive }">
-			<ModuleIntroPool layout="cover-flow" :pool-item="item" :media-active="mediaActive" />
+			<ModuleIntroPool
+				layout="cover-flow"
+				:pool-item="item"
+				:media-active="mediaActive"
+				orientation="vertical"
+			/>
 		</template>
 	</ModuleIntroCoverFlow>
 </template>

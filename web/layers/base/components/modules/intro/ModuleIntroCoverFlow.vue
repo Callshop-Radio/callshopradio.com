@@ -18,11 +18,14 @@ const props = withDefaults(
 		equalizeCardHeights?: boolean;
 		/** Content area — drives accent color for dots and arrow hover */
 		area?: "show" | "pool" | "words";
+		/** Fan direction. Pool uses a vertical card-file stack. */
+		orientation?: "horizontal" | "vertical";
 	}>(),
 	{
 		navLabel: "Slide",
 		equalizeCardHeights: false,
 		area: "show",
+		orientation: "horizontal",
 	},
 );
 
@@ -41,10 +44,17 @@ const {
 	scrollNext,
 	scrollPrev,
 	scrollTo,
-} = useIntroCoverFlow(itemsRef, stageRef);
+} = useIntroCoverFlow(itemsRef, stageRef, {
+	orientation: props.orientation,
+});
+
+const isVertical = computed(() => props.orientation === "vertical");
+const needsCardHeight = computed(
+	() => props.equalizeCardHeights || isVertical.value,
+);
 
 function measureUniformCardHeight() {
-	if (!props.equalizeCardHeights || !stageRef.value) return;
+	if (!needsCardHeight.value || !stageRef.value) return;
 
 	nextTick(() => {
 		requestAnimationFrame(() => {
@@ -67,7 +77,16 @@ function measureUniformCardHeight() {
 }
 
 const stageStyle = computed(() => {
-	if (!props.equalizeCardHeights || !uniformCardHeight.value) return undefined;
+	if (!needsCardHeight.value || !uniformCardHeight.value) return undefined;
+
+	if (isVertical.value) {
+		// The stack fans below the pulled-out card, so the stage needs room for
+		// the card plus the visible pile and the shadow.
+		return {
+			"--cover-flow-uniform-height": `${uniformCardHeight.value}px`,
+			minHeight: `calc(${uniformCardHeight.value}px + var(--cover-flow-stack-room, 12rem))`,
+		};
+	}
 
 	return {
 		"--cover-flow-uniform-height": `${uniformCardHeight.value}px`,
@@ -87,7 +106,7 @@ watch(
 onMounted(() => {
 	measureUniformCardHeight();
 
-	if (!props.equalizeCardHeights || !stageRef.value) return;
+	if (!needsCardHeight.value || !stageRef.value) return;
 
 	resizeObserver = new ResizeObserver(() => measureUniformCardHeight());
 	resizeObserver.observe(stageRef.value);
@@ -106,7 +125,10 @@ onUnmounted(() => {
 	<div
 		v-if="total > 0"
 		class="intro-cover-flow"
-		:class="`intro-cover-flow--${area}`"
+		:class="[
+			`intro-cover-flow--${area}`,
+			{ 'intro-cover-flow--vertical': isVertical },
+		]"
 	>
 		<div
 			class="cover-flow"
@@ -116,6 +138,8 @@ onUnmounted(() => {
 			tabindex="0"
 			@keydown.left.prevent="scrollPrev"
 			@keydown.right.prevent="scrollNext"
+			@keydown.up.prevent="scrollPrev"
+			@keydown.down.prevent="scrollNext"
 			@keydown.home.prevent="scrollTo(0)"
 			@keydown.end.prevent="scrollTo(total - 1)"
 		>
@@ -236,6 +260,81 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  /* Card-file stack: room below the pulled-out card for the pile. */
+  &--vertical {
+    --cover-flow-stack-room: 5rem;
+
+    .cover-flow {
+      width: 100%;
+      margin-inline: auto;
+      padding-inline: 0;
+    }
+
+    .cover-flow__dots {
+      margin-top: var(--small-padding);
+    }
+
+    .cover-flow__stage {
+      min-height: 24rem;
+    }
+
+    .cover-flow__card-wrap {
+      top: 0;
+      width: 100%;
+      transition:
+        transform 0.72s cubic-bezier(0.3, 1.14, 0.4, 1),
+        opacity 0.72s var(--cover-flow-ease),
+        filter 0.72s var(--cover-flow-ease);
+    }
+
+    /* The card that has been pulled out of the stack carries the shadow. */
+    .cover-flow__card-wrap :deep(.pool-main) {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      transition: box-shadow 0.72s var(--cover-flow-ease);
+    }
+
+    .cover-flow__card-wrap[data-offset="0"] :deep(.pool-main) {
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Controls move below the deck so the wide card stays untouched. */
+    .cover-flow__arrow {
+      top: 100%;
+      margin-top: var(--small-padding);
+      transform: none;
+      width: 2.25rem;
+      height: 2.25rem;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
+      border-radius: 999px;
+      background-color: var(--color-bg);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+    }
+
+    .cover-flow__arrow--prev {
+      left: calc(50% - 7rem);
+      right: auto;
+      svg {
+        transform: rotate(90deg);
+      }
+    }
+
+    .cover-flow__arrow--next {
+      right: calc(50% - 7rem);
+      left: auto;
+      svg {
+        transform: rotate(90deg);
+      }
+    }
+
+    .cover-flow__dots {
+      margin-top: var(--small-padding);
+      min-height: 2.25rem;
+    }
+  }
 }
 
 .cover-flow {
@@ -350,7 +449,8 @@ onUnmounted(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cover-flow__card-wrap {
+  .cover-flow__card-wrap,
+  .intro-cover-flow--vertical .cover-flow__card-wrap {
     transition: none;
   }
 }
@@ -364,6 +464,14 @@ onUnmounted(() => {
 
   .cover-flow__stage {
     min-height: 26rem;
+  }
+
+  .intro-cover-flow--vertical {
+    --cover-flow-stack-room: 3.5rem;
+
+    .cover-flow__stage {
+      min-height: 30rem;
+    }
   }
 
   .cover-flow__arrow {

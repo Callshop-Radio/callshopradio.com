@@ -85,6 +85,14 @@ export const SLUG_PAGE_QUERY = defineQuery(`
   ${SEO_QUERY}
 }`);
 
+/** Combined legal page: legal notice and privacy in one content grid. */
+export const LEGAL_QUERY = defineQuery(`
+*[_type == "page" && slug.current in ["legal-notice", "privacy"]] {
+  ...,
+  content[] ${I18N_RICH_TEXT_VALUE_QUERY},
+  ${SEO_QUERY}
+}`);
+
 export const SCHEDULE_QUERY = defineQuery(`
 *[_type == "timetable"] | order(_updatedAt desc)[0] {
   ...,

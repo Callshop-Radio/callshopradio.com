@@ -243,8 +243,9 @@ const toPack = (pack: {
 
 export const useChatRoom = () => {
 	const config = useRuntimeConfig();
-	const localePath = useLocalePath();
 	const real = Boolean(config.public.chatReal);
+	const account = useAccountStore();
+	const accountUi = useAccountUi();
 
 	const packs = useState<ChatPack[]>("chat-packs", () =>
 		real ? [] : CHAT_PACKS,
@@ -252,7 +253,10 @@ export const useChatRoom = () => {
 	const messages = useState<ChatMessage[]>("chat-mock-messages", () =>
 		real ? [] : SEED(),
 	);
-	const signedIn = useState<boolean>("chat-mock-signed-in", () => false);
+	const mockSignedIn = useState<boolean>("chat-mock-signed-in", () => false);
+	const signedIn = computed(() =>
+		real ? account.sessionState === "authenticated" : mockSignedIn.value,
+	);
 	const host = useState<ChatHost | null>("chat-mock-host", () =>
 		real ? null : { name: "Mara", showTitle: "Bassline Diaries" },
 	);
@@ -334,14 +338,14 @@ export const useChatRoom = () => {
 
 	const signIn = () => {
 		if (real) {
-			window.location.assign(localePath("/konto/anmelden"));
+			accountUi.openLogin();
 			return;
 		}
-		signedIn.value = true;
+		mockSignedIn.value = true;
 	};
 
 	const signOut = () => {
-		signedIn.value = false;
+		mockSignedIn.value = false;
 	};
 
 	const hostJoin = () => {
@@ -387,7 +391,7 @@ export const useChatRoom = () => {
 	const reset = () => {
 		if (real) return;
 		messages.value = SEED();
-		signedIn.value = false;
+		mockSignedIn.value = false;
 		host.value = { name: "Mara", showTitle: "Bassline Diaries" };
 	};
 
@@ -470,6 +474,9 @@ export const useChatRoom = () => {
 
 	if (real) {
 		onMounted(() => {
+			if (account.sessionState === "unknown") {
+				account.loadSession().catch(() => {});
+			}
 			if (polling) return;
 			polling = true;
 			loadPacks().catch(() => {});

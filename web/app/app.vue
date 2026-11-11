@@ -1,6 +1,16 @@
 <script setup lang="ts">
 const { favicon } = useUtils();
 favicon();
+
+const route = useRoute();
+const mainStore = useMainStore();
+
+// The landing hero gradient now lives on a fixed layer behind the whole page,
+// so the content scrolls over it.
+const isHome = computed(() => String(route.name ?? "").startsWith("index"));
+const backdropType = computed(
+	() => mainStore?.currentHeroContentType ?? "sets",
+);
 </script>
 
 <template>
@@ -10,6 +20,21 @@ favicon();
        throttle=50 keeps it visible even on quick cache-hit navigations. -->
   <NuxtLoadingIndicator color="var(--color-pink)" :height="3" :throttle="50" />
   <div class="site">
+    <div
+      v-if="isHome"
+      class="hero-backdrop"
+      :class="{ 'is-dark': mainStore?.isDarkMode }"
+      aria-hidden="true"
+    >
+      <AnimatedGradient
+        class="hero-backdrop__blob hero-backdrop__blob--a"
+        :type="backdropType"
+      />
+      <AnimatedGradient
+        class="hero-backdrop__blob hero-backdrop__blob--b"
+        :type="backdropType"
+      />
+    </div>
     <SiteHead />
     <main>
       <div class="page-content">
@@ -23,6 +48,7 @@ favicon();
     </main>
     <SiteFoot class="footer" />
     <SiteChatPopup />
+    <SiteLoginPopup />
     <ElementsPreviewMode />
   </div>
 </template>
@@ -58,6 +84,56 @@ favicon();
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  /* Content scrolls over the fixed landing gradient. */
+  main,
+  .footer {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .hero-backdrop__blob {
+    position: absolute;
+    opacity: 0.62;
+    filter: blur(34px);
+  }
+
+  .hero-backdrop__blob :deep(svg path) {
+    opacity: 1;
+  }
+
+  .hero-backdrop__blob--a {
+    top: -18vh;
+    left: -24vw;
+    width: 88vw;
+    height: 92vh;
+  }
+
+  .hero-backdrop__blob--b {
+    right: -22vw;
+    bottom: -26vh;
+    width: 64vw;
+    height: 74vh;
+    opacity: 0.4;
+    filter: blur(50px);
+  }
+
+  .hero-backdrop.is-dark .hero-backdrop__blob {
+    opacity: 1;
+    filter: blur(30px);
+
+    &--b {
+      opacity: 0.78;
+    }
   }
 
   .menu,

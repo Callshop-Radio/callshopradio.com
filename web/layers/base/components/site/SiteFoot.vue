@@ -56,6 +56,7 @@ const copy = computed(() => {
 		chat: "Chat",
 		contact: de ? "Kontakt" : "Contact",
 		legal: de ? "Impressum" : "Legal Notice",
+		legalPrivacy: de ? "Impressum & Datenschutz" : "Legal & Privacy",
 		privacy: de ? "Datenschutz" : "Privacy",
 		account: de ? "Konto" : "Account",
 		index: "Index",
@@ -261,13 +262,8 @@ function scrollToTop() {
 							</NuxtLink>
 						</li>
 						<li>
-							<NuxtLink :to="localePath('/legal-notice')">
-								{{ copy.legal }}
-							</NuxtLink>
-						</li>
-						<li>
-							<NuxtLink :to="localePath('/privacy')">
-								{{ copy.privacy }}
+							<NuxtLink :to="localePath('/legal')">
+								{{ copy.legalPrivacy }}
 							</NuxtLink>
 						</li>
 						<li>

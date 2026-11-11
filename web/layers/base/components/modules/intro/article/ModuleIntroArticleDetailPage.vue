@@ -325,7 +325,7 @@ const currentArticleText = computed(() =>
       border-bottom-right-radius: 0;
       border-top-right-radius: 8px;
       border-top-left-radius: 8px;
-      padding: calc(var(--small-padding) / 1.5) calc(var(--base-padding) * 1.5);
+      padding: calc(var(--small-padding) / 2) calc(var(--base-padding) * 1.5);
       font-size: var(--base-font-size);
     }
   }

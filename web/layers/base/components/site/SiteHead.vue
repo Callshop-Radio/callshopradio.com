@@ -45,7 +45,6 @@ const togglePlayerVisibility = () => {
 				</div>
 			</NuxtLink>
 			<div class="header__toggle-section">
-				<SiteDarkMode />
 				<nav class="menu-main tags">
 					<ul>
 						<NuxtLink :to="localePath('/shows')" :class="`tag shows`">
@@ -179,7 +178,7 @@ const togglePlayerVisibility = () => {
     flex-flow: row wrap;
     justify-content: space-between;
     align-items: center;
-    gap: var(--base-padding);
+    gap: var(--mid-margin);
   }
   &__audio-player-section {
     width: 100%;
@@ -315,7 +314,7 @@ const togglePlayerVisibility = () => {
     flex-flow: row wrap;
     align-items: center;
     justify-content: flex-end;
-    gap: var(--base-padding);
+    gap: var(--mid-margin);
     list-style: none;
     margin: 0;
     padding: 0;
@@ -339,49 +338,50 @@ const togglePlayerVisibility = () => {
       }
     }
 
-    /* Tags are filled by default; hover and the active page switch them
-       back to the outlined surface state. */
+    /* Tags are outlined by default; hover and the active page fill them in
+       the section accent. */
     &.tag {
       padding: calc(var(--small-padding)) var(--base-padding);
       border: 0.09325rem solid var(--color-text);
-      background-color: var(--color-text);
-      color: var(--color-white);
+      background-color: transparent;
+      color: var(--color-text);
       font-family: var(--font-text-semibold);
 
       &.pool {
         border-color: var(--color-blue);
-        background-color: var(--color-blue);
+        color: var(--color-blue);
       }
 
       &.shows {
         border-color: var(--color-pink);
-        background-color: var(--color-pink);
+        color: var(--color-pink);
       }
 
       &.words {
         border-color: var(--color-green);
-        background-color: var(--color-green);
+        color: var(--color-green);
       }
 
       @media (min-width: 1024px) {
         &.router-link-active,
         &.parent-active,
         &:hover {
-          background-color: var(--color-bg);
-          color: var(--color-text);
+          background-color: var(--color-text);
+          border-color: var(--color-text);
+          color: var(--color-white);
 
           &.pool {
-            color: var(--color-blue);
+            background-color: var(--color-blue);
             border-color: var(--color-blue);
           }
 
           &.shows {
-            color: var(--color-pink);
+            background-color: var(--color-pink);
             border-color: var(--color-pink);
           }
 
           &.words {
-            color: var(--color-green);
+            background-color: var(--color-green);
             border-color: var(--color-green);
           }
         }

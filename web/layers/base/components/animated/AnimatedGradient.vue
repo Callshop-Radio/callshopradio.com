@@ -10,14 +10,17 @@ const props = defineProps({
 	},
 });
 
+// Unique filter id so several gradients can live on one page.
+const filterId = useId();
+
 const gradientColor = computed(() => {
 	switch (props.type) {
 		case "sets":
 			return "var(--color-pink)";
 		case "venue":
-			return "var(--color-blue";
+			return "var(--color-blue)";
 		case "person":
-			return "var(--color-blue";
+			return "var(--color-blue)";
 		case "article":
 			return "var(--color-green)";
 		default:
@@ -32,20 +35,20 @@ const gradientColor = computed(() => {
 			<!-- Filter for the glow/blur effect -->
 			<defs>
 				<filter
-					id="blurFilter"
+					:id="filterId"
 					x="-50%"
 					y="-50%"
 					width="200%"
-					height="200%">
+					height="200%"
+				>
 					<feGaussianBlur in="SourceGraphic" stdDeviation="20" />
 				</filter>
 			</defs>
 
 			<!-- The animated blob -->
 			<path
-				id="blob"
 				d="M200,120 C260,80 300,140 280,190 C250,250 170,240 130,190 C90,140 140,160 200,120"
-				filter="url(#blurFilter)"
+				:filter="`url(#${filterId})`"
 				opacity="0.85"
 				:fill="gradientColor"
 			>

@@ -849,6 +849,7 @@ onMounted(() => {
 			<button
 				class="load-more-button"
 				:class="{ more: shouldShowMoreButton }"
+				:aria-label="shouldShowMoreButton ? undefined : 'Show more'"
 				@click="loadMoreItems"
 			>
 				<template v-if="!shouldShowMoreButton">
@@ -1044,6 +1045,7 @@ onMounted(() => {
   }
 
   .teaser-item {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: flex-start;

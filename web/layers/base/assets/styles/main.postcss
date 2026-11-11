@@ -7,7 +7,7 @@
 /* 2026-11: one corner radius for every image and every card. Existing
    component radii (pills, avatars, round buttons) are excluded. */
 img:not(.avatar) {
-  border-radius: 3px !important;
+  border-radius: 5px !important;
 }
 
 .grid-item,
@@ -16,12 +16,154 @@ img:not(.avatar) {
 .teaser-item__content,
 .grid-item__image,
 .hero-entry-media,
-.hero-entry-content,
 .pool-intro,
 .pool-media,
 .pool-media-wrap,
 .module-carousel .embla__slide,
 .chat-popup,
 .card {
-  border-radius: 3px !important;
+  border-radius: 5px !important;
+}
+
+/* Cards with a city flag keep a square top-left corner so the flag sits
+   flush against the image. */
+.teaser-item:has(.city-tags),
+.teaser-item:has(.city-tags) .teaser-item__image,
+.teaser-item:has(.city-tags) .teaser-item__image img,
+.grid-item:has(.city-tags),
+.grid-item:has(.city-tags) .grid-item__image,
+.grid-item:has(.city-tags) .grid-item__image img {
+  border-top-left-radius: 0 !important;
+}
+
+/* Split detail cards: the card owns the outer radius, the inner seam stays
+   square. */
+.pool-intro {
+  overflow: hidden;
+}
+
+.pool-intro :is(
+  .pool-intro-content,
+  .pool-media-wrap,
+  .pool-media,
+  .pool-media img,
+  .pool-image
+) {
+  border-radius: 0 !important;
+}
+
+/* Show detail card: outer radius on the card, square inner seam, flag flush
+   with the card's top-left corner. */
+.show-intro-container {
+  border-radius: 5px !important;
+  overflow: hidden;
+}
+
+.show-intro-container :is(
+  .show-intro-info,
+  .show-intro-media,
+  .show-intro-image,
+  .show-intro-media img
+) {
+  border-radius: 0 !important;
+}
+
+.show-intro-content .city-tags {
+  left: 0 !important;
+  transform: translate(0, -100%) !important;
+}
+
+/* Set detail card: same split rule - card owns the radius, inner media and
+   seams stay square. */
+.set-content {
+  border-radius: 5px !important;
+  overflow: hidden;
+}
+
+.set-content :is(
+  .set-main,
+  .set-media,
+  .set-image,
+  .set-media img,
+  .track-artwork,
+  .track-artwork-placeholder,
+  .set-info
+) {
+  border-radius: 0 !important;
+}
+
+/* Below 900px the card reserves a padding block for the flag; place the flag
+   inside that block so it sits flush on the card instead of above the page
+   container (where the header covered it). */
+@media screen and (max-width: 900px) {
+  .show-intro-content .city-tags {
+    top: calc(var(--city-tag-height) + var(--base-margin)) !important;
+  }
+}
+
+/* Coverflow sliders: the card carries the uniform radius, the inner panels,
+   media and seams stay square. */
+.pool-content--cover-flow .pool-main,
+.set-content--cover-flow .set-main,
+.article-content--cover-flow {
+  border-radius: 5px !important;
+}
+
+.pool-content--cover-flow :is(
+  .pool-info,
+  .pool-media,
+  .pool-media img,
+  .pool-image
+),
+.set-content--cover-flow :is(
+  .set-info,
+  .set-media,
+  .set-image,
+  .set-media img,
+  .track-artwork,
+  .track-artwork-placeholder
+),
+.article-content--cover-flow :is(
+  .article-container,
+  .article-media,
+  .article-image,
+  .article-image-placeholder
+) {
+  border-radius: 0 !important;
+}
+
+/* 2026-11: one pill corner for every pill-shaped control. The ends stay
+   slightly flattened instead of a perfect semicircle, so tags, navigation and
+   buttons read as the same shape. */
+.tag:not(.city),
+.action-btn,
+.type-filter-btn,
+.tag-chip,
+.reset-tags-btn,
+.autocomplete-type,
+.sort-options,
+.genre,
+.account-action,
+.account-role,
+.login__primary,
+.save-to-list__button,
+.invite__primary,
+.composer__send,
+.composer__signin-btn,
+.message__role,
+.track-card__label,
+.picker__tab,
+.slider__nav,
+.grid-density__control,
+.grid-density__option,
+.filter-tag--city,
+.active-filter,
+.search-result-block__pill,
+.social-links--text,
+.search-input-wrapper,
+.content-grid__filter-bar,
+.content-grid__mobile-filter-bar,
+.content-grid__mobile-filter-tab,
+.player-nav button {
+  border-radius: var(--pill-radius) !important;
 }

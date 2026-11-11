@@ -1,0 +1,156 @@
+<script setup lang="ts">
+import { computed, onMounted, ref } from "vue";
+
+const copy = useAccountCopy();
+const request = useAccountRequest();
+const localePath = useLocalePath();
+
+type List = { id: string; name: string; isDefault: boolean; itemCount: number };
+type Profile = {
+	id: number;
+	displayName: string | null;
+	email: string | null;
+	counts: { savedSets: number; lists: number };
+};
+
+const lists = ref<List[]>([]);
+const profile = ref<Profile | null>(null);
+const name = ref("");
+const state = ref<"loading" | "ready" | "error">("loading");
+const message = ref("");
+
+const savedCount = computed(() => profile.value?.counts.savedSets ?? 0);
+
+async function load() {
+	try {
+		const [listsResponse, meResponse] = await Promise.all([
+			request<{ lists: List[] }>("lists"),
+			request<{ user: Profile }>("me"),
+		]);
+		lists.value = listsResponse.lists;
+		profile.value = meResponse.user;
+		state.value = "ready";
+	} catch {
+		state.value = "error";
+	}
+}
+
+async function create() {
+	if (!name.value.trim()) return;
+	try {
+		await request("lists", { method: "POST", body: { name: name.value } });
+		name.value = "";
+		await load();
+	} catch {
+		message.value = copy.value.nameTaken;
+	}
+}
+
+onMounted(load);
+</script>
+
+<template>
+	<div class="account-saves">
+		<p v-if="state === 'ready'" class="account-saves__meta">
+			{{ savedCount === 1 ? "1 saved set" : `${savedCount} saved sets` }}
+			<span>·</span>
+			{{ lists.length === 1 ? "1 list" : `${lists.length} lists` }}
+		</p>
+
+		<form class="list-create" @submit.prevent="create">
+			<input
+				v-model="name"
+				:placeholder="copy.listName"
+				maxlength="60"
+				:aria-label="copy.listName"
+			/>
+			<button type="submit" class="account-action">{{ copy.create }}</button>
+		</form>
+		<p v-if="message" class="account-error">{{ message }}</p>
+
+		<p v-if="state === 'loading'">…</p>
+		<p v-else-if="state === 'error'">{{ copy.unavailable }}</p>
+		<ul v-else class="list-grid">
+			<li v-for="list in lists" :key="list.id">
+				<NuxtLink
+					:to="localePath(`/konto/listen/${list.id}`)"
+					class="list-card"
+				>
+					<span class="list-card__name">{{ list.name }}</span>
+					<span class="list-card__meta">
+						{{ list.itemCount === 1 ? "1 Set" : `${list.itemCount} Sets` }}
+					</span>
+				</NuxtLink>
+			</li>
+		</ul>
+	</div>
+</template>
+
+<style scoped>
+.account-saves__meta {
+	margin: 0;
+	font-size: 0.85rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	opacity: 0.6;
+
+	span {
+		margin: 0 0.4rem;
+		opacity: 0.5;
+	}
+}
+
+.list-create {
+	display: flex;
+	gap: 0.75rem;
+}
+
+.list-create input {
+	flex: 1;
+	padding: 0.8rem 1rem;
+	border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+	border-radius: 10px;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+}
+
+.account-action {
+	padding: 0.8rem 1.1rem;
+	border: 0;
+	border-radius: var(--pill-radius);
+	background: var(--color-text);
+	color: var(--color-bg);
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.list-grid {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap: 1rem;
+}
+
+.list-card {
+	display: grid;
+	gap: 0.3rem;
+	padding: 1rem;
+	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+	border-radius: 5px;
+	text-decoration: none;
+	color: inherit;
+}
+
+.list-card__name {
+	font-weight: 600;
+}
+
+.list-card__meta {
+	opacity: 0.65;
+	font-size: 0.85rem;
+}
+</style>

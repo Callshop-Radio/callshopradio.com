@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
@@ -429,9 +429,9 @@ onMounted(() => {
     align-items: center;
     gap: var(--mid-margin);
     order: 1;
-    padding: var(--mid-padding);
-    border-radius: 1.25rem;
-    border: 0.0625rem solid var(--color-text);
+    padding: 1rem 2.25rem;
+    border-radius: 999px;
+    border: none;
     shape-rendering: crispEdges;
     width: clamp(300px, max-content, 397px);
     min-width: 390px;
@@ -447,6 +447,13 @@ onMounted(() => {
       width: 100%;
       transform: translate(calc(var(--big-margin) / 4), -25%);
     }
+
+    /* With a play icon the circular icon forms the left end of the pill, so the
+       card only needs the vertical padding there. Without it the text starts
+       inside the curved cap. */
+    &:has(.play-button) {
+      padding-left: 1rem;
+    }
     .play-button {
       display: flex;
       flex-flow: column wrap;
@@ -454,21 +461,13 @@ onMounted(() => {
       align-items: center;
       border-radius: 100px;
       aspect-ratio: 1/1;
-      width: max-content;
-      width: 4rem;
-      height: 4rem;
-      @media screen and (max-width: 900px) {
-        width: 2rem;
-        height: 2rem;
-      }
+      flex: none;
+      width: 5.5rem;
+      height: 5.5rem;
       svg {
-        width: calc(4rem - var(--base-padding) * 2);
-        height: calc(4rem - var(--base-padding) * 2);
+        width: 100%;
+        height: 100%;
         transform: translate(8%, 0);
-        @media screen and (max-width: 900px) {
-          width: calc(2.5rem - var(--base-padding) * 2);
-          height: calc(2.5rem - var(--base-padding) * 2);
-        }
         path {
           fill: var(--color-black);
         }
@@ -479,6 +478,8 @@ onMounted(() => {
       flex-flow: column wrap;
       justify-content: center;
       gap: var(--mid-padding);
+      flex: 1 1 auto;
+      min-width: 0;
     }
     .hero-entry-header {
       display: flex;
@@ -499,6 +500,7 @@ onMounted(() => {
         font-weight: 500;
         text-transform: uppercase;
         width: max-content;
+        max-width: 100%;
       }
 
       .hero-entry-meta {
@@ -577,3 +579,4 @@ onMounted(() => {
   }
 }
 </style>
+

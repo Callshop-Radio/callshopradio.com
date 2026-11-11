@@ -10,6 +10,9 @@ const localePath = useLocalePath();
 const request = useAccountRequest();
 const account = useAccountStore();
 
+const props = defineProps<{ embedded?: boolean }>();
+const emit = defineEmits<{ success: [] }>();
+
 const email = ref("");
 const code = ref("");
 const privacyAccepted = ref(false);
@@ -89,6 +92,10 @@ async function verify() {
 		// A different account may be signing in: drop every cached id first.
 		account.reset();
 		await account.loadSession();
+		if (props.embedded) {
+			emit("success");
+			return;
+		}
 		await navigateTo(localePath(next.value));
 	} catch {
 		message.value = copy.value.codeFailed;
@@ -116,7 +123,12 @@ onBeforeUnmount(stopCooldown);
 </script>
 
 <template>
-	<AccountShell :title="copy.signInTitle" :subtitle="copy.signInIntro" centered>
+	<AccountShell
+		:title="copy.signInTitle"
+		:subtitle="copy.signInIntro"
+		centered
+		:compact="embedded"
+	>
 		<Transition name="step" mode="out-in">
 			<form v-if="step === 'email'" key="email" class="login" @submit.prevent="sendCode">
 				<label class="login__field">
@@ -140,7 +152,7 @@ onBeforeUnmount(stopCooldown);
 					<span>
 						{{ copy.privacyAccept }}
 						<NuxtLink
-							:to="localePath('/privacy')"
+							:to="localePath({ path: '/legal', hash: '#privacy' })"
 							target="_blank"
 							rel="noopener"
 						>

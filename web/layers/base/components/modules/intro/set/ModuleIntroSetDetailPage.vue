@@ -1,441 +1,868 @@
-﻿<script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+<script setup lang="ts">
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 import type { SET_QUERY_RESULT } from "~~/types/sanity.types.gen";
 
 type SetDetail = NonNullable<SET_QUERY_RESULT>;
 
 const { locale: _locale, setLocale: _setLocale } = useI18n();
-// Template references; height sync keeps the media column level with content.
-const setContentRef = ref<HTMLElement | null>(null);
-const { mainRef: setMainRef, computedHeight: computedSetMainHeight } =
-	useDetailHeightSync();
+const { navigateToTagSearch } = useTagNavigation();
 
-// computedSetMainHeight is a px number on desktop but the string "100%" below
-// 900px â€” branch like the pool page so the unit is only appended to numbers
-// (otherwise mobile renders the invalid "100%px").
-const setDetailsStyle = computed(() => {
-	const h = computedSetMainHeight.value;
-	if (typeof h === "string") return `max-height: ${h}; height: ${h}`;
-	return `max-height: ${h}px; height: ${h}px`;
-});
-
-// Props
 const props = defineProps<{
 	set: SetDetail;
 }>();
 
-// Store
 const mainStore = useMainStore();
 const account = useAccountStore();
 
-// Description fallback. The two-column card collapses when the right column is
-// empty, so a set with neither show nor episode copy must still render
-// something. Prefer the CMS-managed fallback
-// (fallbackGlobal.fallbackSet.description), else a hardcoded default.
+const hasShow = computed(
+	() =>
+		Boolean(props.set?.parentShow?.title) &&
+		props.set?.parentShow?.title !== "No Show",
+);
+
+const displayTitle = computed(() =>
+	hasShow.value
+		? (props.set?.parentShow?.title ?? "")
+		: (props.set?.title ?? ""),
+);
+
+// Long show names must not break the magazine headline: the size steps down
+// with the character count instead of overflowing the column.
+const titleClass = computed(() => {
+	const length = displayTitle.value.length;
+	return {
+		"is-long": length > 20 && length <= 32,
+		"is-very-long": length > 32,
+	};
+});
+
+const formattedDate = computed(() => {
+	const value = props.set?.datetime ?? props.set?._updatedAt;
+	return value ? formatDate(value) : "";
+});
+
+const persons = computed(() => props.set?.persons ?? []);
+
+const nonCityTags = computed(() => {
+	const tags = props.set?.tags;
+	if (!Array.isArray(tags)) return [];
+	return tags.filter((tag) => tag._type !== "tag.city");
+});
+
+const hasTracklist = computed(
+	() =>
+		Boolean(props.set?.tracklistRich?.length) ||
+		Boolean(props.set?.tracklist?.length),
+);
+
+// The marquee needs flat strings; rich-tracklist blocks are flattened to their
+// text runs so both data shapes can scroll.
+function richTextLines(blocks: unknown): string[] {
+	if (!Array.isArray(blocks)) return [];
+	return blocks
+		.map((block) => {
+			const children = (block as { children?: Array<{ text?: string }> })
+				.children;
+			return (children ?? [])
+				.map((child) => child.text ?? "")
+				.join("")
+				.trim();
+		})
+		.filter(Boolean);
+}
+
+const marqueeTracks = computed(() => {
+	const plain = Array.isArray(props.set?.tracklist)
+		? props.set.tracklist.filter((track) => Boolean(track))
+		: [];
+	if (plain.length) return plain;
+	return richTextLines(props.set?.tracklistRich);
+});
+
+const hasShowText = computed(() =>
+	Boolean(props.set?.parentShow?.content?.length),
+);
+const hasSetText = computed(() => Boolean(props.set?.content?.length));
+
 const FALLBACK_SET_DESCRIPTION = "Press play and tune in.";
 const fallbackDescriptionBlocks = computed(() => {
 	const blocks = mainStore?.siteFallbacks?.fallbackSet?.description;
 	return Array.isArray(blocks) && blocks.length > 0 ? blocks : null;
 });
 
-// SoundCloud artwork + playback via the shared useSoundcloudArtwork composable.
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 const artworkUrl = ref("");
+
+// Subtle pointer parallax for the generative glow behind the info column.
+const headRef = ref<HTMLElement | null>(null);
+const glowOffset = ref({ x: 0, y: 0 });
+const reduceMotion = ref(false);
+
+function onGlowPointerMove(event: PointerEvent) {
+	if (reduceMotion.value || event.pointerType === "touch") return;
+	const rect = headRef.value?.getBoundingClientRect();
+	if (!rect) return;
+	const nx = (event.clientX - rect.left) / rect.width - 0.5;
+	const ny = (event.clientY - rect.top) / rect.height - 0.5;
+	glowOffset.value = {
+		x: Math.round(nx * 26),
+		y: Math.round(ny * 20),
+	};
+}
+
+function resetGlow() {
+	glowOffset.value = { x: 0, y: 0 };
+}
+
+const glowStyle = computed(() => ({
+	"--glow-x": `${glowOffset.value.x}px`,
+	"--glow-y": `${glowOffset.value.y}px`,
+}));
 
 function loadArtworkUrl() {
 	if (props.set) artworkUrl.value = getSoundcloudArtwork(props.set);
 }
 
-// Get non-city tags
-function getItemNonCityTags(item: SetDetail) {
-	if (!item?.tags || !Array.isArray(item?.tags)) return [];
-	return item.tags.filter((tag) => tag._type !== "tag.city");
+function openTag(tag: unknown) {
+	navigateToTagSearch(
+		tag as Parameters<typeof navigateToTagSearch>[0],
+		props.set as unknown as Parameters<typeof navigateToTagSearch>[1],
+	);
 }
 
-// Lifecycle hooks
+// Clicking a marquee track copies artist and title to the clipboard.
+const copiedIndex = ref<number | null>(null);
+let copiedTimer: ReturnType<typeof setTimeout> | null = null;
+
+async function copyTrack(index: number, track: string) {
+	const value = track.trim();
+	if (!value) return;
+
+	try {
+		await navigator.clipboard.writeText(value);
+	} catch {
+		// Older browsers / insecure contexts: fall back to a hidden textarea.
+		const textarea = document.createElement("textarea");
+		textarea.value = value;
+		textarea.setAttribute("readonly", "");
+		textarea.style.position = "fixed";
+		textarea.style.opacity = "0";
+		document.body.appendChild(textarea);
+		textarea.select();
+		document.execCommand("copy");
+		textarea.remove();
+	}
+
+	copiedIndex.value = index;
+	if (copiedTimer) clearTimeout(copiedTimer);
+	copiedTimer = setTimeout(() => {
+		copiedIndex.value = null;
+	}, 1600);
+}
+
 onMounted(() => {
 	loadArtworkUrl();
+	reduceMotion.value = window.matchMedia(
+		"(prefers-reduced-motion: reduce)",
+	).matches;
 	if (props.set?._id) account.loadVisible([props.set._id]);
+});
+
+onUnmounted(() => {
+	if (copiedTimer) clearTimeout(copiedTimer);
 });
 </script>
 
 <template>
-	<div
-		v-if="set"
-		ref="setContentRef"
-		class="set-content">
-		<div ref="setMainRef" class="set-main">
-			<!-- Image/media area -->
-			<div class="set-media">
-				<ElementsContentLink :item="set" class="grid-item__link">
-					<img
-						v-if="artworkUrl"
-						:src="artworkUrl"
-						alt="Audio Artwork"
-						class="set-image track-artwork"
-						loading="lazy"
-					>
-					<div
-						v-else
-						class="track-artwork-placeholder"
-						@vue:mounted="loadArtworkUrl"
-					/>
-				</ElementsContentLink>
-			</div>
-
-			<!-- Content area -->
-			<div class="set-info">
-				<!-- Play button for audio content -->
-				<button
-					class="play-button"
-					aria-label="Play Audio"
-					type="button"
-					@click="playTrack(set)"
-				>
-					<img src="/icons/play-button.svg" alt="" aria-hidden="true" width="65" height="65" />
-				</button>
-
-				<div class="set-info-container">
-					<!-- Title area -->
-					<div class="set-header">
-						<!-- Date -->
-						<div class="set-meta">
-							<div class="set-date-row">
-								<h3 v-if="set?.datetime" class="set-date">
-									{{ formatDate(set.datetime) }}
-								</h3>
-								<h3 v-else-if="set?._updatedAt" class="set-date">
-									{{ formatDate(set._updatedAt) }}
-								</h3>
-								<h3 v-else-if="set?.title" class="set-date">
-									{{ set.title }}
-								</h3>
-								<ElementsHeartButton
-									v-if="set?._id"
-									:set-id="set._id"
-									variant="inline"
-									class="set-heart"
-								/>
-							</div>
-						</div>
-						<div class="set-show-title">
-							<ElementsContentLink
-								v-if="set?.parentShow?.title !== 'No Show' && set?.parentShow"
-								:show="set?.parentShow"
-								class="set__link set-title"
-							>
-								<h2 v-if="set?.parentShow?.title" class="set-title">
-									{{ set?.parentShow?.title }}
-								</h2>
-							</ElementsContentLink>
-							<div>
-								<h3
-									v-for="(artist, index) in set.persons ?? []"
-									:key="artist._id"
-									class="set__artist"
-								>
-									<ElementsContentLink
-										v-if="artist?.poolVisibility"
-										:pool="artist"
-										class="set__artist"
-									>
-										{{ artist.title
-										}}{{ index < (set.persons?.length ?? 0) - 1 ? "," : "" }}&nbsp;
-									</ElementsContentLink>
-									<span v-else class="set__artist">
-										{{ artist.title
-										}}{{ index < (set.persons?.length ?? 0) - 1 ? "," : "" }}&nbsp;
-									</span>
-								</h3>
-							</div>
-						</div>
-					</div>
-					<div v-if="getItemNonCityTags(set).length > 0" class="set-tags tags">
-						<button
-							v-for="(tag, index) in getItemNonCityTags(set)"
-							:key="tag._id || index"
-							class="tag"
-							type="button"
-						>
-							{{
-								getI18nLabel(tag?.title)
-							}}
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
+	<article v-if="set" class="set-page">
 		<div
-			class="set-details"
-			:style="setDetailsStyle"
+			ref="headRef"
+			class="set-head"
+			:style="glowStyle"
+			@pointermove="onGlowPointerMove"
+			@pointerleave="resetGlow"
 		>
-			<section v-if="set?.parentShow?.content">
-				<h2>{{ set?.parentShow?.title }}</h2>
-				<RichText :blocks="set?.parentShow?.content" />
-			</section>
-			<section v-if="set?.content">
-				<h3>About this Episode</h3>
-				<RichText :blocks="set?.content" />
-			</section>
-			<section v-else>
-				<RichText
-					v-if="fallbackDescriptionBlocks"
-					:blocks="fallbackDescriptionBlocks"
-				/>
-				<p v-else>{{ FALLBACK_SET_DESCRIPTION }}</p>
-			</section>
-			<section v-if="set?.tracklistRich" class="tracklist">
-				<h3>Tracklist</h3>
-				<RichText class="tracklist-rich" :blocks="set?.tracklistRich" />
-			</section>
-			<section v-else-if="set?.tracklist" class="tracklist">
-				<h3>Tracklist</h3>
-				<div class="rich-text">
-					<p v-for="(track, index) in set?.tracklist" :key="index">
-						{{ track }}
-					</p>
+			<div
+				class="set-glow"
+				:class="{ 'is-dark': mainStore.isDarkMode }"
+				aria-hidden="true"
+			>
+				<AnimatedGradient class="set-glow__blob set-glow__blob--a" />
+				<AnimatedGradient class="set-glow__blob set-glow__blob--b" />
+				<AnimatedGradient class="set-glow__blob set-glow__blob--c" />
+			</div>
+
+			<div class="set-intro">
+				<p class="eyebrow">
+					Set
+					<template v-if="formattedDate">
+						<span>·</span>{{ formattedDate }}
+					</template>
+				</p>
+
+				<h1 class="set-title" :class="titleClass">
+					<ElementsContentLink
+						v-if="hasShow"
+						class="set-title__link"
+						:show="set.parentShow"
+					>
+						{{ displayTitle }}
+					</ElementsContentLink>
+					<template v-else>{{ displayTitle }}</template>
+				</h1>
+
+				<p v-if="persons.length" class="set-artists">
+					<template v-for="artist in persons" :key="artist._id">
+						<span
+							class="dot"
+							:class="artist?.poolVisibility ? 'dot--pool' : 'dot--muted'"
+						/>
+						<ElementsContentLink
+							v-if="artist?.poolVisibility"
+							class="set-artists__link"
+							:pool="artist"
+						>
+							{{ artist.title }}
+						</ElementsContentLink>
+						<span v-else class="set-artists__name">{{ artist.title }}</span>
+						<span
+							v-if="index < persons.length - 1"
+							class="set-artists__sep"
+						>
+							/
+						</span>
+					</template>
+				</p>
+
+				<div v-if="nonCityTags.length" class="tags set-tags">
+					<button
+						v-for="(tag, index) in nonCityTags"
+						:key="tag._id || index"
+						class="tag"
+						type="button"
+						@click="openTag(tag)"
+					>
+						{{ getI18nLabel(tag?.title) }}
+					</button>
 				</div>
-			</section>
+
+				<div class="set-actions">
+					<button type="button" class="cta" @click="playTrack(set)">
+						<img src="/icons/play-button.svg" alt="" aria-hidden="true" />
+						<span>Listen to set</span>
+					</button>
+					<ElementsHeartButton
+						v-if="set?._id"
+						:set-id="set._id"
+						variant="inline"
+						class="set-heart"
+					/>
+				</div>
+			</div>
+
+			<button
+				type="button"
+				class="set-cover"
+				:aria-label="`Play ${displayTitle}`"
+				@click="playTrack(set)"
+			>
+				<img
+					v-if="artworkUrl"
+					:src="artworkUrl"
+					:alt="displayTitle"
+					class="set-cover__image"
+					loading="eager"
+				/>
+				<span v-else class="set-cover__placeholder" />
+				<span class="set-cover__shade" aria-hidden="true" />
+				<span class="set-cover__play" aria-hidden="true">
+					<img src="/icons/play-button.svg" alt="" />
+				</span>
+			</button>
+
+			<div class="set-body">
+				<section class="set-about">
+					<template v-if="hasShowText">
+						<h2 class="label">About the show</h2>
+						<RichText :blocks="set.parentShow?.content" />
+					</template>
+
+					<template v-if="hasSetText">
+						<h2 class="label">About this set</h2>
+						<RichText :blocks="set.content" />
+					</template>
+
+					<template v-if="!hasShowText && !hasSetText">
+						<h2 class="label">About this set</h2>
+						<RichText
+							v-if="fallbackDescriptionBlocks"
+							:blocks="fallbackDescriptionBlocks"
+						/>
+						<p v-else>{{ FALLBACK_SET_DESCRIPTION }}</p>
+					</template>
+				</section>
+			</div>
 		</div>
-	</div>
+
+		<section
+			v-if="hasTracklist && marqueeTracks.length"
+			class="set-marquee"
+			aria-label="Tracklist"
+		>
+			<div class="set-marquee__track">
+				<div
+					v-for="copy in 2"
+					:key="copy"
+					class="set-marquee__row"
+					:aria-hidden="copy === 2 ? 'true' : undefined"
+				>
+					<button
+						v-for="(track, index) in marqueeTracks"
+						:key="`${copy}-${index}`"
+						type="button"
+						class="set-marquee__item"
+						:class="{ 'is-copied': copiedIndex === index }"
+						:tabindex="copy === 2 ? -1 : undefined"
+						:aria-label="`${track} kopieren`"
+						@click="copyTrack(index, track)"
+					>
+						<span class="set-marquee__dot">
+							{{ String(index + 1).padStart(2, "0") }}
+						</span>
+						<span class="set-marquee__text">{{ track }}</span>
+						<span class="set-marquee__hint" aria-hidden="true">Kopiert</span>
+					</button>
+				</div>
+			</div>
+			<span class="set-marquee__status" role="status" aria-live="polite">
+				{{ copiedIndex !== null ? "Track kopiert" : "" }}
+			</span>
+		</section>
+	</article>
 </template>
 
 <style lang="postcss" scoped>
-.set-content {
-  /* margin: 0 auto; */
+.set-page {
   width: var(--page-max-width);
+  max-width: 100%;
+  margin: var(--big-margin) auto 0;
+}
+
+/* Magazine head: intro and body share the left column, the cover sits right.
+   Everything is top-aligned. */
+.set-head {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.95fr);
+  grid-template-areas:
+    "intro cover"
+    "body cover";
+  grid-template-rows: auto 1fr;
+  column-gap: var(--big-margin);
+  row-gap: var(--base-margin);
+  align-items: start;
+
+  @media screen and (max-width: 900px) {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "intro"
+      "cover"
+      "body";
+    row-gap: var(--base-margin);
+  }
+}
+
+/* Generative glow behind the info column — same AnimatedGradient as the
+   landing hero, layered into soft pink metaballs with a subtle pointer
+   parallax. */
+.set-glow {
+  position: fixed;
+  top: 7vh;
+  left: 5vw;
+  width: 52vw;
+  height: 58vh;
+  z-index: -1;
+  pointer-events: none;
+  transform: translate3d(var(--glow-x, 0), var(--glow-y, 0), 0);
+  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  @media screen and (max-width: 900px) {
+    top: 5vh;
+    left: -18vw;
+    width: 132vw;
+    height: 40vh;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+
+  &.is-dark .set-glow__blob {
+    opacity: 1;
+    filter: blur(22px);
+
+    &--b {
+      opacity: 0.8;
+      filter: blur(40px);
+    }
+
+    &--c {
+      opacity: 0.58;
+      filter: blur(52px);
+    }
+  }
+}
+
+.set-glow__blob {
+  position: absolute;
+  display: block;
+  opacity: 0.56;
+  filter: blur(26px);
+  will-change: transform;
+
+  :deep(svg path) {
+    opacity: 1;
+  }
+
+  &--a {
+    top: -4%;
+    left: -4%;
+    width: 72%;
+    height: 86%;
+  }
+
+  &--b {
+    right: -6%;
+    bottom: -10%;
+    width: 62%;
+    height: 72%;
+    opacity: 0.4;
+    filter: blur(44px);
+    transform: rotate(8deg);
+  }
+
+  &--c {
+    top: 26%;
+    left: 38%;
+    width: 46%;
+    height: 52%;
+    opacity: 0.28;
+    filter: blur(56px);
+    transform: rotate(-14deg);
+  }
+}
+
+.set-intro,
+.set-cover,
+.set-body {
+  position: relative;
+  z-index: 1;
+}
+
+.set-intro {
+  grid-area: intro;
+  display: flex;
+  flex-flow: column;
+  gap: var(--mid-padding);
+  align-items: flex-start;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: var(--small-font-size);
+  text-transform: uppercase;
+  letter-spacing: var(--button-letter-spacing);
+
+  span {
+    opacity: 0.4;
+    margin: 0 0.3rem;
+  }
+}
+
+.set-title {
+  margin: 0;
+  font-family: var(--font-text-semibold);
+  font-weight: 500;
+  font-size: clamp(2.4rem, 5.6vw, 5rem);
+  line-height: 0.92;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+
+  &.is-long {
+    font-size: clamp(2rem, 4.2vw, 3.6rem);
+  }
+
+  &.is-very-long {
+    font-size: clamp(1.7rem, 3.2vw, 2.7rem);
+  }
+
+  &__link {
+    color: var(--color-text);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--color-pink);
+    }
+  }
+}
+
+.set-artists {
   display: flex;
   flex-flow: row wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
-  position: relative;
-  border: 0.0625rem solid var(--color-text);
-  border-radius: 1.5625rem;
-  @media screen and (max-width: 900px) {
-    flex-flow: column wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  font-family: var(--font-text-semibold);
+  font-size: var(--base-font-size);
+  text-transform: uppercase;
+
+  &__link {
+    color: var(--color-text);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--color-blue);
+    }
   }
 
-  .set-main {
-    max-width: calc(var(--page-max-width) / 2.5);
-    display: flex;
-    flex-flow: column wrap;
-    justify-content: center;
-    align-items: center;
-    position: relative;
+  &__sep {
+    opacity: 0.35;
+  }
+}
+
+.dot {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  flex: none;
+
+  /* Grey by default; pool blue when the artist has a published profile. */
+  &--muted {
+    background-color: var(--color-dark-grey);
+  }
+
+  &--pool {
+    background-color: var(--color-blue);
+  }
+}
+
+.set-actions {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  gap: var(--mid-padding);
+  margin-top: var(--small-padding);
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1rem 0.45rem 0.45rem;
+  border: 0;
+  border-radius: var(--pill-radius);
+  background-color: var(--color-text);
+  color: var(--color-bg);
+  font-family: var(--font-text);
+  font-size: var(--small-font-size);
+  text-transform: uppercase;
+  letter-spacing: var(--button-letter-spacing);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+
+  img {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: block;
+  }
+
+  &:hover {
+    background-color: var(--color-pink);
+    color: var(--color-white);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-pink);
+    outline-offset: 3px;
+  }
+}
+
+/* Cover: click starts the set, hover/focus reveals the centred play icon. */
+.set-cover {
+  grid-area: cover;
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  overflow: hidden;
+  background-color: var(--color-grey);
+  cursor: pointer;
+
+  &__image,
+  &__placeholder {
+    display: block;
     width: 100%;
     height: 100%;
-    border-right: 0.0625rem solid var(--color-text);
-    /* border: 0.0625rem solid var(--color-text);
-    border-top-left-radius: 1.5625rem;
-    border-bottom-left-radius: 1.5625rem; */
-    overflow: scroll;
-    @media screen and (max-width: 900px) {
-      max-width: 100%;
-      border-right: none;
-    }
+    object-fit: cover;
+  }
 
-    .set-media {
-      order: 2;
-      border-bottom-left-radius: 1.5625rem;
+  &__shade {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.28);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+  }
+
+  &__play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5rem;
+    height: 5rem;
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0;
+    transition:
+      opacity var(--transition-fast),
+      transform var(--transition-fast);
+
+    img {
+      display: block;
       width: 100%;
       height: 100%;
-      max-width: 100%;
-      object-fit: cover;
-      overflow: hidden;
-      @media screen and (max-width: 900px) {
-        max-width: 100%;
-        max-height: 100%;
-        border-bottom-left-radius: 0;
-        border-bottom: 1px solid var(--color-text);
-      }
-      @media screen and (min-width: 900px) {
-        min-width: calc(var(--page-max-width) / 2.5);
-      }
-      .track-artwork,
-      .track-artwork-placeholder {
-        width: 100%;
-        aspect-ratio: 1 / 1;
-        object-fit: cover;
-        background-color: var(--color-grey);
-        max-width: 100%;
-        max-height: 100%;
-        /* Keep the media a fixed "big" square on desktop even when the right
-           column has little content (no description/tracklist). The right
-           column height-syncs to the left, so a collapsing image would shrink
-           the whole card. min-height + max-height:none stop the percentage-
-           height chain from collapsing it. */
-        @media screen and (min-width: 900px) {
-          min-width: calc(var(--page-max-width) / 2.5);
-          min-height: calc(var(--page-max-width) / 2.5);
-          max-height: none;
-        }
-        @media screen and (max-width: 900px) {
-          max-width: 100%;
-          max-height: 100%;
-        }
-      }
     }
   }
 
-  .set-info {
-    left: 0;
-    margin: 0;
-    width: 100%;
-    background-color: var(--color-bg);
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: flex-start;
-    align-items: center;
-    flex-grow: 1;
-    gap: var(--mid-margin);
-    order: 1;
-    padding: var(--mid-padding);
-    border-bottom: 0.0625rem solid var(--color-text);
-    shape-rendering: crispEdges;
-    z-index: 10;
-    border-top-left-radius: 1.5625rem;
-    border-top-right-radius: 1.5625rem;
+  &:hover,
+  &:focus-visible {
+    .set-cover__shade {
+      opacity: 1;
+    }
 
-    .play-button {
-      display: flex;
-      flex-flow: column wrap;
-      justify-content: center;
-      align-items: center;
-      border-radius: 100px;
-      aspect-ratio: 1/1;
-      width: max-content;
+    .set-cover__play {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  /* Touch devices never hover: keep the play affordance visible. */
+  @media (hover: none) {
+    .set-cover__shade {
+      opacity: 0.12;
+    }
+
+    .set-cover__play {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
       width: 4rem;
       height: 4rem;
-      svg {
-        width: calc(4rem - var(--base-padding) * 2);
-        height: calc(4rem - var(--base-padding) * 2);
-        transform: translate(8%, 0);
-        path {
-          fill: var(--color-black);
-        }
-      }
-    }
-
-    .set-tags {
-      display: flex;
-      flex-flow: row wrap;
-      justify-content: flex-start;
-      gap: var(--base-padding);
-    }
-
-    &-container {
-      display: flex;
-      flex-flow: column wrap;
-      justify-content: center;
-      gap: var(--mid-padding);
-      width: calc(100% - 4rem - var(--mid-margin));
-    }
-
-    .set-header {
-      display: flex;
-      flex-flow: column wrap;
-      justify-content: center;
-      gap: var(--mid-padding);
-
-      .set-show-title {
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: flex-start;
-        a {
-          width: max-content;
-        }
-        div {
-          width: 100%;
-          display: flex;
-          flex-flow: row wrap;
-          justify-content: flex-start;
-        }
-      }
-
-      .set-title,
-      .set-artist,
-      .set__artist {
-        font-size: var(--base-font-size);
-        font-family: var(--font-text-semibold);
-        font-weight: 500;
-        text-transform: uppercase;
-        a,
-        &a {
-          cursor: pointer;
-        }
-      }
-
-      .set-title {
-        width: 100%;
-      }
-
-      .set-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        .set-date-row {
-          display: flex;
-          align-items: center;
-          gap: var(--small-padding, 0.5rem);
-          min-width: 0;
-        }
-
-        .set-date {
-          font-size: var(--small-font-size);
-          text-transform: uppercase;
-        }
-      }
     }
   }
+}
 
-  .set-details {
-    position: relative;
+/* About sits directly under the play button, inside the left column next to
+   the cover. */
+.set-body {
+  grid-area: body;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--big-margin);
+  align-items: start;
+}
+
+/* Infinite tracklist marquee between the set header and the related grid. */
+.set-marquee {
+  width: 100svw;
+  max-width: 100svw;
+  margin-top: var(--big-margin);
+  margin-left: calc(50% - 50svw);
+  padding: var(--base-margin) 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--color-text) 14%, transparent);
+  overflow: hidden;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 6%,
+    #000 94%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 6%,
+    #000 94%,
+    transparent 100%
+  );
+
+  &__track {
     display: flex;
-    flex-flow: column;
-    justify-content: flex-start;
-    align-items: flex-start;
+    width: max-content;
+    animation: set-marquee-scroll 55s linear infinite;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: var(--base-margin);
+    padding-right: var(--base-margin);
+  }
+
+  &__item {
     position: relative;
-    overflow: scroll;
-    height: 100%;
-    width: calc(100% - calc(var(--page-max-width) / 2.5));
-    padding: var(--base-margin) var(--big-margin) var(--big-margin);
-    gap: var(--base-margin) 0;
-    /* border-right: 1px solid var(--color-text);
-    border-top: 1px solid var(--color-text);
-    border-bottom: 1px solid var(--color-text);
-    border-top-right-radius: 1.5625rem;
-    border-bottom-right-radius: 1.5625rem; */
-    @media screen and (max-width: 900px) {
-      max-width: 100%;
-      max-height: 100% !important;
-      width: 100%;
-      padding: var(--base-margin) var(--base-margin) var(--big-margin);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--small-padding);
+    white-space: nowrap;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+
+    &:hover .set-marquee__dot {
+      background-color: var(--color-pink);
     }
-    section {
-      width: 100%;
-      h3,
-      h2,
-      h4 {
-        margin: 0 0 var(--base-padding) 0;
-        text-transform: uppercase;
-        font-family: var(--font-text-semibold);
-        font-size: var(--base-font-size);
-        font-weight: 500;
-      }
-      &.tracklist {
-        .rich-text {
-          width: 100%;
-          p {
-            line-height: 1.5;
-          }
-          :deep(p) {
-            line-height: 1.5;
-          }
-        }
-      }
+
+    &.is-copied .set-marquee__dot {
+      background-color: var(--color-blue);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-blue);
+      outline-offset: 4px;
+      border-radius: 4px;
     }
   }
+
+  &__hint {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 0.45rem);
+    transform: translateX(-50%) translateY(0.25rem);
+    padding: 0.15rem 0.45rem;
+    border-radius: var(--pill-radius);
+    background-color: var(--color-blue);
+    color: #fff;
+    font-family: var(--font-text);
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity var(--transition-fast),
+      transform var(--transition-fast);
+  }
+
+  &__item.is-copied &__hint {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  &__status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  &__dot {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: var(--color-text);
+    color: var(--color-bg);
+    font-family: var(--font-text-semibold);
+    font-size: 0.625rem;
+    letter-spacing: 0.02em;
+    flex: none;
+  }
+
+  &__text {
+    font-family: var(--font-text-semibold);
+    font-size: clamp(1rem, 1.5vw, 1.35rem);
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+  }
+
+  &:hover &__track {
+    animation-play-state: paused;
+  }
+
+  /* Keyboard/touch: once a track has focus the strip stops moving. */
+  &:focus-within &__track {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    overflow-x: auto;
+
+    &__track {
+      animation: none;
+    }
+  }
+}
+
+@keyframes set-marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.label {
+  margin: 0 0 var(--mid-padding);
+  font-family: var(--font-text-semibold);
+  font-weight: 500;
+  font-size: var(--small-font-size);
+  text-transform: uppercase;
+  letter-spacing: var(--button-letter-spacing);
+  opacity: 0.6;
+}
+
+.set-about {
+  :deep(.rich-text) {
+    font-size: var(--base-font-size);
+    line-height: 1.6;
+  }
+
+  :deep(p) {
+    margin: 0 0 var(--mid-padding);
+  }
+
+  .label:not(:first-child) {
+    margin-top: var(--base-margin);
+  }
+}
+
+.set-tags {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 0.375rem;
 }
 </style>

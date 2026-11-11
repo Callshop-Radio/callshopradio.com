@@ -61,7 +61,7 @@ usePageSeo(data?.value?.seo);
 		<section v-if="relatedSets.length > 0" class="set-detail__more-content">
 			<h3 v-if="data?.parentShow?.title === 'No Show'">Similar Sets</h3>
 			<h3 v-else>
-				More Episodes of <span>{{ data?.parentShow?.title }}</span>
+				More Sets from <span>{{ data?.parentShow?.title }}</span>
 			</h3>
 			<ModuleRelatedContent
 				v-if="relatedSets.length > 0"
@@ -93,6 +93,7 @@ section {
   align-items: center;
   gap: var(--content-gap);
   &__intro-section {
+    width: 100%;
     margin: var(--big-margin) 0 0;
   }
   &__related-content,

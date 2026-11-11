@@ -109,7 +109,7 @@ export const set = defineType({
       group: "soundcloud",
     },
     {
-      title: "About this Episode",
+      title: "About this Set",
       name: "content",
       type: "richTextMedia",
       group: "editorial",
