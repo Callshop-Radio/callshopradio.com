@@ -1,12 +1,63 @@
 <script setup lang="ts">
+import { computed, onBeforeUnmount, ref, watch } from "vue";
+
 const { open, toggle } = useChatUi();
+const { messages, loaded } = useChatRoom();
+
+const pulsing = ref(false);
+let lastId = 0;
+let ready = false;
+let timer: ReturnType<typeof setTimeout> | null = null;
+
+const latestId = computed(() => messages.value.at(-1)?.id ?? 0);
+
+const stopPulse = () => {
+	pulsing.value = false;
+	if (timer) clearTimeout(timer);
+	timer = null;
+};
+
+const pulse = () => {
+	if (pulsing.value) return;
+	pulsing.value = true;
+	timer = setTimeout(stopPulse, 3200);
+};
+
+watch(
+	loaded,
+	(value) => {
+		if (!value) return;
+		lastId = latestId.value;
+		ready = true;
+	},
+	{ immediate: true },
+);
+
+watch(latestId, (id) => {
+	if (!ready) {
+		lastId = id;
+		return;
+	}
+	if (id <= lastId) {
+		lastId = Math.max(lastId, id);
+		return;
+	}
+	lastId = id;
+	if (!open.value) pulse();
+});
+
+watch(open, (value) => {
+	if (value) stopPulse();
+});
+
+onBeforeUnmount(stopPulse);
 </script>
 
 <template>
 	<button
 		type="button"
 		class="chat-button"
-		:class="{ 'is-open': open }"
+		:class="{ 'is-open': open, 'is-pulsing': pulsing }"
 		:aria-expanded="open"
 		aria-label="Chat"
 		@click="toggle"
@@ -23,11 +74,38 @@ const { open, toggle } = useChatUi();
 
 <style lang="postcss" scoped>
 .chat-button {
+  position: relative;
   display: inline-flex;
   padding: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
+}
+
+.chat-button.is-pulsing::after {
+  content: "";
+  position: absolute;
+  inset: -0.25rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-pink);
+  pointer-events: none;
+  animation: chat-ping 0.9s ease-out 3;
+}
+
+@keyframes chat-ping {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.9;
+  }
+
+  70% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
 
 svg {
@@ -59,5 +137,12 @@ svg {
   outline: 2px solid var(--color-pink);
   outline-offset: 2px;
   border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-button.is-pulsing::after {
+    animation: none;
+    opacity: 0.8;
+  }
 }
 </style>
