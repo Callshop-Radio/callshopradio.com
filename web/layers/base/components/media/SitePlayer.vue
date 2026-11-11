@@ -65,9 +65,10 @@ const setTitle = computed<PlayerLink>(() => {
 	const value = store.set;
 	if (!value) return { label: "Callshop Radio", path: null };
 	const path =
-		value.slug && value.show?.slug
+		value.path ||
+		(value.slug && value.show?.slug
 			? `/shows/${value.show.slug}/${value.slug}`
-			: null;
+			: null);
 	return { label: value.title || "Set", path };
 });
 
@@ -78,14 +79,15 @@ const setLinks = computed<PlayerLink[]>(() => {
 	if (value.show?.title) {
 		links.push({
 			label: value.show.title,
-			path: value.show.slug ? `/shows/${value.show.slug}` : null,
+			path:
+				value.show.path ||
+				(value.show.slug ? `/shows/${value.show.slug}` : null),
 		});
 	}
 	for (const artist of value.artists) {
 		links.push({
 			label: artist.name,
-			path:
-				artist.poolVisibility && artist.slug ? `/pool/${artist.slug}` : null,
+			path: artist.path || (artist.slug ? `/pool/${artist.slug}` : null),
 		});
 	}
 	return links;
@@ -94,6 +96,12 @@ const setLinks = computed<PlayerLink[]>(() => {
 const cover = computed(
 	() => (isSet.value ? store.set?.cover : store.feed?.cover) || null,
 );
+const coverLink = computed(() => {
+	const path = isSet.value
+		? setTitle.value.path
+		: store.feed?.set?.path || store.feed?.show?.path || null;
+	return path ? localePath(path) : null;
+});
 const statusLabel = computed(() => {
 	if (isSet.value) return "Set";
 	switch (store.feed?.state) {
@@ -199,8 +207,18 @@ onBeforeUnmount(() => {
 		</button>
 
 		<Transition name="site-player-cover" mode="out-in">
+			<NuxtLink
+				v-if="cover && coverLink"
+				:key="cover"
+				:to="coverLink"
+				class="site-player__cover-link"
+				aria-label="Set öffnen"
+				@click.stop
+			>
+				<img class="site-player__cover" :src="cover" alt="" loading="lazy" />
+			</NuxtLink>
 			<img
-				v-if="cover"
+				v-else-if="cover"
 				:key="cover"
 				class="site-player__cover"
 				:src="cover"
@@ -417,6 +435,25 @@ onBeforeUnmount(() => {
 @keyframes site-player-dot {
   0%, 80%, 100% { opacity: 0.35; }
   40% { opacity: 1; }
+}
+
+.site-player__cover-link {
+  display: block;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 4px;
+  overflow: hidden;
+
+  .site-player__cover {
+    width: 100%;
+    height: 100%;
+  }
+
+  @media screen and (max-width: 900px) {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 .site-player__cover {

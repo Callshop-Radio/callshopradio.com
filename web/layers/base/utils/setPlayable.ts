@@ -2,8 +2,19 @@ export interface SetPlayable {
 	id: string;
 	title: string;
 	slug: string | null;
-	show: { id?: string; title?: string; slug?: string | null } | null;
-	artists: { name: string; slug: string | null; poolVisibility: boolean }[];
+	path: string | null;
+	show: {
+		id?: string;
+		title?: string;
+		slug?: string | null;
+		path?: string | null;
+	} | null;
+	artists: {
+		name: string;
+		slug: string | null;
+		poolVisibility: boolean;
+		path?: string | null;
+	}[];
 	cover: string | null;
 	soundcloudUrl: string | null;
 	soundcloudId: string | null;
@@ -36,25 +47,35 @@ export function toSetPlayable(
 		unknown
 	> | null;
 	const persons = Array.isArray(doc.persons) ? doc.persons : [];
+	const showSlug = slugOf(showDoc?.slug);
+	const showPath =
+		text(showDoc?.path) || (showSlug ? `/shows/${showSlug}` : null);
+	const setSlug = slugOf(doc.slug);
+	const setPath =
+		text(doc.path) || (setSlug && showPath ? `${showPath}/${setSlug}` : null);
 
 	return {
 		id: String(doc._id ?? doc.id ?? ""),
 		title: text(doc.title) || text(doc.name),
-		slug: slugOf(doc.slug),
+		slug: setSlug,
+		path: setPath,
 		show: showDoc
 			? {
 					id: String(showDoc._id ?? ""),
 					title: text(showDoc.title),
-					slug: slugOf(showDoc.slug),
+					slug: showSlug,
+					path: showPath,
 				}
 			: null,
 		artists: persons
 			.map((person) => {
 				const row = (person ?? {}) as Record<string, unknown>;
+				const slug = slugOf(row.slug);
 				return {
 					name: text(row.title) || text(row.name),
-					slug: slugOf(row.slug),
+					slug,
 					poolVisibility: row.poolVisibility === true,
+					path: text(row.path) || (slug ? `/pool/${slug}` : null),
 				};
 			})
 			.filter((artist) => artist.name),

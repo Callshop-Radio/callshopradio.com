@@ -39,12 +39,43 @@ test("toSetPlayable maps the Sanity set, show and artists", () => {
 	assert.equal(playable.id, "set-1");
 	assert.equal(playable.title, "The Bubble");
 	assert.equal(playable.slug, "the-bubble");
+	assert.equal(playable.path, "/shows/the-bubble/the-bubble");
 	assert.equal(playable.show?.slug, "the-bubble");
+	assert.equal(playable.show?.path, "/shows/the-bubble");
 	assert.equal(playable.artists[0].slug, "nico");
 	assert.equal(playable.artists[0].poolVisibility, true);
+	assert.equal(playable.artists[0].path, "/pool/nico");
 	assert.equal(playable.cover, "cover.jpg");
 	assert.equal(playable.soundcloudUrl, "https://soundcloud.com/x");
 	assert.equal(playable.soundcloudId, null);
+});
+
+test("toSetPlayable prefers Sanity paths and links hidden artists", () => {
+	const playable = toSetPlayable(
+		{
+			_id: "set-4",
+			title: "AssimAssim w/ Høll 19.10.26",
+			path: "/shows/assimassim/assimassim-w-holl-19-10-26",
+			parentShow: {
+				_id: "show-4",
+				title: "AssimAssim",
+				path: "/shows/assimassim",
+			},
+			persons: [
+				{
+					title: "Høll",
+					slug: { current: "holl" },
+					poolVisibility: false,
+					path: "/pool/holl",
+				},
+			],
+		},
+		null,
+	);
+	assert.equal(playable.path, "/shows/assimassim/assimassim-w-holl-19-10-26");
+	assert.equal(playable.show?.path, "/shows/assimassim");
+	assert.equal(playable.artists[0].path, "/pool/holl");
+	assert.equal(playable.artists[0].poolVisibility, false);
 });
 
 test("toSetPlayable keeps the SoundCloud track id for the waveform", () => {
