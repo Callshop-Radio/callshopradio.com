@@ -57,6 +57,51 @@ deployed yet.
 
 ### Changed
 
+#### Account: explicit privacy consent at sign-in
+
+- **Symptom:** The email sign-in could be submitted without acknowledging the
+  privacy policy, and chat sign-in in real mode did nothing.
+- **Fix:** The login form now requires a privacy checkbox before requesting a
+  code, sends `privacyAccepted` and `privacyVersion` (`2026-11-11`) with the
+  request, links to `/privacy` in a new tab, and keeps the submit button
+  disabled until accepted. In real chat mode, "sign in" now routes to
+  `/konto/anmelden` instead of silently returning.
+- **Verified:** The 32 account, invite, role, store, tracking and BFF/SSR tests
+  pass.
+
+#### Professional footer with contact, stations and maps
+
+- **Symptom:** `SiteFoot` was only a thin list of CMS links, with no contact
+  details, station information or maps.
+- **Brand/contact:** The footer now carries the wordmark, the community-radio
+  description, `info@callshopradio.com`, and the registered office at
+  `Callshop Radio e.V., Crottendorferstraße 10, 04317 Leipzig`.
+- **Stations:** Düsseldorf (DUS), Leipzig (LEJ, HQ) and Vienna (VIE) each have
+  their station email and a Google Maps link. Leipzig uses the exact street
+  address; Düsseldorf and Vienna use labelled Maps searches because no public
+  street address exists in the CMS.
+- **Navigation:** Explore (Shows, Pool, Words, Schedule, Search, Shop, Chat),
+  Information (Contact, Legal Notice, Privacy, Account) and Follow (Instagram,
+  SoundCloud, Bandcamp, Discord, Index). Chat opens the global chat popup; all
+  internal links respect the active locale (`/de/...`).
+- **Layout/accessibility:** Responsive black footer with a pink top rule,
+  three-column desktop navigation, single-column mobile layout, visible focus
+  rings, external-link arrows, dynamic copyright year and a "back to top"
+  button that respects `prefers-reduced-motion`.
+- **Fixed dock:** `ModuleContentGrid` publishes its measured dock height as
+  `--filter-dock-global`; the footer reserves that height so the fixed filter
+  bar and the mobile filter tab never cover the footer content.
+- **Verified:** At 1395px the footer is `816px` high with a `1112px` inner
+  width; the brand/stations row is `634px + 380px`, the navigation is three
+  equal `324px` columns, and all 24 links resolve. On `/shows` the footer
+  reserves `139.891px` for the dock. At 390px the German footer stacks to one
+  column, is `1413px` high with `56px` bottom clearance for the mobile tab, and
+  has no horizontal overflow. The wordmark falls back to typographic text up
+  to `1100px` because the raster wordmark did not paint reliably at that size
+  in the headless renderer.
+- **Follow-up:** The Sanity legal-notice page still says `40317 Leipzig`; the
+  footer uses the correct `04317`. The CMS text should be corrected.
+
 #### Performance: initial JS cut in half, LCP image prioritised
 
 - **Symptom:** The production build shipped a single **1,391.49 kB** client
@@ -598,7 +643,9 @@ deployed yet.
 ```
 web/.env.example
 web/nuxt.config.ts
+web/app/composables/useAccountCopy.ts
 web/app/pages/[slug].vue
+web/app/pages/konto/anmelden.vue
 web/app/pages/pool/index.vue
 web/app/pages/search/index.vue
 web/app/pages/shows/index.vue
@@ -607,8 +654,11 @@ web/app/stores/mainStore.ts
 web/layers/base/assets/styles/base/layout.postcss
 web/layers/base/assets/styles/modules/main.postcss
 web/public/icons/play-button.svg (new)
+web/layers/base/components/account/AccountLogin.vue
 web/layers/base/components/elements/ElementsContentLink.vue
 web/layers/base/components/media/MediaImage.vue
+web/layers/base/components/site/SiteFoot.vue
+web/layers/base/components/site/SiteHead.vue
 web/layers/base/components/media/MusicController.vue
 web/layers/base/components/media/SoundCloudPlayer.vue
 web/layers/base/components/modules/GridDensityControl.vue (new)
@@ -627,6 +677,7 @@ web/layers/base/components/modules/search/ModuleSearchResultBlock.vue
 web/layers/base/components/text/RichText.vue
 web/layers/base/composables/useAnalytics.ts (new)
 web/layers/base/composables/useAnalyticsConsent.ts (new)
+web/layers/base/composables/useChatRoom.ts
 web/layers/base/composables/useCachedSanityQuery.ts
 web/layers/base/composables/useContentImage.ts
 web/layers/base/composables/useIntroCoverFlow.ts

@@ -1170,13 +1170,24 @@ function loadArtworkUrl(item: ContentItem) {
 // ==================== LIFECYCLE ====================
 // The desktop filter bar and genre cloud live in a fixed bottom dock. Measure
 // its height so the grid reserves enough bottom space for the last row.
+function setFilterDockGlobal(height: number) {
+	if (typeof document === "undefined") return;
+	document.documentElement.style.setProperty(
+		"--filter-dock-global",
+		`${height}px`,
+	);
+}
+
 function measureFilterDock() {
 	if (typeof window === "undefined") return;
 	if (window.innerWidth < 1101 || !filterSection.value) {
 		filterDockHeight.value = 0;
+		setFilterDockGlobal(0);
 		return;
 	}
-	filterDockHeight.value = filterSection.value.getBoundingClientRect().height;
+	const height = filterSection.value.getBoundingClientRect().height;
+	filterDockHeight.value = height;
+	setFilterDockGlobal(height);
 }
 
 // Client-side only setup (artwork loading)
@@ -1231,6 +1242,7 @@ onUnmounted(() => {
 	window.removeEventListener("pointermove", onMobileDrag);
 	window.removeEventListener("pointerup", endMobileDrag);
 	window.removeEventListener("pointercancel", endMobileDrag);
+	document.documentElement.style.removeProperty("--filter-dock-global");
 	// Reset body overflow on unmount
 	document.body.style.overflow = "";
 });
