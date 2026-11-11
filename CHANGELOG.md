@@ -76,24 +76,26 @@ deployed yet.
 - **Brand/contact:** The footer now carries the wordmark, the community-radio
   description, `info@callshopradio.com`, and the registered office at
   `Callshop Radio e.V., Crottendorferstraße 10, 04317 Leipzig`.
-- **Stations:** Düsseldorf (DUS), Leipzig (LEJ, HQ) and Vienna (VIE) each have
-  their station email and a Google Maps link. Leipzig uses the exact street
-  address; Düsseldorf and Vienna use labelled Maps searches because no public
-  street address exists in the CMS.
+- **Stations:** Düsseldorf (DUS), Leipzig and Vienna (VIE) each have their
+  station email and a Google Maps link. Leipzig is listed without a station
+  code or HQ badge; it uses the exact street address, while Düsseldorf and
+  Vienna use labelled Maps searches because no public street address exists in
+  the CMS.
 - **Navigation:** Explore (Shows, Pool, Words, Schedule, Search, Shop, Chat),
   Information (Contact, Legal Notice, Privacy, Account) and Follow (Instagram,
   SoundCloud, Bandcamp, Discord, Index). Chat opens the global chat popup; all
   internal links respect the active locale (`/de/...`).
-- **Layout/accessibility:** Responsive black footer with a pink top rule,
-  three-column desktop navigation, single-column mobile layout, visible focus
-  rings, external-link arrows, dynamic copyright year and a "back to top"
-  button that respects `prefers-reduced-motion`.
+- **Layout/accessibility:** Responsive footer on the page background
+  (`var(--color-bg)`) with the same `1px solid var(--color-text)` border as the
+  navigation. Three-column desktop navigation, single-column mobile layout,
+  visible focus rings, external-link arrows, dynamic copyright year and a
+  "back to top" button that respects `prefers-reduced-motion`.
 - **Fixed dock:** `ModuleContentGrid` publishes its measured dock height as
   `--filter-dock-global`; the footer reserves that height so the fixed filter
   bar and the mobile filter tab never cover the footer content.
 - **Verified:** At 1395px the footer is `816px` high with a `1112px` inner
   width; the brand/stations row is `634px + 380px`, the navigation is three
-  equal `324px` columns, and all 24 links resolve. On `/shows` the footer
+  equal `324px` columns, and all 23 links plus the Chat button resolve. On `/shows` the footer
   reserves `139.891px` for the dock. At 390px the German footer stacks to one
   column, is `1413px` high with `56px` bottom clearance for the mobile tab, and
   has no horizontal overflow. The wordmark falls back to typographic text up

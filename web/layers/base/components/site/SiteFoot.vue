@@ -22,21 +22,18 @@ const stations = [
 		city: { en: "Düsseldorf", de: "Düsseldorf" },
 		email: "duesseldorf@callshopradio.com",
 		mapQuery: "Callshop Radio Düsseldorf",
-		hq: false,
 	},
 	{
-		code: "LEJ",
+		code: "",
 		city: { en: "Leipzig", de: "Leipzig" },
 		email: "leipzig@callshopradio.com",
 		mapQuery: "Crottendorferstraße 10, 04317 Leipzig",
-		hq: true,
 	},
 	{
 		code: "VIE",
 		city: { en: "Vienna", de: "Wien" },
 		email: "vienna@callshopradio.com",
 		mapQuery: "Callshop Radio Vienna",
-		hq: false,
 	},
 ];
 
@@ -47,7 +44,6 @@ const copy = computed(() => {
 			? "Unabhängiges Community-Radio, live aus Düsseldorf, Leipzig und Wien."
 			: "Independent community radio, live from Düsseldorf, Leipzig and Vienna.",
 		stations: de ? "Standorte" : "Stations",
-		hq: de ? "Sitz" : "HQ",
 		maps: de ? "In Maps öffnen" : "Open in Maps",
 		explore: de ? "Entdecken" : "Explore",
 		information: de ? "Informationen" : "Information",
@@ -136,15 +132,12 @@ function scrollToTop() {
 					<ul class="station-list">
 						<li
 							v-for="station in stations"
-							:key="station.code"
+							:key="station.email"
 							class="station"
 						>
 							<span class="station__code">{{ station.code }}</span>
 							<span class="station__city">
 								{{ stationCity(station) }}
-								<span v-if="station.hq" class="station__hq">
-									{{ copy.hq }}
-								</span>
 							</span>
 							<a
 								class="station__map"
@@ -426,14 +419,14 @@ function scrollToTop() {
 
 <style lang="postcss" scoped>
 .site-footer {
-  --footer-bg: var(--color-black);
-  --footer-fg: #f6f6f8;
-  --footer-muted: rgba(246, 246, 248, 0.62);
-  --footer-faint: rgba(246, 246, 248, 0.4);
-  --footer-line: rgba(246, 246, 248, 0.15);
+  --footer-bg: var(--color-bg);
+  --footer-fg: var(--color-text);
+  --footer-muted: color-mix(in srgb, var(--color-text) 62%, transparent);
+  --footer-faint: color-mix(in srgb, var(--color-text) 40%, transparent);
+  --footer-line: color-mix(in srgb, var(--color-text) 16%, transparent);
 
   padding: 0 var(--page-gutter) var(--filter-dock-global, 0px);
-  border-top: 1px solid rgba(247, 148, 179, 0.55);
+  border-top: 1px solid var(--color-text);
   background: var(--footer-bg);
   color: var(--footer-fg);
   font-family: var(--font-text);
@@ -469,14 +462,22 @@ function scrollToTop() {
   flex: none;
   width: 2.15rem;
   height: auto;
-  filter: invert(1);
+  filter: none;
+
+  @media (prefers-color-scheme: dark) {
+    filter: invert(1);
+  }
 }
 
 .site-footer__wordmark {
   display: block;
   width: 15rem;
   height: auto;
-  filter: invert(1);
+  filter: none;
+
+  @media (prefers-color-scheme: dark) {
+    filter: invert(1);
+  }
 }
 
 @media (max-width: 1100px) {
@@ -573,15 +574,6 @@ function scrollToTop() {
   color: var(--footer-fg);
   font-size: 1rem;
   font-weight: 600;
-}
-
-.station__hq {
-  margin-left: 0.5rem;
-  color: var(--color-pink);
-  font-size: 0.58rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
 
 .station__map {
