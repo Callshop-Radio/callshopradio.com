@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, locales: _locales } = useI18n();
@@ -99,11 +99,6 @@ const chatEnabled = computed(
     @media screen and (max-width: 1100px) {
       padding: var(--base-padding);
     }
-    .channel-switch {
-      @media screen and (min-width: 900px) {
-        display: none;
-      }
-    }
     &__logo {
       display: flex;
       flex-flow: row wrap;
@@ -137,117 +132,6 @@ const chatEnabled = computed(
     width: 100%;
     border-top: 1px solid var(--color-text);
     border-bottom: 1px solid var(--color-text);
-  }
-  &__soundcloud-player-section {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    border-top: 1px solid var(--color-text);
-    background-color: var(--color-bg);
-    transition: transform 0.15s ease-in-out, opacity 0.15s ease-in-out;
-    padding: 0 0 var(--mid-padding);
-    opacity: 0;
-    @media screen and (max-width: 1100px) {
-      margin-top: var(--base-margin);
-      padding: 0 var(--base-padding) var(--base-padding);
-    }
-
-    &.is-visible {
-      opacity: 1;
-    }
-
-    &.is-hidden {
-      transform: translateY(
-        calc(100% - var(--soundcloud-player-collapsed-height))
-      );
-    }
-
-    .player-controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: var(--small-padding) 0;
-      max-width: var(--page-max-width);
-      margin: 0 auto;
-      width: 100%;
-
-      .track-info {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-
-        .track-status {
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-          background-color: #ccc;
-
-          &.is-playing {
-            background-color: #4caf50;
-            animation: pulse 1.5s infinite;
-          }
-        }
-
-        .track-details {
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          gap: var(--small-padding);
-
-          .track-source {
-            font-weight: 550;
-            font-size: var(--base-font-size);
-            line-height: 1;
-            color: var(--color-text-light, #888);
-            @media screen and (max-width: 1100px) {
-              display: none;
-            }
-          }
-
-          .track-title {
-            font-weight: 550;
-            font-size: var(--base-font-size);
-            line-height: 1;
-            @media screen and (max-width: 1100px) {
-              display: block;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-              overflow: hidden;
-            }
-          }
-
-          .track-duration {
-            font-weight: 550;
-            font-size: var(--base-font-size);
-            line-height: 1;
-            color: var(--color-text-light, #888);
-          }
-        }
-      }
-
-      .player-nav {
-        button {
-          padding: var(--small-padding) var(--base-padding);
-          font-size: var(--small-font-size);
-          border: 1px solid transparent;
-          border-radius: 100px;
-          background-color: var(--color-text);
-          text-transform: uppercase;
-          cursor: pointer;
-          transition: all 0.15s;
-          color: var(--color-bg);
-          letter-spacing: var(--button-letter-spacing);
-
-          &:hover {
-            @media (min-width: 1024px) {
-              background-color: transparent;
-              border: 1px solid var(--color-text);
-              color: var(--color-text);
-            }
-          }
-        }
-      }
-    }
   }
 }
 
