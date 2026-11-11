@@ -1209,15 +1209,6 @@ onMounted(() => {
         top: var(--small-margin);
         left: var(--small-margin);
         z-index: 2;
-
-        .tag.city {
-          background-color: var(--color-text);
-          color: var(--color-bg);
-          padding: var(--small-padding) var(--mid-padding);
-          border-radius: 100px;
-          font-size: var(--small-font-size);
-          text-transform: uppercase;
-        }
       }
     }
   }
