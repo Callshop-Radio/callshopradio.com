@@ -24,7 +24,7 @@ const stations = [
 		mapQuery: "Callshop Radio Düsseldorf",
 	},
 	{
-		code: "",
+		code: "LPZ",
 		city: { en: "Leipzig", de: "Leipzig" },
 		email: "leipzig@callshopradio.com",
 		mapQuery: "Crottendorferstraße 10, 04317 Leipzig",
@@ -419,17 +419,17 @@ function scrollToTop() {
 
 <style lang="postcss" scoped>
 .site-footer {
-  --footer-bg: var(--color-bg);
-  --footer-fg: var(--color-text);
-  --footer-muted: color-mix(in srgb, var(--color-text) 62%, transparent);
-  --footer-faint: color-mix(in srgb, var(--color-text) 40%, transparent);
+  /* Only the rule colour is footer-specific; every text and surface colour
+     comes from the global palette so the footer follows the site theme. */
   --footer-line: color-mix(in srgb, var(--color-text) 16%, transparent);
 
   padding: 0 var(--page-gutter) var(--filter-dock-global, 0px);
   border-top: 1px solid var(--color-text);
-  background: var(--footer-bg);
-  color: var(--footer-fg);
+  background-color: var(--color-bg);
+  color: var(--color-text);
   font-family: var(--font-text);
+  font-size: var(--base-font-size);
+  line-height: var(--base-line-height);
 }
 
 .site-footer__inner {
@@ -462,22 +462,14 @@ function scrollToTop() {
   flex: none;
   width: 2.15rem;
   height: auto;
-  filter: none;
-
-  @media (prefers-color-scheme: dark) {
-    filter: invert(1);
-  }
+  filter: invert(var(--logo-invert));
 }
 
 .site-footer__wordmark {
   display: block;
   width: 15rem;
   height: auto;
-  filter: none;
-
-  @media (prefers-color-scheme: dark) {
-    filter: invert(1);
-  }
+  filter: invert(var(--logo-invert));
 }
 
 @media (max-width: 1100px) {
@@ -487,9 +479,9 @@ function scrollToTop() {
 
   .site-footer__logo::after {
     content: "CALLSHOP RADIO";
-    color: var(--footer-fg);
+    color: var(--color-text);
+    font-family: var(--font-text-semibold);
     font-size: clamp(1.5rem, 4vw, 2rem);
-    font-weight: 600;
     letter-spacing: -0.04em;
     line-height: 1;
     white-space: nowrap;
@@ -499,9 +491,9 @@ function scrollToTop() {
 .site-footer__tagline {
   max-width: 33rem;
   margin: 1.5rem 0 0;
-  color: var(--footer-muted);
-  font-size: 1.05rem;
-  line-height: 1.55;
+  color: var(--color-dark-grey);
+  font-size: var(--large-font-size);
+  line-height: 1.5;
 }
 
 .site-footer__mail {
@@ -509,8 +501,9 @@ function scrollToTop() {
   margin-top: 1.35rem;
   padding-bottom: 0.2rem;
   border-bottom: 1px solid var(--color-pink);
-  color: var(--footer-fg);
-  font-size: 1.05rem;
+  color: var(--color-text);
+  font-family: var(--font-text-medium);
+  font-size: var(--base-font-size);
   text-decoration: none;
 }
 
@@ -520,26 +513,26 @@ function scrollToTop() {
 
 .site-footer__address {
   margin: 1.1rem 0 0;
-  color: var(--footer-faint);
-  font-size: 0.72rem;
-  line-height: 1.7;
+  color: var(--color-dark-grey);
+  font-size: var(--base-font-size);
+  line-height: 1.6;
 }
 
 .site-footer__address span {
   display: inline-block;
   margin-bottom: 0.2rem;
-  color: var(--footer-muted);
-  font-size: 0.62rem;
-  letter-spacing: 0.12em;
+  color: var(--color-dark-grey);
+  font-size: var(--small-font-size);
+  letter-spacing: var(--menu-letter-spacing);
   text-transform: uppercase;
 }
 
 .site-footer__label {
   margin: 0 0 1.1rem;
-  color: var(--footer-muted);
-  font-size: 0.65rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
+  color: var(--color-dark-grey);
+  font-family: var(--font-text-medium);
+  font-size: var(--small-font-size);
+  letter-spacing: var(--menu-letter-spacing);
   line-height: 1;
   text-transform: uppercase;
 }
@@ -566,23 +559,23 @@ function scrollToTop() {
 
 .station__code {
   color: var(--color-pink);
-  font-size: 0.68rem;
-  letter-spacing: 0.12em;
+  font-size: var(--small-font-size);
+  letter-spacing: var(--menu-letter-spacing);
 }
 
 .station__city {
-  color: var(--footer-fg);
-  font-size: 1rem;
-  font-weight: 600;
+  color: var(--color-text);
+  font-family: var(--font-text-semibold);
+  font-size: var(--base-font-size);
 }
 
 .station__map {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  color: var(--footer-muted);
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
+  color: var(--color-dark-grey);
+  font-size: var(--small-font-size);
+  letter-spacing: var(--menu-letter-spacing);
   text-decoration: none;
   text-transform: uppercase;
   white-space: nowrap;
@@ -595,25 +588,25 @@ function scrollToTop() {
 .station__mail {
   grid-column: 2 / -1;
   overflow-wrap: anywhere;
-  color: var(--footer-muted);
-  font-size: 0.78rem;
+  color: var(--color-dark-grey);
+  font-size: var(--base-font-size);
   text-decoration: none;
 }
 
 .station__mail:hover {
-  color: var(--footer-fg);
+  color: var(--color-text);
 }
 
 .site-footer__nav {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(2rem, 5vw, 5rem);
-  padding: 2.75rem 0 3.25rem;
+  padding: var(--base-margin) 0 var(--big-margin);
 }
 
 .footer-column ul {
   display: grid;
-  gap: 0.7rem;
+  gap: var(--base-padding);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -623,9 +616,9 @@ function scrollToTop() {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  color: rgba(246, 246, 248, 0.72);
-  font-size: 0.88rem;
-  line-height: 1.3;
+  color: var(--color-dark-grey);
+  font-size: var(--base-font-size);
+  line-height: 1.4;
   text-decoration: none;
 }
 
@@ -640,10 +633,10 @@ function scrollToTop() {
   padding: 0;
   border: 0;
   background: none;
-  color: rgba(246, 246, 248, 0.72);
+  color: var(--color-dark-grey);
   font: inherit;
-  font-size: 0.88rem;
-  line-height: 1.3;
+  font-size: var(--base-font-size);
+  line-height: 1.4;
   text-decoration: none;
   cursor: pointer;
 }
@@ -672,9 +665,9 @@ function scrollToTop() {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  color: var(--footer-faint);
-  font-size: 0.62rem;
-  letter-spacing: 0.07em;
+  color: var(--color-dark-grey);
+  font-size: var(--small-font-size);
+  letter-spacing: var(--button-letter-spacing);
   line-height: 1.5;
   text-transform: uppercase;
 }
@@ -686,10 +679,10 @@ function scrollToTop() {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--footer-muted);
+  color: var(--color-dark-grey);
   font: inherit;
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
+  font-size: var(--small-font-size);
+  letter-spacing: var(--menu-letter-spacing);
   text-transform: uppercase;
   cursor: pointer;
 }
@@ -773,17 +766,9 @@ function scrollToTop() {
     width: 1.8rem;
   }
 
-  .site-footer__tagline {
-    font-size: 1rem;
-  }
-
   .station {
     grid-template-columns: 2.6rem minmax(0, 1fr) auto;
     gap: 0.25rem 0.6rem;
-  }
-
-  .station__mail {
-    font-size: 0.74rem;
   }
 
   .site-footer__nav {

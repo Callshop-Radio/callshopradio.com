@@ -76,11 +76,10 @@ deployed yet.
 - **Brand/contact:** The footer now carries the wordmark, the community-radio
   description, `info@callshopradio.com`, and the registered office at
   `Callshop Radio e.V., Crottendorferstraße 10, 04317 Leipzig`.
-- **Stations:** Düsseldorf (DUS), Leipzig and Vienna (VIE) each have their
-  station email and a Google Maps link. Leipzig is listed without a station
-  code or HQ badge; it uses the exact street address, while Düsseldorf and
-  Vienna use labelled Maps searches because no public street address exists in
-  the CMS.
+- **Stations:** Düsseldorf (DUS), Leipzig (LPZ) and Vienna (VIE) each have
+  their station email and a Google Maps link. No station shows an HQ badge;
+  Leipzig uses the exact street address, while Düsseldorf and Vienna use
+  labelled Maps searches because no public street address exists in the CMS.
 - **Navigation:** Explore (Shows, Pool, Words, Schedule, Search, Shop, Chat),
   Information (Contact, Legal Notice, Privacy, Account) and Follow (Instagram,
   SoundCloud, Bandcamp, Discord, Index). Chat opens the global chat popup; all
@@ -90,17 +89,30 @@ deployed yet.
   navigation. Three-column desktop navigation, single-column mobile layout,
   visible focus rings, external-link arrows, dynamic copyright year and a
   "back to top" button that respects `prefers-reduced-motion`.
+- **Theme integration:** The footer no longer owns a colour palette. Surfaces,
+  text, muted text and rules come from `--color-bg`, `--color-text` and
+  `--color-dark-grey`; type sizes and families come from `--base-font-size`,
+  `--small-font-size`, `--large-font-size`, the menu/button letter-spacing and
+  the `--font-text-*` families. Logo inversion is driven by the new global
+  `--logo-invert` token, which the theme store updates together with the
+  colours. The footer therefore follows the header's manual light/dark switch,
+  not just the OS `prefers-color-scheme` setting, and shows the dark wordmark
+  on the light surface.
 - **Fixed dock:** `ModuleContentGrid` publishes its measured dock height as
   `--filter-dock-global`; the footer reserves that height so the fixed filter
   bar and the mobile filter tab never cover the footer content.
-- **Verified:** At 1395px the footer is `816px` high with a `1112px` inner
-  width; the brand/stations row is `634px + 380px`, the navigation is three
-  equal `324px` columns, and all 23 links plus the Chat button resolve. On `/shows` the footer
+- **Verified:** At 1395px the footer is `825px` high with a `1248px` inner
+  width; the brand/stations row is `719px + 431px`, the navigation is three
+  equal `369.5px` columns, and all 23 links plus the Chat button resolve. On `/shows` the footer
   reserves `139.891px` for the dock. At 390px the German footer stacks to one
-  column, is `1413px` high with `56px` bottom clearance for the mobile tab, and
+  column, is `1365px` high with `56px` bottom clearance for the mobile tab, and
   has no horizontal overflow. The wordmark falls back to typographic text up
   to `1100px` because the raster wordmark did not paint reliably at that size
-  in the headless renderer.
+  in the headless renderer. Light theme computes `rgb(255, 255, 255)` on
+  `rgb(0, 0, 0)` with `#525252` links and `invert(0)` logos; toggling dark
+  flips to black/white with `#878787` links and `invert(1)` for both header and
+  footer logos, and toggling back restores the light values. Station codes
+  render `DUS`, `LPZ`, `VIE` with no HQ badge in both themes.
 - **Follow-up:** The Sanity legal-notice page still says `40317 Leipzig`; the
   footer uses the correct `04317`. The CMS text should be corrected.
 

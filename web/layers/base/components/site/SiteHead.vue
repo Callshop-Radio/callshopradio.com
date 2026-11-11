@@ -161,12 +161,11 @@ const togglePlayerVisibility = () => {
       h1 {
         font-family: var(--font-text);
       }
-      /* Logo inversion in dark mode */
+      /* Logo inversion follows the global theme token, so the theme
+         switch and the OS setting stay in sync. */
       .logo,
       .text-logo {
-        @media (prefers-color-scheme: dark) {
-          filter: invert(1);
-        }
+        filter: invert(var(--logo-invert));
       }
       .text-logo {
         @media screen and (max-width: 900px) {

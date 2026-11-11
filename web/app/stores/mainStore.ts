@@ -118,21 +118,13 @@ export const useMainStore = defineStore("mainStore", () => {
 		if (isDarkMode.value) {
 			document.documentElement.style.setProperty("--color-bg", "#000");
 			document.documentElement.style.setProperty("--color-text", "#fff");
-			document
-				?.querySelector(".header .logo")
-				?.style.setProperty("filter", "invert(1)");
-			document
-				?.querySelector(".header .text-logo")
-				?.style.setProperty("filter", "invert(1)");
+			document.documentElement.style.setProperty("--color-dark-grey", "#878787");
+			document.documentElement.style.setProperty("--logo-invert", "1");
 		} else {
 			document.documentElement.style.setProperty("--color-bg", "#fff");
 			document.documentElement.style.setProperty("--color-text", "#000");
-			document
-				?.querySelector(".header .logo")
-				?.style.setProperty("filter", "invert(0)");
-			document
-				?.querySelector(".header .text-logo")
-				?.style.setProperty("filter", "invert(0)");
+			document.documentElement.style.setProperty("--color-dark-grey", "#525252");
+			document.documentElement.style.setProperty("--logo-invert", "0");
 		}
 	}
 

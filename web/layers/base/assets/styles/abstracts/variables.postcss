@@ -1,6 +1,6 @@
 :root {
   /* Limits */
-  --page-max-width: clamp(0rem, 69.5rem, 100%);
+  --page-max-width: clamp(0rem, 78rem, 100%);
 
   /* Colors */
   --color-bg: #fff;
@@ -14,6 +14,10 @@
   --color-green: #78ce82;
   --color-white: #f6f6f8;
   --color-grey: rgb(232, 232, 232);
+
+  /* Logo artwork is dark; inverted for dark surfaces. Overridden inline by
+     the theme store so the toggle, not only the OS setting, controls it. */
+  --logo-invert: 0;
   --color-grey-transparent: rgba(232, 232, 232, 0.66);
   --color-dark-grey: #525252;
   --color-darker-grey: #2c2c2c;
@@ -24,6 +28,7 @@
     --color-bg-transparent: rgba(9, 9, 9, 0.33);
     --color-text: #fff;
     --color-dark-grey: #878787;
+    --logo-invert: 1;
   }
 
   /* Video Player */
@@ -136,6 +141,6 @@
     --base-line-height: calc(var(--base-font-size) * 1.25);
   }
   @media (--xl-up) {
-    --page-max-width: clamp(0rem, 90rem, 100%);
+    --page-max-width: clamp(0rem, 96rem, 100%);
   }
 }
