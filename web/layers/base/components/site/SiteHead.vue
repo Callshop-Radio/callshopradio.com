@@ -60,13 +60,22 @@ const togglePlayerVisibility = () => {
 					</ul>
 				</nav>
 				<SiteSearchButton />
-				<SiteDiscordButton v-if="mainStore?.siteNav?.discordLink" />
 				<span v-if="chatEnabled" class="icon-tooltip" data-tooltip="Chat">
 					<SiteChatButton />
 				</span>
-				<SiteScheduleButton v-if="mainStore?.siteNav?.schedulePage" />
-				<SiteAccountButton />
-				<SiteMenuButton />
+				<span
+					v-if="mainStore?.siteNav?.schedulePage"
+					class="icon-tooltip"
+					data-tooltip="Schedule"
+				>
+					<SiteScheduleButton />
+				</span>
+				<span class="icon-tooltip" data-tooltip="Konto">
+					<SiteAccountButton />
+				</span>
+				<span class="icon-tooltip" data-tooltip="Menu">
+					<SiteMenuButton />
+				</span>
 			</div>
 		</section>
 		<SiteMenu />
