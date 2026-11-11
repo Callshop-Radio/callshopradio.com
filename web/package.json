@@ -36,6 +36,7 @@
 		"vue-tsc": "^3.3.5"
 	},
 	"dependencies": {
+		"@callshop/words-typography": "workspace:*",
 		"@netlify/blobs": "^10.7.9",
 		"@nuxtjs/i18n": "^10.4.0",
 		"@nuxtjs/sanity": "^2.3.0",

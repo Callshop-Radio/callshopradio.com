@@ -1,3 +1,4 @@
 packages:
     - "studio"
     - "web"
+    - "packages/*"
