@@ -118,12 +118,18 @@ export const useMainStore = defineStore("mainStore", () => {
 		if (isDarkMode.value) {
 			document.documentElement.style.setProperty("--color-bg", "#000");
 			document.documentElement.style.setProperty("--color-text", "#fff");
-			document.documentElement.style.setProperty("--color-dark-grey", "#878787");
+			document.documentElement.style.setProperty(
+				"--color-dark-grey",
+				"#878787",
+			);
 			document.documentElement.style.setProperty("--logo-invert", "1");
 		} else {
 			document.documentElement.style.setProperty("--color-bg", "#fff");
 			document.documentElement.style.setProperty("--color-text", "#000");
-			document.documentElement.style.setProperty("--color-dark-grey", "#525252");
+			document.documentElement.style.setProperty(
+				"--color-dark-grey",
+				"#525252",
+			);
 			document.documentElement.style.setProperty("--logo-invert", "0");
 		}
 	}
