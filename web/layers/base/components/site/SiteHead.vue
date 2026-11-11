@@ -90,11 +90,14 @@ const chatEnabled = computed(
   &__title-section {
     width: 100%;
     max-width: var(--page-max-width);
+    /* Match the player row so the two bars read as one unit. */
+    height: 56px;
+    box-sizing: border-box;
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
     align-items: center;
-    padding: var(--base-padding) 0;
+    padding: 0;
     @media screen and (max-width: 1100px) {
       padding: var(--base-padding);
     }
