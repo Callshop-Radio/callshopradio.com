@@ -14,7 +14,11 @@ const variants = [
 		name: "Editorial Split",
 		note: "Bild links Â· Info rechts Â· dynamische Rail",
 	},
-	{ id: 2, name: "Stage Overlay", note: "GroÃŸes Bild Â· Infokarte Ã¼berlappend" },
+	{
+		id: 2,
+		name: "Stage Overlay",
+		note: "GroÃŸes Bild Â· Infokarte Ã¼berlappend",
+	},
 	{ id: 3, name: "Poster", note: "Zentriert Â· groÃŸe Type Â· Bild darunter" },
 	{ id: 4, name: "Index", note: "Kompakter Kopf Â· Tracklist als Hero" },
 	{ id: 5, name: "Magazine", note: "GroÃŸe Type links Â· Bild rechts" },
