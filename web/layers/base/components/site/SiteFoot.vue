@@ -489,7 +489,6 @@ function scrollToTop() {
 }
 
 .site-footer__tagline {
-  max-width: 33rem;
   margin: 1.5rem 0 0;
   color: var(--color-dark-grey);
   font-size: var(--large-font-size);
