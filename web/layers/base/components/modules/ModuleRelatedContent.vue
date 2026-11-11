@@ -555,38 +555,24 @@ onMounted(() => {
     gap: calc(var(--big-margin) / 2) calc(var(--big-margin) * 1.9875);
   }
 
+  &.shows,
+  &.episodes,
+  &.sets {
+    --load-more-accent: var(--color-pink);
+  }
+
+  &.words {
+    --load-more-accent: var(--color-green);
+  }
+
+  &.pool {
+    --load-more-accent: var(--color-blue);
+  }
+
   &__load-more {
     display: flex;
     justify-content: flex-end;
     margin-top: var(--mid-margin);
-
-    .load-more-button {
-      display: flex;
-      align-items: center;
-      gap: var(--small-padding);
-      padding: var(--small-padding) var(--big-padding);
-      background-color: transparent;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: var(--font-text-semibold);
-      background-color: var(--color-bg);
-      border-radius: 100px;
-
-      &:hover {
-        @media (min-width: 1024px) {
-          color: var(--color-bg);
-        }
-      }
-
-      svg {
-        width: var(--base-font-size);
-        height: var(--base-font-size);
-      }
-
-      .plus-icon {
-        font-size: 1.2rem;
-      }
-    }
   }
 
   .related-item__content__show {

@@ -505,43 +505,12 @@ watch(
     justify-content: flex-end;
     margin-top: var(--mid-margin);
     padding: 0 calc(var(--big-margin) / 2);
-
-    .load-more-button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--small-padding);
-      padding: var(--small-padding) var(--big-padding);
-      background-color: transparent;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: var(--font-text-semibold);
-      background-color: var(--color-bg);
-      border-radius: 100px;
-      border: 0.09325rem solid var(--color-text);
-      box-shadow: 0 0 0.5rem 0.09325rem var(--color-text);
-      text-transform: uppercase;
-      font-size: var(--small-font-size);
-
-      &:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-text);
-          color: var(--color-bg);
-        }
-      }
-
-      svg {
-        width: var(--base-font-size);
-        height: var(--base-font-size);
-        path {
-          stroke: var(--color-text);
-        }
-      }
-    }
   }
 
   /* Content-type based styling for sets/shows */
   &--sets {
+    --load-more-accent: var(--color-pink);
+
     .teaser-item__tags.city-tags .tag.city {
       background-color: var(--color-pink);
       color: var(--color-white);
@@ -551,69 +520,28 @@ watch(
         background-color: var(--color-pink);
       }
     }
-    .load-more-button {
-      border-color: var(--color-pink);
-      box-shadow: 0 0 0.5rem 0.09325rem var(--color-pink);
-
-      &:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-pink);
-          color: var(--color-bg);
-        }
-      }
-
-      svg path {
-        stroke: var(--color-pink);
-      }
-    }
   }
 
   /* Content-type based styling for words */
   &--words {
+    --load-more-accent: var(--color-green);
+
     .teaser-item__tags.city-tags .tag.city {
       background-color: var(--color-green);
       color: var(--color-white);
-    }
-    .load-more-button {
-      border-color: var(--color-green);
-      box-shadow: 0 0 0.5rem 0.09325rem var(--color-green);
-
-      &:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-green);
-          color: var(--color-bg);
-        }
-      }
-
-      svg path {
-        stroke: var(--color-green);
-      }
     }
   }
 
   /* Content-type based styling for pool */
   &--pool {
+    --load-more-accent: var(--color-blue);
+
     .teaser-item__tags.city-tags .tag.city {
       background-color: var(--color-blue);
       color: var(--color-white);
     }
     .teaser-item__image img {
       aspect-ratio: 3 / 4;
-    }
-    .load-more-button {
-      border-color: var(--color-blue);
-      box-shadow: 0 0 0.5rem 0.09325rem var(--color-blue);
-
-      &:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-blue);
-          color: var(--color-bg);
-        }
-      }
-
-      svg path {
-        stroke: var(--color-blue);
-      }
     }
   }
 }

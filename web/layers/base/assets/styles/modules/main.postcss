@@ -165,88 +165,10 @@
     }
     .module-teaser {
       &.words {
-        .load-more-button {
-          border: 0.09325rem solid var(--color-green);
-          box-shadow: 0 0 0.5rem 0.09325rem var(--color-green);
-          &:hover {
-            background-color: var(--color-green);
-            svg {
-              path {
-                @media (min-width: 1024px) {
-                  stroke: var(--color-bg);
-                }
-              }
-            }
-          }
-          svg {
-            path {
-              stroke: var(--color-green);
-            }
-          }
-        }
+        --load-more-accent: var(--color-green);
+
         .module-teaser__header__type__pill {
           background-color: var(--color-green);
-        }
-        .city-tags {
-          .tag {
-            background-color: var(--color-green);
-          }
-        }
-        .embla__nav__dots {
-          .embla__dot {
-            &.is-selected {
-              background-color: var(--color-green);
-            }
-
-            &:hover {
-              @media (min-width: 1024px) {
-                background-color: var(--color-green);
-              }
-            }
-          }
-        }
-        .slide-date {
-          display: none;
-        }
-      }
-      &.words {
-        .load-more-button {
-          border: 0.09325rem solid var(--color-green);
-          box-shadow: 0 0 0.5rem 0.09325rem var(--color-green);
-          color: var(--color-bg);
-          font-size: var(--base-font-size);
-          &.more {
-            background-color: var(--color-green);
-            box-shadow: 0 0 0 0;
-          }
-
-          &:hover {
-            background-color: var(--color-green);
-            &.more {
-              background-color: var(--color-bg);
-              color: var(--color-green);
-            }
-            svg {
-              path {
-                @media (min-width: 1024px) {
-                  stroke: var(--color-bg);
-                }
-              }
-            }
-          }
-          svg {
-            path {
-              stroke: var(--color-green);
-            }
-          }
-        }
-        .module-teaser__header__type__pill {
-          background-color: var(--color-green);
-          border: 0.09325rem solid var(--color-green);
-          &:hover {
-            background-color: var(--color-bg);
-            color: var(--color-green);
-          }
         }
         .city-tags {
           .tag {
@@ -271,36 +193,8 @@
         }
       }
       &.pool {
-        .load-more-button {
-          border: 0.09325rem solid var(--color-blue);
-          box-shadow: 0 0 0.5rem 0.09325rem var(--color-blue);
-          color: var(--color-bg);
-          font-size: var(--base-font-size);
-          &.more {
-            background-color: var(--color-blue);
-            box-shadow: 0 0 0 0;
-          }
+        --load-more-accent: var(--color-blue);
 
-          &:hover {
-            background-color: var(--color-blue);
-            &.more {
-              background-color: var(--color-bg);
-              color: var(--color-blue);
-            }
-            svg {
-              path {
-                @media (min-width: 1024px) {
-                  stroke: var(--color-bg);
-                }
-              }
-            }
-          }
-          svg {
-            path {
-              stroke: var(--color-blue);
-            }
-          }
-        }
         .module-teaser__header__type__pill {
           background-color: var(--color-blue);
           border: 0.09325rem solid var(--color-blue);
@@ -334,37 +228,8 @@
       &.shows,
       &.episodes,
       &.sets {
-        .load-more-button {
-          border: 0.09325rem solid var(--color-pink);
-          box-shadow: 0 0 0.5rem 0.09325rem var(--color-pink);
-          color: var(--color-bg);
-          font-size: var(--base-font-size);
+        --load-more-accent: var(--color-pink);
 
-          &.more {
-            background-color: var(--color-pink);
-            box-shadow: 0 0 0 0;
-          }
-
-          &:hover {
-            background-color: var(--color-pink);
-            &.more {
-              background-color: var(--color-bg);
-              color: var(--color-pink);
-            }
-            svg {
-              path {
-                @media (min-width: 1024px) {
-                  stroke: var(--color-bg);
-                }
-              }
-            }
-          }
-          svg {
-            path {
-              stroke: var(--color-pink);
-            }
-          }
-        }
         .module-teaser__header__type__pill {
           background-color: var(--color-pink);
           border: 0.09325rem solid var(--color-pink);
@@ -453,6 +318,51 @@
   }
 }
 
+/* Shared load-more pill. Filled with the section accent by default; hover
+   swaps it to an outlined pill on the page surface. Contexts only set
+   --load-more-accent. */
+.load-more-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--small-padding);
+  padding: var(--small-padding) var(--big-padding);
+  border: 0.09325rem solid var(--load-more-accent, var(--color-pink));
+  border-radius: 100px;
+  background-color: var(--load-more-accent, var(--color-pink));
+  box-shadow: 0 0 0.5rem 0.09325rem var(--load-more-accent, var(--color-pink));
+  color: var(--color-white);
+  cursor: pointer;
+  font-family: var(--font-text-semibold);
+  font-size: var(--small-font-size);
+  text-transform: uppercase;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast);
+
+  &:hover {
+    @media (min-width: 1024px) {
+      background-color: var(--color-bg);
+      color: var(--load-more-accent, var(--color-pink));
+    }
+  }
+
+  &.more {
+    box-shadow: none;
+  }
+
+  svg {
+    flex: none;
+    width: var(--base-font-size);
+    height: var(--base-font-size);
+
+    path {
+      stroke: currentColor;
+    }
+  }
+}
+
 .tags {
   &.slide__tags {
     display: flex;
@@ -518,61 +428,20 @@
   }
 }
 
-/* Korrekte Struktur für pool-detail */
+/* Page-level accents for the shared load-more pill */
 .pool-detail,
 .pool-archive {
-  .related-content,
-  .content-grid {
-    &__load-more {
-      .load-more-button {
-        border: 0.09325rem solid var(--color-blue);
-        box-shadow: 0 0 0.5rem 0.09325rem var(--color-blue);
-        &:hover {
-          background-color: var(--color-blue);
-          svg {
-            path {
-              @media (min-width: 1024px) {
-                stroke: var(--color-bg);
-              }
-            }
-          }
-        }
-        svg {
-          path {
-            stroke: var(--color-blue);
-          }
-        }
-      }
-    }
+  .related-content .load-more-button,
+  .content-grid .load-more-button {
+    --load-more-accent: var(--color-blue);
   }
 }
 
-/* Korrekte Struktur für set-detail */
 .set-detail,
 .shows-archive {
-  .related-content,
-  .content-grid {
-    &__load-more {
-      .load-more-button {
-        border: 0.09325rem solid var(--color-pink);
-        box-shadow: 0 0 0.5rem 0.2rem var(--color-pink);
-        &:hover {
-          background-color: var(--color-pink);
-          svg {
-            path {
-              @media (min-width: 1024px) {
-                stroke: var(--color-bg);
-              }
-            }
-          }
-        }
-        svg {
-          path {
-            stroke: var(--color-pink);
-          }
-        }
-      }
-    }
+  .related-content .load-more-button,
+  .content-grid .load-more-button {
+    --load-more-accent: var(--color-pink);
   }
 }
 

@@ -117,6 +117,31 @@ deployed yet.
 - **Follow-up:** The Sanity legal-notice page still says `40317 Leipzig`; the
   footer uses the correct `04317`. The CMS text should be corrected.
 
+#### Buttons: filled default state and one shared load-more pill
+
+- **Header tags:** Shows, Pool and Words are now filled with their accent by
+  default (`var(--color-pink)`, `var(--color-blue)`, `var(--color-green)`) and
+  use `var(--color-white)` for the label. Hover and the active page switch back
+  to the outlined surface state with accent text and border, so the previous
+  default/hover pair is reversed.
+- **Load-more:** The plus and "More" pills are defined once as
+  `.load-more-button` in `assets/styles/modules/main.postcss`. Contexts only set
+  `--load-more-accent`; the default is pink. The pill is filled by default with
+  a glow and a white plus/text, and turns into the outlined surface state on
+  hover. The `.more` text variant drops the glow but keeps the same state swap.
+- **Consistency:** `ModuleContentTeaser`, `ModuleRelatedContent`,
+  `ModuleSearchResultBlock` and `ModuleSearchResults` no longer carry their own
+  button implementations. Related-content and general search results now get the
+  same border, accent, glow and hover behaviour as the teaser/search blocks
+  instead of rendering an unstyled plus.
+- **Verified:** In dark mode the header shows `rgb(247,148,179)`,
+  `rgb(85,127,185)` and `rgb(120,206,130)` fills with `rgb(246,246,248)` labels;
+  hover yields the page background with the accent label. Home teasers render
+  pink, green and blue load-more pills, a Words article renders green, and the
+  search-result block renders pink; every plus flips to the outlined state on
+  hover. After two clicks the text "More" pill is filled without a glow and
+  keeps the same hover swap.
+
 #### Performance: initial JS cut in half, LCP image prioritised
 
 - **Symptom:** The production build shipped a single **1,391.49 kB** client

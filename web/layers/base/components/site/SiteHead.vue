@@ -328,6 +328,8 @@ const togglePlayerVisibility = () => {
       text-decoration-color: transparent;
       text-decoration: none;
     }
+
+    /* Non-tag menu links keep the surface hover. */
     &.router-link-active,
     &.parent-active,
     &:hover {
@@ -335,54 +337,54 @@ const togglePlayerVisibility = () => {
         background-color: var(--color-bg);
         color: var(--color-text);
       }
-
-      &.tag {
-        background-color: var(--color-bg);
-        color: var(--color-text);
-        border: 0.09325rem solid var(--color-bg);
-        padding: calc(var(--small-padding)) var(--base-padding);
-        font-family: var(--font-text-semibold);
-
-        &.pool {
-          color: var(--color-bg);
-          border: 0.09325rem solid var(--color-blue);
-          background-color: var(--color-blue);
-        }
-
-        &.shows {
-          color: var(--color-bg);
-          border: 0.09325rem solid var(--color-pink);
-          background-color: var(--color-pink);
-        }
-
-        &.words {
-          color: var(--color-bg);
-          border: 0.09325rem solid var(--color-green);
-          background-color: var(--color-green);
-        }
-      }
     }
 
+    /* Tags are filled by default; hover and the active page switch them
+       back to the outlined surface state. */
     &.tag {
-      background-color: var(--color-bg);
-      color: var(--color-bg);
-      border: 0.09325rem solid var(--color-bg);
       padding: calc(var(--small-padding)) var(--base-padding);
+      border: 0.09325rem solid var(--color-text);
+      background-color: var(--color-text);
+      color: var(--color-white);
       font-family: var(--font-text-semibold);
 
       &.pool {
-        color: var(--color-blue);
-        border: 0.09325rem solid var(--color-blue);
+        border-color: var(--color-blue);
+        background-color: var(--color-blue);
       }
 
       &.shows {
-        color: var(--color-pink);
-        border: 0.09325rem solid var(--color-pink);
+        border-color: var(--color-pink);
+        background-color: var(--color-pink);
       }
 
       &.words {
-        color: var(--color-green);
-        border: 0.09325rem solid var(--color-green);
+        border-color: var(--color-green);
+        background-color: var(--color-green);
+      }
+
+      @media (min-width: 1024px) {
+        &.router-link-active,
+        &.parent-active,
+        &:hover {
+          background-color: var(--color-bg);
+          color: var(--color-text);
+
+          &.pool {
+            color: var(--color-blue);
+            border-color: var(--color-blue);
+          }
+
+          &.shows {
+            color: var(--color-pink);
+            border-color: var(--color-pink);
+          }
+
+          &.words {
+            color: var(--color-green);
+            border-color: var(--color-green);
+          }
+        }
       }
     }
   }

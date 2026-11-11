@@ -955,6 +955,8 @@ onMounted(() => {
   &.shows,
   &.sets,
   &.episodes {
+    --load-more-accent: var(--color-pink);
+
     .sort-options {
       button {
         &:hover {
@@ -975,6 +977,8 @@ onMounted(() => {
   }
 
   &.words {
+    --load-more-accent: var(--color-green);
+
     .sort-options {
       button {
         &:hover {
@@ -995,6 +999,8 @@ onMounted(() => {
   }
 
   &.pool {
+    --load-more-accent: var(--color-blue);
+
     .sort-options {
       button {
         &:hover {
@@ -1029,39 +1035,6 @@ onMounted(() => {
     display: flex;
     justify-content: flex-end;
     margin-top: var(--mid-margin);
-
-    .load-more-button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--small-padding);
-      padding: var(--small-padding) var(--big-padding);
-      background-color: transparent;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: var(--font-text-semibold);
-      background-color: var(--color-bg);
-      border-radius: 100px;
-      border: 0.09325rem solid var(--color-text);
-      box-shadow: 0 0 0.5rem 0.09325rem var(--color-text);
-      text-transform: uppercase;
-      font-size: var(--small-font-size);
-
-      &:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-text);
-          color: var(--color-bg);
-        }
-      }
-
-      svg {
-        width: var(--base-font-size);
-        height: var(--base-font-size);
-        path {
-          stroke: var(--color-text);
-        }
-      }
-    }
   }
 
   .teaser-item__content__show {
