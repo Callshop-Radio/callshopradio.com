@@ -133,6 +133,13 @@ const progressTime = computed(() => {
 		value.durationMs / 1000,
 	)}`;
 });
+const progressTimeWidth = computed(() => {
+	const value = store.progress;
+	const durationMs = value?.durationMs ?? store.set?.durationMs ?? 0;
+	if (durationMs <= 0) return null;
+	const longest = formatPlayerTime(durationMs / 1000);
+	return `${longest.length * 2 + 3}ch`;
+});
 
 function seek(event: MouseEvent) {
 	const target = event.currentTarget as HTMLElement | null;
@@ -309,7 +316,11 @@ onBeforeUnmount(() => {
 					>
 						SoundCloud
 					</a>
-					<span v-if="progressTime" class="site-player__time">{{ progressTime }}</span>
+					<span
+						v-if="progressTime"
+						class="site-player__time"
+						:style="progressTimeWidth ? { width: progressTimeWidth } : undefined"
+					>{{ progressTime }}</span>
 					<button
 						type="button"
 						class="site-player__close"
@@ -607,9 +618,12 @@ onBeforeUnmount(() => {
 }
 
 .site-player__time {
+  flex: none;
   color: var(--color-dark-grey);
   font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .site-player__close {
