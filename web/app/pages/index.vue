@@ -20,6 +20,8 @@ usePageSeo(data?.value?.seo);
 		>
 			<ModuleRenderer :modules="data?.modules" />
 		</section>
+
+		<ChatSection />
 	</div>
 </template>
 
