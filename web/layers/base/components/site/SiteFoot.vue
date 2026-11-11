@@ -7,7 +7,6 @@ const mainStore = useMainStore();
 const config = useRuntimeConfig();
 const { open: chatOpen } = useChatUi();
 
-const year = new Date().getFullYear();
 const chatEnabled = computed(
 	() => import.meta.dev || Boolean(config.public.chatEnabled),
 );
@@ -67,9 +66,6 @@ const copy = computed(() => {
 		registered: de ? "Vereinssitz" : "Registered office",
 		country: de ? "Deutschland" : "Germany",
 		backToTop: de ? "Nach oben" : "Back to top",
-		rights: de
-			? "Unabhängiges Community-Radio seit 2017."
-			: "Independent community radio since 2017.",
 	};
 });
 
@@ -389,13 +385,7 @@ function scrollToTop() {
 						</li>
 					</ul>
 				</nav>
-			</div>
 
-			<div class="site-footer__bottom">
-				<div class="site-footer__meta">
-					<span>© {{ year }} Callshop Radio e.V.</span>
-					<span>{{ copy.rights }}</span>
-				</div>
 				<button
 					type="button"
 					class="site-footer__top-link"
@@ -612,8 +602,9 @@ function scrollToTop() {
 .site-footer__nav {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(2rem, 5vw, 5rem);
-  padding: var(--base-margin) 0 var(--big-margin);
+  column-gap: clamp(2rem, 5vw, 5rem);
+  row-gap: var(--base-padding);
+  padding: var(--base-margin) 0;
 }
 
 .footer-column ul {
@@ -664,28 +655,10 @@ function scrollToTop() {
   opacity: 0.5;
 }
 
-.site-footer__bottom {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--footer-line);
-}
-
-.site-footer__meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  color: var(--color-text);
-  font-size: var(--small-font-size);
-  letter-spacing: var(--button-letter-spacing);
-  line-height: 1.5;
-  text-transform: uppercase;
-}
-
 .site-footer__top-link {
   display: inline-flex;
+  grid-column: 1 / -1;
+  justify-self: end;
   align-items: center;
   gap: 0.4rem;
   padding: 0;
@@ -792,12 +765,6 @@ function scrollToTop() {
     grid-template-columns: minmax(0, 1fr);
     gap: 2rem;
     padding: 2.25rem 0 2.5rem;
-  }
-
-  .site-footer__bottom {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 1.25rem;
   }
 }
 

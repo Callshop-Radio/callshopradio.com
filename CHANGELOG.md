@@ -89,8 +89,10 @@ deployed yet.
 - **Layout/accessibility:** Responsive footer on the page background
   (`var(--color-bg)`) with the same `1px solid var(--color-text)` border as the
   navigation. Three-column desktop navigation, single-column mobile layout,
-  visible focus rings, external-link arrows, dynamic copyright year and a
-  "back to top" button that respects `prefers-reduced-motion`.
+  visible focus rings and external-link arrows. The separate bottom bar with
+  copyright and the community-radio strapline has been removed; the "back to
+  top" button now sits at the end of the navigation and respects
+  `prefers-reduced-motion`.
 - **Theme integration:** The footer no longer owns a colour palette. Surfaces,
   text and rules come from `--color-bg` and `--color-text`; footer copy uses the
   full foreground colour instead of the muted grey, so it is white on black in
@@ -106,11 +108,11 @@ deployed yet.
 - **Fixed dock:** `ModuleContentGrid` publishes its measured dock height as
   `--filter-dock-global`; the footer reserves that height so the fixed filter
   bar and the mobile filter tab never cover the footer content.
-- **Verified:** At 1395px the footer is `825px` high with a `1248px` inner
+- **Verified:** At 1395px the footer is `769px` high with a `1248px` inner
   width; the brand/stations row is `719px + 431px`, the navigation is three
   equal `369.5px` columns, and all 23 links plus the Chat button resolve. On `/shows` the footer
-  reserves `139.891px` for the dock. At 390px the German footer stacks to one
-  column, is `1365px` high with `56px` bottom clearance for the mobile tab, and
+  reserves `125.891px` for the dock. At 390px the German footer stacks to one
+  column, is `1279px` high with `56px` bottom clearance for the mobile tab, and
   has no horizontal overflow. The wordmark falls back to typographic text up
   to `1100px` because the raster wordmark did not paint reliably at that size
   in the headless renderer. Light theme computes `rgb(255, 255, 255)` on
