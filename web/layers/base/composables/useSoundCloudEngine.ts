@@ -130,6 +130,7 @@ async function load(url: string) {
 	const instance = SC.Widget(iframe);
 	widget = instance;
 	instance.bind("ready", () => {
+		if (instance !== widget) return;
 		instance.getDuration((value) => {
 			durationMs = Number(value) || 0;
 			emitProgress(0);
@@ -137,16 +138,25 @@ async function load(url: string) {
 		emit("ready");
 		instance.play();
 	});
-	instance.bind("play", () => emit("play"));
-	instance.bind("pause", () => emit("pause"));
-	instance.bind("finish", () => emit("finish"));
+	instance.bind("play", () => {
+		if (instance === widget) emit("play");
+	});
+	instance.bind("pause", () => {
+		if (instance === widget) emit("pause");
+	});
+	instance.bind("finish", () => {
+		if (instance === widget) emit("finish");
+	});
 	instance.bind("playProgress", (payload) => {
+		if (instance !== widget) return;
 		const positionMs = Number(
 			(payload as { currentPosition?: unknown } | null)?.currentPosition,
 		);
 		emitProgress(Number.isFinite(positionMs) ? positionMs : 0);
 	});
-	instance.bind("error", () => emit("error"));
+	instance.bind("error", () => {
+		if (instance === widget) emit("error");
+	});
 }
 
 function play() {
