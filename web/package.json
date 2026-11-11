@@ -13,7 +13,7 @@
 		"analyze": "nuxt analyze",
 		"routes:check": "node scripts/prerender-routes.js",
 		"test:account": "node --experimental-strip-types --test tests/account-bff.test.ts tests/account-ssr.test.ts",
-		"test:player": "node --experimental-strip-types --test tests/player-fallback.test.ts",
+		"test:player": "node --experimental-strip-types --test tests/player-fallback.test.ts tests/player-pure.test.ts",
 		"postinstall": "nuxt prepare",
 		"typecheck": "nuxt typecheck"
 	},
