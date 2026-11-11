@@ -33,6 +33,12 @@ export interface PlayerVideo {
 	title: string;
 }
 
+export interface PlayerWaveform {
+	samples: number[];
+	width: number;
+	height: number;
+}
+
 export interface PlayerFeed {
 	version: 1;
 	updatedAt: string;

@@ -287,10 +287,21 @@ onBeforeUnmount(() => {
 					</button>
 				</div>
 			</div>
+
+			<PlayerWaveform
+				v-if="isSet && store.waveform"
+				class="site-player__waveform"
+				:samples="store.waveform.samples"
+				:height="store.waveform.height"
+				:progress="progressPercent / 100"
+				:position-ms="store.progress?.positionMs ?? 0"
+				:duration-ms="store.progress?.durationMs ?? store.set?.durationMs ?? 0"
+				@seek="controller.seek"
+			/>
 		</div>
 
 		<button
-			v-if="isSet"
+			v-if="isSet && !store.waveform"
 			type="button"
 			class="site-player__progress"
 			aria-label="Im Set springen"
@@ -447,9 +458,19 @@ onBeforeUnmount(() => {
 
   .site-player__layer--set {
     transform: translateX(0);
+    padding-bottom: 10px;
+    box-sizing: border-box;
     opacity: 1;
     pointer-events: auto;
   }
+}
+
+.site-player__waveform {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
 }
 
 .site-player__meta {

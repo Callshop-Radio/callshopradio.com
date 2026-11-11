@@ -6,6 +6,7 @@ export interface SetPlayable {
 	artists: { name: string; slug: string | null; poolVisibility: boolean }[];
 	cover: string | null;
 	soundcloudUrl: string | null;
+	soundcloudId: string | null;
 	durationMs: number | null;
 }
 
@@ -62,6 +63,10 @@ export function toSetPlayable(
 			? text(track.permalink_url) ||
 				(track.id ? `https://api.soundcloud.com/tracks/${track.id}` : null)
 			: null,
+		soundcloudId:
+			track && track.id !== null && track.id !== undefined
+				? String(track.id)
+				: null,
 		durationMs: Number(track?.duration) || null,
 	};
 }

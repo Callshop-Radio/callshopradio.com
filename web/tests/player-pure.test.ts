@@ -12,6 +12,11 @@ import {
 	shouldOpenVideo,
 	videoHeightForWidth,
 } from "../layers/base/utils/videoPanel.ts";
+import {
+	clampWaveformSamples,
+	downsampleSamples,
+	waveformPath,
+} from "../layers/base/utils/waveform.ts";
 
 test("toSetPlayable maps the Sanity set, show and artists", () => {
 	const playable = toSetPlayable(
@@ -39,6 +44,15 @@ test("toSetPlayable maps the Sanity set, show and artists", () => {
 	assert.equal(playable.artists[0].poolVisibility, true);
 	assert.equal(playable.cover, "cover.jpg");
 	assert.equal(playable.soundcloudUrl, "https://soundcloud.com/x");
+	assert.equal(playable.soundcloudId, null);
+});
+
+test("toSetPlayable keeps the SoundCloud track id for the waveform", () => {
+	const playable = toSetPlayable(
+		{ _id: "set-3", title: "X", soundcloud: { tracks: [{ id: 2135626407 }] } },
+		null,
+	);
+	assert.equal(playable.soundcloudId, "2135626407");
 });
 
 test("toSetPlayable falls back to the SoundCloud track id", () => {
@@ -91,4 +105,34 @@ test("hlsRetryDelay stops after three retries", () => {
 	assert.equal(hlsRetryDelay(1), 4000);
 	assert.equal(hlsRetryDelay(2), 8000);
 	assert.equal(hlsRetryDelay(3), null);
+});
+
+test("downsampleSamples keeps the loudest peak of every bucket", () => {
+	assert.deepEqual(downsampleSamples([1, 9, 2, 8, 3, 7], 3), [9, 8, 7]);
+	assert.deepEqual(downsampleSamples([], 3), []);
+	assert.deepEqual(downsampleSamples([5], 3), [5]);
+});
+
+test("waveformPath renders one bar per sample bucket", () => {
+	const path = waveformPath([100, 50, 25, 75], 100, 2);
+	assert.equal((path.match(/M/g) || []).length, 2);
+	assert.match(path, /^M[\d.]+ [\d.]+h[\d.]+v[\d.]+h-[\d.]+z/);
+});
+
+test("waveformPath tolerates empty and zero scales", () => {
+	assert.equal(waveformPath([], 140, 10), "");
+	const path = waveformPath([0, 0], 0, 2);
+	assert.equal((path.match(/M/g) || []).length, 2);
+});
+
+test("clampWaveformSamples rejects junk and caps the length", () => {
+	assert.equal(clampWaveformSamples("nope"), null);
+	assert.deepEqual(clampWaveformSamples([1, "2", Number.NaN], 10), [1, 2]);
+	assert.equal(
+		clampWaveformSamples(
+			Array.from({ length: 10 }, (_, i) => i),
+			4,
+		)?.length,
+		4,
+	);
 });

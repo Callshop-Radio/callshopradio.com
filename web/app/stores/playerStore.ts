@@ -1,12 +1,13 @@
 ﻿import { defineStore } from "pinia";
 import { ref } from "vue";
 import type { SetPlayable } from "~~/layers/base/utils/setPlayable";
-import type { PlayerFeed } from "~~/types/player";
+import type { PlayerFeed, PlayerWaveform } from "~~/types/player";
 
 export const usePlayerStore = defineStore("player", () => {
 	const mode = ref<"stream" | "set">("stream");
 	const feed = ref<PlayerFeed | null>(null);
 	const set = ref<SetPlayable | null>(null);
+	const waveform = ref<PlayerWaveform | null>(null);
 	const playing = ref(false);
 	const loading = ref(false);
 	const progress = ref<{ positionMs: number; durationMs: number } | null>(null);
@@ -22,6 +23,7 @@ export const usePlayerStore = defineStore("player", () => {
 		if (mode.value === "stream") streamWasPlaying.value = playing.value;
 		set.value = next;
 		mode.value = "set";
+		waveform.value = null;
 		playing.value = false;
 		loading.value = false;
 		progress.value = null;
@@ -31,6 +33,7 @@ export const usePlayerStore = defineStore("player", () => {
 	function closeSet() {
 		set.value = null;
 		mode.value = "stream";
+		waveform.value = null;
 		playing.value = false;
 		loading.value = false;
 		progress.value = null;
@@ -39,6 +42,10 @@ export const usePlayerStore = defineStore("player", () => {
 
 	function setPlaying(value: boolean) {
 		playing.value = value;
+	}
+
+	function setWaveform(value: PlayerWaveform | null) {
+		waveform.value = value;
 	}
 
 	function setLoading(value: boolean) {
@@ -63,6 +70,7 @@ export const usePlayerStore = defineStore("player", () => {
 		mode,
 		feed,
 		set,
+		waveform,
 		playing,
 		loading,
 		progress,
@@ -73,6 +81,7 @@ export const usePlayerStore = defineStore("player", () => {
 		openSet,
 		closeSet,
 		setPlaying,
+		setWaveform,
 		setLoading,
 		setProgress,
 		setError,
