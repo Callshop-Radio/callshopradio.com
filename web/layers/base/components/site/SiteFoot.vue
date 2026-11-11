@@ -140,35 +140,41 @@ function scrollToTop() {
 								{{ stationCity(station) }}
 							</span>
 							<a
+								class="station__mail"
+								:href="`mailto:${station.email}`"
+							>
+								{{ station.email }}
+							</a>
+							<a
 								class="station__map"
 								:href="mapsUrl(station.mapQuery)"
 								target="_blank"
 								rel="noopener noreferrer"
 								:aria-label="`${stationCity(station)} – ${copy.maps}`"
+								:title="copy.maps"
 							>
-								<span>{{ copy.maps }}</span>
 								<svg
-									class="site-footer__external-icon"
-									width="10"
-									height="10"
-									viewBox="0 0 10 10"
+									width="12"
+									height="12"
+									viewBox="0 0 24 24"
 									fill="none"
 									aria-hidden="true"
 								>
 									<path
-										d="M2 8L8 2M3.2 2H8V6.8"
+										d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11Z"
 										stroke="currentColor"
-										stroke-width="1.1"
+										stroke-width="1.8"
 										stroke-linecap="round"
 										stroke-linejoin="round"
 									/>
+									<circle
+										cx="12"
+										cy="10"
+										r="2.6"
+										stroke="currentColor"
+										stroke-width="1.8"
+									/>
 								</svg>
-							</a>
-							<a
-								class="station__mail"
-								:href="`mailto:${station.email}`"
-							>
-								{{ station.email }}
 							</a>
 						</li>
 					</ul>
@@ -544,10 +550,10 @@ function scrollToTop() {
 
 .station {
   display: grid;
-  grid-template-columns: 3.1rem minmax(0, 1fr) auto;
-  align-items: baseline;
-  gap: 0.3rem 1rem;
-  padding: 0.9rem 0;
+  grid-template-columns: 2.8rem 6rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.8rem 0;
   border-top: 1px solid var(--footer-line);
 }
 
@@ -566,30 +572,37 @@ function scrollToTop() {
   color: var(--color-text);
   font-family: var(--font-text-semibold);
   font-size: var(--base-font-size);
+  white-space: nowrap;
 }
 
 .station__map {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
+  border-radius: 50%;
   color: var(--color-dark-grey);
-  font-size: var(--small-font-size);
-  letter-spacing: var(--menu-letter-spacing);
   text-decoration: none;
-  text-transform: uppercase;
-  white-space: nowrap;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .station__map:hover {
+  border-color: var(--color-pink);
   color: var(--color-pink);
 }
 
 .station__mail {
-  grid-column: 2 / -1;
-  overflow-wrap: anywhere;
+  min-width: 0;
+  overflow: hidden;
   color: var(--color-dark-grey);
   font-size: var(--base-font-size);
   text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .station__mail:hover {
@@ -766,8 +779,13 @@ function scrollToTop() {
   }
 
   .station {
-    grid-template-columns: 2.6rem minmax(0, 1fr) auto;
-    gap: 0.25rem 0.6rem;
+    grid-template-columns: 2.2rem auto minmax(0, 1fr) auto;
+    gap: 0.55rem;
+  }
+
+  .station__map {
+    width: 1.5rem;
+    height: 1.5rem;
   }
 
   .site-footer__nav {

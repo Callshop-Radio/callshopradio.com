@@ -76,10 +76,12 @@ deployed yet.
 - **Brand/contact:** The footer now carries the wordmark, the community-radio
   description, `info@callshopradio.com`, and the registered office at
   `Callshop Radio e.V., Crottendorferstraße 10, 04317 Leipzig`.
-- **Stations:** Düsseldorf (DUS), Leipzig (LPZ) and Vienna (VIE) each have
-  their station email and a Google Maps link. No station shows an HQ badge;
-  Leipzig uses the exact street address, while Düsseldorf and Vienna use
-  labelled Maps searches because no public street address exists in the CMS.
+- **Stations:** Düsseldorf (DUS), Leipzig (LPZ) and Vienna (VIE) each render as
+  one inline row: code, city, station email and a circular map-pin icon button.
+  The button carries an `aria-label` and `title`, opens Google Maps in a new tab
+  and turns pink on hover. No station shows an HQ badge; Leipzig uses the exact
+  street address, while Düsseldorf and Vienna use labelled Maps searches because
+  no public street address exists in the CMS.
 - **Navigation:** Explore (Shows, Pool, Words, Index, Schedule, Search, Shop,
   Chat), Information (Contact, Legal Notice, Privacy, Account) and Follow
   (Instagram, SoundCloud, Bandcamp, Discord). Chat opens the global chat popup;
@@ -113,7 +115,10 @@ deployed yet.
   `rgb(0, 0, 0)` with `#525252` links and `invert(0)` logos; toggling dark
   flips to black/white with `#878787` links and `invert(1)` for both header and
   footer logos, and toggling back restores the light values. Station codes
-  render `DUS`, `LPZ`, `VIE` with no HQ badge in both themes.
+  render `DUS`, `LPZ`, `VIE` with no HQ badge in both themes. Each station row
+  stays on one line at 1395px and 390px (text tops within 1px, email not
+  truncated); the map buttons measure 26px on desktop and 24px on mobile, with
+  no horizontal overflow.
 - **Follow-up:** The Sanity legal-notice page still says `40317 Leipzig`; the
   footer uses the correct `04317`. The CMS text should be corrected.
 
