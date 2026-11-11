@@ -4,6 +4,7 @@ import test from "node:test";
 import {
 	formatPlayerTime,
 	nextMilestones,
+	streamShowProgress,
 } from "../layers/base/utils/player.ts";
 import { toSetPlayable } from "../layers/base/utils/setPlayable.ts";
 import {
@@ -98,6 +99,55 @@ test("formatPlayerTime handles minutes and hours", () => {
 	assert.equal(formatPlayerTime(0), "0:00");
 	assert.equal(formatPlayerTime(3599), "59:59");
 	assert.equal(formatPlayerTime(3600), "1:00:00");
+});
+
+test("streamShowProgress reads the live occurrence window", () => {
+	const updatedAt = "2026-11-11T21:00:00Z";
+	const progress = streamShowProgress(
+		{
+			state: "live",
+			updatedAt,
+			progress: { elapsedSeconds: 3600, durationSeconds: 7200 },
+		},
+		Date.parse(updatedAt),
+	);
+	assert.equal(progress?.percent, 50);
+	assert.equal(progress?.endMs, Date.parse("2026-11-11T22:00:00Z"));
+});
+
+test("streamShowProgress advances between feed polls", () => {
+	const updatedAt = "2026-11-11T21:00:00Z";
+	const progress = streamShowProgress(
+		{
+			state: "live",
+			updatedAt,
+			progress: { elapsedSeconds: 3600, durationSeconds: 7200 },
+		},
+		Date.parse("2026-11-11T21:10:00Z"),
+	);
+	assert.equal(Math.round(progress?.percent ?? 0), 58);
+});
+
+test("streamShowProgress ignores auto and missing windows", () => {
+	assert.equal(
+		streamShowProgress(
+			{ state: "auto", updatedAt: new Date().toISOString(), progress: null },
+			Date.now(),
+		),
+		null,
+	);
+	assert.equal(
+		streamShowProgress(
+			{
+				state: "live",
+				updatedAt: new Date().toISOString(),
+				progress: { elapsedSeconds: 1, durationSeconds: 0 },
+			},
+			Date.now(),
+		),
+		null,
+	);
+	assert.equal(streamShowProgress(null, Date.now()), null);
 });
 
 test("nextMilestones reports only crossed milestones", () => {

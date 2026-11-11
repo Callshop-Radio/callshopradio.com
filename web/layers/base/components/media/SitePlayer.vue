@@ -3,7 +3,10 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { usePlayerStore } from "~/stores/playerStore";
 import { usePlayerAnalytics } from "~~/layers/base/composables/usePlayerAnalytics";
 import { usePlayerController } from "~~/layers/base/composables/usePlayerController";
-import { formatPlayerTime } from "~~/layers/base/utils/player";
+import {
+	formatPlayerTime,
+	streamShowProgress,
+} from "~~/layers/base/utils/player";
 
 interface PlayerLink {
 	label: string;
@@ -18,6 +21,8 @@ const playerRef = ref<HTMLElement | null>(null);
 
 const isSet = computed(() => store.mode === "set" && Boolean(store.set));
 const tracklistOpen = ref(false);
+const nowMs = ref(Date.now());
+let progressClock: ReturnType<typeof setInterval> | null = null;
 
 watch(isSet, (value) => {
 	if (value) tracklistOpen.value = false;
@@ -140,6 +145,18 @@ const progressTimeWidth = computed(() => {
 	const longest = formatPlayerTime(durationMs / 1000);
 	return `${longest.length * 2 + 3}ch`;
 });
+const streamProgress = computed(() =>
+	streamShowProgress(store.feed, nowMs.value),
+);
+const streamEndLabel = computed(() => {
+	const value = streamProgress.value;
+	if (!value) return "";
+	const time = new Date(value.endMs).toLocaleTimeString("de-DE", {
+		hour: "2-digit",
+		minute: "2-digit",
+	});
+	return `Bis ${time}`;
+});
 
 function seek(event: MouseEvent) {
 	const target = event.currentTarget as HTMLElement | null;
@@ -157,11 +174,15 @@ function onKeydown(event: KeyboardEvent) {
 onMounted(() => {
 	analytics.start();
 	window.addEventListener("keydown", onKeydown);
+	progressClock = window.setInterval(() => {
+		nowMs.value = Date.now();
+	}, 10_000);
 });
 
 onBeforeUnmount(() => {
 	analytics.stop();
 	window.removeEventListener("keydown", onKeydown);
+	if (progressClock) window.clearInterval(progressClock);
 });
 </script>
 
@@ -270,6 +291,7 @@ onBeforeUnmount(() => {
 					>
 						☰
 					</button>
+					<span v-if="streamEndLabel" class="site-player__until">{{ streamEndLabel }}</span>
 					<span class="site-player__status">
 						<span class="site-player__dot" :class="{ 'is-live': isLive }" aria-hidden="true" />
 						<span>{{ statusLabel }}</span>
@@ -336,8 +358,21 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 
+		<div
+			v-if="!isSet && streamProgress"
+			class="site-player__progress site-player__progress--passive"
+			role="progressbar"
+			aria-label="Show-Fortschritt"
+			aria-valuemin="0"
+			aria-valuemax="100"
+			:aria-valuenow="Math.round(streamProgress.percent)"
+			:aria-valuetext="`${Math.round(streamProgress.percent)} %`"
+		>
+			<span :style="{ transform: `scaleX(${streamProgress.percent / 100})` }" />
+		</div>
+
 		<button
-			v-if="isSet && !store.waveform"
+			v-else-if="isSet && !store.waveform"
 			type="button"
 			class="site-player__progress"
 			aria-label="Im Set springen"
@@ -626,6 +661,14 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
+.site-player__until {
+  flex: none;
+  color: var(--color-dark-grey);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .site-player__close {
   display: grid;
   place-items: center;
@@ -698,6 +741,12 @@ onBeforeUnmount(() => {
     background: var(--color-pink);
     transform-origin: left;
   }
+}
+
+.site-player__progress--passive {
+  background: color-mix(in srgb, var(--color-dark-grey) 26%, transparent);
+  cursor: default;
+  pointer-events: none;
 }
 
 .site-player__source {
