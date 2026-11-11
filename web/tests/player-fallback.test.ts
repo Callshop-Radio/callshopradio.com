@@ -10,6 +10,22 @@ import {
 
 const audioUrl = "https://stream.example/radio.mp3";
 
+test("AzuraCast now playing carries the current cover art", () => {
+	const feed = feedFromAzuraCast(
+		{
+			now_playing: {
+				song: {
+					title: "AssimAssim",
+					artist: "Marques & Katja",
+					art: "https://stream.example/art/assim.jpg",
+				},
+			},
+		},
+		{ audioUrl },
+	);
+	assert.equal(feed.cover, "https://stream.example/art/assim.jpg");
+});
+
 test("AzuraCast now playing becomes an auto feed without links", () => {
 	const feed = feedFromAzuraCast(
 		{ now_playing: { song: { title: "Sporecast", artist: "BNYI, índigo" } } },

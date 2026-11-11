@@ -32,6 +32,16 @@ async function fetchJson<T>(url: string, timeout: number): Promise<T | null> {
 	}
 }
 
+function azuraArt(payload: unknown): string | null {
+	const station = Array.isArray(payload) ? payload[0] : payload;
+	const art = (
+		station as {
+			now_playing?: { song?: { art?: unknown } };
+		} | null
+	)?.now_playing?.song?.art;
+	return typeof art === "string" && art.trim() ? art.trim() : null;
+}
+
 let lastGoodFeed: PlayerFeed | null = null;
 let lastGoodAt = 0;
 const LAST_GOOD_MS = 5 * 60_000;
@@ -95,6 +105,15 @@ export default defineCachedEventHandler(
 						...manager.audio,
 						fallbackUrl: manager.audio?.fallbackUrl || fallbackUrl,
 					};
+					// AutoDJ has no editorial set; AzuraCast still knows the
+					// current track artwork, so the row keeps its thumbnail.
+					if (manager.state === "auto" && !manager.cover) {
+						const nowPlaying = await fetchWithin<
+							unknown[] | Record<string, unknown>
+						>(`${STREAM_BASE}/api/nowplaying`, 1_000);
+						const art = azuraArt(nowPlaying);
+						if (art) manager.cover = art;
+					}
 					lastGoodFeed = manager;
 					lastGoodAt = Date.now();
 					return manager;

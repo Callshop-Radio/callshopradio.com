@@ -22,6 +22,7 @@ function baseFeed({
 	audio,
 	video,
 	source,
+	cover = null,
 }: {
 	state: PlayerFeed["state"];
 	title: string;
@@ -30,6 +31,7 @@ function baseFeed({
 	audio: PlayerFeed["audio"];
 	video: PlayerVideo | null;
 	source: NonNullable<PlayerFeed["source"]>;
+	cover?: string | null;
 }): PlayerFeed {
 	return {
 		version: 1,
@@ -39,7 +41,7 @@ function baseFeed({
 		video,
 		title,
 		subtitle,
-		cover: null,
+		cover,
 		show: null,
 		set: null,
 		artists: [],
@@ -61,7 +63,9 @@ export function feedFromAzuraCast(
 	}
 	const song = (
 		station as {
-			now_playing?: { song?: { title?: unknown; artist?: unknown } };
+			now_playing?: {
+				song?: { title?: unknown; artist?: unknown; art?: unknown };
+			};
 		} | null
 	)?.now_playing?.song;
 	const title = text(song?.title) || "AutoDJ";
@@ -74,6 +78,7 @@ export function feedFromAzuraCast(
 		audio: { url: options.audioUrl, fallbackUrl: options.fallbackUrl },
 		video: options.video ?? null,
 		source: "azura",
+		cover: text(song?.art) || null,
 	});
 }
 
