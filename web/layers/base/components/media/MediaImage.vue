@@ -47,6 +47,10 @@ const props = defineProps({
 		type: Boolean,
 		default: () => false,
 	},
+	sizes: {
+		type: String,
+		default: () => "100vw",
+	},
 });
 
 const placeholderSrc = computed(() => {
@@ -153,7 +157,7 @@ watchEffect(() => {
 		v-if="hasValidImage && props.eager"
 		:src="defaultSrc"
 		:srcset="srcSet"
-		sizes="100vw"
+		:sizes="props.sizes"
 		:alt="altText"
 		:width="cropWidth"
 		:height="cropHeight"
@@ -169,7 +173,8 @@ watchEffect(() => {
 		:style="{ aspectRatio: `${cropWidth} / ${cropHeight}` }"
 		:placeholder-src="placeholderSrc"
 		:src-set="srcSet"
-		:auto-sizes="true"
+		:auto-sizes="false"
+		:sizes="props.sizes"
 		:alt="altText"
 		:width="cropWidth"
 		:height="cropHeight"

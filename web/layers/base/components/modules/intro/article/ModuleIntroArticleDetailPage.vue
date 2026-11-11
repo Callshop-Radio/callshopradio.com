@@ -85,7 +85,7 @@ const useArticle = () => {
 		// Use the image from the article
 		const itemImage = getItemImage(item);
 		if (itemImage?.asset?.url) {
-			return itemImage.asset.url;
+			return sanityImageUrl(itemImage.asset.url) ?? "";
 		}
 
 		// Fall back to store fallback
@@ -93,7 +93,7 @@ const useArticle = () => {
 			mainStore?.siteFallbacks?.fallbackArticle?.image?.asset?.url;
 
 		if (storeFallbackUrl) {
-			return storeFallbackUrl;
+			return sanityImageUrl(storeFallbackUrl) ?? "";
 		}
 
 		return "";

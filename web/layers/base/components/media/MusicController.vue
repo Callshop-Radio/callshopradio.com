@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
 const mainStore = useMainStore();
+const { track, trackUmami } = useAnalytics();
 
 // Define stream URLs
 const streamUrl1 = "https://icecast.callshopradio.com/callshopradio";
@@ -12,6 +13,39 @@ const streamUrl2 = "https://icecast.callshopradio.com/callshopradio-wien";
 // Store audio elements outside Vue's reactivity system
 let audioEl1 = null;
 let audioEl2 = null;
+
+// One heartbeat per audio element. The first ping is sent after 60 seconds of
+// audible playback; pausing stops the timer so silence is never counted.
+const pingTimers = { 1: null, 2: null };
+
+function stopPing(num) {
+	if (pingTimers[num]) {
+		clearInterval(pingTimers[num]);
+		pingTimers[num] = null;
+	}
+}
+
+function stopAllPings() {
+	stopPing(1);
+	stopPing(2);
+}
+
+function startPing(num, streamName, currentShow) {
+	stopPing(num);
+	const audio = num === 1 ? audioEl1 : audioEl2;
+	if (!audio) return;
+	pingTimers[num] = setInterval(() => {
+		if (audio.paused) return;
+		const show = currentShow();
+		trackUmami("listen-ping", {
+			content_type: "live",
+			stream: streamName,
+			now_playing: show,
+			show_title: show,
+			minutes: 1,
+		});
+	}, 60_000);
+}
 
 // Status refs
 const isPlaying1 = ref(false);
@@ -36,7 +70,10 @@ const liveStatus = ref({
 // (auth server-side), Icecast, and LibreTime Wien — cached 15s with SWR.
 const updateLiveStatus = async () => {
 	try {
-		const status = await $fetch("/api/stream/status");
+		// The endpoint sets `Cache-Control: s-maxage=15, stale-while-revalidate`;
+		// bypass the browser cache so a revalidation cannot keep an old
+		// now-playing title.
+		const status = await $fetch("/api/stream/status", { cache: "no-store" });
 		if (status) liveStatus.value = status;
 	} catch (error) {
 		console.error("[MusicController] Error updating live status:", error);
@@ -177,6 +214,54 @@ const getActualLiveStatus1 = computed(() => {
 	return onAirLight?.on_air_light && isCurrentShowLive1.value;
 });
 
+// Transition fallback: LibreTime is offline, so stream 1 has no liveData.
+// The Icecast mount is still on air; use it to keep player 1 clickable.
+// Remove this block once AzuraCast supplies metadata again.
+const icecastSources1 = computed(() => {
+	const source = liveStatus.value.stream1.icecastData?.icestats?.source;
+	return Array.isArray(source) ? source : source ? [source] : [];
+});
+
+const icecastSource1 = computed(
+	() =>
+		icecastSources1.value.find((source) => {
+			try {
+				const path = new URL(String(source?.listenurl || "")).pathname;
+				return path.replace(/\/+$/, "") === "/callshopradio";
+			} catch {
+				return false;
+			}
+		}) ?? null,
+);
+
+const isIcecastLive1 = computed(() => Boolean(icecastSource1.value));
+
+// TRANSITION (LibreTime outage): the Icecast `title` is the only now-playing
+// metadata until AzuraCast is live. It is a single ICY string, not structured
+// artist/title data. Remove this block with the fallback in status.get.ts.
+const icecastTitle1 = computed(() => {
+	const raw = String(icecastSource1.value?.title || "").trim();
+	// Icecast reports a bare "Offline" while a source reconnects; do not show
+	// that as the now-playing title.
+	if (!raw || /^(libretime\s*-\s*)?offline$/i.test(raw)) return "";
+	return parseString(raw);
+});
+
+const hasLibreTimeData1 = computed(() => {
+	const data = liveStatus.value.stream1.liveData;
+	return Boolean(
+		data &&
+			typeof data === "object" &&
+			(data.tracks?.current || data.shows?.current),
+	);
+});
+
+const isLive1 = computed(
+	() =>
+		getActualLiveStatus1.value ||
+		(!hasLibreTimeData1.value && isIcecastLive1.value),
+);
+
 const getActualLiveStatus2 = computed(() => {
 	const { onAirLight } = liveStatus.value.stream2;
 	return onAirLight?.on_air_light && isCurrentShowLive2.value;
@@ -184,12 +269,11 @@ const getActualLiveStatus2 = computed(() => {
 
 // Calculate current title for Stream 1
 const getCurrentName1 = computed(() => {
-	const { onAirLight, liveData, icecastData } = liveStatus.value.stream1;
+	const { onAirLight, liveData } = liveStatus.value.stream1;
 
 	if (onAirLight?.on_air_light) {
 		if (onAirLight?.master_stream) {
-			const title = icecastData?.icestats?.source?.[0]?.title || "";
-			return title ? parseString(title) : "Live Stream 1";
+			return icecastTitle1.value || "Live Stream 1";
 		} else if (liveData?.tracks?.current) {
 			if (liveData.tracks.current.metadata) {
 				const artist = liveData.tracks.current.metadata.artist_name || "";
@@ -237,6 +321,10 @@ const getCurrentName1 = computed(() => {
 				: date.getUTCMinutes();
 
 		return `Next (${hoursNext}:${minutesNext}): ${parseString(nextShow.name)}`;
+	}
+
+	if (icecastTitle1.value) {
+		return icecastTitle1.value;
 	}
 
 	return "Stream 1";
@@ -311,9 +399,16 @@ const getCurrentName2 = computed(() => {
 const setupAudioElement = (audioElement, num) => {
 	if (!audioElement) return;
 
+	const streamName = num === 1 ? "main" : "wien";
+	const currentShow = () =>
+		num === 1 ? getCurrentName1.value : getCurrentName2.value;
+
 	// Basic configuration
 	audioElement.volume = 1.0;
-	audioElement.preload = "metadata"; // Only preload metadata
+	// Live Icecast streams block the document `load` event for ~10s while the
+	// browser buffers metadata. Nothing here needs it before playback starts, so
+	// don't open the streams until the user actually presses play.
+	audioElement.preload = "none";
 	audioElement.crossOrigin = "anonymous";
 
 	// Event listeners
@@ -325,9 +420,18 @@ const setupAudioElement = (audioElement, num) => {
 			isPlaying2.value = true;
 			isLoading2.value = false;
 		}
+
+		track("play_stream", {
+			content_type: "live",
+			stream: streamName,
+			now_playing: currentShow(),
+		});
+
+		startPing(num, streamName, currentShow);
 	});
 
 	audioElement.addEventListener("waiting", () => {
+		stopPing(num);
 		if (num === 1) {
 			isLoading1.value = true;
 		} else {
@@ -335,7 +439,21 @@ const setupAudioElement = (audioElement, num) => {
 		}
 	});
 
+	audioElement.addEventListener("stalled", () => {
+		stopPing(num);
+	});
+
+	audioElement.addEventListener("playing", () => {
+		if (num === 1) {
+			isLoading1.value = false;
+		} else {
+			isLoading2.value = false;
+		}
+		startPing(num, streamName, currentShow);
+	});
+
 	audioElement.addEventListener("pause", () => {
+		stopPing(num);
 		if (num === 1) {
 			isPlaying1.value = false;
 			isLoading1.value = false;
@@ -346,6 +464,7 @@ const setupAudioElement = (audioElement, num) => {
 	});
 
 	audioElement.addEventListener("ended", () => {
+		stopPing(num);
 		if (num === 1) {
 			isPlaying1.value = false;
 		} else {
@@ -354,6 +473,7 @@ const setupAudioElement = (audioElement, num) => {
 	});
 
 	audioElement.addEventListener("error", () => {
+		stopPing(num);
 		if (num === 1) {
 			isPlaying1.value = false;
 			isLoading1.value = false;
@@ -361,6 +481,13 @@ const setupAudioElement = (audioElement, num) => {
 			isPlaying2.value = false;
 			isLoading2.value = false;
 		}
+
+		track("audio_error", {
+			content_type: "live",
+			stream: streamName,
+			source: "icecast",
+			error_code: audioElement.error?.code ?? 0,
+		});
 	});
 
 	// Add HLS streaming for better compatibility
@@ -464,7 +591,7 @@ const updateMediaSessionMetadata = () => {
 	// Determine which stream is active
 	if (isPlaying1.value) {
 		title = getCurrentName1.value;
-		isLive = liveStatus.value.stream1.onAirLight.on_air_light;
+		isLive = isLive1.value;
 
 		// Try to extract artist if possible
 		if (liveStatus.value.stream1.liveData?.tracks?.current?.metadata) {
@@ -474,6 +601,14 @@ const updateMediaSessionMetadata = () => {
 			artist =
 				liveStatus.value.stream1.liveData.tracks.current.metadata.artist_name ||
 				"";
+		} else if (icecastTitle1.value) {
+			// Icecast gives one "Artist - Title" string; split it for the lock
+			// screen when the separator is present.
+			const [artistPart, ...titleParts] = icecastTitle1.value.split(" - ");
+			if (titleParts.length > 0) {
+				artist = artistPart.trim();
+				title = titleParts.join(" - ").trim();
+			}
 		}
 	} else if (isPlaying2.value) {
 		title = getCurrentName2.value;
@@ -530,6 +665,7 @@ const updateMediaSessionMetadata = () => {
 
 // Clean up timer when removing component
 onBeforeUnmount(() => {
+	stopAllPings();
 	if (statusUpdateInterval) {
 		clearInterval(statusUpdateInterval);
 	}
@@ -552,13 +688,17 @@ onBeforeUnmount(() => {
 						(isPlaying1 && mainStore.activeStreamingChannel === 'channelTwo') ||
 						isLoading2,
 					offline:
-						!getActualLiveStatus1 &&
+						!isLive1 &&
 						!liveStatus.stream1.liveData?.tracks?.current,
 				}"
 				@click="togglePlay1"
 			>
 				<h2>1</h2>
-				<button>
+				<button
+					type="button"
+					:aria-label="isPlaying1 ? 'Pause stream 1' : 'Play stream 1'"
+					:aria-pressed="isPlaying1"
+				>
 					<div v-if="isLoading1" class="loading-indicator">
 						<span class="dot"/>
 						<span class="dot"/>
@@ -579,25 +719,20 @@ onBeforeUnmount(() => {
 							width="3"
 							height="10" />
 					</svg>
-					<svg
+					<img
 						v-else
 						class="play"
-						width="9"
-						height="12"
-						viewBox="0 0 9 12"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							d="M9 6L-4.89399e-07 11.1962L-3.51373e-08 0.803847L9 6Z"
-							fill="black"
-						/>
-					</svg>
+						src="/icons/play-button.svg"
+						alt=""
+						aria-hidden="true"
+						width="65"
+						height="65"
+					/>
 				</button>
 				<p class="track-name">{{ getCurrentName1 }}</p>
 				<p
 					:class="`live-indicator ${
-						getActualLiveStatus1
+						isLive1
 							? 'live'
 							: liveStatus.stream1.liveData?.tracks?.current
 								? 'track'
@@ -605,7 +740,7 @@ onBeforeUnmount(() => {
 					}`"
 				>
 					<svg
-						v-if="getActualLiveStatus1"
+						v-if="isLive1"
 						width="9"
 						height="9"
 						viewBox="0 0 9 9"
@@ -674,7 +809,7 @@ onBeforeUnmount(() => {
 						</g>
 					</svg>
 					{{
-						getActualLiveStatus1
+						isLive1
 							? "Live"
 							: liveStatus.stream1.liveData?.tracks?.current
 								? ""
@@ -701,7 +836,11 @@ onBeforeUnmount(() => {
 				@click="togglePlay2"
 			>
 				<h2>2</h2>
-				<button>
+				<button
+					type="button"
+					:aria-label="isPlaying2 ? 'Pause stream 2' : 'Play stream 2'"
+					:aria-pressed="isPlaying2"
+				>
 					<div v-if="isLoading2" class="loading-indicator">
 						<span class="dot"/>
 						<span class="dot"/>
@@ -726,20 +865,15 @@ onBeforeUnmount(() => {
 							height="10"
 							fill="black" />
 					</svg>
-					<svg
+					<img
 						v-else
 						class="play"
-						width="9"
-						height="12"
-						viewBox="0 0 9 12"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							d="M9 6L-4.89399e-07 11.1962L-3.51373e-08 0.803847L9 6Z"
-							fill="black"
-						/>
-					</svg>
+						src="/icons/play-button.svg"
+						alt=""
+						aria-hidden="true"
+						width="65"
+						height="65"
+					/>
 				</button>
 				<p class="track-name">{{ getCurrentName2 }}</p>
 				<p
@@ -834,8 +968,8 @@ onBeforeUnmount(() => {
 		</div>
 
 		<!-- Audio elements completely outside Vue's reactivity system -->
-		<audio id="audioPlayer1" :src="streamUrl1"/>
-		<audio id="audioPlayer2" :src="streamUrl2"/>
+		<audio id="audioPlayer1" preload="none" :src="streamUrl1"/>
+		<audio id="audioPlayer2" preload="none" :src="streamUrl2"/>
 	</div>
 </template>
 
@@ -895,6 +1029,11 @@ onBeforeUnmount(() => {
             }
           }
         }
+
+        .play {
+          opacity: 0.5;
+          filter: grayscale(1);
+        }
       }
     }
     button {
@@ -912,6 +1051,12 @@ onBeforeUnmount(() => {
         path {
           fill: var(--color-text);
         }
+      }
+
+      .play {
+        display: block;
+        width: var(--base-font-size);
+        height: var(--base-font-size);
       }
 
       .loading-indicator {

@@ -44,10 +44,12 @@ const props = withDefaults(
 		set: Set;
 		layout?: "default" | "cover-flow";
 		mediaActive?: boolean;
+		isCenter?: boolean;
 	}>(),
 	{
 		layout: "default",
 		mediaActive: true,
+		isCenter: false,
 	},
 );
 
@@ -170,7 +172,11 @@ onMounted(() => loadArtworkUrl());
 						:src="artworkUrl"
 						alt="Audio Artwork"
 						class="set-image track-artwork"
-						loading="lazy"
+						:loading="isCenter ? 'eager' : 'lazy'"
+						:fetchpriority="isCenter ? 'high' : undefined"
+						decoding="async"
+						width="500"
+						height="500"
 					>
 					<div
 						v-else
@@ -189,19 +195,7 @@ onMounted(() => loadArtworkUrl());
 					type="button"
 					@click="playTrack"
 				>
-					<svg
-						width="16"
-						height="18"
-						viewBox="0 0 9 12"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-						aria-hidden="true"
-					>
-						<path
-							d="M9 6L-4.89399e-07 11.1962L-3.51373e-08 0.803847L9 6Z"
-							fill="currentColor"
-						/>
-					</svg>
+					<img src="/icons/play-button.svg" alt="" aria-hidden="true" width="65" height="65" />
 				</button>
 
 				<div class="set-info-container">
@@ -250,8 +244,8 @@ onMounted(() => loadArtworkUrl());
 					</div>
 					<div v-if="set?.tags?.length" class="set-tags tags">
 						<button
-							v-for="tag in set?.tags.slice(0,3)"
-							:key="tag._id || index"
+							v-for="(tag, tagIndex) in set?.tags.slice(0, 3)"
+							:key="tag._id || tagIndex"
 							class="tag"
 							type="button"
 						>

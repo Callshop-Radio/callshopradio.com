@@ -319,7 +319,10 @@ onMounted(() => {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 0;
+    /* Above the active slide (z-index: 2), so the SVG line runs over the
+       artwork instead of being clipped at its edge. The slider nav (z-index
+       10/20) remains above it. */
+    z-index: 3;
     .animated-logo {
       position: absolute;
       z-index: 0;

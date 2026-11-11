@@ -1,12 +1,17 @@
 <script setup>
 import { WORDS_TYPOGRAPHY } from "@callshop/words-typography";
 import { flattenProps } from "@portabletext/vue";
-import {
-	ModuleCarousel,
-	ModuleMedia,
-	PortableTextLink,
-	RichTextStyles,
-} from "#components";
+import { defineAsyncComponent } from "vue";
+import { PortableTextLink, RichTextStyles } from "#components";
+
+// Media blocks are rare and pull in hls.js, Plyr and embla. Loading them
+// asynchronously keeps those libraries out of the initial client bundle.
+const AsyncModuleMedia = defineAsyncComponent(
+	() => import("../modules/ModuleMedia.vue"),
+);
+const AsyncModuleCarousel = defineAsyncComponent(
+	() => import("../modules/ModuleCarousel.vue"),
+);
 
 const props = defineProps({
 	blocks: {
@@ -45,8 +50,8 @@ const blockMap = Object.fromEntries(
 
 const portableTextComponents = {
 	types: {
-		"module.media": flattenProps(ModuleMedia),
-		"module.carousel": flattenProps(ModuleCarousel),
+		"module.media": flattenProps(AsyncModuleMedia),
+		"module.carousel": flattenProps(AsyncModuleCarousel),
 	},
 	marks: {
 		link: flattenMarkProps(PortableTextLink),

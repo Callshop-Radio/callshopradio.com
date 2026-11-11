@@ -34,10 +34,10 @@ let resizeObserver: ResizeObserver | null = null;
 
 const {
 	currentIndex,
-	isAnimating,
 	total,
 	cardStyle,
 	getVisualOffset,
+	isSnapping,
 	scrollNext,
 	scrollPrev,
 	scrollTo,
@@ -108,13 +108,22 @@ onUnmounted(() => {
 		class="intro-cover-flow"
 		:class="`intro-cover-flow--${area}`"
 	>
-		<div class="cover-flow">
+		<div
+			class="cover-flow"
+			role="region"
+			aria-roledescription="carousel"
+			:aria-label="`${navLabel} Karussell`"
+			tabindex="0"
+			@keydown.left.prevent="scrollPrev"
+			@keydown.right.prevent="scrollNext"
+			@keydown.home.prevent="scrollTo(0)"
+			@keydown.end.prevent="scrollTo(total - 1)"
+		>
 			<button
 				v-if="total > 1"
 				class="cover-flow__arrow cover-flow__arrow--prev"
 				type="button"
 				:aria-label="`Vorheriger ${navLabel}`"
-				:disabled="isAnimating"
 				@mousedown.prevent
 				@click="scrollPrev"
 			>
@@ -143,6 +152,9 @@ onUnmounted(() => {
 					v-for="(item, index) in items"
 					:key="item._id"
 					class="cover-flow__card-wrap"
+					:class="{
+						'cover-flow__card-wrap--snap': isSnapping(item._id),
+					}"
 					:style="cardStyle(index)"
 					:data-offset="getVisualOffset(index)"
 				>
@@ -150,6 +162,7 @@ onUnmounted(() => {
 						:item="item"
 						:index="index"
 						:media-active="Math.abs(getVisualOffset(index)) <= 1"
+						:is-center="getVisualOffset(index) === 0"
 					/>
 				</div>
 			</div>
@@ -159,7 +172,6 @@ onUnmounted(() => {
 				class="cover-flow__arrow cover-flow__arrow--next"
 				type="button"
 				:aria-label="`Nächster ${navLabel}`"
-				:disabled="isAnimating"
 				@mousedown.prevent
 				@click="scrollNext"
 			>
@@ -191,7 +203,6 @@ onUnmounted(() => {
 				:class="['cover-flow__dot', { 'is-selected': index === currentIndex }]"
 				:aria-label="`${navLabel} ${index + 1}`"
 				:aria-current="index === currentIndex ? 'true' : undefined"
-				:disabled="isAnimating"
 				@mousedown.prevent
 				@click="scrollTo(index)"
 			/>
@@ -219,9 +230,9 @@ onUnmounted(() => {
   }
 
   width: 100%;
-  max-width: var(--page-max-width);
+  max-width: 100%;
   margin: 0 auto;
-  padding: var(--small-margin) 0 var(--base-margin);
+  padding: var(--small-margin) var(--small-padding) var(--base-margin);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -234,6 +245,12 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  &:focus-visible {
+    outline: 2px solid var(--cover-flow-accent);
+    outline-offset: 4px;
+    border-radius: 1.5rem;
+  }
 }
 
 .cover-flow__stage {
@@ -251,10 +268,17 @@ onUnmounted(() => {
   width: var(--cover-flow-card-width);
   transform-origin: center center;
   backface-visibility: hidden;
+  will-change: transform, opacity, filter;
   transition:
     transform 0.72s var(--cover-flow-ease),
     opacity 0.72s var(--cover-flow-ease),
-    filter 0.6s var(--cover-flow-ease);
+    filter 0.72s var(--cover-flow-ease);
+}
+
+/* Off-screen cards are placed directly at their new ring position; animating
+   them would sweep them across the stage during multi-step jumps. */
+.cover-flow__card-wrap--snap {
+  transition: none;
 }
 
 .cover-flow__arrow {
@@ -267,11 +291,6 @@ onUnmounted(() => {
   padding: var(--small-padding);
   transition: color var(--transition-fast);
 
-  &:disabled {
-    opacity: 0.35;
-    cursor: default;
-  }
-
   svg {
     width: 1.25rem;
     height: 1.25rem;
@@ -282,7 +301,7 @@ onUnmounted(() => {
     transition: fill var(--transition-fast);
   }
 
-  &:hover:not(:disabled) {
+  &:hover {
     @media (min-width: 1024px) {
       color: var(--cover-flow-accent);
     }
@@ -323,14 +342,10 @@ onUnmounted(() => {
     background-color: var(--cover-flow-accent);
   }
 
-  &:hover:not(:disabled) {
+  &:hover {
     @media (min-width: 1024px) {
       background-color: var(--cover-flow-accent);
     }
-  }
-
-  &:disabled {
-    cursor: default;
   }
 }
 
@@ -344,7 +359,7 @@ onUnmounted(() => {
   .intro-cover-flow {
     --cover-flow-card-width: min(17.5rem, 72vw);
     --cover-flow-arrow-gutter: 0.25rem;
-    padding-inline: 0;
+    padding-inline: var(--small-padding);
   }
 
   .cover-flow__stage {

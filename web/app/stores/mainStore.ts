@@ -17,6 +17,15 @@ export interface CurrentTrack {
 	[key: string]: unknown;
 }
 
+/** Sanity context for the SoundCloud track that is currently loaded. */
+export interface CurrentTrackContext {
+	contentType?: string;
+	contentId?: string;
+	contentTitle?: string;
+	showId?: string;
+	showTitle?: string;
+}
+
 export const useMainStore = defineStore("mainStore", () => {
 	// state as refs
 	const siteCookieBanner = ref<Record<string, unknown>>({});
@@ -26,6 +35,7 @@ export const useMainStore = defineStore("mainStore", () => {
 	const link = ref("");
 	const titel = ref("");
 	const currentTrack = ref<CurrentTrack | null>(null);
+	const currentTrackContext = ref<CurrentTrackContext | null>(null);
 	const active = ref(false);
 	const isPlayerPlaying = ref(false);
 	const isPlayerVisible = ref(true);
@@ -63,6 +73,7 @@ export const useMainStore = defineStore("mainStore", () => {
 
 	function resetSoundCloudPlayer() {
 		currentTrack.value = null;
+		currentTrackContext.value = null;
 	}
 
 	function setActiveScheduleLocation(location: string) {
@@ -136,6 +147,7 @@ export const useMainStore = defineStore("mainStore", () => {
 		siteSettings,
 		siteFallbacks,
 		currentTrack,
+		currentTrackContext,
 		link,
 		titel,
 		active,

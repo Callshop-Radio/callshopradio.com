@@ -70,7 +70,7 @@ const { getItemImage } = useImageManagement();
 // Computed properties
 const articleImage = computed(() => {
 	const image = getItemImage(props.article);
-	return image?.asset?.url || "";
+	return sanityImageUrl(image?.asset?.url) || "";
 });
 
 const COVER_FLOW_TEASER_MAX_WORDS = 40;

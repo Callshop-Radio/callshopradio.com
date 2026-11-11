@@ -21,7 +21,7 @@ export const useSoundcloudArtwork = () => {
 		const parentShowImageUrl = item?.parentShow?.image?.asset?.url;
 		const storeFallbackUrl =
 			mainStore.siteFallbacks?.fallbackSet?.image?.asset?.url;
-		return parentShowImageUrl || storeFallbackUrl || "";
+		return sanityImageUrl(parentShowImageUrl || storeFallbackUrl) || "";
 	}
 
 	function playTrack(item: ArtworkItem) {
@@ -33,6 +33,17 @@ export const useSoundcloudArtwork = () => {
 			if (!track.permalink_url && track.id) {
 				track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
 			}
+
+			// Keep the Sanity identity next to the SoundCloud track so the global
+			// player can report play/progress events without guessing from the
+			// SoundCloud payload alone.
+			mainStore.currentTrackContext = {
+				contentType: item?._type || "set",
+				contentId: item?._id,
+				contentTitle: item?.title || item?.name,
+				showId: item?.parentShow?._id || item?.show?._id,
+				showTitle: item?.parentShow?.title || item?.show?.title,
+			};
 			mainStore.currentTrack = track;
 		}
 	}

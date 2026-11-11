@@ -575,3 +575,56 @@
     }
   }
 }
+
+
+/* Branded play button (public/icons/play-button.svg) */
+.play-button {
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+.play-button:hover {
+  background-color: transparent !important;
+}
+
+.play-button > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.play-button:hover > img {
+  transform: scale(1.05);
+}
+
+.plyr__control--overlaid {
+  width: 4rem !important;
+  height: 4rem !important;
+  padding: 0 !important;
+  border-radius: 100px !important;
+  box-shadow: none !important;
+  background: transparent url("/icons/play-button.svg") center / contain no-repeat !important;
+}
+
+.plyr__control--overlaid svg {
+  display: none !important;
+}
+
+@media screen and (max-width: 900px) {
+  .plyr__control--overlaid {
+    width: 3rem !important;
+    height: 3rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-button > img {
+    transition: none;
+  }
+
+  .play-button:hover > img {
+    transform: none;
+  }
+}

@@ -25,8 +25,13 @@ usePageSeo(data?.value?.seo);
 	<div class="shows-archive">
 		<section v-if="featuredSets.length > 0" class="intro-section">
 			<ModuleIntroCoverFlow :items="featuredSets" nav-label="Set" area="show">
-				<template #default="{ item, mediaActive }">
-					<ModuleIntroSet layout="cover-flow" :set="item" :media-active="mediaActive" />
+				<template #default="{ item, mediaActive, isCenter }">
+					<ModuleIntroSet
+						layout="cover-flow"
+						:set="item"
+						:media-active="mediaActive"
+						:is-center="isCenter"
+					/>
 				</template>
 			</ModuleIntroCoverFlow>
 		</section>
@@ -46,5 +51,10 @@ usePageSeo(data?.value?.seo);
   flex-flow: column wrap;
   justify-content: flex-start;
   align-items: center;
+
+  .intro-section {
+    width: 100%;
+    max-width: 100%;
+  }
 }
 </style>

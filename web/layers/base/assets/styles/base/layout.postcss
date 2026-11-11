@@ -1,10 +1,30 @@
 html,
 body {
   @apply w-full h-full;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-dark-grey) transparent;
+  scrollbar-gutter: stable;
+
   &::-webkit-scrollbar {
-    display: none;
+    display: block;
+    width: 10px;
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-dark-grey);
+    border: 2px solid transparent;
+    border-radius: 100px;
+    background-clip: padding-box;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--color-pink);
   }
 }
 
