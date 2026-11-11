@@ -320,9 +320,8 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.75rem;
   width: 100%;
-  max-width: var(--page-max-width);
   height: 56px;
-  margin: 0 auto;
+  margin: 0;
   padding: 0 var(--page-gutter);
   box-sizing: border-box;
   background-color: var(--color-bg);
