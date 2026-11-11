@@ -1,11 +1,13 @@
+import { watch } from "vue";
 import type { PlayerFeed } from "~~/types/player";
 
 /**
  * One shared feed for the header row and the video panel. The server renders
  * the first value; the client refreshes every 20 s while the tab is visible.
  */
-export function usePlayerFeed() {
+export async function usePlayerFeed() {
 	const config = useRuntimeConfig();
+	const store = usePlayerStore();
 
 	const fallbackFeed = (): PlayerFeed => ({
 		version: 1,
@@ -28,10 +30,19 @@ export function usePlayerFeed() {
 		source: "fallback",
 	});
 
-	const { data, refresh } = useAsyncData<PlayerFeed>(
+	const asyncData = useAsyncData<PlayerFeed>(
 		"player-feed",
 		() => $fetch("/api/player/now"),
 		{ server: true, lazy: false, default: fallbackFeed },
+	);
+	const { data, refresh } = asyncData;
+
+	watch(
+		data,
+		(value) => {
+			if (value) store.setFeed(value);
+		},
+		{ immediate: true },
 	);
 
 	const visible = useDocumentVisibility();
@@ -45,6 +56,9 @@ export function usePlayerFeed() {
 	useEventListener("online", () => {
 		void refresh();
 	});
+
+	await asyncData;
+	if (data.value) store.setFeed(data.value);
 
 	return { feed: data, refresh };
 }

@@ -28,20 +28,21 @@ function clearTimer() {
 function ensureAudio() {
 	if (!import.meta.client) return null;
 	if (!audio) {
-		audio = new Audio();
-		audio.preload = "none";
-		audio.addEventListener("playing", () => {
+		const element = new Audio();
+		audio = element;
+		element.preload = "none";
+		element.addEventListener("playing", () => {
 			clearTimer();
 			emit("playing");
 		});
-		audio.addEventListener("pause", () => emit("pause"));
-		audio.addEventListener("error", () => {
+		element.addEventListener("pause", () => emit("pause"));
+		element.addEventListener("error", () => {
 			clearTimer();
 			if (!usingFallback && fallbackUrl) {
 				usingFallback = true;
-				audio.src = fallbackUrl;
-				audio.load();
-				void audio.play().catch(() => emit("error"));
+				element.src = fallbackUrl;
+				element.load();
+				void element.play().catch(() => emit("error"));
 				return;
 			}
 			emit("error");

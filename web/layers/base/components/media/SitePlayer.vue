@@ -3,7 +3,6 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { usePlayerStore } from "~/stores/playerStore";
 import { usePlayerAnalytics } from "~~/layers/base/composables/usePlayerAnalytics";
 import { usePlayerController } from "~~/layers/base/composables/usePlayerController";
-import { usePlayerFeed } from "~~/layers/base/composables/usePlayerFeed";
 import { formatPlayerTime } from "~~/layers/base/utils/player";
 
 interface PlayerLink {
@@ -13,17 +12,8 @@ interface PlayerLink {
 
 const store = usePlayerStore();
 const controller = usePlayerController();
-const { feed } = usePlayerFeed();
 const analytics = usePlayerAnalytics();
 const localePath = useLocalePath();
-
-watch(
-	feed,
-	(value) => {
-		if (value) store.setFeed(value);
-	},
-	{ immediate: true },
-);
 
 const isSet = computed(() => store.mode === "set" && Boolean(store.set));
 const tracklistOpen = ref(false);

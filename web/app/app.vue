@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { favicon } = useUtils();
 favicon();
+await usePlayerFeed();
 </script>
 
 <template>
