@@ -171,23 +171,31 @@ onBeforeUnmount(() => {
 			<svg
 				v-else-if="store.playing"
 				class="site-player__pause"
-				width="10"
-				height="12"
-				viewBox="0 0 10 12"
-				aria-hidden="true"
-			>
-				<rect width="3" height="12" />
-				<rect x="7" width="3" height="12" />
-			</svg>
-			<img
-				v-else
-				class="site-player__play-icon"
-				src="/icons/play-button.svg"
-				alt=""
-				aria-hidden="true"
 				width="28"
 				height="28"
-			/>
+				viewBox="0 0 65 65"
+				fill="none"
+				aria-hidden="true"
+			>
+				<circle class="site-player__disc" cx="32.17" cy="32.17" r="32.17" />
+				<rect class="site-player__bar" x="21.5" y="19.5" width="7" height="26" rx="1.5" />
+				<rect class="site-player__bar" x="36.5" y="19.5" width="7" height="26" rx="1.5" />
+			</svg>
+			<svg
+				v-else
+				class="site-player__play-icon"
+				width="28"
+				height="28"
+				viewBox="0 0 65 65"
+				fill="none"
+				aria-hidden="true"
+			>
+				<circle class="site-player__disc" cx="32.17" cy="32.17" r="32.17" />
+				<path
+					class="site-player__triangle"
+					d="M50.56 32.17L22.98 48.09V16.25L50.56 32.17Z"
+				/>
+			</svg>
 		</button>
 
 		<Transition name="site-player-cover" mode="out-in">
@@ -363,13 +371,24 @@ onBeforeUnmount(() => {
     outline-offset: 2px;
   }
 
-  .site-player__play-icon {
+  .site-player__play-icon,
+  .site-player__pause {
     width: 28px;
     height: 28px;
   }
 
-  .site-player__pause rect {
-    fill: var(--color-text);
+  .site-player__disc {
+    fill: var(--color-grey);
+    transition: fill 160ms ease;
+  }
+
+  .site-player__triangle,
+  .site-player__bar {
+    fill: var(--color-black);
+  }
+
+  &:hover .site-player__disc {
+    fill: var(--color-pink);
   }
 }
 
