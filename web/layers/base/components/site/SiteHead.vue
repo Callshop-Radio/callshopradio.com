@@ -11,27 +11,6 @@ const config = useRuntimeConfig();
 const chatEnabled = computed(
 	() => import.meta.dev || Boolean(config.public.chatEnabled),
 );
-
-// Computed properties for the track
-const currentTrack = computed(() => mainStore.currentTrack);
-const trackTitle = computed(() => currentTrack.value?.title || "");
-const trackDuration = computed(() => {
-	if (!currentTrack.value?.duration) return "";
-	// Conversion from milliseconds to MM:SS format
-	const totalSeconds = Math.floor(currentTrack.value.duration / 1000);
-	const minutes = Math.floor(totalSeconds / 60);
-	const seconds = totalSeconds % 60;
-	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-});
-
-// Status and visibility of the player
-const isPlaying = computed(() => mainStore.isPlayerPlaying);
-const isVisible = computed(() => mainStore.isPlayerVisible);
-
-// Method to toggle the player visibility
-const togglePlayerVisibility = () => {
-	mainStore.togglePlayerVisibility();
-};
 </script>
 
 <template>
@@ -41,7 +20,6 @@ const togglePlayerVisibility = () => {
 				<div class="header__title-section__logo">
 					<ElementsCallshopLogo class="logo" />
 					<ElementsCallshopTextLogo class="text-logo" />
-					<SiteMobileChannelSwitch class="channel-switch" />
 				</div>
 			</NuxtLink>
 			<div class="header__toggle-section">
@@ -80,33 +58,7 @@ const togglePlayerVisibility = () => {
 		</section>
 		<SiteMenu />
 		<section class="header__audio-player-section">
-			<MusicController />
-		</section>
-		<section
-			v-if="currentTrack"
-			class="header__soundcloud-player-section"
-			:class="{ 'is-hidden': !isVisible, 'is-visible': currentTrack }"
-		>
-			<div class="player-controls" :class="{ 'is-loaded': currentTrack }">
-				<div class="track-info">
-					<!-- <div class="track-status" :class="{ 'is-playing': isPlaying }"></div> -->
-					<div class="track-details">
-						<h4 class="track-source">Playing from SoundCloud</h4>
-						<h3 class="track-title">{{ trackTitle }}</h3>
-						<h4 v-if="trackDuration" class="track-duration">
-							{{ trackDuration }}
-						</h4>
-					</div>
-				</div>
-				<nav class="player-nav">
-					<button @click="togglePlayerVisibility">
-						{{ isVisible ? "Hide" : "Show" }}
-					</button>
-				</nav>
-			</div>
-			<ClientOnly>
-				<SoundCloudPlayer v-if="currentTrack" />
-			</ClientOnly>
+			<SitePlayer />
 		</section>
 	</div>
 </template>

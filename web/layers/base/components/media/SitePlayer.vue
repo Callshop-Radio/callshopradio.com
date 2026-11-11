@@ -1,0 +1,567 @@
+﻿<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, watch } from "vue";
+import { usePlayerStore } from "~/stores/playerStore";
+import { usePlayerAnalytics } from "~~/layers/base/composables/usePlayerAnalytics";
+import { usePlayerController } from "~~/layers/base/composables/usePlayerController";
+import { usePlayerFeed } from "~~/layers/base/composables/usePlayerFeed";
+import { formatPlayerTime } from "~~/layers/base/utils/player";
+
+interface PlayerLink {
+	label: string;
+	path: string | null;
+}
+
+const store = usePlayerStore();
+const controller = usePlayerController();
+const { feed } = usePlayerFeed();
+const analytics = usePlayerAnalytics();
+const localePath = useLocalePath();
+
+watch(
+	feed,
+	(value) => {
+		if (value) store.setFeed(value);
+	},
+	{ immediate: true },
+);
+
+const isSet = computed(() => store.mode === "set" && Boolean(store.set));
+
+const streamTitle = computed<PlayerLink>(() => {
+	const value = store.feed;
+	if (!value) return { label: "Callshop Radio", path: null };
+	if (value.set?.title) return { label: value.set.title, path: value.set.path };
+	if (value.show?.title) return { label: value.show.title, path: value.show.path };
+	return { label: value.title, path: null };
+});
+
+const streamLinks = computed<PlayerLink[]>(() => {
+	const value = store.feed;
+	if (!value) return [];
+	const links: PlayerLink[] = [];
+	if (value.show?.title) links.push({ label: value.show.title, path: value.show.path });
+	for (const artist of value.artists) links.push({ label: artist.name, path: artist.path });
+	if (!links.length && value.subtitle) links.push({ label: value.subtitle, path: null });
+	return links;
+});
+
+const setTitle = computed<PlayerLink>(() => {
+	const value = store.set;
+	if (!value) return { label: "Callshop Radio", path: null };
+	const path =
+		value.slug && value.show?.slug
+			? `/shows/${value.show.slug}/${value.slug}`
+			: null;
+	return { label: value.title || "Set", path };
+});
+
+const setLinks = computed<PlayerLink[]>(() => {
+	const value = store.set;
+	if (!value) return [];
+	const links: PlayerLink[] = [];
+	if (value.show?.title) {
+		links.push({
+			label: value.show.title,
+			path: value.show.slug ? `/shows/${value.show.slug}` : null,
+		});
+	}
+	for (const artist of value.artists) {
+		links.push({
+			label: artist.name,
+			path:
+				artist.poolVisibility && artist.slug
+					? `/pool/${artist.slug}`
+					: null,
+		});
+	}
+	return links;
+});
+
+const cover = computed(() => (isSet.value ? store.set?.cover : store.feed?.cover) || null);
+const statusLabel = computed(() => {
+	if (isSet.value) return "Set";
+	switch (store.feed?.state) {
+		case "live":
+			return "Live";
+		case "replay":
+			return "Replay";
+		case "auto":
+			return "AutoDJ";
+		case "offline":
+			return "Offline";
+		default:
+			return "Radio";
+	}
+});
+const isLive = computed(() => !isSet.value && store.feed?.state === "live");
+const progressPercent = computed(() => {
+	const value = store.progress;
+	if (!value || value.durationMs <= 0) return 0;
+	return Math.min(100, Math.max(0, (value.positionMs / value.durationMs) * 100));
+});
+const progressTime = computed(() => {
+	const value = store.progress;
+	if (!value) return "";
+	return `${formatPlayerTime(value.positionMs / 1000)} / ${formatPlayerTime(
+		value.durationMs / 1000,
+	)}`;
+});
+
+function seek(event: MouseEvent) {
+	const target = event.currentTarget as HTMLElement | null;
+	if (!target) return;
+	const rect = target.getBoundingClientRect();
+	if (rect.width > 0) controller.seek((event.clientX - rect.left) / rect.width);
+}
+
+function onKeydown(event: KeyboardEvent) {
+	if (event.key === "Escape" && isSet.value) controller.closeSet();
+}
+
+onMounted(() => {
+	analytics.start();
+	window.addEventListener("keydown", onKeydown);
+});
+
+onBeforeUnmount(() => {
+	analytics.stop();
+	window.removeEventListener("keydown", onKeydown);
+});
+</script>
+
+<template>
+	<section
+		class="site-player"
+		:class="{ 'is-set': isSet, 'is-live': isLive }"
+		role="region"
+		aria-label="Player"
+	>
+		<button
+			type="button"
+			class="site-player__play"
+			:aria-label="store.playing ? 'Pause' : 'Abspielen'"
+			:aria-pressed="store.playing"
+			@click="controller.toggle()"
+		>
+			<span v-if="store.loading" class="site-player__dots" aria-hidden="true">
+				<span /><span /><span />
+			</span>
+			<svg
+				v-else-if="store.playing"
+				class="site-player__pause"
+				width="10"
+				height="12"
+				viewBox="0 0 10 12"
+				aria-hidden="true"
+			>
+				<rect width="3" height="12" />
+				<rect x="7" width="3" height="12" />
+			</svg>
+			<img
+				v-else
+				class="site-player__play-icon"
+				src="/icons/play-button.svg"
+				alt=""
+				aria-hidden="true"
+				width="28"
+				height="28"
+			/>
+		</button>
+
+		<Transition name="site-player-cover" mode="out-in">
+			<img
+				v-if="cover"
+				:key="cover"
+				class="site-player__cover"
+				:src="cover"
+				alt=""
+				loading="lazy"
+			/>
+			<span v-else key="empty" class="site-player__cover site-player__cover--empty" aria-hidden="true">C</span>
+		</Transition>
+
+		<div class="site-player__viewport">
+			<div class="site-player__layer site-player__layer--stream" :aria-hidden="isSet">
+				<div class="site-player__meta">
+					<div class="site-player__title">
+						<NuxtLink
+							v-if="streamTitle.path"
+							:to="localePath(streamTitle.path)"
+							@click.stop
+						>
+							{{ streamTitle.label }}
+						</NuxtLink>
+						<span v-else>{{ streamTitle.label }}</span>
+					</div>
+					<div v-if="streamLinks.length" class="site-player__sub">
+						<template v-for="(link, index) in streamLinks" :key="`${link.label}-${index}`">
+							<span v-if="index" class="site-player__separator" aria-hidden="true">Â·</span>
+							<NuxtLink v-if="link.path" :to="localePath(link.path)" @click.stop>
+								{{ link.label }}
+							</NuxtLink>
+							<span v-else>{{ link.label }}</span>
+						</template>
+					</div>
+				</div>
+				<div class="site-player__side">
+					<span class="site-player__status">
+						<span class="site-player__dot" :class="{ 'is-live': isLive }" aria-hidden="true" />
+						<span>{{ statusLabel }}</span>
+					</span>
+				</div>
+			</div>
+
+			<div class="site-player__layer site-player__layer--set" :aria-hidden="!isSet">
+				<div class="site-player__meta">
+					<div class="site-player__title">
+						<NuxtLink v-if="setTitle.path" :to="localePath(setTitle.path)" @click.stop>
+							{{ setTitle.label }}
+						</NuxtLink>
+						<span v-else>{{ setTitle.label }}</span>
+					</div>
+					<div v-if="setLinks.length" class="site-player__sub">
+						<template v-for="(link, index) in setLinks" :key="`${link.label}-${index}`">
+							<span v-if="index" class="site-player__separator" aria-hidden="true">Â·</span>
+							<NuxtLink v-if="link.path" :to="localePath(link.path)" @click.stop>
+								{{ link.label }}
+							</NuxtLink>
+							<span v-else>{{ link.label }}</span>
+						</template>
+					</div>
+				</div>
+				<div class="site-player__side">
+					<span v-if="progressTime" class="site-player__time">{{ progressTime }}</span>
+					<button
+						type="button"
+						class="site-player__close"
+						aria-label="Set schlieÃŸen"
+						@click.stop="controller.closeSet()"
+					>
+						<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+							<path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" fill="none" />
+						</svg>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<button
+			v-if="isSet"
+			type="button"
+			class="site-player__progress"
+			aria-label="Im Set springen"
+			@click="seek"
+		>
+			<span :style="{ transform: `scaleX(${progressPercent / 100})` }" />
+		</button>
+
+		<p v-if="store.error" class="site-player__error" role="status">{{ store.error }}</p>
+	</section>
+</template>
+
+<style lang="postcss" scoped>
+.site-player {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: var(--page-max-width);
+  height: 56px;
+  margin: 0 auto;
+  padding: 0 var(--page-gutter);
+  box-sizing: border-box;
+  background-color: var(--color-bg);
+
+  @media screen and (max-width: 900px) {
+    gap: 0.5rem;
+    padding: 0 var(--base-padding);
+  }
+}
+
+.site-player__play {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-pink);
+    outline-offset: 2px;
+  }
+
+  .site-player__play-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .site-player__pause rect {
+    fill: var(--color-text);
+  }
+}
+
+.site-player__dots {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+
+  span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--color-pink);
+    animation: site-player-dot 1.2s infinite ease-in-out;
+
+    &:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+  }
+}
+
+@keyframes site-player-dot {
+  0%, 80%, 100% { opacity: 0.35; }
+  40% { opacity: 1; }
+}
+
+.site-player__cover {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 4px;
+  object-fit: cover;
+  background: var(--color-grey);
+
+  @media screen and (max-width: 900px) {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.site-player__cover--empty {
+  display: grid;
+  place-items: center;
+  font-family: var(--font-text-semibold);
+  font-size: 0.75rem;
+  color: var(--color-text);
+}
+
+.site-player__viewport {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.site-player__layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 180ms ease;
+}
+
+.site-player__layer--stream {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.site-player__layer--set {
+  transform: translateX(16px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.site-player.is-set {
+  .site-player__layer--stream {
+    transform: translateX(-12px);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .site-player__layer--set {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.site-player__meta {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.site-player__title {
+  overflow: hidden;
+  font-family: var(--font-text-semibold);
+  font-size: var(--base-font-size);
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      text-decoration: underline;
+    }
+  }
+}
+
+.site-player__sub {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  overflow: hidden;
+  color: var(--color-dark-grey);
+  font-size: var(--small-font-size);
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      text-decoration: underline;
+    }
+  }
+}
+
+.site-player__separator {
+  flex: none;
+  opacity: 0.7;
+}
+
+.site-player__side {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.site-player__status {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--color-dark-grey);
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.site-player__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-dark-grey);
+
+  &.is-live {
+    background: var(--color-pink);
+  }
+}
+
+.site-player__time {
+  color: var(--color-dark-grey);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.site-player__close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-grey);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-pink);
+    outline-offset: 2px;
+  }
+}
+
+.site-player__progress {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+
+  span {
+    display: block;
+    height: 100%;
+    background: var(--color-pink);
+    transform-origin: left;
+  }
+}
+
+.site-player__error {
+  position: absolute;
+  right: var(--page-gutter);
+  bottom: 2px;
+  margin: 0;
+  color: var(--color-dark-grey);
+  font-size: 0.625rem;
+}
+
+.site-player-cover-enter-active,
+.site-player-cover-leave-active {
+  transition: opacity 200ms ease;
+}
+
+.site-player-cover-enter-from,
+.site-player-cover-leave-to {
+  opacity: 0;
+}
+
+@media screen and (max-width: 900px) {
+  .site-player__status span:last-child,
+  .site-player__time {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-player__layer {
+    transition: opacity 80ms ease;
+  }
+
+  .site-player-cover-enter-active,
+  .site-player-cover-leave-active {
+    transition: none;
+  }
+}
+</style>
+
