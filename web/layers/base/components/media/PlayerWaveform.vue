@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useMediaQuery } from "@vueuse/core";
 import { computed, ref } from "vue";
 import { waveformPath } from "~~/layers/base/utils/waveform";
 
@@ -12,12 +13,13 @@ const props = defineProps<{
 
 const emit = defineEmits<{ seek: [ratio: number] }>();
 
-const bars = 240;
+const compact = useMediaQuery("(max-width: 900px)");
+const bars = computed(() => (compact.value ? 220 : 480));
 const clipId = "player-waveform-clip";
 const dragging = ref(false);
 
 const path = computed(() =>
-	waveformPath(props.samples, props.height ?? 140, bars),
+	waveformPath(props.samples, props.height ?? 140, bars.value),
 );
 const percent = computed(() =>
 	Math.min(100, Math.max(0, Number(props.progress) * 100)),
@@ -108,7 +110,7 @@ function onKeydown(event: KeyboardEvent) {
 
 <style lang="postcss" scoped>
 .player-waveform {
-	height: 14px;
+	height: 28px;
 	cursor: pointer;
 	touch-action: none;
 
@@ -133,7 +135,7 @@ function onKeydown(event: KeyboardEvent) {
 	}
 
 	@media screen and (max-width: 900px) {
-		height: 12px;
+		height: 16px;
 	}
 }
 </style>

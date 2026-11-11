@@ -262,6 +262,16 @@ onBeforeUnmount(() => {
 						</template>
 					</div>
 				</div>
+				<PlayerWaveform
+					v-if="store.waveform"
+					class="site-player__waveform"
+					:samples="store.waveform.samples"
+					:height="store.waveform.height"
+					:progress="progressPercent / 100"
+					:position-ms="store.progress?.positionMs ?? 0"
+					:duration-ms="store.progress?.durationMs ?? store.set?.durationMs ?? 0"
+					@seek="controller.seek"
+				/>
 				<div class="site-player__side">
 					<a
 						v-if="store.set?.soundcloudUrl"
@@ -280,23 +290,13 @@ onBeforeUnmount(() => {
 						aria-label="Set schließen"
 						@click.stop="controller.closeSet()"
 					>
-						<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-							<path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" fill="none" />
+						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+							<circle cx="12" cy="12" r="11.5" stroke="currentColor" />
+							<path d="M8.5 8.5l7 7M15.5 8.5l-7 7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
 						</svg>
 					</button>
 				</div>
 			</div>
-
-			<PlayerWaveform
-				v-if="isSet && store.waveform"
-				class="site-player__waveform"
-				:samples="store.waveform.samples"
-				:height="store.waveform.height"
-				:progress="progressPercent / 100"
-				:position-ms="store.progress?.positionMs ?? 0"
-				:duration-ms="store.progress?.durationMs ?? store.set?.durationMs ?? 0"
-				@seek="controller.seek"
-			/>
 		</div>
 
 		<button
@@ -453,19 +453,19 @@ onBeforeUnmount(() => {
 
   .site-player__layer--set {
     transform: translateX(0);
-    padding-bottom: 10px;
-    box-sizing: border-box;
     opacity: 1;
     pointer-events: auto;
   }
 }
 
 .site-player__waveform {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 1;
+  flex: 1;
+  min-width: 0;
+}
+
+.site-player__layer--set .site-player__meta {
+  flex: 0 1 auto;
+  max-width: 36%;
 }
 
 .site-player__meta {
@@ -564,16 +564,28 @@ onBeforeUnmount(() => {
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--color-text);
+  color: var(--color-dark-grey);
   cursor: pointer;
+  opacity: 0.72;
+  transition:
+    color 160ms ease,
+    opacity 160ms ease;
+
+  svg {
+    width: 22px;
+    height: 22px;
+  }
 
   &:hover {
-    background: var(--color-grey);
+    background: transparent;
+    color: var(--color-text);
+    opacity: 1;
   }
 
   &:focus-visible {
     outline: 2px solid var(--color-pink);
     outline-offset: 2px;
+    opacity: 1;
   }
 }
 
@@ -668,6 +680,39 @@ onBeforeUnmount(() => {
 @media screen and (max-width: 900px) {
   .site-player__time {
     display: none;
+  }
+
+  /* On phones the row has no horizontal room for a readable waveform, so it
+     moves to a full-width second line while the info and SoundCloud stay above. */
+  .site-player.is-set .site-player__layer--set {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 40px 16px;
+    column-gap: 0.5rem;
+    row-gap: 0;
+    align-items: center;
+  }
+
+  .site-player__layer--set .site-player__meta {
+    grid-column: 1;
+    grid-row: 1;
+    max-width: none;
+  }
+
+  .site-player__layer--set .site-player__side {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .site-player__waveform {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+  }
+
+  .site-player__close {
+    width: 40px;
+    height: 40px;
   }
 }
 
