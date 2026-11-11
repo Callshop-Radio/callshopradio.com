@@ -1,6 +1,6 @@
-import { watch } from "vue";
+﻿import { watch } from "vue";
 import { usePlayerStore } from "~/stores/playerStore";
-import { nextMilestones } from "~/layers/base/utils/player";
+import { nextMilestones } from "~~/layers/base/utils/player";
 
 export function usePlayerAnalytics() {
 	const store = usePlayerStore();

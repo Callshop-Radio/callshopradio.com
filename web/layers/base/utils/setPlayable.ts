@@ -22,13 +22,18 @@ function slugOf(value: unknown): string | null {
 }
 
 /** The Sanity card already carries everything the row needs; no fetch on click. */
-export function toSetPlayable(item: unknown, cover: string | null): SetPlayable {
+export function toSetPlayable(
+	item: unknown,
+	cover: string | null,
+): SetPlayable {
 	const doc = (item ?? {}) as Record<string, unknown>;
-	const track = (
-		(doc.soundcloud as { tracks?: Array<Record<string, unknown>> } | undefined)
-			?.tracks ?? []
-	)[0];
-	const showDoc = (doc.parentShow ?? doc.show ?? null) as Record<string, unknown> | null;
+	const track = ((
+		doc.soundcloud as { tracks?: Array<Record<string, unknown>> } | undefined
+	)?.tracks ?? [])[0];
+	const showDoc = (doc.parentShow ?? doc.show ?? null) as Record<
+		string,
+		unknown
+	> | null;
 	const persons = Array.isArray(doc.persons) ? doc.persons : [];
 
 	return {

@@ -1,7 +1,7 @@
-import { defineStore } from "pinia";
+﻿import { defineStore } from "pinia";
 import { ref } from "vue";
+import type { SetPlayable } from "~~/layers/base/utils/setPlayable";
 import type { PlayerFeed } from "~~/types/player";
-import type { SetPlayable } from "~/layers/base/utils/setPlayable";
 
 export const usePlayerStore = defineStore("player", () => {
 	const mode = ref<"stream" | "set">("stream");
@@ -45,7 +45,9 @@ export const usePlayerStore = defineStore("player", () => {
 		loading.value = value;
 	}
 
-	function setProgress(value: { positionMs: number; durationMs: number } | null) {
+	function setProgress(
+		value: { positionMs: number; durationMs: number } | null,
+	) {
 		progress.value = value;
 	}
 
