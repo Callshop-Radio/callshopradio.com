@@ -1,5 +1,5 @@
 ﻿<script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { usePlayerStore } from "~/stores/playerStore";
 import { usePlayerAnalytics } from "~~/layers/base/composables/usePlayerAnalytics";
 import { usePlayerController } from "~~/layers/base/composables/usePlayerController";
@@ -26,12 +26,31 @@ watch(
 );
 
 const isSet = computed(() => store.mode === "set" && Boolean(store.set));
+const tracklistOpen = ref(false);
+
+watch(isSet, (value) => {
+	if (value) tracklistOpen.value = false;
+});
+
+watch(
+	[
+		() => store.mode,
+		() => store.set?.id,
+		() => store.set?.title,
+		() => store.feed?.title,
+		() => store.feed?.track?.title,
+		() => store.playing,
+	],
+	() => controller.syncMediaSession(),
+	{ immediate: true },
+);
 
 const streamTitle = computed<PlayerLink>(() => {
 	const value = store.feed;
 	if (!value) return { label: "Callshop Radio", path: null };
 	if (value.set?.title) return { label: value.set.title, path: value.set.path };
-	if (value.show?.title) return { label: value.show.title, path: value.show.path };
+	if (value.show?.title)
+		return { label: value.show.title, path: value.show.path };
 	return { label: value.title, path: null };
 });
 
@@ -39,9 +58,12 @@ const streamLinks = computed<PlayerLink[]>(() => {
 	const value = store.feed;
 	if (!value) return [];
 	const links: PlayerLink[] = [];
-	if (value.show?.title) links.push({ label: value.show.title, path: value.show.path });
-	for (const artist of value.artists) links.push({ label: artist.name, path: artist.path });
-	if (!links.length && value.subtitle) links.push({ label: value.subtitle, path: null });
+	if (value.show?.title)
+		links.push({ label: value.show.title, path: value.show.path });
+	for (const artist of value.artists)
+		links.push({ label: artist.name, path: artist.path });
+	if (!links.length && value.subtitle)
+		links.push({ label: value.subtitle, path: null });
 	return links;
 });
 
@@ -69,15 +91,15 @@ const setLinks = computed<PlayerLink[]>(() => {
 		links.push({
 			label: artist.name,
 			path:
-				artist.poolVisibility && artist.slug
-					? `/pool/${artist.slug}`
-					: null,
+				artist.poolVisibility && artist.slug ? `/pool/${artist.slug}` : null,
 		});
 	}
 	return links;
 });
 
-const cover = computed(() => (isSet.value ? store.set?.cover : store.feed?.cover) || null);
+const cover = computed(
+	() => (isSet.value ? store.set?.cover : store.feed?.cover) || null,
+);
 const statusLabel = computed(() => {
 	if (isSet.value) return "Set";
 	switch (store.feed?.state) {
@@ -97,7 +119,10 @@ const isLive = computed(() => !isSet.value && store.feed?.state === "live");
 const progressPercent = computed(() => {
 	const value = store.progress;
 	if (!value || value.durationMs <= 0) return 0;
-	return Math.min(100, Math.max(0, (value.positionMs / value.durationMs) * 100));
+	return Math.min(
+		100,
+		Math.max(0, (value.positionMs / value.durationMs) * 100),
+	);
 });
 const progressTime = computed(() => {
 	const value = store.progress;
@@ -204,6 +229,17 @@ onBeforeUnmount(() => {
 					</div>
 				</div>
 				<div class="site-player__side">
+					<button
+						v-if="store.feed?.tracklist?.length"
+						type="button"
+						class="site-player__icon"
+						:aria-expanded="tracklistOpen"
+						aria-controls="player-tracklist"
+						aria-label="Live-Tracklist"
+						@click.stop="tracklistOpen = !tracklistOpen"
+					>
+						☰
+					</button>
 					<span class="site-player__status">
 						<span class="site-player__dot" :class="{ 'is-live': isLive }" aria-hidden="true" />
 						<span>{{ statusLabel }}</span>
@@ -254,6 +290,13 @@ onBeforeUnmount(() => {
 		>
 			<span :style="{ transform: `scaleX(${progressPercent / 100})` }" />
 		</button>
+
+		<PlayerTracklist
+			v-if="tracklistOpen && store.feed?.tracklist?.length"
+			id="player-tracklist"
+			:tracks="store.feed?.tracklist ?? []"
+			@close="tracklistOpen = false"
+		/>
 
 		<p v-if="store.error" class="site-player__error" role="status">{{ store.error }}</p>
 	</section>
@@ -496,6 +539,28 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   background: transparent;
   color: var(--color-text);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-grey);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-pink);
+    outline-offset: 2px;
+  }
+}
+
+.site-player__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 0.875rem;
   cursor: pointer;
 
   &:hover {

@@ -1,5 +1,5 @@
-import { toSetPlayable } from "~/layers/base/utils/setPlayable";
-import { usePlayerStore } from "~/stores/playerStore";
+﻿import { usePlayerStore } from "~/stores/playerStore";
+import { toSetPlayable } from "~~/layers/base/utils/setPlayable";
 import { useSoundCloudEngine } from "./useSoundCloudEngine";
 import { useStreamEngine } from "./useStreamEngine";
 
@@ -40,12 +40,22 @@ export function usePlayerController() {
 			store.setPlaying(false);
 			store.setLoading(false);
 		});
+		if (import.meta.client && "mediaSession" in navigator) {
+			navigator.mediaSession.setActionHandler("play", () => {
+				if (store.mode === "set") soundcloud.play();
+				else void playStream();
+			});
+			navigator.mediaSession.setActionHandler("pause", () => {
+				if (store.mode === "set") soundcloud.pause();
+				else stream.pause();
+			});
+		}
 	}
 
 	async function playSet(item: unknown, cover: string | null = null) {
 		const playable = toSetPlayable(item, cover);
 		if (!playable.soundcloudUrl) {
-			store.setError("Kein Audio für dieses Set");
+			store.setError("Kein Audio fÃ¼r dieses Set");
 			return;
 		}
 		if (store.mode === "stream" && store.playing) stream.pause();
@@ -100,5 +110,29 @@ export function usePlayerController() {
 		else stream.pause();
 	}
 
-	return { playSet, playStream, toggle, closeSet, seek, pauseForVideo };
+	function syncMediaSession() {
+		if (
+			!import.meta.client ||
+			!("mediaSession" in navigator) ||
+			typeof MediaMetadata === "undefined"
+		) {
+			return;
+		}
+		const set = store.set;
+		const feed = store.feed;
+		const title =
+			set?.title || feed?.track?.title || feed?.title || "Callshop Radio";
+		const artist = set
+			? set.artists.map((entry) => entry.name).join(", ")
+			: feed?.track?.artist || feed?.subtitle || "";
+		const cover = set?.cover || feed?.cover || null;
+		navigator.mediaSession.metadata = new MediaMetadata({
+			title,
+			artist,
+			album: "Callshop Radio",
+			artwork: cover ? [{ src: cover, sizes: "512x512" }] : [],
+		});
+	}
+
+	return { playSet, playStream, toggle, closeSet, seek, pauseForVideo, syncMediaSession };
 }
