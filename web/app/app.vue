@@ -23,6 +23,7 @@ favicon();
     </main>
     <SiteFoot class="footer" />
     <SiteChatPopup />
+    <SiteVideoPlayer />
     <ElementsPreviewMode />
   </div>
 </template>
