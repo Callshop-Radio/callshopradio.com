@@ -22,6 +22,7 @@ favicon();
       </div>
     </main>
     <SiteFoot class="footer" />
+    <SiteChatPopup />
     <ElementsPreviewMode />
   </div>
 </template>

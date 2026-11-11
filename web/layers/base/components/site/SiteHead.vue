@@ -7,6 +7,11 @@ const localePath = useLocalePath();
 const mainStore = useMainStore();
 const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 
+const config = useRuntimeConfig();
+const chatEnabled = computed(
+	() => import.meta.dev || Boolean(config.public.chatEnabled),
+);
+
 // Computed properties for the track
 const currentTrack = computed(() => mainStore.currentTrack);
 const trackTitle = computed(() => currentTrack.value?.title || "");
@@ -56,6 +61,9 @@ const togglePlayerVisibility = () => {
 				</nav>
 				<SiteSearchButton />
 				<SiteDiscordButton v-if="mainStore?.siteNav?.discordLink" />
+				<span v-if="chatEnabled" class="icon-tooltip" data-tooltip="Chat">
+					<SiteChatButton />
+				</span>
 				<SiteScheduleButton v-if="mainStore?.siteNav?.schedulePage" />
 				<SiteAccountButton />
 				<SiteMenuButton />
@@ -381,6 +389,46 @@ const togglePlayerVisibility = () => {
   }
   100% {
     opacity: 1;
+  }
+}
+</style>
+<style lang="postcss" scoped>
+.icon-tooltip {
+  position: relative;
+  display: inline-flex;
+
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    z-index: 1000000;
+    padding: 0.3125rem 0.5rem;
+    border-radius: 6px;
+    background-color: var(--color-text);
+    color: var(--color-bg);
+    font-family: var(--font-text);
+    font-size: var(--small-font-size);
+    line-height: 1.2;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -0.25rem);
+    transition:
+      opacity var(--transition-fast),
+      transform var(--transition-fast);
+  }
+
+  &:hover::after,
+  &:focus-within::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (hover: none) {
+  .icon-tooltip::after {
+    display: none;
   }
 }
 </style>

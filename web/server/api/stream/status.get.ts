@@ -27,11 +27,29 @@ interface StreamStatusResponse {
 		onAirLight: Record<string, boolean>;
 		liveData: LibreTimeLiveInfo;
 	};
+	liveGate: LiveGate | null;
+}
+
+interface LiveGateTrack {
+	title: string;
+	artist: string | null;
+}
+
+interface LiveGate {
+	live: boolean;
+	show: { id: string | null; title: string | null } | null;
+	city: { id: string | null; name: string } | null;
+	genres: string[];
+	artists: { id: string; name: string; slug: string | null }[];
+	currentTrack: LiveGateTrack | null;
+	lastTrack: LiveGateTrack | null;
+	tracklist: LiveGateTrack[];
 }
 
 const LIBRETIME_BASE = "https://libretime.callshopradio.com";
 const ICECAST_URL = "https://icecast.callshopradio.com/status-json.xsl";
 const WIEN_URL = "https://wien.callshopradio.com/api/live-info-v2?days=7";
+const LIVE_GATE_URL = "https://air.callshopradio.live/api/public/live";
 
 // LibreTime is offline during the PHP zero-day transition. It answers 403 with
 // an HTML error page; normalize anything that is not a JSON object to null so
@@ -74,13 +92,14 @@ export default defineCachedEventHandler(
 			libretimeHeaders.Authorization = `Api-Key ${config.libretimeApiKey}`;
 		}
 
-		const [liveData1, icecastData, liveData2] = await Promise.all([
+		const [liveData1, icecastData, liveData2, liveGate] = await Promise.all([
 			fetchJson<LibreTimeLiveInfo>(
 				`${LIBRETIME_BASE}/api/live-info-v2`,
 				libretimeHeaders,
 			),
 			fetchJson<IcecastStatus>(ICECAST_URL),
 			fetchJson<LibreTimeLiveInfo>(WIEN_URL),
+			fetchJson<LiveGate>(LIVE_GATE_URL),
 		]);
 
 		return {
@@ -93,6 +112,7 @@ export default defineCachedEventHandler(
 				onAirLight: deriveOnAirLight(liveData2),
 				liveData: liveData2 ?? {},
 			},
+			liveGate: liveGate ?? null,
 		};
 	},
 	{

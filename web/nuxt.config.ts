@@ -241,12 +241,14 @@ export default defineNuxtConfig({
 		// Server-only secrets — never exposed to the client bundle.
 		sanityWebhookSecret: process.env.SANITY_WEBHOOK_SECRET,
 		libretimeApiKey: process.env.NUXT_LIBRETIME_API_KEY,
-		// Listener accounts: the BFF talks to the Show Manager with a shared
-		// secret and hashes the provider-verified client IP itself.
-		managerBaseUrl: process.env.NUXT_MANAGER_BASE_URL,
+		// Listener accounts and chat both talk to the Show Manager. The chat
+		// secret never reaches the browser; the room itself is public.
+		managerBaseUrl:
+			process.env.NUXT_MANAGER_BASE_URL || "https://air.callshopradio.live",
 		accountClientSecret: process.env.NUXT_ACCOUNT_CLIENT_SECRET,
 		accountIpSecret: process.env.NUXT_ACCOUNT_IP_SECRET,
 		accountAllowedOrigins: process.env.NUXT_ACCOUNT_ALLOWED_ORIGINS,
+		chatClientSecret: process.env.NUXT_CHAT_CLIENT_SECRET,
 		// Netlify Personal Access Token + Site ID for edge cache purge (tag-based).
 		// Optional — webhook still clears local Nitro LRU even when these are unset.
 		netlifyPurgeToken: process.env.NETLIFY_PURGE_TOKEN,
@@ -258,6 +260,10 @@ export default defineNuxtConfig({
 			umamiHost: process.env.NUXT_PUBLIC_UMAMI_HOST,
 			umamiId: process.env.NUXT_PUBLIC_UMAMI_ID,
 			umamiDomains: process.env.NUXT_PUBLIC_UMAMI_DOMAINS,
+			// Public chat. Off unless explicitly enabled; dev always shows it.
+			chatEnabled: process.env.NUXT_PUBLIC_CHAT_ENABLED === "1",
+			// Use the real Manager room instead of the local mock.
+			chatReal: process.env.NUXT_PUBLIC_CHAT_REAL === "1",
 		},
 	},
 
