@@ -331,15 +331,19 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.75rem;
   width: 100%;
+  max-width: var(--page-max-width);
   height: 56px;
-  margin: 0;
-  padding: 0 var(--page-gutter);
+  margin: 0 auto;
+  padding: 0;
   box-sizing: border-box;
   background-color: var(--color-bg);
 
+  @media screen and (max-width: 1100px) {
+    padding: 0 var(--base-padding);
+  }
+
   @media screen and (max-width: 900px) {
     gap: 0.5rem;
-    padding: 0 var(--base-padding);
   }
 }
 
@@ -636,7 +640,7 @@ onBeforeUnmount(() => {
 
 .site-player__error {
   position: absolute;
-  right: var(--page-gutter);
+  right: 0;
   bottom: 2px;
   display: flex;
   align-items: center;
@@ -653,6 +657,10 @@ onBeforeUnmount(() => {
     color: inherit;
     font-size: inherit;
     cursor: pointer;
+  }
+
+  @media screen and (max-width: 1100px) {
+    right: var(--base-padding);
   }
 }
 
