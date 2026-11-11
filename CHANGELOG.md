@@ -97,7 +97,8 @@ deployed yet.
   `--logo-invert` token, which the theme store updates together with the
   colours. The footer therefore follows the header's manual light/dark switch,
   not just the OS `prefers-color-scheme` setting, and shows the dark wordmark
-  on the light surface.
+  on the light surface. The contact email is always pink and underlined; on
+  hover it switches to the theme foreground colour.
 - **Fixed dock:** `ModuleContentGrid` publishes its measured dock height as
   `--filter-dock-global`; the footer reserves that height so the fixed filter
   bar and the mobile filter tab never cover the footer content.

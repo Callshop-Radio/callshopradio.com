@@ -500,14 +500,14 @@ function scrollToTop() {
   margin-top: 1.35rem;
   padding-bottom: 0.2rem;
   border-bottom: 1px solid var(--color-pink);
-  color: var(--color-text);
+  color: var(--color-pink);
   font-family: var(--font-text-medium);
   font-size: var(--base-font-size);
   text-decoration: none;
 }
 
 .site-footer__mail:hover {
-  color: var(--color-pink);
+  color: var(--color-text);
 }
 
 .site-footer__address {
