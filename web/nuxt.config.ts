@@ -251,6 +251,7 @@ export default defineNuxtConfig({
 		chatClientSecret: process.env.NUXT_CHAT_CLIENT_SECRET,
 		// Server-only SoundCloud API client id; used by the BFF to fetch waveform data.
 		soundcloudClientId: process.env.NUXT_SOUNDCLOUD_CLIENT_ID,
+		soundcloudClientSecret: process.env.NUXT_SOUNDCLOUD_CLIENT_SECRET,
 		videoStatusUrl:
 			process.env.NUXT_VIDEO_STATUS_URL ||
 			"https://video.callshopradio.live/api/live",
