@@ -199,7 +199,6 @@ onBeforeUnmount(() => {
 				alt=""
 				loading="lazy"
 			/>
-			<span v-else key="empty" class="site-player__cover site-player__cover--empty" aria-hidden="true">C</span>
 		</Transition>
 
 		<div class="site-player__viewport">
@@ -413,14 +412,6 @@ onBeforeUnmount(() => {
     width: 40px;
     height: 40px;
   }
-}
-
-.site-player__cover--empty {
-  display: grid;
-  place-items: center;
-  font-family: var(--font-text-semibold);
-  font-size: 0.75rem;
-  color: var(--color-text);
 }
 
 .site-player__viewport {
