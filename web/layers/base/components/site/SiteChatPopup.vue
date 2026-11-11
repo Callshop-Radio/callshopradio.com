@@ -478,5 +478,9 @@ onBeforeUnmount(() => {
   .chat-popup__grip {
     display: none;
   }
+
+  .chat-popup.is-minimized {
+    top: auto;
+  }
 }
 </style>
