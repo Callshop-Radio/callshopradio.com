@@ -197,6 +197,31 @@ function scrollToTop() {
 							</NuxtLink>
 						</li>
 						<li>
+							<a
+								href="https://index.callshopradio.com/"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								{{ copy.index }}
+								<svg
+									class="site-footer__external-icon"
+									width="10"
+									height="10"
+									viewBox="0 0 10 10"
+									fill="none"
+									aria-hidden="true"
+								>
+									<path
+										d="M2 8L8 2M3.2 2H8V6.8"
+										stroke="currentColor"
+										stroke-width="1.1"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+								</svg>
+							</a>
+						</li>
+						<li>
 							<NuxtLink :to="localePath('/schedule')">
 								{{ copy.schedule }}
 							</NuxtLink>
@@ -338,31 +363,6 @@ function scrollToTop() {
 								rel="noopener noreferrer"
 							>
 								{{ copy.discord }}
-								<svg
-									class="site-footer__external-icon"
-									width="10"
-									height="10"
-									viewBox="0 0 10 10"
-									fill="none"
-									aria-hidden="true"
-								>
-									<path
-										d="M2 8L8 2M3.2 2H8V6.8"
-										stroke="currentColor"
-										stroke-width="1.1"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-									/>
-								</svg>
-							</a>
-						</li>
-						<li>
-							<a
-								href="https://index.callshopradio.com/"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								{{ copy.index }}
 								<svg
 									class="site-footer__external-icon"
 									width="10"

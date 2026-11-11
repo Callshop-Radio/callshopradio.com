@@ -80,10 +80,10 @@ deployed yet.
   their station email and a Google Maps link. No station shows an HQ badge;
   Leipzig uses the exact street address, while Düsseldorf and Vienna use
   labelled Maps searches because no public street address exists in the CMS.
-- **Navigation:** Explore (Shows, Pool, Words, Schedule, Search, Shop, Chat),
-  Information (Contact, Legal Notice, Privacy, Account) and Follow (Instagram,
-  SoundCloud, Bandcamp, Discord, Index). Chat opens the global chat popup; all
-  internal links respect the active locale (`/de/...`).
+- **Navigation:** Explore (Shows, Pool, Words, Index, Schedule, Search, Shop,
+  Chat), Information (Contact, Legal Notice, Privacy, Account) and Follow
+  (Instagram, SoundCloud, Bandcamp, Discord). Chat opens the global chat popup;
+  all internal links respect the active locale (`/de/...`).
 - **Layout/accessibility:** Responsive footer on the page background
   (`var(--color-bg)`) with the same `1px solid var(--color-text)` border as the
   navigation. Three-column desktop navigation, single-column mobile layout,
