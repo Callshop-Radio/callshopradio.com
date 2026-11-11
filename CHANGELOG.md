@@ -468,6 +468,25 @@ deployed yet.
 
 ### Fixed
 
+#### Words filter: Interview + News are additive, not an intersection
+
+- **Symptom:** Selecting two Words categories (for example Interview and News)
+  produced "No matching content." because every active tag was ANDed, so an
+  article had to carry both tags.
+- **Fix:** Active filters are split into facets in `activeFilterGroups`: cities,
+  article/mood tags and subgenres. Values inside a facet are ORed, the facets
+  themselves are ANDed, and the same groups feed both the GROQ query
+  (`references(a, b)` for a group) and the client-side matcher. Subgenres stay
+  cumulative (AND), so genre refinement keeps its previous behaviour.
+- **Default state:** The unfiltered first fetch no longer evaluates
+  `activeFilterGroups`/`categorizedTags` before they are initialised during
+  setup. The Words grid loads all articles again instead of showing the empty
+  state by default.
+- **Verified:** `/words` renders 10 items without filters. Selecting Interview
+  and News returns 8 items containing both types (Interview and News), while
+  the Editorial and untagged entries are excluded. No "No matching content."
+  appears.
+
 #### Cover flow: arrows and dots locked during the 720 ms animation
 
 - **Symptom:** The previous/next arrows and the dots were disabled for the whole

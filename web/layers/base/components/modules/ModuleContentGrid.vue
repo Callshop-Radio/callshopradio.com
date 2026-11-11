@@ -158,23 +158,15 @@ const buildQueryConfig = () => {
 	const filterTags: string[] = [];
 	const filterOrTags: string[][] = [];
 
-	// 1. Handle Active Filters (AND logic, but "others" is special)
+	// 1. Handle Active Filters. Cities, article tags and mood tags form one
+	// OR group each; the groups are ANDed. Subgenres stay required (AND).
+	// The guard also keeps the first unfiltered fetch from touching
+	// categorizedTags before it is initialised during setup.
 	if (activeFilters.value.size > 0) {
-		activeFilters.value.forEach((tagId) => {
-			if (tagId === "others") {
-				// Special "Others" logic: OR of all non-main cities
-				// Find all city tags that are NOT main cities
-				const otherCityIds = categorizedTags.value.cities
-					.filter((c: Tag) => !isMainCity({ title: c.title }))
-					.map((c: Tag) => c._id);
-
-				if (otherCityIds.length > 0) {
-					filterOrTags.push(otherCityIds);
-				}
-			} else {
-				filterTags.push(tagId);
-			}
-		});
+		const { cities, otherTags, required } = activeFilterGroups.value;
+		filterTags.push(...required);
+		if (cities.length > 0) filterOrTags.push(cities);
+		if (otherTags.length > 0) filterOrTags.push(otherTags);
 	}
 
 	// 2. Handle Genres/Subgenres
@@ -444,6 +436,55 @@ const categorizedTags = computed(() => {
 		cities: availableTags.cities || [],
 		global: availableTags.global || [],
 		mood: availableTags.mood || [],
+	};
+});
+
+// Active filters are split into facets: cities, article/mood tags and
+// subgenres. Values inside a facet are ORed, the facets themselves are ANDed.
+const activeFilterGroups = computed(() => {
+	const cityIds = new Set<string>(
+		(categorizedTags.value.cities || []).map((city: Tag) => city._id),
+	);
+	const subGenreIds = new Set<string>();
+	(categorizedTags.value.genres || []).forEach((genre) => {
+		(genre.subGenres || []).forEach((subGenre: Tag) => {
+			subGenreIds.add(subGenre._id);
+		});
+	});
+
+	const cities: string[] = [];
+	const otherTags: string[] = [];
+	const required: string[] = [];
+	let othersSelected = false;
+
+	activeFilters.value.forEach((filterId) => {
+		if (filterId === "others") {
+			othersSelected = true;
+			return;
+		}
+		if (activeSubGenres.value.has(filterId) || subGenreIds.has(filterId)) {
+			required.push(filterId);
+			return;
+		}
+		if (cityIds.has(filterId)) {
+			cities.push(filterId);
+			return;
+		}
+		otherTags.push(filterId);
+	});
+
+	if (othersSelected) {
+		(categorizedTags.value.cities || [])
+			.filter((city: Tag) => !isMainCity({ title: city.title }))
+			.forEach((city: Tag) => {
+				cities.push(city._id);
+			});
+	}
+
+	return {
+		cities: [...new Set(cities)],
+		otherTags: [...new Set(otherTags)],
+		required: [...new Set(required)],
 	};
 });
 
@@ -852,29 +893,29 @@ function itemMatchesFilters(item: ContentItem): boolean {
 		}
 	}
 
-	// Normal filters check (AND logic)
-	// Normal filters check (AND logic)
-	// When using server-side filtering, 'itemMatchesFilters' mainly serves to double-check
-	// or handle "Others" if not fully handled server-side?
-	// However, since we now fetch EXACT data, this check might filter out things we just fetched?
-	// Example: If I implemented "Others" as "OR", but client side checks "!isMainCity".
-	// It should be consistent.
-	// BUT: if we are in server-side mode (forceSelfLoad), we should TRUST the server result?
-	// If we run 'itemMatchesFilters' on server-fetched data, we might accidentally hide items
-	// if our client-side logic is stricter or different.
+	// In server-side filter mode the query already applied the same facets.
 	if (forceSelfLoad.value) return true;
-
 	if (activeFilters.value.size === 0) return true;
 
-	for (const filterId of activeFilters.value) {
-		if (filterId === "others") {
-			const cityTags = getItemCityTags(item);
-			if (cityTags.length > 0 && !cityTags.every((t) => !isMainCity(t)))
-				return false;
-		} else if (!itemHasTag(item, filterId)) {
+	const { cities, otherTags, required } = activeFilterGroups.value;
+
+	// Each facet is ORed internally and ANDed with the other facets.
+	if (cities.length > 0) {
+		if (!getItemTags(item).some((tag) => cities.includes(tag._id))) {
 			return false;
 		}
 	}
+
+	if (otherTags.length > 0) {
+		if (!getItemTags(item).some((tag) => otherTags.includes(tag._id))) {
+			return false;
+		}
+	}
+
+	for (const filterId of required) {
+		if (!itemHasTag(item, filterId)) return false;
+	}
+
 	return true;
 }
 
