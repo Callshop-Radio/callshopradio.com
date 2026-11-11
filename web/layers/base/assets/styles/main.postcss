@@ -3,3 +3,25 @@
 @import url("./vendor/_vendor-dir.postcss");
 @import url("./base/_base-dir.postcss");
 @import url("./modules/_modules-dir.postcss");
+
+/* 2026-11: one corner radius for every image and every card. Existing
+   component radii (pills, avatars, round buttons) are excluded. */
+img:not(.avatar) {
+  border-radius: 3px !important;
+}
+
+.grid-item,
+.teaser-item,
+.teaser-item__image,
+.teaser-item__content,
+.grid-item__image,
+.hero-entry-media,
+.hero-entry-content,
+.pool-intro,
+.pool-media,
+.pool-media-wrap,
+.module-carousel .embla__slide,
+.chat-popup,
+.card {
+  border-radius: 3px !important;
+}
