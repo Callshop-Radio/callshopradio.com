@@ -92,8 +92,10 @@ deployed yet.
   visible focus rings, external-link arrows, dynamic copyright year and a
   "back to top" button that respects `prefers-reduced-motion`.
 - **Theme integration:** The footer no longer owns a colour palette. Surfaces,
-  text, muted text and rules come from `--color-bg`, `--color-text` and
-  `--color-dark-grey`; type sizes and families come from `--base-font-size`,
+  text and rules come from `--color-bg` and `--color-text`; footer copy uses the
+  full foreground colour instead of the muted grey, so it is white on black in
+  dark mode and black on white in light mode. Type sizes and families come from
+  `--base-font-size`,
   `--small-font-size`, `--large-font-size`, the menu/button letter-spacing and
   the `--font-text-*` families. Logo inversion is driven by the new global
   `--logo-invert` token, which the theme store updates together with the
@@ -112,9 +114,9 @@ deployed yet.
   has no horizontal overflow. The wordmark falls back to typographic text up
   to `1100px` because the raster wordmark did not paint reliably at that size
   in the headless renderer. Light theme computes `rgb(255, 255, 255)` on
-  `rgb(0, 0, 0)` with `#525252` links and `invert(0)` logos; toggling dark
-  flips to black/white with `#878787` links and `invert(1)` for both header and
-  footer logos, and toggling back restores the light values. Station codes
+  `rgb(0, 0, 0)` with black links and `invert(0)` logos; toggling dark flips to
+  black/white with white links and `invert(1)` for both header and footer
+  logos, and toggling back restores the light values. Station codes
   render `DUS`, `LPZ`, `VIE` with no HQ badge in both themes. Each station row
   stays on one line at 1395px and 390px (text tops within 1px, email not
   truncated); the map buttons measure 26px on desktop and 24px on mobile, with

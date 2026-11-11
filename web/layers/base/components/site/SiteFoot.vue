@@ -496,7 +496,7 @@ function scrollToTop() {
 
 .site-footer__tagline {
   margin: 1.5rem 0 0;
-  color: var(--color-dark-grey);
+  color: var(--color-text);
   font-size: var(--large-font-size);
   line-height: 1.5;
 }
@@ -518,7 +518,7 @@ function scrollToTop() {
 
 .site-footer__address {
   margin: 1.1rem 0 0;
-  color: var(--color-dark-grey);
+  color: var(--color-text);
   font-size: var(--base-font-size);
   line-height: 1.6;
 }
@@ -526,7 +526,7 @@ function scrollToTop() {
 .site-footer__address span {
   display: inline-block;
   margin-bottom: 0.2rem;
-  color: var(--color-dark-grey);
+  color: var(--color-text);
   font-size: var(--small-font-size);
   letter-spacing: var(--menu-letter-spacing);
   text-transform: uppercase;
@@ -534,7 +534,7 @@ function scrollToTop() {
 
 .site-footer__label {
   margin: 0 0 1.1rem;
-  color: var(--color-dark-grey);
+  color: var(--color-text);
   font-family: var(--font-text-medium);
   font-size: var(--small-font-size);
   letter-spacing: var(--menu-letter-spacing);
@@ -583,7 +583,7 @@ function scrollToTop() {
   height: 1.65rem;
   border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
   border-radius: 50%;
-  color: var(--color-dark-grey);
+  color: var(--color-text);
   text-decoration: none;
   transition:
     color var(--transition-fast),
@@ -598,7 +598,7 @@ function scrollToTop() {
 .station__mail {
   min-width: 0;
   overflow: hidden;
-  color: var(--color-dark-grey);
+  color: var(--color-text);
   font-size: var(--base-font-size);
   text-decoration: none;
   text-overflow: ellipsis;
@@ -606,7 +606,7 @@ function scrollToTop() {
 }
 
 .station__mail:hover {
-  color: var(--color-text);
+  color: var(--color-pink);
 }
 
 .site-footer__nav {
@@ -628,7 +628,7 @@ function scrollToTop() {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  color: var(--color-dark-grey);
+  color: var(--color-text);
   font-size: var(--base-font-size);
   line-height: 1.4;
   text-decoration: none;
@@ -645,7 +645,7 @@ function scrollToTop() {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--color-dark-grey);
+  color: var(--color-text);
   font: inherit;
   font-size: var(--base-font-size);
   line-height: 1.4;
@@ -677,7 +677,7 @@ function scrollToTop() {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  color: var(--color-dark-grey);
+  color: var(--color-text);
   font-size: var(--small-font-size);
   letter-spacing: var(--button-letter-spacing);
   line-height: 1.5;
@@ -691,7 +691,7 @@ function scrollToTop() {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--color-dark-grey);
+  color: var(--color-text);
   font: inherit;
   font-size: var(--small-font-size);
   letter-spacing: var(--menu-letter-spacing);
