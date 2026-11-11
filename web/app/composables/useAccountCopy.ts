@@ -38,6 +38,11 @@ export function useAccountCopy() {
 			mailFailed: de
 				? "Anmelde-Mails sind gerade nicht verfügbar. Bitte später erneut."
 				: "Sign-in mail is unavailable right now. Please try again later.",
+			privacyAccept: de ? "Ich akzeptiere die" : "I accept the",
+			privacyLink: de ? "Datenschutzerklärung" : "privacy policy",
+			privacyRequired: de
+				? "Bitte bestätige zuerst die Datenschutzerklärung."
+				: "Please accept the privacy policy first.",
 			name: de ? "Name" : "Name",
 			language: de ? "Sprache" : "Language",
 			saveChanges: de ? "Speichern" : "Save",

@@ -8,8 +8,12 @@ const revocationFailed = computed(() => route.query.revoked === "0");
 </script>
 
 <template>
-	<AccountLogin />
-	<p v-if="revocationFailed" class="account-notice">{{ copy.logoutFailed }}</p>
+	<div class="account-login">
+		<AccountLogin />
+		<p v-if="revocationFailed" class="account-notice">
+			{{ copy.logoutFailed }}
+		</p>
+	</div>
 </template>
 
 <style scoped>

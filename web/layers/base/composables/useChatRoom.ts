@@ -243,6 +243,7 @@ const toPack = (pack: {
 
 export const useChatRoom = () => {
 	const config = useRuntimeConfig();
+	const localePath = useLocalePath();
 	const real = Boolean(config.public.chatReal);
 
 	const packs = useState<ChatPack[]>("chat-packs", () =>
@@ -332,7 +333,10 @@ export const useChatRoom = () => {
 	};
 
 	const signIn = () => {
-		if (real) return;
+		if (real) {
+			window.location.assign(localePath("/konto/anmelden"));
+			return;
+		}
 		signedIn.value = true;
 	};
 

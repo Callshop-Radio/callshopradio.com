@@ -12,6 +12,7 @@ const account = useAccountStore();
 
 const email = ref("");
 const code = ref("");
+const privacyAccepted = ref(false);
 const step = ref<"email" | "code">("email");
 const busy = ref(false);
 const message = ref("");
@@ -20,6 +21,7 @@ const codeInput = ref<HTMLInputElement | null>(null);
 let cooldownTimer: ReturnType<typeof setInterval> | null = null;
 
 const next = computed(() => safeNextPath(route.query.next));
+const PRIVACY_VERSION = "2026-11-11";
 const maskedEmail = computed(() =>
 	email.value.replace(/^(.).*(@.*)$/, "$1•••$2"),
 );
@@ -40,12 +42,21 @@ function startCooldown() {
 
 async function sendCode() {
 	if (busy.value) return;
+	if (!privacyAccepted.value) {
+		message.value = copy.value.privacyRequired;
+		return;
+	}
 	busy.value = true;
 	message.value = "";
 	try {
 		await request("auth/request-code", {
 			method: "POST",
-			body: { email: email.value, locale: locale.value },
+			body: {
+				email: email.value,
+				locale: locale.value,
+				privacyAccepted: true,
+				privacyVersion: PRIVACY_VERSION,
+			},
 		});
 		step.value = "code";
 		startCooldown();
@@ -68,7 +79,12 @@ async function verify() {
 	try {
 		await request("auth/verify", {
 			method: "POST",
-			body: { email: email.value, code: code.value },
+			body: {
+				email: email.value,
+				code: code.value,
+				privacyAccepted: privacyAccepted.value,
+				privacyVersion: PRIVACY_VERSION,
+			},
 		});
 		// A different account may be signing in: drop every cached id first.
 		account.reset();
@@ -115,9 +131,31 @@ onBeforeUnmount(stopCooldown);
 					>
 				</label>
 
+				<label class="login__privacy">
+					<input
+						v-model="privacyAccepted"
+						type="checkbox"
+						:disabled="busy"
+					>
+					<span>
+						{{ copy.privacyAccept }}
+						<NuxtLink
+							:to="localePath('/privacy')"
+							target="_blank"
+							rel="noopener"
+						>
+							{{ copy.privacyLink }}
+						</NuxtLink>.
+					</span>
+				</label>
+
 				<p v-if="message" class="login__error" role="alert">{{ message }}</p>
 
-				<button type="submit" class="login__primary" :disabled="busy">
+				<button
+					type="submit"
+					class="login__primary"
+					:disabled="busy || !privacyAccepted"
+				>
 					{{ copy.sendCode }}
 				</button>
 				<p class="login__hint">{{ copy.codeHint }}</p>
@@ -295,5 +333,35 @@ onBeforeUnmount(stopCooldown);
 .step-leave-to {
 	opacity: 0;
 	transform: translateY(-6px);
+}
+</style>
+
+<style scoped>
+.login__privacy {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  opacity: 0.85;
+  cursor: pointer;
+}
+
+.login__privacy input {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.15rem;
+  accent-color: var(--color-pink);
+  cursor: pointer;
+}
+
+.login__privacy a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.login__privacy a:hover {
+  color: var(--color-pink);
 }
 </style>
