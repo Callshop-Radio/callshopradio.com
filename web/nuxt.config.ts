@@ -249,6 +249,15 @@ export default defineNuxtConfig({
 		accountIpSecret: process.env.NUXT_ACCOUNT_IP_SECRET,
 		accountAllowedOrigins: process.env.NUXT_ACCOUNT_ALLOWED_ORIGINS,
 		chatClientSecret: process.env.NUXT_CHAT_CLIENT_SECRET,
+		// Server-only SoundCloud API client id; used by the BFF to fetch waveform data.
+		soundcloudClientId: process.env.NUXT_SOUNDCLOUD_CLIENT_ID,
+		soundcloudClientSecret: process.env.NUXT_SOUNDCLOUD_CLIENT_SECRET,
+		videoStatusUrl:
+			process.env.NUXT_VIDEO_STATUS_URL ||
+			"https://video.callshopradio.live/api/live",
+		videoHlsUrl:
+			process.env.NUXT_VIDEO_HLS_URL ||
+			"https://video.callshopradio.live/hls/live/index.m3u8",
 		// Netlify Personal Access Token + Site ID for edge cache purge (tag-based).
 		// Optional — webhook still clears local Nitro LRU even when these are unset.
 		netlifyPurgeToken: process.env.NETLIFY_PURGE_TOKEN,
@@ -264,6 +273,12 @@ export default defineNuxtConfig({
 			chatEnabled: process.env.NUXT_PUBLIC_CHAT_ENABLED === "1",
 			// Use the real Manager room instead of the local mock.
 			chatReal: process.env.NUXT_PUBLIC_CHAT_REAL === "1",
+			streamUrl:
+				process.env.NUXT_PUBLIC_STREAM_URL ||
+				"https://stream.callshopradio.live/radio.mp3",
+			streamFallbackUrl:
+				process.env.NUXT_PUBLIC_STREAM_FALLBACK_URL ||
+				"https://icecast.callshopradio.com/callshopradio",
 		},
 	},
 

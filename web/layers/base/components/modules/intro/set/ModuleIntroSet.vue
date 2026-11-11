@@ -115,18 +115,7 @@ const useSoundCloud = () => {
 	}
 
 	function playTrack() {
-		const item = props.set;
-		if (!item?.soundcloud?.tracks?.[0]) return;
-
-		const track = item.soundcloud.tracks[0];
-
-		// Ensure that permalink_url is set
-		if (!track.permalink_url && track.id) {
-			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
-		}
-
-		// Save track in the store
-		mainStore.currentTrack = track;
+		if (props.set) void playShared(props.set);
 	}
 
 	return {
@@ -137,6 +126,7 @@ const useSoundCloud = () => {
 };
 
 // Application of the composables
+const { playTrack: playShared } = useSoundcloudArtwork();
 const { getItemImage: _getItemImage } = useImageManagement();
 const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
 

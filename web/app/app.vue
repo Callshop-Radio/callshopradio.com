@@ -11,6 +11,8 @@ const isHome = computed(() => String(route.name ?? "").startsWith("index"));
 const backdropType = computed(
 	() => mainStore?.currentHeroContentType ?? "sets",
 );
+
+await usePlayerFeed();
 </script>
 
 <template>
@@ -49,6 +51,7 @@ const backdropType = computed(
     <SiteFoot class="footer" />
     <SiteChatPopup />
     <SiteLoginPopup />
+    <SiteVideoPlayer />
     <ElementsPreviewMode />
   </div>
 </template>
