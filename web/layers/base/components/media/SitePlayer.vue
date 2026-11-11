@@ -647,7 +647,6 @@ onBeforeUnmount(() => {
 }
 
 @media screen and (max-width: 900px) {
-  .site-player__status span:last-child,
   .site-player__time {
     display: none;
   }
