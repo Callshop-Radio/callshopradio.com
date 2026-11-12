@@ -1206,8 +1206,8 @@ onMounted(() => {
     &__tags {
       &.city-tags {
         position: absolute;
-        top: var(--small-margin);
-        left: var(--small-margin);
+        top: 0;
+        left: 0;
         z-index: 2;
       }
     }
