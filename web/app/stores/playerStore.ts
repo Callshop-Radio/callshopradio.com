@@ -1,12 +1,17 @@
 ﻿import { defineStore } from "pinia";
 import { ref } from "vue";
 import type { SetPlayable } from "~~/layers/base/utils/setPlayable";
-import type { PlayerFeed, PlayerWaveform } from "~~/types/player";
+import type {
+	PlayerFeed,
+	PlayerSchedule,
+	PlayerWaveform,
+} from "~~/types/player";
 
 export const usePlayerStore = defineStore("player", () => {
 	const mode = ref<"stream" | "set">("stream");
 	const feed = ref<PlayerFeed | null>(null);
 	const set = ref<SetPlayable | null>(null);
+	const schedule = ref<PlayerSchedule | null>(null);
 	const waveform = ref<PlayerWaveform | null>(null);
 	const playing = ref(false);
 	const loading = ref(false);
@@ -17,6 +22,10 @@ export const usePlayerStore = defineStore("player", () => {
 
 	function setFeed(next: PlayerFeed) {
 		feed.value = next;
+	}
+
+	function setSchedule(next: PlayerSchedule | null) {
+		schedule.value = next;
 	}
 
 	function openSet(next: SetPlayable) {
@@ -70,6 +79,7 @@ export const usePlayerStore = defineStore("player", () => {
 		mode,
 		feed,
 		set,
+		schedule,
 		waveform,
 		playing,
 		loading,
@@ -78,6 +88,7 @@ export const usePlayerStore = defineStore("player", () => {
 		stale,
 		streamWasPlaying,
 		setFeed,
+		setSchedule,
 		openSet,
 		closeSet,
 		setPlaying,

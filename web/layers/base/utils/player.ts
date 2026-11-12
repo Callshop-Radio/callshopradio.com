@@ -56,6 +56,27 @@ export function streamShowProgress(
 	};
 }
 
+/** Current slot from the timetable (LibreTime shows.current). */
+export function scheduleShowProgress(
+	schedule: { starts: string; ends: string } | null | undefined,
+	nowMs: number = Date.now(),
+): StreamShowProgress | null {
+	if (!schedule) return null;
+	const starts = Date.parse(schedule.starts);
+	const ends = Date.parse(schedule.ends);
+	if (!Number.isFinite(starts) || !Number.isFinite(ends) || ends <= starts) {
+		return null;
+	}
+	if (nowMs < starts || nowMs >= ends) return null;
+	return {
+		percent: Math.min(
+			100,
+			Math.max(0, ((nowMs - starts) / (ends - starts)) * 100),
+		),
+		endMs: ends,
+	};
+}
+
 export function nextMilestones(percent: number, seen: Set<number>): number[] {
 	const crossed: number[] = [];
 	for (const milestone of [25, 50, 75, 100]) {

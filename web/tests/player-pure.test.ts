@@ -4,6 +4,7 @@ import test from "node:test";
 import {
 	formatPlayerTime,
 	nextMilestones,
+	scheduleShowProgress,
 	streamShowProgress,
 } from "../layers/base/utils/player.ts";
 import { toSetPlayable } from "../layers/base/utils/setPlayable.ts";
@@ -128,6 +129,21 @@ test("streamShowProgress advances between feed polls", () => {
 		Date.parse("2026-11-11T21:10:00Z"),
 	);
 	assert.equal(Math.round(progress?.percent ?? 0), 58);
+});
+
+test("scheduleShowProgress tracks the current timetable slot", () => {
+	const starts = "2026-11-11T21:00:00Z";
+	const ends = "2026-11-11T22:00:00Z";
+	const progress = scheduleShowProgress(
+		{ starts, ends },
+		Date.parse("2026-11-11T21:30:00Z"),
+	);
+	assert.equal(progress?.percent, 50);
+	assert.equal(progress?.endMs, Date.parse(ends));
+	assert.equal(
+		scheduleShowProgress({ starts, ends }, Date.parse("2026-11-11T22:00:00Z")),
+		null,
+	);
 });
 
 test("streamShowProgress ignores auto and missing windows", () => {

@@ -5,6 +5,7 @@ import { usePlayerAnalytics } from "~~/layers/base/composables/usePlayerAnalytic
 import { usePlayerController } from "~~/layers/base/composables/usePlayerController";
 import {
 	formatPlayerTime,
+	scheduleShowProgress,
 	streamShowProgress,
 } from "~~/layers/base/utils/player";
 
@@ -23,6 +24,18 @@ const isSet = computed(() => store.mode === "set" && Boolean(store.set));
 const tracklistOpen = ref(false);
 const nowMs = ref(Date.now());
 let progressClock: ReturnType<typeof setInterval> | null = null;
+
+const scheduleWindow = computed(() => {
+	const feed = store.feed;
+	if (feed?.state !== "auto" || feed.progress) return null;
+	return store.schedule;
+});
+const scheduleProgress = computed(() =>
+	scheduleShowProgress(scheduleWindow.value, nowMs.value),
+);
+const scheduledShow = computed(() =>
+	scheduleProgress.value ? scheduleWindow.value : null,
+);
 
 watch(isSet, (value) => {
 	if (value) tracklistOpen.value = false;
@@ -50,6 +63,8 @@ const streamTitle = computed<PlayerLink>(() => {
 	if (value.set?.title) return { label: value.set.title, path: value.set.path };
 	if (value.show?.title)
 		return { label: value.show.title, path: value.show.path };
+	if (scheduledShow.value)
+		return { label: scheduledShow.value.name, path: "/schedule" };
 	return { label: value.title, path: null };
 });
 
@@ -109,6 +124,7 @@ const coverLink = computed(() => {
 });
 const statusLabel = computed(() => {
 	if (isSet.value) return "Set";
+	if (scheduledShow.value) return "Sendeplan";
 	switch (store.feed?.state) {
 		case "live":
 			return "Live";
@@ -145,8 +161,8 @@ const progressTimeWidth = computed(() => {
 	const longest = formatPlayerTime(durationMs / 1000);
 	return `${longest.length * 2 + 3}ch`;
 });
-const streamProgress = computed(() =>
-	streamShowProgress(store.feed, nowMs.value),
+const streamProgress = computed(
+	() => scheduleProgress.value ?? streamShowProgress(store.feed, nowMs.value),
 );
 const streamEndLabel = computed(() => {
 	const value = streamProgress.value;

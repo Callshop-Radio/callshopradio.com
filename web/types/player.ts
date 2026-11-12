@@ -26,6 +26,12 @@ export interface PlayerProgress {
 	durationSeconds: number;
 }
 
+export interface PlayerSchedule {
+	name: string;
+	starts: string;
+	ends: string;
+}
+
 export interface PlayerVideo {
 	live: boolean;
 	since: string | null;

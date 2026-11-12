@@ -1,5 +1,19 @@
-import { watch } from "vue";
+import { onMounted, watch } from "vue";
 import type { PlayerFeed } from "~~/types/player";
+
+interface StreamStatusPayload {
+	stream1?: {
+		liveData?: {
+			shows?: {
+				current?: {
+					name?: unknown;
+					starts?: unknown;
+					ends?: unknown;
+				} | null;
+			};
+		} | null;
+	} | null;
+}
 
 /**
  * One shared feed for the header row and the video panel. The server renders
@@ -8,6 +22,19 @@ import type { PlayerFeed } from "~~/types/player";
 export async function usePlayerFeed() {
 	const config = useRuntimeConfig();
 	const store = usePlayerStore();
+
+	async function refreshSchedule() {
+		try {
+			const status = await $fetch<StreamStatusPayload>("/api/stream/status");
+			const current = status?.stream1?.liveData?.shows?.current;
+			const name = typeof current?.name === "string" ? current.name.trim() : "";
+			const starts = typeof current?.starts === "string" ? current.starts : "";
+			const ends = typeof current?.ends === "string" ? current.ends : "";
+			store.setSchedule(name && starts && ends ? { name, starts, ends } : null);
+		} catch {
+			store.setSchedule(null);
+		}
+	}
 
 	const fallbackFeed = (): PlayerFeed => ({
 		version: 1,
@@ -47,13 +74,23 @@ export async function usePlayerFeed() {
 
 	const visible = useDocumentVisibility();
 	useIntervalFn(() => {
-		if (visible.value === "visible") void refresh();
+		if (visible.value === "visible") {
+			void refresh();
+			void refreshSchedule();
+		}
 	}, 20_000);
 	watch(visible, (value) => {
-		if (value === "visible") void refresh();
+		if (value === "visible") {
+			void refresh();
+			void refreshSchedule();
+		}
 	});
 	useEventListener("online", () => {
 		void refresh();
+		void refreshSchedule();
+	});
+	onMounted(() => {
+		void refreshSchedule();
 	});
 
 	await asyncData;
