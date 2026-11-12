@@ -88,11 +88,11 @@ const chatEnabled = computed(
   min-height: max-content;
   z-index: 999999;
 
-  /* Full-bleed rule under the 56 px nav; the fixed player has its own. */
+  /* Full-bleed rule under the navigation; the fixed player has its own. */
   &::after {
     content: "";
     position: absolute;
-    top: 56px;
+    top: var(--nav-bar-height);
     right: 0;
     left: 0;
     border-bottom: 1px solid var(--color-text);
@@ -102,8 +102,8 @@ const chatEnabled = computed(
   &__title-section {
     width: 100%;
     max-width: var(--page-max-width);
-    /* Match the player row so the two bars read as one unit. */
-    height: 56px;
+    /* 20 % taller than the player row. */
+    height: var(--nav-bar-height);
     box-sizing: border-box;
     display: flex;
     flex-flow: row wrap;

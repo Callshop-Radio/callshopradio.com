@@ -30,4 +30,15 @@ usePageSeo(data?.value?.seo);
   justify-content: flex-start;
   align-items: center;
 }
+
+/* Landing hero: 50 px more breathing room below the taller navigation. */
+.words-archive :deep(.module-section .module:first-of-type) {
+  margin-top: calc(var(--first-content-distance) + 50px);
+}
+
+@media screen and (max-width: 900px) {
+  .words-archive :deep(.module-section .module:first-of-type) {
+    margin-top: calc(var(--base-margin) + 50px);
+  }
+}
 </style>
