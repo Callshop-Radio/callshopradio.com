@@ -191,29 +191,29 @@ usePageSeo(data?.value?.seo);
   }
 
   &--a {
-    top: -12%;
-    right: -8%;
-    width: 76%;
-    height: 100%;
+    top: -26%;
+    right: -16%;
+    width: 108%;
+    height: 138%;
     opacity: 0.58;
     transform: scaleX(-1) rotate(8deg);
   }
 
   &--b {
-    bottom: -18%;
-    left: -8%;
-    width: 72%;
-    height: 86%;
+    bottom: -34%;
+    left: -16%;
+    width: 100%;
+    height: 120%;
     opacity: 0.44;
     filter: blur(46px);
     transform: rotate(-6deg);
   }
 
   &--c {
-    top: 24%;
-    left: 38%;
-    width: 52%;
-    height: 60%;
+    top: 6%;
+    left: 26%;
+    width: 76%;
+    height: 88%;
     opacity: 0.3;
     filter: blur(58px);
     transform: rotate(14deg);
