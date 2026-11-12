@@ -343,6 +343,12 @@ onBeforeUnmount(() => {
 						class="site-player__time"
 						:style="progressTimeWidth ? { width: progressTimeWidth } : undefined"
 					>{{ progressTime }}</span>
+					<ElementsHeartButton
+						v-if="store.set?.id"
+						:set-id="store.set.id"
+						variant="inline"
+						class="site-player__heart"
+					/>
 					<button
 						type="button"
 						class="site-player__close"
@@ -667,6 +673,23 @@ onBeforeUnmount(() => {
   font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.site-player__heart {
+  display: inline-flex;
+  color: var(--color-dark-grey);
+
+  :deep(.heart__button) {
+    width: 44px;
+    height: 44px;
+  }
+
+  @media screen and (max-width: 900px) {
+    :deep(.heart__button) {
+      width: 40px;
+      height: 40px;
+    }
+  }
 }
 
 .site-player__close {
