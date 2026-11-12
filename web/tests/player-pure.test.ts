@@ -48,6 +48,7 @@ test("toSetPlayable maps the Sanity set, show and artists", () => {
 	assert.equal(playable.artists[0].path, "/pool/nico");
 	assert.equal(playable.cover, "cover.jpg");
 	assert.equal(playable.soundcloudUrl, "https://soundcloud.com/x");
+	assert.equal(playable.soundcloudPageUrl, "https://soundcloud.com/x");
 	assert.equal(playable.soundcloudId, null);
 });
 
@@ -93,6 +94,7 @@ test("toSetPlayable falls back to the SoundCloud track id", () => {
 		null,
 	);
 	assert.equal(playable.soundcloudUrl, "https://api.soundcloud.com/tracks/42");
+	assert.equal(playable.soundcloudPageUrl, null);
 });
 
 test("formatPlayerTime handles minutes and hours", () => {

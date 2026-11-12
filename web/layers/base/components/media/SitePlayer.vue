@@ -329,9 +329,9 @@ onBeforeUnmount(() => {
 				/>
 				<div class="site-player__side">
 					<a
-						v-if="store.set?.soundcloudUrl"
+						v-if="store.set?.soundcloudPageUrl"
 						class="site-player__source"
-						:href="store.set.soundcloudUrl"
+						:href="store.set.soundcloudPageUrl"
 						target="_blank"
 						rel="noopener"
 						@click.stop

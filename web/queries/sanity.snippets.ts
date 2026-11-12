@@ -10,7 +10,7 @@ export const IMAGE_QUERY = `{
 // Shared SoundCloud projection — only the fields actually consumed by components.
 // Dropped (zero readers): created_at, tag_list, streamable, purchase_url, genre,
 // description, release_year/month/day, license, waveform_url, playback_count,
-// favoritings_count. permalink_url is reconstructed client-side from `id`.
+// favoritings_count.
 export const SOUNDCLOUD_TRACKS_QUERY = `soundcloud{
 	_type,
 	"tracks": tracks[]{
@@ -18,6 +18,7 @@ export const SOUNDCLOUD_TRACKS_QUERY = `soundcloud{
 		duration,
 		title,
 		uri,
+		permalink_url,
 		"user": user{
 			id,
 			username,

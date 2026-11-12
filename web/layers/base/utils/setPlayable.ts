@@ -17,6 +17,7 @@ export interface SetPlayable {
 	}[];
 	cover: string | null;
 	soundcloudUrl: string | null;
+	soundcloudPageUrl: string | null;
 	soundcloudId: string | null;
 	durationMs: number | null;
 }
@@ -53,6 +54,7 @@ export function toSetPlayable(
 	const setSlug = slugOf(doc.slug);
 	const setPath =
 		text(doc.path) || (setSlug && showPath ? `${showPath}/${setSlug}` : null);
+	const permalink = text(track?.permalink_url) || null;
 
 	return {
 		id: String(doc._id ?? doc.id ?? ""),
@@ -80,10 +82,10 @@ export function toSetPlayable(
 			})
 			.filter((artist) => artist.name),
 		cover,
-		soundcloudUrl: track
-			? text(track.permalink_url) ||
-				(track.id ? `https://api.soundcloud.com/tracks/${track.id}` : null)
-			: null,
+		soundcloudUrl:
+			permalink ||
+			(track?.id ? `https://api.soundcloud.com/tracks/${track.id}` : null),
+		soundcloudPageUrl: permalink,
 		soundcloudId:
 			track && track.id !== null && track.id !== undefined
 				? String(track.id)
