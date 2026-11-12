@@ -65,7 +65,10 @@ const streamTitle = computed<PlayerLink>(() => {
 		return { label: value.show.title, path: value.show.path };
 	if (scheduledShow.value)
 		return { label: scheduledShow.value.name, path: "/schedule" };
-	return { label: value.title, path: null };
+	return {
+		label: value.title,
+		path: value.state === "auto" && value.progress ? "/schedule" : null,
+	};
 });
 
 const streamLinks = computed<PlayerLink[]>(() => {
@@ -125,6 +128,7 @@ const coverLink = computed(() => {
 const statusLabel = computed(() => {
 	if (isSet.value) return "Set";
 	if (scheduledShow.value) return "Sendeplan";
+	if (store.feed?.state === "auto" && store.feed?.progress) return "Sendeplan";
 	switch (store.feed?.state) {
 		case "live":
 			return "Live";

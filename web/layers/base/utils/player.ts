@@ -33,7 +33,9 @@ export function streamShowProgress(
 		| undefined,
 	nowMs: number = Date.now(),
 ): StreamShowProgress | null {
-	if (feed?.state !== "live" || !feed.progress) return null;
+	if (!feed?.progress || (feed.state !== "live" && feed.state !== "auto")) {
+		return null;
+	}
 	const { elapsedSeconds, durationSeconds } = feed.progress;
 	if (
 		!Number.isFinite(elapsedSeconds) ||

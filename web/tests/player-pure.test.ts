@@ -131,6 +131,19 @@ test("streamShowProgress advances between feed polls", () => {
 	assert.equal(Math.round(progress?.percent ?? 0), 58);
 });
 
+test("streamShowProgress tracks an AutoDJ replay", () => {
+	const updatedAt = "2026-11-12T00:00:00Z";
+	const progress = streamShowProgress(
+		{
+			state: "auto",
+			updatedAt,
+			progress: { elapsedSeconds: 5171, durationSeconds: 7507 },
+		},
+		Date.parse(updatedAt),
+	);
+	assert.equal(Math.round(progress?.percent ?? 0), 69);
+});
+
 test("scheduleShowProgress tracks the current timetable slot", () => {
 	const starts = "2026-11-11T21:00:00Z";
 	const ends = "2026-11-11T22:00:00Z";

@@ -23,6 +23,7 @@ function baseFeed({
 	video,
 	source,
 	cover = null,
+	progress = null,
 }: {
 	state: PlayerFeed["state"];
 	title: string;
@@ -32,6 +33,7 @@ function baseFeed({
 	video: PlayerVideo | null;
 	source: NonNullable<PlayerFeed["source"]>;
 	cover?: string | null;
+	progress?: PlayerFeed["progress"];
 }): PlayerFeed {
 	return {
 		version: 1,
@@ -46,7 +48,7 @@ function baseFeed({
 		set: null,
 		artists: [],
 		track,
-		progress: null,
+		progress,
 		tracklist: null,
 		source,
 	};
@@ -61,15 +63,27 @@ export function feedFromAzuraCast(
 	if ((station as { is_online?: unknown } | null)?.is_online === false) {
 		return offlineFeed(options);
 	}
-	const song = (
+	const nowPlaying = (
 		station as {
 			now_playing?: {
+				elapsed?: unknown;
+				duration?: unknown;
 				song?: { title?: unknown; artist?: unknown; art?: unknown };
 			};
 		} | null
-	)?.now_playing?.song;
+	)?.now_playing;
+	const song = nowPlaying?.song;
 	const title = text(song?.title) || "AutoDJ";
 	const artist = text(song?.artist) || null;
+	const elapsed = Number(nowPlaying?.elapsed);
+	const duration = Number(nowPlaying?.duration);
+	const progress =
+		Number.isFinite(elapsed) &&
+		Number.isFinite(duration) &&
+		duration > 0 &&
+		elapsed >= 0
+			? { elapsedSeconds: elapsed, durationSeconds: duration }
+			: null;
 	return baseFeed({
 		state: "auto",
 		title,
@@ -79,6 +93,7 @@ export function feedFromAzuraCast(
 		video: options.video ?? null,
 		source: "azura",
 		cover: text(song?.art) || null,
+		progress,
 	});
 }
 

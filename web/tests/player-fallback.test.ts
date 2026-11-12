@@ -26,6 +26,23 @@ test("AzuraCast now playing carries the current cover art", () => {
 	assert.equal(feed.cover, "https://stream.example/art/assim.jpg");
 });
 
+test("AzuraCast now playing carries the replay position", () => {
+	const feed = feedFromAzuraCast(
+		{
+			now_playing: {
+				elapsed: 5171,
+				duration: 7507,
+				song: { title: "AssimAssim", artist: "Marques & Katja" },
+			},
+		},
+		{ audioUrl },
+	);
+	assert.deepEqual(feed.progress, {
+		elapsedSeconds: 5171,
+		durationSeconds: 7507,
+	});
+});
+
 test("AzuraCast now playing becomes an auto feed without links", () => {
 	const feed = feedFromAzuraCast(
 		{ now_playing: { song: { title: "Sporecast", artist: "BNYI, índigo" } } },

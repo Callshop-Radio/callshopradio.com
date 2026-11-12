@@ -42,6 +42,26 @@ function azuraArt(payload: unknown): string | null {
 	return typeof art === "string" && art.trim() ? art.trim() : null;
 }
 
+function azuraProgress(payload: unknown): PlayerFeed["progress"] {
+	const station = Array.isArray(payload) ? payload[0] : payload;
+	const nowPlaying = (
+		station as {
+			now_playing?: { elapsed?: unknown; duration?: unknown };
+		} | null
+	)?.now_playing;
+	const elapsed = Number(nowPlaying?.elapsed);
+	const duration = Number(nowPlaying?.duration);
+	if (
+		!Number.isFinite(elapsed) ||
+		!Number.isFinite(duration) ||
+		duration <= 0 ||
+		elapsed < 0
+	) {
+		return null;
+	}
+	return { elapsedSeconds: elapsed, durationSeconds: duration };
+}
+
 let lastGoodFeed: PlayerFeed | null = null;
 let lastGoodAt = 0;
 const LAST_GOOD_MS = 5 * 60_000;
@@ -106,13 +126,23 @@ export default defineCachedEventHandler(
 						fallbackUrl: manager.audio?.fallbackUrl || fallbackUrl,
 					};
 					// AutoDJ has no editorial set; AzuraCast still knows the
-					// current track artwork, so the row keeps its thumbnail.
-					if (manager.state === "auto" && !manager.cover) {
+					// current track artwork and its position in the scheduled
+					// replay, so the row keeps its thumbnail and progress.
+					if (
+						manager.state === "auto" &&
+						(!manager.cover || !manager.progress)
+					) {
 						const nowPlaying = await fetchWithin<
 							unknown[] | Record<string, unknown>
 						>(`${STREAM_BASE}/api/nowplaying`, 1_000);
-						const art = azuraArt(nowPlaying);
-						if (art) manager.cover = art;
+						if (!manager.cover) {
+							const art = azuraArt(nowPlaying);
+							if (art) manager.cover = art;
+						}
+						if (!manager.progress) {
+							const progress = azuraProgress(nowPlaying);
+							if (progress) manager.progress = progress;
+						}
 					}
 					lastGoodFeed = manager;
 					lastGoodAt = Date.now();
