@@ -87,6 +87,18 @@ const chatEnabled = computed(
   height: auto;
   min-height: max-content;
   z-index: 999999;
+
+  /* Full-bleed rule under the 56 px nav; the fixed player has its own. */
+  &::after {
+    content: "";
+    position: absolute;
+    top: 56px;
+    right: 0;
+    left: 0;
+    border-bottom: 1px solid var(--color-text);
+    pointer-events: none;
+  }
+
   &__title-section {
     width: 100%;
     max-width: var(--page-max-width);
