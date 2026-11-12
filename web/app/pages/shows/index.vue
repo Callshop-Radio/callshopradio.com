@@ -89,9 +89,18 @@ usePageSeo(data?.value?.seo);
 				:style="glowStyle"
 				aria-hidden="true"
 			>
-				<AnimatedGradient class="shows-glow__blob shows-glow__blob--a" />
-				<AnimatedGradient class="shows-glow__blob shows-glow__blob--b" />
-				<AnimatedGradient class="shows-glow__blob shows-glow__blob--c" />
+				<AnimatedGradient
+					class="shows-glow__blob shows-glow__blob--a"
+					color="#be618a"
+				/>
+				<AnimatedGradient
+					class="shows-glow__blob shows-glow__blob--b"
+					color="#be618a"
+				/>
+				<AnimatedGradient
+					class="shows-glow__blob shows-glow__blob--c"
+					color="#be618a"
+				/>
 			</div>
 			<ModuleIntroCoverFlow :items="featuredSets" nav-label="Set" area="show">
 				<template #default="{ item, mediaActive, isCenter }">
@@ -156,21 +165,20 @@ usePageSeo(data?.value?.seo);
   }
 
   /* Same treatment as the set detail glow: on black the light-mode opacity
-     reads as a grey smudge, so raise it and tighten the blur. The blobs are
-     much larger than the set page's, so the colour is spread thinner; the
-     extra saturation keeps the same density on screen. */
+     reads as a grey smudge, so raise it and tighten the blur. The fill stays
+     exactly on the CI shows colour (#be618a), no hue/saturation shift. */
   &.is-dark .shows-glow__blob {
     opacity: 1;
-    filter: blur(22px) saturate(1.8);
+    filter: blur(22px);
 
     &--b {
       opacity: 0.8;
-      filter: blur(40px) saturate(1.8);
+      filter: blur(40px);
     }
 
     &--c {
       opacity: 0.58;
-      filter: blur(52px) saturate(1.8);
+      filter: blur(52px);
     }
   }
 }

@@ -207,9 +207,18 @@ onUnmounted(() => {
 				:class="{ 'is-dark': mainStore.isDarkMode }"
 				aria-hidden="true"
 			>
-				<AnimatedGradient class="set-glow__blob set-glow__blob--a" />
-				<AnimatedGradient class="set-glow__blob set-glow__blob--b" />
-				<AnimatedGradient class="set-glow__blob set-glow__blob--c" />
+				<AnimatedGradient
+					class="set-glow__blob set-glow__blob--a"
+					color="#f593b2"
+				/>
+				<AnimatedGradient
+					class="set-glow__blob set-glow__blob--b"
+					color="#f593b2"
+				/>
+				<AnimatedGradient
+					class="set-glow__blob set-glow__blob--c"
+					color="#f593b2"
+				/>
 			</div>
 
 			<div class="set-intro">
