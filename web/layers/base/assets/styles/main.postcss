@@ -132,18 +132,28 @@ img:not(.avatar) {
   border-radius: 0 !important;
 }
 
-/* 2026-11: one pill corner for every pill-shaped control. The ends stay
-   slightly flattened instead of a perfect semicircle, so tags, navigation and
-   buttons read as the same shape. The radius grows with the font size: a small
-   tag lands near 0.55rem, a large button at 0.75rem. */
+/* 2026-11: two pill sizes, assigned by role rather than font size.
+   Compact tags stay flatter; navigation, search and larger buttons get the
+   full radius so their ends read as a pill. */
 .tag:not(.city),
-.action-btn,
-.type-filter-btn,
+.genre,
+.filter-tag,
+.filter-tag--city,
 .tag-chip,
 .reset-tags-btn,
 .autocomplete-type,
+.active-filter,
+.search-result-block__pill,
+.message__role,
+.track-card__label {
+  border-radius: var(--pill-radius-sm) !important;
+}
+
+.menu-main .tag,
+.menu .tag,
+.action-btn,
+.type-filter-btn,
 .sort-options,
-.genre,
 .account-action,
 .account-role,
 .login__primary,
@@ -151,16 +161,10 @@ img:not(.avatar) {
 .invite__primary,
 .composer__send,
 .composer__signin-btn,
-.message__role,
-.track-card__label,
 .picker__tab,
 .slider__nav,
 .grid-density__control,
 .grid-density__option,
-.filter-tag,
-.filter-tag--city,
-.active-filter,
-.search-result-block__pill,
 .module-teaser__header__type__pill,
 .module-carousel__header__type__pill,
 .search-pill,
@@ -170,12 +174,9 @@ img:not(.avatar) {
 .content-grid__filter-bar,
 .content-grid__mobile-filter-bar,
 .content-grid__mobile-filter-tab,
-.player-nav button {
-  border-radius: clamp(
-    var(--pill-radius-min),
-    0.9em,
-    var(--pill-radius)
-  ) !important;
+.player-nav button,
+.load-more-button.more {
+  border-radius: var(--pill-radius) !important;
 }
 
 /* Content tags share one box across cards, heroes, search and detail pages.
@@ -223,11 +224,7 @@ img:not(.avatar) {
   justify-content: center;
   height: 1.25rem;
   padding: 0 var(--base-padding) !important;
-  border-radius: clamp(
-    var(--pill-radius-min),
-    0.9em,
-    var(--pill-radius)
-  ) !important;
+  border-radius: var(--pill-radius-sm) !important;
   font-size: var(--small-font-size) !important;
   line-height: 1 !important;
   text-align: center;
