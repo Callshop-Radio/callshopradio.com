@@ -134,7 +134,8 @@ img:not(.avatar) {
 
 /* 2026-11: one pill corner for every pill-shaped control. The ends stay
    slightly flattened instead of a perfect semicircle, so tags, navigation and
-   buttons read as the same shape. */
+   buttons read as the same shape. The radius grows with the font size: a small
+   tag lands near 0.55rem, a large button at 0.75rem. */
 .tag:not(.city),
 .action-btn,
 .type-filter-btn,
@@ -156,14 +157,86 @@ img:not(.avatar) {
 .slider__nav,
 .grid-density__control,
 .grid-density__option,
+.filter-tag,
 .filter-tag--city,
 .active-filter,
 .search-result-block__pill,
+.module-teaser__header__type__pill,
+.module-carousel__header__type__pill,
+.search-pill,
+.video-panel__pill,
 .social-links--text,
 .search-input-wrapper,
 .content-grid__filter-bar,
 .content-grid__mobile-filter-bar,
 .content-grid__mobile-filter-tab,
 .player-nav button {
-  border-radius: var(--pill-radius) !important;
+  border-radius: clamp(
+    var(--pill-radius-min),
+    0.9em,
+    var(--pill-radius)
+  ) !important;
+}
+
+/* Content tags share one box across cards, heroes, search and detail pages.
+   City flags are deliberately excluded: they keep their flat-bottom shape. */
+.filter-tag,
+:is(
+  .teaser-item__tags,
+  .grid-item__tags,
+  .hero-entry-tags,
+  .teaser-genres,
+  .related-content .tags,
+  .search-result-block .tags,
+  .article-category,
+  .article-content-tags,
+  .article-tags,
+  .pool-tags,
+  .set-tags,
+  .show-tags,
+  .show-intro-refs-list,
+  .show-intro-ref-item,
+  .pool-refs-list,
+  .pool-ref-item
+) .tag:not(.city),
+:is(
+  .teaser-item__tags,
+  .grid-item__tags,
+  .hero-entry-tags,
+  .teaser-genres,
+  .related-content .tags,
+  .search-result-block .tags,
+  .article-category,
+  .article-content-tags,
+  .article-tags,
+  .pool-tags,
+  .set-tags,
+  .show-tags,
+  .show-intro-refs-list,
+  .show-intro-ref-item,
+  .pool-refs-list,
+  .pool-ref-item
+) .genre {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.25rem;
+  padding: 0 var(--base-padding) !important;
+  border-radius: clamp(
+    var(--pill-radius-min),
+    0.9em,
+    var(--pill-radius)
+  ) !important;
+  font-size: var(--small-font-size) !important;
+  line-height: 1 !important;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* The hero tags inherited a 1px rule from the generic tag base; the card tags
+   do not have it, so drop it here to keep both boxes exactly the same width. */
+.hero-entry-tags .tag:not(.city) {
+  border: 0;
 }
