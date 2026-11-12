@@ -1,5 +1,6 @@
 ﻿<script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
+import { useMainStore } from "~/stores/mainStore";
 import { SHOWSARCHIVE_QUERY } from "~~/queries/sanity.queries.ts";
 
 definePageMeta({
@@ -8,6 +9,10 @@ definePageMeta({
 
 const query = groq`${SHOWSARCHIVE_QUERY}`;
 const { data } = await useCachedSanityQuery(query);
+
+// Dark mode needs a brighter, tighter glow: on black the same opacity that
+// reads as soft pink on white disappears. Mirrors the set detail page.
+const mainStore = useMainStore();
 
 const slider = computed(() => data.value?.slider);
 const { featured: featuredSets } = await useCoverFlowSliderItems(
@@ -78,7 +83,12 @@ usePageSeo(data?.value?.seo);
 <template>
 	<div class="shows-archive">
 		<section v-if="featuredSets.length > 0" class="intro-section">
-			<div class="shows-glow" :style="glowStyle" aria-hidden="true">
+			<div
+				class="shows-glow"
+				:class="{ 'is-dark': mainStore.isDarkMode }"
+				:style="glowStyle"
+				aria-hidden="true"
+			>
 				<AnimatedGradient class="shows-glow__blob shows-glow__blob--a" />
 				<AnimatedGradient class="shows-glow__blob shows-glow__blob--b" />
 				<AnimatedGradient class="shows-glow__blob shows-glow__blob--c" />
@@ -144,6 +154,25 @@ usePageSeo(data?.value?.seo);
   @media (prefers-reduced-motion: reduce) {
     transition: none;
   }
+
+  /* Same treatment as the set detail glow: on black the light-mode opacity
+     reads as a grey smudge, so raise it and tighten the blur. The blobs are
+     much larger than the set page's, so the colour is spread thinner; the
+     extra saturation keeps the same density on screen. */
+  &.is-dark .shows-glow__blob {
+    opacity: 1;
+    filter: blur(22px) saturate(1.8);
+
+    &--b {
+      opacity: 0.8;
+      filter: blur(40px) saturate(1.8);
+    }
+
+    &--c {
+      opacity: 0.58;
+      filter: blur(52px) saturate(1.8);
+    }
+  }
 }
 
 .shows-glow__blob {
@@ -155,6 +184,10 @@ usePageSeo(data?.value?.seo);
   :deep(svg) {
     width: 100%;
     height: 100%;
+  }
+
+  :deep(svg path) {
+    opacity: 1;
   }
 
   &--a {
