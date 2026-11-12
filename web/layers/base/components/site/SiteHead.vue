@@ -131,7 +131,15 @@ const chatEnabled = computed(
     gap: var(--mid-margin);
   }
   &__audio-player-section {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 999999;
     width: 100%;
+    height: var(--player-bar-height);
+    box-sizing: border-box;
+    background: var(--color-bg);
     border-top: 1px solid var(--color-text);
     border-bottom: 1px solid var(--color-text);
   }

@@ -79,7 +79,7 @@ button {
 .chat-demo {
 	position: fixed;
 	left: 0.75rem;
-	bottom: 0.75rem;
+	bottom: calc(0.75rem + var(--player-bar-height));
 	z-index: 1200;
 	display: flex;
 	align-items: center;

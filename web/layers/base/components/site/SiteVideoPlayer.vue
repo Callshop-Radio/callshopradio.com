@@ -232,7 +232,9 @@ onBeforeUnmount(() => {
 <style lang="postcss" scoped>
 .video-panel {
   position: fixed;
-  bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  bottom: calc(
+    1.5rem + env(safe-area-inset-bottom) + var(--player-bar-height)
+  );
   left: 1.5rem;
   z-index: 8990;
   width: var(--video-width, 360px);
@@ -405,7 +407,9 @@ onBeforeUnmount(() => {
 
 .video-panel__pill {
   position: fixed;
-  bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  bottom: calc(
+    1.5rem + env(safe-area-inset-bottom) + var(--player-bar-height)
+  );
   left: 1.5rem;
   z-index: 8990;
   display: flex;

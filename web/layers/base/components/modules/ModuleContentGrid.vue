@@ -2928,7 +2928,9 @@ onUnmounted(() => {
 /* Tablet: 2 columns */
 @media (max-width: 1100px) {
   .content-grid {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+    padding-bottom: calc(
+      64px + env(safe-area-inset-bottom) + var(--player-bar-height)
+    );
 
     &__filter-bar--desktop {
       display: none;
@@ -2941,7 +2943,7 @@ onUnmounted(() => {
       position: fixed;
       top: auto;
       right: 0;
-      bottom: 0;
+      bottom: var(--player-bar-height);
       left: 0;
       z-index: 9998;
       max-height: 88dvh;
@@ -3019,7 +3021,9 @@ onUnmounted(() => {
     &__mobile-filter-tab {
       position: fixed;
       left: 50%;
-      bottom: calc(var(--small-padding) + env(safe-area-inset-bottom));
+      bottom: calc(
+        var(--player-bar-height) + var(--small-padding) + env(safe-area-inset-bottom)
+      );
       z-index: 9999;
       display: inline-flex;
       align-items: center;
@@ -3599,14 +3603,16 @@ onUnmounted(() => {
 }
 @media (min-width: 1101px) {
   .content-grid {
-    padding-bottom: max(var(--filter-dock-height, 0px), 160px);
+    padding-bottom: calc(
+      max(var(--filter-dock-height, 0px), 160px) + var(--player-bar-height)
+    );
   }
 
   .content-grid__filter-section {
     position: fixed;
     top: auto;
     right: 0;
-    bottom: 0;
+    bottom: var(--player-bar-height);
     left: 0;
     z-index: 9999;
     display: flex;
@@ -3634,7 +3640,7 @@ onUnmounted(() => {
     display: block;
     position: fixed;
     right: 0;
-    bottom: 0;
+    bottom: var(--player-bar-height);
     left: 0;
     z-index: 9998;
     height: 30vh;

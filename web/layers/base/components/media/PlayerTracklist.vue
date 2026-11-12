@@ -50,7 +50,8 @@ onBeforeUnmount(() => {
 <style lang="postcss" scoped>
 .player-tracklist {
   position: absolute;
-  top: calc(100% + 0.25rem);
+  top: auto;
+  bottom: calc(100% + 0.25rem);
   right: var(--page-gutter);
   z-index: 5;
   width: min(24rem, calc(100vw - 2rem));
