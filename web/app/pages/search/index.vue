@@ -16,7 +16,7 @@ useHead({
 });
 
 const localePath = useLocalePath();
-const { to, searchTag } = useAppPath();
+const { to, searchTag, tagFilter } = useAppPath();
 const { track } = useAnalytics();
 
 // ==================== STATE ====================
@@ -499,6 +499,9 @@ const handleKeydown = (event) => {
 // Get the localized URL path for a search result
 const getResultPath = (item) => {
 	if (item._type.startsWith("tag.")) {
+		if (item._type === "tag.genre" || item._type === "tag.subGenre") {
+			return tagFilter(item._type, item.title);
+		}
 		return searchTag(item.title);
 	}
 
@@ -507,6 +510,12 @@ const getResultPath = (item) => {
 
 const selectAutocompleteItem = (item) => {
 	showAutocomplete.value = false;
+
+	if (item._type === "tag.genre" || item._type === "tag.subGenre") {
+		const path = getResultPath(item);
+		if (path) navigateTo(path);
+		return;
+	}
 
 	if (item._type.startsWith("tag.")) {
 		searchQuery.value = item.title;
@@ -538,7 +547,8 @@ const _getTypeIcon = (type) => {
 
 const getCategoryLabel = (type) => {
 	if (type.startsWith("tag.")) return "Tag";
-	if (["show", "set"].includes(type)) return "Shows";
+	if (type === "show") return "Show";
+	if (type === "set") return "Set";
 	if (["person", "venue"].includes(type)) return "Pool";
 	if (type === "article") return "Words";
 	return type;

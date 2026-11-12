@@ -12,8 +12,8 @@ export function useAccountCopy() {
 			signInToSave: de ? "Zum Merken anmelden" : "Sign in to save",
 			signInTitle: de ? "Anmelden" : "Sign in",
 			signInIntro: de
-				? "Mit deiner E-Mail-Adresse. Kein Passwort und kein separater Signup — beim ersten Mal legen wir dein Konto an."
-				: "With your email address. No password and no separate signup — the first sign-in creates your account.",
+				? "Anmelden oder registrieren. E-Mail eingeben und Login-Code erhalten."
+				: "Sign in or sign up. Enter your email and receive a login code.",
 			resend: de ? "Code erneut senden" : "Resend code",
 			codeHint: de
 				? "Wir schicken dir einen sechsstelligen Code per Mail."

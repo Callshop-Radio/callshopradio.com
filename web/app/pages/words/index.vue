@@ -51,6 +51,11 @@ usePageSeo(data?.value?.seo);
   .intro-section {
     width: 100%;
     max-width: 100%;
+    margin-top: calc(var(--first-content-distance) + 50px);
+
+    @media screen and (max-width: 900px) {
+      margin-top: calc(var(--base-margin) + 50px);
+    }
   }
 }
 </style>

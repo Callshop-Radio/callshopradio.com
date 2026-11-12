@@ -63,11 +63,15 @@ section {
   align-items: center;
 
   &__intro-section {
-    margin: 0;
+    margin: calc(var(--first-content-distance) + 50px) 0 0;
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    @media screen and (max-width: 900px) {
+      margin-top: calc(var(--base-margin) + 50px);
+    }
   }
 
   &__related-content,

@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 import type { ContentItem, Tag } from "~/types/sanity";
+import { tagSlug } from "~/utils/tagSlug";
 import {
 	ARTICLE_COUNT_QUERY,
 	ARTICLE_LIST_QUERY,
@@ -22,6 +23,7 @@ const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 const { navigateToTagSearch } = useTagNavigation();
 const { track } = useAnalytics();
 const route = useRoute();
+const router = useRouter();
 
 const props = defineProps({
 	module: { type: Object, required: true },
@@ -106,6 +108,145 @@ const _themeColor = computed(
 // Determine if we need to load data ourselves (no pre-loaded items in props)
 // Determine if we need to load data ourselves (no pre-loaded items in props OR filtering active)
 const forceSelfLoad = ref(false);
+
+// Genre pills on detail pages link to the archive with ?subgenre=<slug>.
+// Tags have no Sanity slug yet, so the slug is derived from the title. Several
+// values are supported (?subgenre=ambient&subgenre=dub) and resolve to the tag
+// ids the filter query expects.
+const initialSubgenreSlugs = (
+	Array.isArray(route.query.subgenre)
+		? route.query.subgenre
+		: route.query.subgenre
+			? [route.query.subgenre]
+			: []
+)
+	.map((value) => String(value))
+	.filter(Boolean);
+
+const availableSubgenres = (
+	(props.module?.availableTags?.genres || []) as Array<{
+		_id?: string;
+		subGenres?: Tag[];
+	}>
+).flatMap((genre) =>
+	(genre.subGenres || []).map((subGenre) => ({
+		tag: subGenre,
+		parentId: genre._id ?? "",
+		slug: tagSlug(
+			getI18nLabel(subGenre.title) ||
+				(subGenre as { name?: string }).name ||
+				"",
+		),
+	})),
+);
+
+const initialSubgenres = availableSubgenres.filter((entry) =>
+	initialSubgenreSlugs.includes(entry.slug),
+);
+
+// A top-level genre pill links with ?genre=<slug>. Selecting the genre keeps
+// its subgenres as one OR bucket (the same bucket a genre click builds).
+const initialGenreSlugs = (
+	Array.isArray(route.query.genre)
+		? route.query.genre
+		: route.query.genre
+			? [route.query.genre]
+			: []
+)
+	.map((value) => String(value))
+	.filter(Boolean);
+
+const availableGenres = (
+	(props.module?.availableTags?.genres || []) as Array<
+		Tag & { subGenres?: Tag[] }
+	>
+).map((genre) => ({
+	tag: genre,
+	slug: tagSlug(
+		getI18nLabel(genre.title) || (genre as { name?: string }).name || "",
+	),
+}));
+
+const initialGenres = availableGenres.filter((entry) =>
+	initialGenreSlugs.includes(entry.slug),
+);
+
+const initialGenreIds = initialGenres
+	.map((entry) => entry.tag._id)
+	.filter((id): id is string => Boolean(id));
+
+if (initialGenreIds.length) {
+	activeGenres.value = new Set(initialGenreIds);
+	expandedGenres.value = new Set(initialGenreIds);
+}
+
+if (initialSubgenres.length) {
+	const ids = initialSubgenres
+		.map((entry) => entry.tag._id)
+		.filter((id): id is string => Boolean(id));
+	const parentIds = [
+		...new Set(
+			initialSubgenres
+				.map((entry) => entry.parentId)
+				.filter((id): id is string => Boolean(id)),
+		),
+	];
+
+	activeSubGenres.value = new Set(ids);
+	activeFilters.value = new Set(ids);
+	// Keep a genre that was linked separately (?genre=…&subgenre=…) and add
+	// the subgenres' parents. Replacing would drop the explicit genre.
+	activeGenres.value = new Set([...initialGenreIds, ...parentIds]);
+	expandedGenres.value = new Set([
+		...expandedGenres.value,
+		...initialGenreIds,
+		...parentIds,
+	]);
+}
+
+function querySlugList(raw: unknown): string[] {
+	return (Array.isArray(raw) ? raw : raw ? [raw] : [])
+		.map((value) => String(value))
+		.filter(Boolean);
+}
+
+// Keep the URL in sync with the selection, so a filtered view can be linked
+// and several genres/subgenres survive a reload.
+watch(
+	[activeGenres, activeSubGenres],
+	([genres, subgenres]) => {
+		const subgenreSlugs = [...subgenres]
+			.map(
+				(id) => availableSubgenres.find((entry) => entry.tag._id === id)?.slug,
+			)
+			.filter((slug): slug is string => Boolean(slug));
+
+		// A genre that is only active because one of its subgenres is selected
+		// must not be written to the URL as well.
+		const genreSlugs = [...genres]
+			.filter((id) => !hasSelectedSubgenres(id))
+			.map((id) => availableGenres.find((entry) => entry.tag._id === id)?.slug)
+			.filter((slug): slug is string => Boolean(slug));
+
+		const currentSubgenres = querySlugList(route.query.subgenre);
+		const currentGenres = querySlugList(route.query.genre);
+
+		if (
+			currentSubgenres.join("\u0000") === subgenreSlugs.join("\u0000") &&
+			currentGenres.join("\u0000") === genreSlugs.join("\u0000")
+		)
+			return;
+
+		router.replace({
+			query: {
+				...route.query,
+				genre: genreSlugs.length ? genreSlugs : undefined,
+				subgenre: subgenreSlugs.length ? subgenreSlugs : undefined,
+			},
+		});
+	},
+	{ deep: true },
+);
 
 const needsSelfLoad = computed(() => {
 	if (forceSelfLoad.value) return true;
@@ -235,6 +376,10 @@ const buildQueryConfig = () => {
 const { data: selfLoadedItems, pending: isLoadingInitial } = await useAsyncData(
 	`module-content-grid-${props.module?._key || props.module?.type}-${
 		props.module?.poolContentType || "default"
+	}${
+		initialSubgenres.length || initialGenres.length
+			? `-${[...initialGenreSlugs, ...initialSubgenreSlugs].join("_")}`
+			: ""
 	}`,
 	async () => {
 		if (!needsSelfLoad.value) return [];
@@ -1233,6 +1378,12 @@ function measureFilterDock() {
 
 // Client-side only setup (artwork loading)
 onMounted(() => {
+	// A ?genre=/?subgenre= deep link seeds the filter before the first render;
+	// refetch on the client so it is applied even when the SSR payload was
+	// cached.
+	if (initialGenres.length || initialSubgenres.length) {
+		fetchActiveContent(true).catch(() => {});
+	}
 	// Load artwork URLs for initially visible items (client-only)
 	if (contentType.value === "sets") {
 		visibleItems.value.forEach(loadArtworkUrl);

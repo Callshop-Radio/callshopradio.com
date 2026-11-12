@@ -17,6 +17,7 @@ const compact = useMediaQuery("(max-width: 900px)");
 const bars = computed(() => (compact.value ? 220 : 480));
 const clipId = "player-waveform-clip";
 const dragging = ref(false);
+const hoverRatio = ref<number | null>(null);
 
 const path = computed(() =>
 	waveformPath(props.samples, props.height ?? 140, bars.value),
@@ -36,19 +37,29 @@ function ratioFromEvent(event: PointerEvent): number {
 function onPointerDown(event: PointerEvent) {
 	if (!props.durationMs) return;
 	dragging.value = true;
+	hoverRatio.value = ratioFromEvent(event);
 	(event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
-	emit("seek", ratioFromEvent(event));
+	emit("seek", hoverRatio.value);
 }
 
 function onPointerMove(event: PointerEvent) {
+	const ratio = ratioFromEvent(event);
+	if (event.pointerType !== "touch" || dragging.value) {
+		hoverRatio.value = ratio;
+	}
 	if (!dragging.value) return;
-	emit("seek", ratioFromEvent(event));
+	emit("seek", ratio);
 }
 
 function onPointerUp(event: PointerEvent) {
 	if (!dragging.value) return;
 	dragging.value = false;
 	(event.currentTarget as HTMLElement).releasePointerCapture?.(event.pointerId);
+	if (event.pointerType === "touch") hoverRatio.value = null;
+}
+
+function onPointerLeave() {
+	if (!dragging.value) hoverRatio.value = null;
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -90,6 +101,7 @@ function onKeydown(event: KeyboardEvent) {
 		@pointermove="onPointerMove"
 		@pointerup="onPointerUp"
 		@pointercancel="onPointerUp"
+		@pointerleave="onPointerLeave"
 		@keydown="onKeydown"
 	>
 		<svg viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true">
@@ -105,11 +117,18 @@ function onKeydown(event: KeyboardEvent) {
 				:clip-path="`url(#${clipId})`"
 			/>
 		</svg>
+		<span
+			v-if="hoverRatio !== null"
+			class="player-waveform__playhead"
+			:style="{ left: `${hoverRatio * 100}%` }"
+			aria-hidden="true"
+		/>
 	</div>
 </template>
 
 <style lang="postcss" scoped>
 .player-waveform {
+	position: relative;
 	height: 28px;
 	cursor: pointer;
 	touch-action: none;
@@ -134,8 +153,24 @@ function onKeydown(event: KeyboardEvent) {
 		fill: var(--color-pink);
 	}
 
+	&__playhead {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 2px;
+		background: var(--color-pink);
+		transform: translateX(-50%);
+		pointer-events: none;
+		box-shadow: 0 0 6px
+			color-mix(in srgb, var(--color-pink) 65%, transparent);
+	}
+
 	@media screen and (max-width: 900px) {
 		height: 16px;
+
+		&__playhead {
+			width: 1.5px;
+		}
 	}
 }
 </style>

@@ -17,7 +17,8 @@ interface StreamStatusPayload {
 
 /**
  * One shared feed for the header row and the video panel. The server renders
- * the first value; the client refreshes every 20 s while the tab is visible.
+ * the first value; the client keeps it current every 15 s and refreshes
+ * immediately when the tab comes back to the foreground.
  */
 export async function usePlayerFeed() {
 	const config = useRuntimeConfig();
@@ -72,25 +73,23 @@ export async function usePlayerFeed() {
 		{ immediate: true },
 	);
 
-	const visible = useDocumentVisibility();
-	useIntervalFn(() => {
-		if (visible.value === "visible") {
-			void refresh();
-			void refreshSchedule();
-		}
-	}, 20_000);
-	watch(visible, (value) => {
-		if (value === "visible") {
-			void refresh();
-			void refreshSchedule();
-		}
-	});
-	useEventListener("online", () => {
+	const refreshNow = () => {
 		void refresh();
 		void refreshSchedule();
+	};
+
+	// Browsers throttle timers in background tabs, so keep polling there too and
+	// refresh immediately whenever the tab returns to the foreground. The feed
+	// must never stay on a set that has already ended.
+	useIntervalFn(refreshNow, 15_000);
+	useEventListener(document, "visibilitychange", () => {
+		if (document.visibilityState === "visible") refreshNow();
 	});
+	useEventListener(window, "focus", refreshNow);
+	useEventListener(window, "pageshow", refreshNow);
+	useEventListener("online", refreshNow);
 	onMounted(() => {
-		void refreshSchedule();
+		refreshNow();
 	});
 
 	await asyncData;

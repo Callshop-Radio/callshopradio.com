@@ -126,7 +126,7 @@ onBeforeUnmount(stopCooldown);
 	<AccountShell
 		:title="copy.signInTitle"
 		:subtitle="copy.signInIntro"
-		centered
+		:centered="!embedded"
 		:compact="embedded"
 	>
 		<Transition name="step" mode="out-in">
@@ -170,7 +170,6 @@ onBeforeUnmount(stopCooldown);
 				>
 					{{ copy.sendCode }}
 				</button>
-				<p class="login__hint">{{ copy.codeHint }}</p>
 			</form>
 
 			<form v-else key="code" class="login" @submit.prevent="verify">

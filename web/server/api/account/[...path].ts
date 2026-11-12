@@ -14,6 +14,7 @@ import {
 	ACCOUNT_COOKIE,
 	tokenFromCookieHeader,
 } from "../../utils/accountSession";
+import { isDevMock, mockAccount } from "../../utils/devMock";
 import {
 	isAllowedAccountRoute,
 	normalizeAccountPath,
@@ -66,6 +67,10 @@ export default defineEventHandler(async (event) => {
 
 	if (!isAllowedAccountRoute(method, path)) {
 		throw createError({ statusCode: 404, statusMessage: "not_found" });
+	}
+
+	if (isDevMock()) {
+		return await mockAccount(event, path, method);
 	}
 
 	const config = useRuntimeConfig(event) as {

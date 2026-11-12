@@ -310,17 +310,48 @@ export const useChatRoom = () => {
 		messages.value = [...messages.value, { ...message, id: nextId() }];
 	};
 
-	const sendText = (body: string) => {
-		if (real) return;
+	const sendText = async (body: string) => {
 		const text = body.trim().slice(0, 500);
-		if (!text || !me.value) return;
-		push({
-			kind: "text",
-			author: me.value,
-			body: text,
-			sticker: null,
-			time: clock(),
-		});
+		if (!text) return;
+
+		if (!real) {
+			if (!me.value) return;
+			push({
+				kind: "text",
+				author: me.value,
+				body: text,
+				sticker: null,
+				time: clock(),
+			});
+			return;
+		}
+
+		if (!signedIn.value) return;
+		try {
+			const data = await $fetch<{ message?: ServerMessage }>(
+				"/api/chat/messages",
+				{
+					method: "POST",
+					body: {
+						body: text,
+						clientId: crypto.randomUUID().replace(/-/g, ""),
+					},
+				},
+			);
+			if (data?.message) {
+				const incoming = toMessage(data.message);
+				messages.value = [
+					...messages.value.filter((message) => message.id !== incoming.id),
+					incoming,
+				].sort((a, b) => a.id - b.id);
+				cursor.value = {
+					after: incoming.id,
+					since: new Date().toISOString(),
+				};
+			}
+		} catch {
+			// Keep the draft out of the room until the next successful poll.
+		}
 	};
 
 	const sendSticker = (stickerSlug: string) => {

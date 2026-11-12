@@ -175,7 +175,23 @@ const streamEndLabel = computed(() => {
 		hour: "2-digit",
 		minute: "2-digit",
 	});
-	return `Bis ${time}`;
+	return `Until ${time}`;
+});
+const streamClock = computed(() => {
+	if (!streamProgress.value) return "";
+	const value = store.feed?.progress;
+	if (!value || value.durationSeconds <= 0) return "";
+	const updatedAt = Date.parse(store.feed?.updatedAt ?? "");
+	const drift = Number.isFinite(updatedAt)
+		? Math.max(0, (nowMs.value - updatedAt) / 1000)
+		: 0;
+	const elapsed = Math.min(
+		value.durationSeconds,
+		Math.max(0, value.elapsedSeconds + drift),
+	);
+	return `${formatPlayerTime(elapsed)} / ${formatPlayerTime(
+		value.durationSeconds,
+	)}`;
 });
 
 function seek(event: MouseEvent) {
@@ -196,7 +212,7 @@ onMounted(() => {
 	window.addEventListener("keydown", onKeydown);
 	progressClock = window.setInterval(() => {
 		nowMs.value = Date.now();
-	}, 10_000);
+	}, 1000);
 });
 
 onBeforeUnmount(() => {
@@ -311,6 +327,7 @@ onBeforeUnmount(() => {
 					>
 						☰
 					</button>
+					<span v-if="streamClock" class="site-player__time">{{ streamClock }}</span>
 					<span v-if="streamEndLabel" class="site-player__until">{{ streamEndLabel }}</span>
 					<span class="site-player__status">
 						<span class="site-player__dot" :class="{ 'is-live': isLive }" aria-hidden="true" />
@@ -777,6 +794,20 @@ onBeforeUnmount(() => {
   border: 0;
   background: transparent;
   cursor: pointer;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 9rem,
+    #000 calc(100% - 9rem),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 9rem,
+    #000 calc(100% - 9rem),
+    transparent 100%
+  );
 
   span {
     display: block;

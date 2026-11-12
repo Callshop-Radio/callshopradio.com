@@ -7,6 +7,8 @@ import {
 	setResponseStatus,
 } from "h3";
 
+import { isDevMock, mockChat } from "../../utils/devMock";
+
 /**
  * Read-only bridge between the local website and the Manager chat.
  *
@@ -28,6 +30,10 @@ export default defineEventHandler(async (event) => {
 	const route = routeFromEvent(event);
 
 	setHeader(event, "cache-control", "no-store");
+
+	if (isDevMock()) {
+		return await mockChat(event, route, method);
+	}
 
 	if (!ALLOWED.has(`${method} ${route}`)) {
 		throw createError({ statusCode: 404, statusMessage: "not_found" });

@@ -97,12 +97,14 @@ const menuItems = computed(() => {
 nav {
   position: relative;
   width: 100%;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
   height: auto;
   min-height: 0;
-  padding: 0 var(--base-padding) var(--base-padding);
+  padding: 0 0 var(--base-padding);
   display: flex;
   flex-flow: row;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   overflow: hidden;
   transition: padding-bottom 0.3s ease;
@@ -113,7 +115,7 @@ nav {
     @apply flex;
     flex-flow: row wrap;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: var(--mid-margin);
     list-style: none;
     margin: 0;
@@ -126,15 +128,17 @@ nav {
     align-items: center;
     width: max-content;
     max-width: 100%;
-    margin: 0 auto;
+    margin-left: auto;
+    margin-right: 0;
   }
 
-  /* The theme switch sits outside the item flow so the menu links keep their
-     exact position when it is added. */
+  /* The theme switch stays left of the right-aligned links so the group ends
+     exactly on the content edge. */
   .menu__theme {
     position: absolute;
     top: 50%;
-    left: calc(100% + var(--mid-margin));
+    right: calc(100% + var(--mid-margin));
+    left: auto;
     width: max-content;
     transform: translateY(-50%);
     display: flex;
@@ -220,6 +224,7 @@ nav {
     flex-flow: column;
     align-items: stretch;
     gap: var(--base-padding);
+    padding: 0 var(--base-padding) var(--base-padding);
 
     ul {
       flex-flow: row wrap;

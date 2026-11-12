@@ -37,22 +37,24 @@ const chatEnabled = computed(
 					</ul>
 				</nav>
 				<SiteSearchButton />
-				<span v-if="chatEnabled" class="icon-tooltip" data-tooltip="Chat">
-					<SiteChatButton />
-				</span>
-				<span
-					v-if="mainStore?.siteNav?.schedulePage"
-					class="icon-tooltip"
-					data-tooltip="Schedule"
-				>
-					<SiteScheduleButton />
-				</span>
-				<span class="icon-tooltip" data-tooltip="Konto">
-					<SiteAccountButton />
-				</span>
-				<span class="icon-tooltip" data-tooltip="Menu">
-					<SiteMenuButton />
-				</span>
+				<div class="header__icons">
+					<span v-if="chatEnabled" class="icon-tooltip" data-tooltip="Chat">
+						<SiteChatButton />
+					</span>
+					<span
+						v-if="mainStore?.siteNav?.schedulePage"
+						class="icon-tooltip"
+						data-tooltip="Schedule"
+					>
+						<SiteScheduleButton />
+					</span>
+					<span class="icon-tooltip" data-tooltip="Konto">
+						<SiteAccountButton />
+					</span>
+					<span class="icon-tooltip" data-tooltip="Menu">
+						<SiteMenuButton />
+					</span>
+				</div>
 			</div>
 		</section>
 		<SiteMenu />
@@ -141,6 +143,12 @@ const chatEnabled = computed(
     justify-content: space-between;
     align-items: center;
     gap: var(--mid-margin);
+  }
+  &__icons {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: var(--small-padding);
   }
   &__audio-player-section {
     position: fixed;

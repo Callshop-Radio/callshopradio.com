@@ -84,8 +84,12 @@ section {
   align-items: center;
   /* gap: var(--content-gap); */
   &__intro-section {
-    margin: 0 0 0;
+    margin: calc(var(--first-content-distance) + 50px) 0 0;
     width: 100%;
+
+    @media screen and (max-width: 900px) {
+      margin-top: calc(var(--base-margin) + 50px);
+    }
     /* max-width: var(--page-max-width); */
   }
   &__related-content,

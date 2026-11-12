@@ -39,13 +39,13 @@ onMounted(async () => {
 					r="2.9"
 					fill="none"
 					stroke="currentColor"
-					stroke-width="1.5"
+					stroke-width="1.25"
 				/>
 				<path
 					d="M6.7 17.4c.5-2.5 2.7-4.1 5.3-4.1s4.8 1.6 5.3 4.1"
 					fill="none"
 					stroke="currentColor"
-					stroke-width="1.5"
+					stroke-width="1.25"
 					stroke-linecap="round"
 				/>
 			</svg>
@@ -71,13 +71,13 @@ onMounted(async () => {
 					r="2.9"
 					fill="none"
 					stroke="currentColor"
-					stroke-width="1.5"
+					stroke-width="1.25"
 				/>
 				<path
 					d="M6.7 17.4c.5-2.5 2.7-4.1 5.3-4.1s4.8 1.6 5.3 4.1"
 					fill="none"
 					stroke="currentColor"
-					stroke-width="1.5"
+					stroke-width="1.25"
 					stroke-linecap="round"
 				/>
 			</svg>

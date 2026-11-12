@@ -94,24 +94,42 @@ const fallbackDescriptionBlocks = computed(() => {
 const { getSoundcloudArtwork, playTrack } = useSoundcloudArtwork();
 const artworkUrl = ref("");
 
-// Subtle pointer parallax for the generative glow behind the info column.
-const headRef = ref<HTMLElement | null>(null);
+// Slow, group-level pointer drift for the generative glow. The listener sits
+// on the window so the glow also reacts when the pointer is over the page
+// background; the morphing SVG stays the main animation.
 const glowOffset = ref({ x: 0, y: 0 });
 const reduceMotion = ref(false);
+let lastPointerMove = 0;
+let lastGlowX = 0;
+let lastGlowY = 0;
 
 function onGlowPointerMove(event: PointerEvent) {
 	if (reduceMotion.value || event.pointerType === "touch") return;
-	const rect = headRef.value?.getBoundingClientRect();
-	if (!rect) return;
-	const nx = (event.clientX - rect.left) / rect.width - 0.5;
-	const ny = (event.clientY - rect.top) / rect.height - 0.5;
-	glowOffset.value = {
-		x: Math.round(nx * 26),
-		y: Math.round(ny * 20),
-	};
+	const now = performance.now();
+	if (now - lastPointerMove < 180) return;
+	const nx = Math.min(
+		0.5,
+		Math.max(-0.5, event.clientX / window.innerWidth - 0.5),
+	);
+	const ny = Math.min(
+		0.5,
+		Math.max(-0.5, event.clientY / window.innerHeight - 0.5),
+	);
+	const ease = (value: number) =>
+		Math.sign(value) * (Math.abs(value) * 2) ** 1.2 * 0.5;
+	const x = Math.round(ease(nx) * 64);
+	const y = Math.round(ease(ny) * 48);
+	if (Math.abs(x - lastGlowX) < 1 && Math.abs(y - lastGlowY) < 1) return;
+	lastPointerMove = now;
+	lastGlowX = x;
+	lastGlowY = y;
+	glowOffset.value = { x, y };
 }
 
 function resetGlow() {
+	lastPointerMove = 0;
+	lastGlowX = 0;
+	lastGlowY = 0;
 	glowOffset.value = { x: 0, y: 0 };
 }
 
@@ -167,21 +185,22 @@ onMounted(() => {
 		"(prefers-reduced-motion: reduce)",
 	).matches;
 	if (props.set?._id) account.loadVisible([props.set._id]);
+	window.addEventListener("pointermove", onGlowPointerMove, { passive: true });
+	document.documentElement.addEventListener("pointerleave", resetGlow);
 });
 
 onUnmounted(() => {
 	if (copiedTimer) clearTimeout(copiedTimer);
+	window.removeEventListener("pointermove", onGlowPointerMove);
+	document.documentElement.removeEventListener("pointerleave", resetGlow);
 });
 </script>
 
 <template>
 	<article v-if="set" class="set-page">
 		<div
-			ref="headRef"
 			class="set-head"
 			:style="glowStyle"
-			@pointermove="onGlowPointerMove"
-			@pointerleave="resetGlow"
 		>
 			<div
 				class="set-glow"
@@ -384,8 +403,8 @@ onUnmounted(() => {
   height: 58vh;
   z-index: -1;
   pointer-events: none;
-  transform: translate3d(var(--glow-x, 0), var(--glow-y, 0), 0);
-  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translate3d(var(--glow-x, 0px), var(--glow-y, 0px), 0);
+  transition: transform 1000ms cubic-bezier(0.22, 1, 0.36, 1);
 
   @media screen and (max-width: 900px) {
     top: 5vh;
@@ -419,7 +438,6 @@ onUnmounted(() => {
   display: block;
   opacity: 0.56;
   filter: blur(26px);
-  will-change: transform;
 
   :deep(svg path) {
     opacity: 1;

@@ -94,7 +94,11 @@ section {
   gap: var(--content-gap);
   &__intro-section {
     width: 100%;
-    margin: var(--big-margin) 0 0;
+    margin: calc(var(--first-content-distance) + 50px) 0 0;
+
+    @media screen and (max-width: 900px) {
+      margin-top: calc(var(--base-margin) + 50px);
+    }
   }
   &__related-content,
   &__more-content {
