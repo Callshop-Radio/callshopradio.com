@@ -31,7 +31,11 @@ const scheduleWindow = computed(() => {
 	return store.schedule;
 });
 const scheduleProgress = computed(() =>
-	scheduleShowProgress(scheduleWindow.value, nowMs.value),
+	// A spontaneous live source is not the scheduled show: no window, no
+	// progress bar, no "Until" for the plan.
+	store.feed?.state === "live"
+		? null
+		: scheduleShowProgress(scheduleWindow.value, nowMs.value),
 );
 const scheduledShow = computed(() =>
 	scheduleProgress.value ? scheduleWindow.value : null,
@@ -127,6 +131,8 @@ const coverLink = computed(() => {
 });
 const statusLabel = computed(() => {
 	if (isSet.value) return "Set";
+	// Live wins over the timetable: the station is not playing the plan.
+	if (store.feed?.state === "live") return "Live";
 	if (scheduledShow.value) return "Sendeplan";
 	if (store.feed?.state === "auto" && store.feed?.progress) return "Sendeplan";
 	switch (store.feed?.state) {
