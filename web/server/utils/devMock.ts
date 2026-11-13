@@ -217,31 +217,8 @@ const chat: {
 	nextId: number;
 	packsVersion: string;
 } = {
-	messages: [
-		{
-			id: 1,
-			kind: "text",
-			name: "Nina",
-			role: "listener",
-			body: "läuft das bei euch auch so warm rein heute?",
-			at: new Date(Date.now() - 18 * 60_000).toISOString(),
-		},
-		{
-			id: 2,
-			kind: "event",
-			body: "Mara ist jetzt im Chat.",
-			at: new Date(Date.now() - 15 * 60_000).toISOString(),
-		},
-		{
-			id: 3,
-			kind: "text",
-			name: "Mara",
-			role: "host",
-			body: "Jonas, das war Flexible – Sexdub. Steht gleich in der Tracklist.",
-			at: new Date(Date.now() - 8 * 60_000).toISOString(),
-		},
-	],
-	nextId: 4,
+	messages: [],
+	nextId: 1,
 	packsVersion: "dev-packs",
 };
 
@@ -256,11 +233,11 @@ export async function mockChat(event: H3Event, route: string, method: string) {
 			messages: chat.messages.filter((message) => message.id > after),
 			deleted: [],
 			presence: {
-				hosts: [{ name: "Mara", showTitle: "Bassline Diaries" }],
-				team: [{ name: "Mara", role: "host" }],
-				people: [{ name: "Nina", role: "listener" }],
-				staff: 1,
-				online: 2,
+				hosts: [],
+				team: [],
+				people: [],
+				staff: 0,
+				online: 0,
 			},
 			packsVersion: chat.packsVersion,
 		};

@@ -285,10 +285,11 @@ onBeforeUnmount(() => {
 
   position: fixed;
   right: 1.5rem;
-  bottom: 1.5rem;
+  /* Sit above the fixed player row, like the video panel. */
+  bottom: calc(1.5rem + var(--player-bar-height));
   z-index: 9000;
   width: min(24rem, calc(100vw - 2rem));
-  height: min(34rem, calc(100vh - 7rem));
+  height: min(34rem, calc(100vh - var(--player-bar-height) - 7rem));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -470,7 +471,8 @@ onBeforeUnmount(() => {
   .chat-popup {
     top: var(--nav-height);
     right: 0;
-    bottom: 0;
+    /* Leave the player row visible and tappable underneath. */
+    bottom: var(--player-bar-height);
     left: 0;
     width: auto;
     height: auto;

@@ -76,81 +76,6 @@ const author = (
 	role,
 });
 
-const SEED = (): ChatMessage[] => [
-	{
-		id: 1,
-		kind: "text",
-		author: author("nina", "Nina"),
-		body: "läuft das bei euch auch so warm rein heute?",
-		sticker: null,
-		time: "20:12",
-	},
-	{
-		id: 2,
-		kind: "text",
-		author: author("jonas", "Jonas"),
-		body: "was war das für ein Track vorhin? so ein shuffle-ding",
-		sticker: null,
-		time: "20:14",
-	},
-	{
-		id: 3,
-		kind: "event",
-		author: null,
-		body: "Mara ist jetzt im Chat.",
-		sticker: null,
-		time: "20:15",
-	},
-	{
-		id: 4,
-		kind: "text",
-		author: author("mara", "Mara", "host"),
-		body: "Jonas, das war Flexible – Sexdub. Steht gleich in der Tracklist.",
-		sticker: null,
-		time: "20:16",
-	},
-	{
-		id: 5,
-		kind: "sticker",
-		author: author("timo", "Timo"),
-		body: "",
-		sticker: sticker("emotigoodmeal"),
-		time: "20:17",
-	},
-	{
-		id: 6,
-		kind: "text",
-		author: author("alina", "Alina"),
-		body: "hallo aus leipzig 👋 erste mali hier",
-		sticker: null,
-		time: "20:19",
-	},
-	{
-		id: 7,
-		kind: "text",
-		author: author("nina", "Nina"),
-		body: "willkommen!",
-		sticker: null,
-		time: "20:20",
-	},
-	{
-		id: 8,
-		kind: "sticker",
-		author: author("timo", "Timo"),
-		body: "",
-		sticker: sticker("emotiwave"),
-		time: "20:21",
-	},
-	{
-		id: 9,
-		kind: "text",
-		author: author("jonas", "Jonas"),
-		body: "danke mara 🙏",
-		sticker: null,
-		time: "20:23",
-	},
-];
-
 const INCOMING = [
 	{ name: "Alina", body: "der übergang gerade war fies gut" },
 	{ name: "Timo", body: "bleibt die sendung noch bis 22?" },
@@ -250,29 +175,15 @@ export const useChatRoom = () => {
 	const packs = useState<ChatPack[]>("chat-packs", () =>
 		real ? [] : CHAT_PACKS,
 	);
-	const messages = useState<ChatMessage[]>("chat-mock-messages", () =>
-		real ? [] : SEED(),
-	);
+	const messages = useState<ChatMessage[]>("chat-mock-messages", () => []);
 	const mockSignedIn = useState<boolean>("chat-mock-signed-in", () => false);
 	const signedIn = computed(() =>
 		real ? account.sessionState === "authenticated" : mockSignedIn.value,
 	);
-	const host = useState<ChatHost | null>("chat-mock-host", () =>
-		real ? null : { name: "Mara", showTitle: "Bassline Diaries" },
-	);
+	const host = useState<ChatHost | null>("chat-mock-host", () => null);
 	const people = useState<Array<{ name: string; role: ChatRole }>>(
 		"chat-people",
-		() =>
-			real
-				? []
-				: [
-						{ name: "Nina", role: "listener" },
-						{ name: "Jonas", role: "listener" },
-						{ name: "Timo", role: "listener" },
-						{ name: "Alina", role: "listener" },
-						{ name: "Oskar", role: "listener" },
-						{ name: "Mara", role: "host" },
-					],
+		() => [],
 	);
 	const cursor = useState<{ after: number; since: string | null }>(
 		"chat-cursor",
@@ -285,13 +196,9 @@ export const useChatRoom = () => {
 	const loaded = useState<boolean>("chat-loaded", () => !real);
 
 	const me = computed<ChatAuthor | null>(() =>
-		signedIn.value ? author("me", "Lena", "listener") : null,
+		signedIn.value ? author("me", "Du", "listener") : null,
 	);
-	const displayPeople = computed(() =>
-		signedIn.value && !real
-			? [...people.value, { name: "Lena", role: "listener" as ChatRole }]
-			: people.value,
-	);
+	const displayPeople = computed(() => people.value);
 	const online = computed(() => displayPeople.value.length);
 	const peopleNames = computed(() =>
 		displayPeople.value.map((person) => person.name).join(", "),
@@ -381,11 +288,11 @@ export const useChatRoom = () => {
 
 	const hostJoin = () => {
 		if (real || host.value) return;
-		host.value = { name: "Mara", showTitle: "Bassline Diaries" };
+		host.value = { name: "Moderation", showTitle: null };
 		push({
 			kind: "event",
 			author: null,
-			body: "Mara ist jetzt im Chat.",
+			body: "Die Moderation ist jetzt im Chat.",
 			sticker: null,
 			time: clock(),
 		});
@@ -397,7 +304,7 @@ export const useChatRoom = () => {
 		push({
 			kind: "event",
 			author: null,
-			body: "Mara hat den Chat verlassen. Der Raum bleibt offen.",
+			body: "Die Moderation hat den Chat verlassen. Der Raum bleibt offen.",
 			sticker: null,
 			time: clock(),
 		});
@@ -421,9 +328,9 @@ export const useChatRoom = () => {
 
 	const reset = () => {
 		if (real) return;
-		messages.value = SEED();
+		messages.value = [];
 		mockSignedIn.value = false;
-		host.value = { name: "Mara", showTitle: "Bassline Diaries" };
+		host.value = null;
 	};
 
 	const loadPacks = async () => {

@@ -90,7 +90,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 					</p>
 
 					<p class="chat-rail__me">
-						{{ signedIn ? "Du bist als Lena dabei." : "Du liest mit." }}
+						{{ signedIn ? "Du bist dabei." : "Du liest mit." }}
 					</p>
 				</div>
 			</aside>
@@ -120,7 +120,6 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 
 				<ChatComposer
 					:signed-in="signedIn"
-					:me-name="signedIn ? 'Lena' : null"
 					:picker-open="pickerOpen"
 					@send="sendText"
 					@toggle-stickers="togglePicker"
