@@ -51,7 +51,8 @@ const activeGenres = ref(new Set<string>());
 const activeSubGenres = ref(new Set<string>());
 const expandedGenres = ref(new Set<string>());
 const isOtherCitiesActive = ref(false);
-const activeFilterType = ref<string | null>(null);
+// Pool/Words: several tag groups can be open at once, like the genre cloud.
+const expandedTagTypes = ref(new Set<string>());
 const showFilters = ref(true);
 const showMobileFilters = ref(false);
 const mobileSheetActive = ref(false);
@@ -732,9 +733,87 @@ const poolTags = computed(() => {
 	};
 });
 
-const getContentTypeSpecificTags = computed(() =>
-	availableTags.value.filter((tag: Tag) => tag._type !== "tag.city"),
-);
+/**
+ * Pool and Words show their tags as the same chain the genre filter uses:
+ * a group pill followed inline by its tags while it is open. The groups are
+ * the tag types for now; when a pool/word tag gains real children, only this
+ * list has to learn about them.
+ */
+const poolTagGroups = computed(() => {
+	const groups = [
+		{ key: "musicians", title: "Musicians", tags: poolTags.value.musicians },
+		{ key: "venues", title: "Venues", tags: poolTags.value.venues },
+		{ key: "crafts", title: "Crafts", tags: poolTags.value.crafts },
+		{ key: "articles", title: "Words", tags: poolTags.value.articles },
+	];
+	// Words only ever has article tags; pool never shows them.
+	const relevant =
+		contentType.value === "words"
+			? groups.filter((group) => group.key === "articles")
+			: groups.filter((group) => group.key !== "articles");
+	return relevant.filter((group) => group.tags.length > 0);
+});
+
+type PoolTagCloudItem =
+	| { kind: "group"; key: string; title: string; tags: Tag[] }
+	| { kind: "tag"; tag: Tag; pearlIndex: number; plain?: boolean };
+
+const poolTagCloud = computed<PoolTagCloudItem[]>(() => {
+	const items: PoolTagCloudItem[] = [];
+	const groups = poolTagGroups.value;
+	// With a single group (words today) a chevron would open the same list it
+	// hides, so the tags render flat; a second group turns it into a chain.
+	const singleGroup = groups.length === 1;
+	for (const group of groups) {
+		if (!singleGroup) items.push({ kind: "group", ...group });
+		// A closed group still keeps its selected tags visible, so a filter is
+		// never hidden behind a collapsed parent.
+		const selected = group.tags.filter((tag: Tag) =>
+			activeFilters.value.has(tag._id),
+		);
+		const visible =
+			singleGroup || expandedTagTypes.value.has(group.key)
+				? group.tags
+				: selected;
+		visible.forEach((tag: Tag, pearlIndex: number) => {
+			items.push({ kind: "tag", tag, pearlIndex, plain: singleGroup });
+		});
+	}
+	return items;
+});
+
+function poolCloudItemKey(item: PoolTagCloudItem) {
+	return item.kind === "group" ? `group:${item.key}` : item.tag._id;
+}
+
+function poolCloudItemTitle(item: PoolTagCloudItem) {
+	return item.kind === "group" ? item.title : item.tag.title;
+}
+
+function poolCloudItemExpanded(item: PoolTagCloudItem) {
+	return item.kind === "group" && expandedTagTypes.value.has(item.key);
+}
+
+function poolCloudItemOverridden(item: PoolTagCloudItem) {
+	return (
+		item.kind === "group" &&
+		item.tags.some((tag: Tag) => activeFilters.value.has(tag._id))
+	);
+}
+
+function poolCloudItemStyle(
+	item: PoolTagCloudItem,
+): Record<string, string | number> | undefined {
+	return item.kind === "tag" ? { "--pearl-index": item.pearlIndex } : undefined;
+}
+
+function handlePoolCloudClick(item: PoolTagCloudItem) {
+	if (item.kind === "group") {
+		toggleFilterType(item.key);
+		return;
+	}
+	toggleFilter(item.tag._id);
+}
 
 // ==================== TAG HELPERS ====================
 function getItemTags(item: ContentItem, type?: string): Tag[] {
@@ -970,7 +1049,7 @@ function toggleSubGenreFilter(subGenreId: string) {
 }
 
 function toggleFilterType(type: string) {
-	const isActive = activeFilterType.value === type;
+	const isActive = expandedTagTypes.value.has(type);
 
 	track("filter_apply", {
 		filter_type: "pool_type",
@@ -980,7 +1059,10 @@ function toggleFilterType(type: string) {
 		page: route.path,
 	});
 
-	activeFilterType.value = isActive ? null : type;
+	const next = new Set(expandedTagTypes.value);
+	if (isActive) next.delete(type);
+	else next.add(type);
+	expandedTagTypes.value = next;
 }
 
 function resetFilters() {
@@ -1810,86 +1892,75 @@ onUnmounted(() => {
 						</div>
 					</template>
 
-					<!-- Words: Article Tags -->
-					<template v-else-if="contentType === 'words'">
-						<div
-							v-if="poolTags.articles.length > 0"
-							class="filter-category tags"
-							:class="{ active: showFilters }"
-						>
-							<div class="filter-tags tags">
-								<button
-									v-for="tag in poolTags.articles"
-									:key="tag._id"
-									class="filter-tag tag"
-									:class="{
-										'filter-tag--active': activeFilters.has(tag._id),
-									}"
-									@click="toggleFilter(tag._id)"
-								>
-									{{ getI18nLabel(tag.title) }}
-								</button>
-							</div>
-						</div>
-					</template>
-
-					<!-- Pool: Type Filters -->
+					<!-- Pool / Words: tag groups as the same chain the genre cloud uses -->
 					<template v-else>
 						<div
-							v-if="getContentTypeSpecificTags.length > 0"
+							v-if="poolTagCloud.length > 0"
 							class="filter-category tags"
 							:class="{ active: showFilters }"
 						>
-							<div class="filter-tags tags">
-								<button
-									v-if="poolTags.musicians.length > 0"
-									class="filter-type tag"
-									:class="{
-										'filter-type--active': activeFilterType === 'musicians',
-									}"
-									@click="toggleFilterType('musicians')"
-								>
-									Musicians
-								</button>
-								<button
-									v-if="poolTags.venues.length > 0"
-									class="filter-type tag"
-									:class="{
-										'filter-type--active': activeFilterType === 'venues',
-									}"
-									@click="toggleFilterType('venues')"
-								>
-									Venues
-								</button>
-								<button
-									v-if="poolTags.crafts.length > 0"
-									class="filter-type tag"
-									:class="{
-										'filter-type--active': activeFilterType === 'crafts',
-									}"
-									@click="toggleFilterType('crafts')"
-								>
-									Crafts
-								</button>
-							</div>
-							<div
-								v-if="
-									activeFilterType && poolTags[activeFilterType]?.length > 0
-								"
-								class="filter-tags tags"
+							<TransitionGroup
+								name="pearl"
+								tag="div"
+								class="filter-genres"
 							>
 								<button
-									v-for="tag in poolTags[activeFilterType]"
-									:key="tag._id"
-									class="filter-tag tag"
-									:class="{
-										'filter-tag--active': activeFilters.has(tag._id),
-									}"
-									@click="toggleFilter(tag._id)"
+									v-for="item in poolTagCloud"
+									:key="poolCloudItemKey(item)"
+									class="tag filter-tag"
+									:class="[
+										item.kind === 'group'
+											? 'filter-tag--genre'
+											: item.plain
+												? ''
+												: 'filter-tag--subgenre',
+										{
+											'filter-tag--overridden':
+												poolCloudItemOverridden(item),
+											'is-expanded':
+												poolCloudItemExpanded(item),
+										},
+										item.kind === 'tag'
+											? { 'filter-tag--active': activeFilters.has(item.tag._id) }
+											: {},
+									]"
+									:aria-expanded="
+										item.kind === 'group'
+											? poolCloudItemExpanded(item)
+											: undefined
+									"
+									:aria-pressed="
+										item.kind === 'tag'
+											? activeFilters.has(item.tag._id)
+											: undefined
+									"
+									:style="poolCloudItemStyle(item)"
+									@click="handlePoolCloudClick(item)"
 								>
-									{{ getI18nLabel(tag.title) }}
+									<span>{{ poolCloudItemTitle(item) }}</span>
+									<span
+										v-if="item.kind === 'group'"
+										class="filter-genre__chevron"
+										:class="{
+											'is-open': poolCloudItemExpanded(item),
+										}"
+										aria-hidden="true"
+									>
+										<svg
+											width="8"
+											height="5"
+											viewBox="0 0 8 5"
+											fill="none"
+										>
+											<path
+												d="M1 1L4 4L7 1"
+												stroke="currentColor"
+												stroke-width="1.2"
+											/>
+										</svg>
+									</span>
 								</button>
-							</div>
+							</TransitionGroup>
 						</div>
 					</template>
 				</div>
@@ -2875,6 +2946,9 @@ onUnmounted(() => {
     &__image {
       position: relative;
       overflow: hidden;
+      /* .grid-item is align-items:flex-start, so the wrapper would otherwise
+         shrink to the image's natural width and small originals stay small. */
+      width: 100%;
 
       img {
         width: 100% !important;
