@@ -85,7 +85,8 @@ const useArticle = () => {
 		// Use the image from the article
 		const itemImage = getItemImage(item);
 		if (itemImage?.asset?.url) {
-			return sanityImageUrl(itemImage.asset.url) ?? "";
+			// Full-bleed hero: 750px would be a 2.5x upscale on a desktop.
+			return sanityImageUrl(itemImage.asset.url, 2400) ?? "";
 		}
 
 		// Fall back to store fallback
@@ -93,7 +94,7 @@ const useArticle = () => {
 			mainStore?.siteFallbacks?.fallbackArticle?.image?.asset?.url;
 
 		if (storeFallbackUrl) {
-			return sanityImageUrl(storeFallbackUrl) ?? "";
+			return sanityImageUrl(storeFallbackUrl, 2400) ?? "";
 		}
 
 		return "";
@@ -166,6 +167,16 @@ const availableLocales = computed(() => {
 		);
 	}
 	return [];
+});
+
+// The EN/DE toggle only makes sense when the article really exists in both
+// languages; most articles are single-language and used to show one disabled
+// button next to the active one.
+const hasBothLocales = computed(() => {
+	const locales = availableLocales.value
+		.filter((value): value is string => typeof value === "string")
+		.map((value) => value.toLowerCase());
+	return locales.includes("en") && locales.includes("de");
 });
 
 const currentArticleText = computed(() =>
@@ -254,7 +265,10 @@ const currentArticleText = computed(() =>
 					</div>
 					<div v-if="article?.text" class="article-text-container">
 						<RichText class="article-text" :blocks="currentArticleText" />
-						<div class="article-language-switcher">
+						<div
+							v-if="hasBothLocales"
+							class="article-language-switcher"
+						>
 							<button
 								v-for="loc in ['en', 'de']"
 								:key="loc"

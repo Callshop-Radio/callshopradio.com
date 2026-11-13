@@ -70,7 +70,9 @@ const { getItemImage } = useImageManagement();
 // Computed properties
 const articleImage = computed(() => {
 	const image = getItemImage(props.article);
-	return sanityImageUrl(image?.asset?.url) || "";
+	// Cover-flow cards are the largest image on the words page; 750px was soft
+	// on a retina screen.
+	return sanityImageUrl(image?.asset?.url, 1000) || "";
 });
 
 const COVER_FLOW_TEASER_MAX_WORDS = 40;
