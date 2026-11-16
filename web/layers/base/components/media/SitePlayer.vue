@@ -145,6 +145,11 @@ const statusLabel = computed(() => {
 	}
 });
 const isLive = computed(() => !isSet.value && store.feed?.state === "live");
+const isOnAir = computed(() => {
+	if (isSet.value) return false;
+	const state = store.feed?.state;
+	return state === "live" || state === "replay" || state === "auto";
+});
 const progressPercent = computed(() => {
 	const value = store.progress;
 	if (!value || value.durationMs <= 0) return 0;
@@ -332,7 +337,7 @@ onBeforeUnmount(() => {
 					<span v-if="streamClock" class="site-player__time">{{ streamClock }}</span>
 					<span v-if="streamEndLabel" class="site-player__until">{{ streamEndLabel }}</span>
 					<span class="site-player__status">
-						<span class="site-player__dot" :class="{ 'is-live': isLive }" aria-hidden="true" />
+						<span class="site-player__dot" :class="{ 'is-on-air': isOnAir }" aria-hidden="true" />
 						<span>{{ statusLabel }}</span>
 					</span>
 				</div>
@@ -692,7 +697,7 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   background: var(--color-dark-grey);
 
-  &.is-live {
+  &.is-on-air {
     background: var(--color-pink);
   }
 }
