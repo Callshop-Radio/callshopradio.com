@@ -108,6 +108,10 @@ function go(entry: TimetableEntry) {
   display: flex;
   flex-flow: column wrap;
   gap: 8px;
+  /* The hero gradient is a fixed layer with z-index 0; the strip has to sit
+     above it, otherwise the animated colour covers the cards. */
+  position: relative;
+  z-index: 1;
   /* The hero gradient is a fixed layer behind the page; an opaque strip keeps
      the animated colour from washing out the cards. */
   background: var(--color-bg);
