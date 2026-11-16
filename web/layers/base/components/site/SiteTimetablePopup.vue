@@ -12,7 +12,7 @@ import {
 	type TimetablePayload,
 } from "../../composables/useTimetable";
 
-const { open, view, day, closePopup } = useTimetableUi();
+const { open, view, day, closePopup, openPopup } = useTimetableUi();
 
 const payload = ref<TimetablePayload | null>(null);
 const loading = ref(false);
