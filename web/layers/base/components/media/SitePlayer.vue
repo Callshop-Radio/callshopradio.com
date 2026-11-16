@@ -342,13 +342,15 @@ onBeforeUnmount(() => {
 					>
 						☰
 					</button>
-					<SiteChatButton v-if="chatEnabled" />
-					<SiteScheduleButton v-if="showSchedule" aria-label="Sendeplan" />
 					<span v-if="streamClock" class="site-player__time">{{ streamClock }}</span>
 					<span v-if="streamEndLabel" class="site-player__until">{{ streamEndLabel }}</span>
 					<span class="site-player__status">
 						<span class="site-player__dot" :class="{ 'is-on-air': isOnAir }" aria-hidden="true" />
 						<span>{{ statusLabel }}</span>
+					</span>
+					<span class="site-player__actions">
+						<SiteChatButton v-if="chatEnabled" />
+						<SiteTimetablePopover v-if="showSchedule" placement="top" />
 					</span>
 				</div>
 			</div>
@@ -699,6 +701,13 @@ onBeforeUnmount(() => {
   font-size: 0.625rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.site-player__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
 }
 
 .site-player__dot {

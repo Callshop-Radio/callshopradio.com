@@ -16,12 +16,15 @@ const chatEnabled = computed(
 <template>
 	<div class="header">
 		<section class="header__title-section">
-			<NuxtLink :to="localePath('/')" class="header__title-section__logo">
-				<div class="header__title-section__logo">
-					<ElementsCallshopLogo class="logo" />
-					<ElementsCallshopTextLogo class="text-logo" />
-				</div>
-			</NuxtLink>
+			<div class="header__left">
+				<NuxtLink :to="localePath('/')" class="header__title-section__logo">
+					<div class="header__title-section__logo">
+						<ElementsCallshopLogo class="logo" />
+						<ElementsCallshopTextLogo class="text-logo" />
+					</div>
+				</NuxtLink>
+				<SiteSectionLinks />
+			</div>
 			<div class="header__toggle-section">
 				<nav class="menu-main tags">
 					<ul>
@@ -34,30 +37,22 @@ const chatEnabled = computed(
 						<NuxtLink :to="localePath('/words')" :class="`tag words`">
 							Words
 						</NuxtLink>
+						<NuxtLink :to="localePath('/index')" :class="`tag index`">
+							Index
+						</NuxtLink>
+						<NuxtLink :to="localePath('/merch')" :class="`tag merch`">
+							Merch
+						</NuxtLink>
 					</ul>
 				</nav>
 				<SiteSearchButton />
 				<div class="header__icons">
-					<span v-if="chatEnabled" class="icon-tooltip" data-tooltip="Chat">
-						<SiteChatButton />
-					</span>
-					<span
-						v-if="mainStore?.siteNav?.schedulePage"
-						class="icon-tooltip"
-						data-tooltip="Schedule"
-					>
-						<SiteTimetablePopover />
-					</span>
 					<span class="icon-tooltip" data-tooltip="Konto">
 						<SiteAccountButton />
-					</span>
-					<span class="icon-tooltip" data-tooltip="Menu">
-						<SiteMenuButton />
 					</span>
 				</div>
 			</div>
 		</section>
-		<SiteMenu />
 		<section class="header__audio-player-section">
 			<SitePlayer />
 		</section>
@@ -137,6 +132,13 @@ const chatEnabled = computed(
       }
     }
   }
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: var(--small-padding);
+    min-width: 0;
+  }
+
   &__toggle-section {
     display: flex;
     flex-flow: row wrap;
@@ -229,6 +231,16 @@ const chatEnabled = computed(
         color: var(--color-green);
       }
 
+      &.index {
+        border-color: var(--color-purple);
+        color: var(--color-purple);
+      }
+
+      &.merch {
+        border-color: var(--color-merch-ink);
+        color: var(--color-merch-ink);
+      }
+
       @media (min-width: 1024px) {
         &.router-link-active,
         &.parent-active,
@@ -250,6 +262,17 @@ const chatEnabled = computed(
           &.words {
             background-color: var(--color-green);
             border-color: var(--color-green);
+          }
+
+          &.index {
+            background-color: var(--color-purple);
+            border-color: var(--color-purple);
+          }
+
+          &.merch {
+            background-color: var(--color-merch);
+            border-color: var(--color-merch);
+            color: var(--color-black);
           }
         }
       }

@@ -13,6 +13,13 @@ const open = ref(false);
 const entries = ref<TimetableEntry[]>([]);
 const { openPopup } = useTimetableUi();
 
+// In the player the trigger sits at the bottom of the viewport, so the panel
+// has to open upwards instead of below the button.
+const props = withDefaults(
+	defineProps<{ placement?: "bottom" | "top" }>(),
+	{ placement: "bottom" },
+);
+
 const root = ref<HTMLElement | null>(null);
 const list = ref<HTMLElement | null>(null);
 const trigger = ref<HTMLButtonElement | null>(null);
@@ -79,7 +86,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 			</svg>
 		</button>
 
-		<div v-if="open" class="tt-popover__panel" role="dialog" aria-label="Schedule">
+		<div v-if="open" class="tt-popover__panel" :class="{ 'is-top': props.placement === 'top' }" role="dialog" aria-label="Schedule">
 			<div class="tt-popover__head">
 				<span class="tt-popover__title">Schedule</span>
 				<button type="button" class="tt-popover__expand" aria-label="Open full schedule" @click="expand">
@@ -163,6 +170,11 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
   box-shadow: 0 18px 48px rgb(0 0 0 / 45%);
   overflow: hidden;
   z-index: 60;
+}
+
+.tt-popover__panel.is-top {
+  top: auto;
+  bottom: calc(100% + 10px);
 }
 
 .tt-popover__head {
