@@ -4,6 +4,7 @@ import {
 	entryLabel,
 	entrySubline,
 	fetchTimetable,
+	isLiveEntry,
 	scheduleRange,
 	scheduleTime,
 	type TimetableEntry,
@@ -13,7 +14,9 @@ const entries = ref<TimetableEntry[]>([]);
 const loaded = ref(false);
 const { openPopup } = useTimetableUi();
 
-const cards = computed(() => aroundNow(entries.value, new Date(), 3).slice(0, 6));
+const cards = computed(() =>
+	aroundNow(entries.value, new Date(), 3).slice(0, 6),
+);
 const visible = computed(() => loaded.value && cards.value.length > 0);
 
 onMounted(async () => {
@@ -49,7 +52,7 @@ function go(entry: TimetableEntry) {
 				v-for="entry in cards"
 				:key="entry.id"
 				class="timetable-strip__item"
-				:class="{ 'is-live': entry.onAir }"
+				:class="{ 'is-live': isLiveEntry(entry) }"
 			>
 				<button
 					type="button"
@@ -67,7 +70,7 @@ function go(entry: TimetableEntry) {
 					>
 					<span class="timetable-strip__copy">
 						<span class="timetable-strip__meta">
-							<span v-if="entry.onAir" class="timetable-strip__live">● LIVE</span>
+							<span v-if="isLiveEntry(entry)" class="timetable-strip__live">● LIVE</span>
 							<span>{{ scheduleRange(entry) }}</span>
 						</span>
 						<span class="timetable-strip__name">{{ entryLabel(entry) }}</span>

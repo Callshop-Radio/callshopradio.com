@@ -58,12 +58,23 @@ export function scheduleRange(entry: TimetableEntry): string {
 export function minutesOfDay(iso: string): number {
 	const parts = timeFormat.formatToParts(new Date(iso));
 	const hour = Number(parts.find((part) => part.type === "hour")?.value ?? 0);
-	const minute = Number(parts.find((part) => part.type === "minute")?.value ?? 0);
+	const minute = Number(
+		parts.find((part) => part.type === "minute")?.value ?? 0,
+	);
 	return hour * 60 + minute;
 }
 
 export function entryLabel(entry: TimetableEntry): string {
 	return entry.title || entry.show || "Untitled";
+}
+
+/**
+ * A replayed set is on air too, but it is not a live show. Only a scheduled
+ * live broadcast that is running right now gets the pink treatment and the
+ * LIVE badge.
+ */
+export function isLiveEntry(entry: TimetableEntry): boolean {
+	return entry.kind === "live" && entry.onAir === true;
 }
 
 export function entrySubline(entry: TimetableEntry): string {
@@ -73,15 +84,25 @@ export function entrySubline(entry: TimetableEntry): string {
 }
 
 /** The next `count` entries that have not ended yet. */
-export function upcoming(entries: TimetableEntry[], count = 8, now = new Date()): TimetableEntry[] {
+export function upcoming(
+	entries: TimetableEntry[],
+	count = 8,
+	now = new Date(),
+): TimetableEntry[] {
 	return entries
 		.filter((entry) => new Date(entry.endsAt).getTime() > now.getTime())
-		.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
+		.sort(
+			(a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
+		)
 		.slice(0, count);
 }
 
 /** Entries in a window around now: past hour to `hoursAhead`. */
-export function aroundNow(entries: TimetableEntry[], now = new Date(), hoursAhead = 3): TimetableEntry[] {
+export function aroundNow(
+	entries: TimetableEntry[],
+	now = new Date(),
+	hoursAhead = 3,
+): TimetableEntry[] {
 	const from = now.getTime() - 60 * 60_000;
 	const to = now.getTime() + hoursAhead * 60 * 60_000;
 	return entries
@@ -90,13 +111,26 @@ export function aroundNow(entries: TimetableEntry[], now = new Date(), hoursAhea
 			const end = new Date(entry.endsAt).getTime();
 			return end > from && start < to;
 		})
-		.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+		.sort(
+			(a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
+		);
 }
 
-export async function fetchTimetable(from?: string, to?: string): Promise<TimetablePayload> {
+export async function fetchTimetable(
+	from?: string,
+	to?: string,
+): Promise<TimetablePayload> {
 	try {
-		return await $fetch<TimetablePayload>("/api/timetable", { query: { from, to } });
+		return await $fetch<TimetablePayload>("/api/timetable", {
+			query: { from, to },
+		});
 	} catch {
-		return { from: null, to: null, timezone: "Europe/Berlin", timezoneLabel: "GMT+1", entries: [] };
+		return {
+			from: null,
+			to: null,
+			timezone: "Europe/Berlin",
+			timezoneLabel: "GMT+1",
+			entries: [],
+		};
 	}
 }

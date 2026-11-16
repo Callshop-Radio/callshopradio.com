@@ -3,6 +3,7 @@ import {
 	entryLabel,
 	entrySubline,
 	fetchTimetable,
+	isLiveEntry,
 	minutesOfDay,
 	scheduleDay,
 	scheduleRange,
@@ -76,7 +77,9 @@ async function load() {
 const entries = computed(() => payload.value?.entries ?? []);
 
 const dayEntries = computed(() =>
-	[...entries.value].sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()),
+	[...entries.value].sort(
+		(a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
+	),
 );
 
 const weekDays = computed(() => {
@@ -87,9 +90,13 @@ const weekDays = computed(() => {
 		const key = date.toDateString();
 		return {
 			date,
-			label: new Intl.DateTimeFormat("en-GB", { weekday: "short" }).format(date),
+			label: new Intl.DateTimeFormat("en-GB", { weekday: "short" }).format(
+				date,
+			),
 			number: date.getDate(),
-			entries: dayEntries.value.filter((entry) => new Date(entry.startsAt).toDateString() === key),
+			entries: dayEntries.value.filter(
+				(entry) => new Date(entry.startsAt).toDateString() === key,
+			),
 			isToday: date.toDateString() === new Date().toDateString(),
 		};
 	});
@@ -109,12 +116,16 @@ const monthCells = computed(() => {
 			date,
 			inMonth: date.getMonth() === base.getMonth(),
 			isToday: key === new Date().toDateString(),
-			entries: dayEntries.value.filter((entry) => new Date(entry.startsAt).toDateString() === key),
+			entries: dayEntries.value.filter(
+				(entry) => new Date(entry.startsAt).toDateString() === key,
+			),
 		};
 	});
 });
 
-const nowTop = computed(() => (now.value.getHours() * 60 + now.value.getMinutes()) / 60 * HOUR);
+const nowTop = computed(
+	() => ((now.value.getHours() * 60 + now.value.getMinutes()) / 60) * HOUR,
+);
 
 function top(entry: TimetableEntry) {
 	const minutes = minutesOfDay(entry.startsAt);
@@ -171,7 +182,9 @@ watch(open, async (value) => {
 
 onMounted(() => {
 	window.addEventListener("keydown", onKey);
-	clock = setInterval(() => { now.value = new Date(); }, 30_000);
+	clock = setInterval(() => {
+		now.value = new Date();
+	}, 30_000);
 });
 
 onBeforeUnmount(() => {
@@ -231,7 +244,7 @@ onBeforeUnmount(() => {
 								:key="entry.id"
 								type="button"
 								class="tt-day__event"
-								:class="{ 'is-live': entry.onAir, 'is-past': new Date(entry.endsAt) < now, 'is-tight': height(entry) < 46 }"
+								:class="{ 'is-live': isLiveEntry(entry), 'is-past': new Date(entry.endsAt) < now, 'is-tight': height(entry) < 46 }"
 								:style="{ top: top(entry) + 'px', height: height(entry) + 'px' }"
 								@click="go(entry)"
 							>
@@ -246,7 +259,7 @@ onBeforeUnmount(() => {
 										<span v-for="genre in entry.genres.slice(0, 3)" :key="genre">{{ genre }}</span>
 									</span>
 								</span>
-								<span v-if="entry.onAir" class="tt-day__live">LIVE</span>
+								<span v-if="isLiveEntry(entry)" class="tt-day__live">LIVE</span>
 							</button>
 							<p v-if="dayEntries.length === 0" class="tt-popup__hint">Nothing scheduled.</p>
 						</div>
@@ -277,7 +290,7 @@ onBeforeUnmount(() => {
 									:key="entry.id"
 									type="button"
 									class="tt-week__event"
-									:class="{ 'is-live': entry.onAir, 'is-past': new Date(entry.endsAt) < now }"
+									:class="{ 'is-live': isLiveEntry(entry), 'is-past': new Date(entry.endsAt) < now }"
 									:style="{ top: top(entry) + 'px', height: height(entry) + 'px' }"
 									@click="go(entry)"
 								>
@@ -307,7 +320,7 @@ onBeforeUnmount(() => {
 									:key="entry.id"
 									type="button"
 									class="tt-month__pill"
-									:class="{ 'is-live': entry.onAir }"
+									:class="{ 'is-live': isLiveEntry(entry) }"
 									@click="go(entry)"
 								>
 									{{ scheduleTime(entry.startsAt) }} {{ entryLabel(entry) }}

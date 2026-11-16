@@ -3,9 +3,10 @@ import {
 	entryLabel,
 	entrySubline,
 	fetchTimetable,
+	isLiveEntry,
 	scheduleTime,
-	upcoming,
 	type TimetableEntry,
+	upcoming,
 } from "../../composables/useTimetable";
 
 const open = ref(false);
@@ -93,7 +94,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 					<button
 						type="button"
 						class="tt-popover__item"
-						:class="{ 'is-live': entry.onAir }"
+						:class="{ 'is-live': isLiveEntry(entry) }"
 						@click="go(entry)"
 					>
 						<img
@@ -107,7 +108,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 						>
 						<span class="tt-popover__copy">
 							<span class="tt-popover__meta">
-								<span v-if="entry.onAir" class="tt-popover__live">● LIVE</span>
+								<span v-if="isLiveEntry(entry)" class="tt-popover__live">● LIVE</span>
 								<span>{{ scheduleTime(entry.startsAt) }}</span>
 							</span>
 							<span class="tt-popover__name">{{ entryLabel(entry) }}</span>
