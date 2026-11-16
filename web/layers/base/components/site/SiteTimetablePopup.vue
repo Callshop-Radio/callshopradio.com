@@ -137,6 +137,13 @@ const nowTop = computed(
 	() => ((now.value.getHours() * 60 + now.value.getMinutes()) / 60) * HOUR,
 );
 
+// The time indicator belongs to today only. On any other day it would claim a
+// "now" that does not exist there.
+const anchorIsToday = computed(
+	() => anchor.value.toDateString() === new Date().toDateString(),
+);
+const weekHasToday = computed(() => weekDays.value.some((dayItem) => dayItem.isToday));
+
 function top(entry: TimetableEntry) {
 	const minutes = minutesOfDay(entry.startsAt);
 	return (minutes / 60) * HOUR;
@@ -251,7 +258,7 @@ onBeforeUnmount(() => {
 							</span>
 						</div>
 						<div class="tt-day__lane" :style="{ height: (24 * HOUR) + 'px' }">
-							<div class="tt-day__now" :style="{ top: nowTop + 'px' }"><span>{{ scheduleTime(now.toISOString()) }}</span></div>
+							<div v-if="anchorIsToday" class="tt-day__now" :style="{ top: nowTop + 'px' }"><span>{{ scheduleTime(now.toISOString()) }}</span></div>
 							<button
 								v-for="entry in dayEntries"
 								:key="entry.id"
@@ -311,7 +318,7 @@ onBeforeUnmount(() => {
 									<span class="tt-week__title">{{ entryLabel(entry) }}</span>
 								</button>
 							</div>
-							<div class="tt-week__now" :style="{ top: nowTop + 'px' }" />
+							<div v-if="weekHasToday" class="tt-week__now" :style="{ top: nowTop + 'px' }" />
 						</div>
 					</div>
 
