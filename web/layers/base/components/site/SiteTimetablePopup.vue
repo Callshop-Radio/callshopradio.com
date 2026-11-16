@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import {
 	entryLabel,
 	entrySubline,
@@ -220,8 +220,8 @@ onBeforeUnmount(() => {
 			>
 				<header class="tt-popup__head">
 					<div class="tt-popup__nav">
-						<button type="button" class="tt-popup__arrow" aria-label="Previous" @click="shift(-1)">←</button>
-						<button type="button" class="tt-popup__arrow" aria-label="Next" @click="shift(1)">→</button>
+						<button type="button" class="tt-popup__arrow" aria-label="Previous" @click="shift(-1)">â†</button>
+						<button type="button" class="tt-popup__arrow" aria-label="Next" @click="shift(1)">â†’</button>
 						<strong class="tt-popup__date">{{ scheduleDay((day ? `${day}T12:00:00` : new Date().toISOString())) }}</strong>
 					</div>
 					<div class="tt-popup__views" role="group" aria-label="View">
@@ -237,11 +237,11 @@ onBeforeUnmount(() => {
 							{{ item.label }}
 						</button>
 					</div>
-					<button type="button" class="tt-popup__close" aria-label="Close" @click="closePopup">✕</button>
+					<button type="button" class="tt-popup__close" aria-label="Close" @click="closePopup">âœ•</button>
 				</header>
 
 				<div ref="scroller" class="tt-popup__body">
-					<p v-if="loading" class="tt-popup__hint">Loading schedule…</p>
+					<p v-if="loading" class="tt-popup__hint">Loading scheduleâ€¦</p>
 
 					<!-- DAY -->
 					<div v-else-if="view === 'day'" class="tt-day">
@@ -338,7 +338,7 @@ onBeforeUnmount(() => {
 								>
 									{{ scheduleTime(entry.startsAt) }} {{ entryLabel(entry) }}
 								</button>
-								<span v-if="cell.entries.length === 0 && cell.inMonth" class="tt-month__empty">—</span>
+								<span v-if="cell.entries.length === 0 && cell.inMonth" class="tt-month__empty">â€”</span>
 							</div>
 						</div>
 					</div>
@@ -357,7 +357,7 @@ onBeforeUnmount(() => {
 .tt-popup {
   position: fixed;
   inset: 0;
-  z-index: 500;
+  z-index: 1000;
   display: grid;
   place-items: center;
   background: rgb(0 0 0 / 62%);
@@ -429,7 +429,7 @@ onBeforeUnmount(() => {
 }
 
 .tt-popup__view.is-on {
-  background: rgb(255 255 255 / 10%);
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
   opacity: 1;
 }
 
@@ -486,8 +486,8 @@ onBeforeUnmount(() => {
 
 .tt-day__lane {
   position: relative;
-  border-left: 1px solid rgb(255 255 255 / 10%);
-  background-image: repeating-linear-gradient(to bottom, rgb(255 255 255 / 7%) 0 1px, transparent 1px 52px);
+  border-left: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+  background-image: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--color-text) 7%, transparent) 0 1px, transparent 1px 52px);
 }
 
 .tt-day__now {
@@ -533,14 +533,14 @@ onBeforeUnmount(() => {
   padding: 7px 10px;
   border: 0;
   border-radius: 5px;
-  background: rgb(255 255 255 / 6%);
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
   color: var(--color-text);
   text-align: left;
   cursor: pointer;
   overflow: hidden;
 }
 
-.tt-day__event:hover { background: rgb(255 255 255 / 11%); }
+.tt-day__event:hover { background: color-mix(in srgb, var(--color-text) 11%, transparent); }
 .tt-day__event.is-past { opacity: 0.42; }
 .tt-day__event.is-live { background: var(--color-pink); color: #1a1013; }
 .tt-day__event.is-tight { grid-template-columns: minmax(0, 1fr) auto; padding: 4px 8px; }
@@ -590,7 +590,7 @@ onBeforeUnmount(() => {
   opacity: 0.55;
 }
 
-.tt-day__tags span + span::before { content: "·"; margin-right: 7px; }
+.tt-day__tags span + span::before { content: "Â·"; margin-right: 7px; }
 
 .tt-day__live {
   font-size: 9px;
@@ -628,8 +628,8 @@ onBeforeUnmount(() => {
 
 .tt-week__col {
   position: relative;
-  border-left: 1px solid rgb(255 255 255 / 8%);
-  background-image: repeating-linear-gradient(to bottom, rgb(255 255 255 / 6%) 0 1px, transparent 1px 52px);
+  border-left: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+  background-image: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--color-text) 6%, transparent) 0 1px, transparent 1px 52px);
 }
 
 .tt-week__event {
@@ -643,7 +643,7 @@ onBeforeUnmount(() => {
   padding: 3px 4px;
   border: 0;
   border-radius: 5px;
-  background: rgb(255 255 255 / 8%);
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
   color: var(--color-text);
   text-align: left;
   cursor: pointer;
@@ -682,7 +682,7 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 1px;
-  background: rgb(255 255 255 / 8%);
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
   border-radius: 5px;
   overflow: hidden;
 }
@@ -711,7 +711,7 @@ onBeforeUnmount(() => {
   appearance: none;
   border: 0;
   border-radius: 4px;
-  background: rgb(255 255 255 / 7%);
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
   color: var(--color-text);
   font: inherit;
   font-size: 9px;
@@ -743,3 +743,4 @@ onBeforeUnmount(() => {
   .tt-popup__panel { width: 100vw; height: 100vh; border-radius: 0; }
 }
 </style>
+

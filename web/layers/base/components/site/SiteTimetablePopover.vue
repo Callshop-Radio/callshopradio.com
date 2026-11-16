@@ -220,7 +220,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 
 .tt-popover__item:hover,
 .tt-popover__item:focus-visible {
-  background: rgb(255 255 255 / 7%);
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
   outline: none;
 }
 
@@ -281,7 +281,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 .tt-popover__foot {
   appearance: none;
   border: 0;
-  border-top: 1px solid rgb(255 255 255 / 8%);
+  border-top: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
   background: transparent;
   color: var(--color-text);
   padding: 10px 12px;
