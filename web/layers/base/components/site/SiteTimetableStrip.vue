@@ -52,7 +52,10 @@ function go(entry: TimetableEntry) {
 		aria-label="Schedule around now"
 	>
 		<div class="timetable-strip__head">
-			<span class="timetable-strip__title">On the air</span>
+			<span class="timetable-strip__title">
+				<span class="timetable-strip__pulse" aria-hidden="true" />
+				On air
+			</span>
 			<button
 				type="button"
 				class="timetable-strip__more"
@@ -118,11 +121,41 @@ function go(entry: TimetableEntry) {
 }
 
 .timetable-strip__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-size: calc(var(--base-font-size) * 0.72);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-text);
-  opacity: 0.55;
+  color: color-mix(in srgb, var(--color-text) 62%, transparent);
+  /* Opacity stays off the container so the pulse dot keeps full strength. */
+}
+
+.timetable-strip__pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-pink);
+  flex: none;
+  animation: timetable-pulse 2s ease-out infinite;
+}
+
+@keyframes timetable-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-pink) 65%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timetable-strip__pulse {
+    animation: none;
+  }
 }
 
 .timetable-strip__more {
