@@ -46,7 +46,7 @@ const chatEnabled = computed(
 						class="icon-tooltip"
 						data-tooltip="Schedule"
 					>
-						<SiteScheduleButton />
+						<SiteTimetablePopover />
 					</span>
 					<span class="icon-tooltip" data-tooltip="Konto">
 						<SiteAccountButton />
