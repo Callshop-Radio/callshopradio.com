@@ -260,18 +260,21 @@ onBeforeUnmount(() => {
 							{{ item.label }}
 						</button>
 					</div>
-					<button
-						v-if="!expanded"
-						type="button"
-						class="tt-popup__expand"
-						aria-label="Expand schedule"
-						@click="expand"
-					>
-						<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-							<path d="M6 2H2v4M10 14h4v-4M14 6V2h-4M2 10v4h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-						</svg>
-					</button>
-					<button type="button" class="tt-popup__close" aria-label="Close" @click="closePopup">&#10005;</button>
+					<div class="tt-popup__actions">
+						<button
+							v-if="!expanded"
+							type="button"
+							class="tt-popup__expand"
+							aria-label="Expand schedule"
+							@click="expand"
+						>
+							<span>Expand</span>
+							<svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+								<path d="M6 2H2v4M10 14h4v-4M14 6V2h-4M2 10v4h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+							</svg>
+						</button>
+						<button type="button" class="tt-popup__close" aria-label="Close" @click="closePopup">&#10005;</button>
+					</div>
 				</header>
 
 				<div ref="scroller" class="tt-popup__body">
@@ -394,6 +397,7 @@ onBeforeUnmount(() => {
   bottom: calc(1.5rem + var(--player-bar-height));
   z-index: 1000;
   display: block;
+  width: max-content;
   padding: 0;
   background: transparent;
 }
@@ -418,17 +422,27 @@ onBeforeUnmount(() => {
   height: min(780px, 90vh);
 }
 
+.tt-popup__actions {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .tt-popup__expand {
   appearance: none;
   border: 0;
   background: transparent;
   color: var(--color-text);
-  opacity: 0.6;
+  opacity: 0.75;
   cursor: pointer;
-  padding: 6px;
+  padding: 6px 8px;
   border-radius: 4px;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: calc(var(--base-font-size) * 0.72);
 }
 
 .tt-popup__expand:hover {
@@ -485,9 +499,7 @@ onBeforeUnmount(() => {
   margin-left: auto;
   display: flex;
   gap: 2px;
-}
-
-.tt-popup__view {
+}.tt-popup__view {
   appearance: none;
   border: 0;
   background: transparent;

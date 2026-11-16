@@ -11,7 +11,7 @@ import {
 
 const open = ref(false);
 const entries = ref<TimetableEntry[]>([]);
-const { openPopup } = useTimetableUi();
+const { openPopup, open: panelOpen } = useTimetableUi();
 
 // In the player the trigger sits at the bottom of the viewport, so the panel
 // has to open upwards instead of below the button.
@@ -80,6 +80,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 			ref="trigger"
 			type="button"
 			class="tt-popover__trigger"
+			:class="{ 'is-active': props.mode === 'panel' && panelOpen }"
 			aria-haspopup="dialog"
 			:aria-expanded="open"
 			aria-label="Schedule"
@@ -164,6 +165,15 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 
 .tt-popover__trigger:hover circle {
   stroke: var(--color-pink);
+}
+
+.tt-popover__trigger.is-active circle {
+  stroke: var(--color-pink);
+  fill: var(--color-pink);
+}
+
+.tt-popover__trigger.is-active path {
+  fill: var(--color-bg);
 }
 
 .tt-popover__panel {
