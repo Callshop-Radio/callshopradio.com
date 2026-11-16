@@ -415,8 +415,9 @@ onBeforeUnmount(() => {
 			aria-label="Show-Fortschritt"
 			aria-valuemin="0"
 			aria-valuemax="100"
-			:aria-valuenow="Math.round(streamProgress.percent)"
-			:aria-valuetext="`${Math.round(streamProgress.percent)} %`"
+			:aria-valuenow="Math.round(streamProgress.percent * 10) / 10"
+			:aria-valuetext="`${Math.round(streamProgress.percent * 10) / 10} %`"
+			:style="{ '--progress': `${streamProgress.percent}%` }"
 		>
 			<span :style="{ transform: `scaleX(${streamProgress.percent / 100})` }" />
 		</div>
@@ -801,22 +802,34 @@ onBeforeUnmount(() => {
   border: 0;
   background: transparent;
   cursor: pointer;
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent 0,
-    #000 9rem,
-    #000 calc(100% - 9rem),
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    90deg,
-    transparent 0,
-    #000 9rem,
-    #000 calc(100% - 9rem),
-    transparent 100%
-  );
+
+  /* The faint track fades out at both ends; the played fill stays solid so a
+     set that has only just started is still visible at the far left. */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--color-pink) 70%, transparent);
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent 0,
+      #000 2rem,
+      #000 calc(100% - 2rem),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0,
+      #000 2rem,
+      #000 calc(100% - 2rem),
+      transparent 100%
+    );
+    pointer-events: none;
+  }
 
   span {
+    position: relative;
+    z-index: 1;
     display: block;
     height: 100%;
     background: var(--color-pink);
@@ -825,9 +838,23 @@ onBeforeUnmount(() => {
 }
 
 .site-player__progress--passive {
-  background: color-mix(in srgb, var(--color-dark-grey) 26%, transparent);
   cursor: default;
   pointer-events: none;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: var(--progress, 0%);
+    z-index: 2;
+    width: 6px;
+    height: 6px;
+    border: 1px solid var(--color-bg);
+    border-radius: 50%;
+    background: var(--color-pink);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
 }
 
 .site-player__source {
