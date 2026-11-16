@@ -174,6 +174,23 @@ function setView(next: "day" | "week" | "month") {
 	view.value = next;
 }
 
+/** Jump to the current time, switching back to today first if needed. */
+function scrollToNow() {
+	const today = localDateKey(new Date());
+	const jump = () => {
+		nextTick(() => {
+			scroller.value?.scrollTo({
+				top: Math.max(0, nowTop.value - 160),
+				behavior: "smooth",
+			});
+		});
+	};
+	if (day.value !== today) {
+		day.value = today;
+	}
+	jump();
+}
+
 function shift(direction: number) {
 	const base = new Date(anchor.value);
 	if (view.value === "month") base.setMonth(base.getMonth() + direction);
@@ -272,6 +289,9 @@ onBeforeUnmount(() => {
 						</button>
 					</div>
 					<div class="tt-popup__actions">
+						<button type="button" class="tt-popup__now" @click="scrollToNow">
+							Now
+						</button>
 						<button
 							v-if="!expanded"
 							type="button"
@@ -438,6 +458,25 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.tt-popup__now {
+  appearance: none;
+  border: 0;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+  color: var(--color-text);
+  opacity: 0.8;
+  cursor: pointer;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: calc(var(--base-font-size) * 0.72);
+}
+
+.tt-popup__now:hover {
+  opacity: 1;
+  color: var(--color-pink);
+  background: color-mix(in srgb, var(--color-pink) 16%, transparent);
 }
 
 .tt-popup__expand {
