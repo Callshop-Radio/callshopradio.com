@@ -12,7 +12,7 @@ import {
 	type TimetablePayload,
 } from "../../composables/useTimetable";
 
-const { open, view, day, closePopup, openPopup } = useTimetableUi();
+const { open, view, day, closePopup, openPopup, expanded, expand } = useTimetableUi();
 
 const payload = ref<TimetablePayload | null>(null);
 const loading = ref(false);
@@ -232,7 +232,7 @@ onBeforeUnmount(() => {
 
 <template>
 	<Teleport to="body">
-		<div v-if="open" class="tt-popup" :class="{ 'is-shifted': chatOpen }" @click.self="closePopup">
+		<div v-if="open" class="tt-popup" :class="{ 'is-shifted': chatOpen, 'is-expanded': expanded }" @click.self="closePopup">
 			<section
 				ref="panel"
 				class="tt-popup__panel"
@@ -247,7 +247,7 @@ onBeforeUnmount(() => {
 						<button type="button" class="tt-popup__arrow" aria-label="Next" @click="shift(1)">&#8594;</button>
 						<strong class="tt-popup__date">{{ scheduleDay((day ? `${day}T12:00:00` : new Date().toISOString())) }}</strong>
 					</div>
-					<div class="tt-popup__views" role="group" aria-label="View">
+					<div v-if="expanded" class="tt-popup__views" role="group" aria-label="View">
 						<button
 							v-for="item in views"
 							:key="item.id"
@@ -260,6 +260,17 @@ onBeforeUnmount(() => {
 							{{ item.label }}
 						</button>
 					</div>
+					<button
+						v-if="!expanded"
+						type="button"
+						class="tt-popup__expand"
+						aria-label="Expand schedule"
+						@click="expand"
+					>
+						<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+							<path d="M6 2H2v4M10 14h4v-4M14 6V2h-4M2 10v4h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+						</svg>
+					</button>
 					<button type="button" class="tt-popup__close" aria-label="Close" @click="closePopup">&#10005;</button>
 				</header>
 
@@ -389,6 +400,40 @@ onBeforeUnmount(() => {
 
 .tt-popup.is-shifted {
   right: calc(18px + 400px);
+}
+
+/* Expanded: the same component becomes the full schedule view. */
+.tt-popup.is-expanded {
+  inset: 0;
+  right: auto;
+  bottom: auto;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(0 0 0 / 62%);
+}
+
+.tt-popup.is-expanded .tt-popup__panel {
+  width: min(980px, 92vw);
+  height: min(780px, 90vh);
+}
+
+.tt-popup__expand {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+}
+
+.tt-popup__expand:hover {
+  opacity: 1;
+  color: var(--color-pink);
 }
 
 .tt-popup__panel {
