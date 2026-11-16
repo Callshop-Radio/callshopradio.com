@@ -390,8 +390,8 @@ onBeforeUnmount(() => {
 <style lang="postcss" scoped>
 .tt-popup {
   position: fixed;
-  right: 18px;
-  bottom: 96px;
+  right: 1.5rem;
+  bottom: calc(1.5rem + var(--player-bar-height));
   z-index: 1000;
   display: block;
   padding: 0;
@@ -399,7 +399,7 @@ onBeforeUnmount(() => {
 }
 
 .tt-popup.is-shifted {
-  right: calc(18px + 400px);
+  right: calc(1.5rem + 24rem + 0.75rem);
 }
 
 /* Expanded: the same component becomes the full schedule view. */
@@ -437,8 +437,8 @@ onBeforeUnmount(() => {
 }
 
 .tt-popup__panel {
-  width: min(420px, calc(100vw - 36px));
-  height: min(700px, calc(100vh - 150px));
+  width: min(24rem, calc(100vw - 2rem));
+  height: min(34rem, calc(100vh - var(--player-bar-height) - 7rem));
   display: grid;
   grid-template-rows: auto 1fr auto;
   background: var(--color-bg);
