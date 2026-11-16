@@ -18,7 +18,9 @@ const { openPopup } = useTimetableUi();
 // More room, more schedule: 4 on a laptop, 5 on a wide screen, 6 on a very
 // wide one. Below 900px the list scrolls horizontally instead.
 const count = computed(() => (width.value >= 1600 ? 6 : width.value >= 1200 ? 5 : 4));
-const cards = computed(() => aroundNow(entries.value, new Date(), 3).slice(0, count.value));
+// The window must be wide enough to actually fill the row: at 1600 px we show
+// six cards, so six hours of schedule are needed, not three.
+const cards = computed(() => aroundNow(entries.value, new Date(), 6).slice(0, count.value));
 const visible = computed(() => loaded.value && cards.value.length > 0);
 
 function measure() {
