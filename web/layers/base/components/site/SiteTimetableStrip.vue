@@ -12,17 +12,29 @@ import {
 
 const entries = ref<TimetableEntry[]>([]);
 const loaded = ref(false);
+const width = ref(0);
 const { openPopup } = useTimetableUi();
 
-const cards = computed(() =>
-	aroundNow(entries.value, new Date(), 3).slice(0, 4),
-);
+// More room, more schedule: 4 on a laptop, 5 on a wide screen, 6 on a very
+// wide one. Below 900px the list scrolls horizontally instead.
+const count = computed(() => (width.value >= 1600 ? 6 : width.value >= 1200 ? 5 : 4));
+const cards = computed(() => aroundNow(entries.value, new Date(), 3).slice(0, count.value));
 const visible = computed(() => loaded.value && cards.value.length > 0);
 
+function measure() {
+	width.value = window.innerWidth;
+}
+
 onMounted(async () => {
+	measure();
+	window.addEventListener("resize", measure, { passive: true });
 	const payload = await fetchTimetable();
 	entries.value = payload.entries ?? [];
 	loaded.value = true;
+});
+
+onBeforeUnmount(() => {
+	window.removeEventListener("resize", measure);
 });
 
 function go(entry: TimetableEntry) {
