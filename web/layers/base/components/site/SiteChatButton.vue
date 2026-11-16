@@ -2,6 +2,14 @@
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 
 const { open, toggle } = useChatUi();
+const timetableUi = useTimetableUi();
+
+// One panel toggle for both surfaces: the chat icon shows or hides the chat and
+// the timetable together, so they never stack or leave a half-open state.
+const togglePanels = () => {
+	toggle();
+	timetableUi.open.value = open.value;
+};
 const { messages, loaded } = useChatRoom();
 
 const pulsing = ref(false);
@@ -60,7 +68,7 @@ onBeforeUnmount(stopPulse);
 		:class="{ 'is-open': open, 'is-pulsing': pulsing }"
 		:aria-expanded="open"
 		aria-label="Chat"
-		@click="toggle"
+		@click="togglePanels"
 	>
 		<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
 			<circle cx="12" cy="12" r="11.5" stroke="var(--color-text)" />
