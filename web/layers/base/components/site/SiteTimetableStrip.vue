@@ -105,6 +105,9 @@ function go(entry: TimetableEntry) {
   display: flex;
   flex-flow: column wrap;
   gap: 8px;
+  /* The hero gradient is a fixed layer behind the page; an opaque strip keeps
+     the animated colour from washing out the cards. */
+  background: var(--color-bg);
 }
 
 .timetable-strip__head {
@@ -171,14 +174,16 @@ function go(entry: TimetableEntry) {
   border-radius: 5px;
   /* A real surface, not a brightness filter on near-black: 8 % of the text
      colour lifts the card off the page in dark mode and lowers it in light. */
-  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+  /* Opaque surface: an alpha mix would let the animated hero gradient show
+     through and swallow the card. */
+  background: color-mix(in srgb, var(--color-text) 10%, var(--color-bg));
   color: var(--color-text);
   text-align: left;
   cursor: pointer;
 }
 
 .timetable-strip__card:hover {
-  background: color-mix(in srgb, var(--color-text) 15%, transparent);
+  background: color-mix(in srgb, var(--color-text) 16%, var(--color-bg));
 }
 
 .timetable-strip__item.is-live .timetable-strip__card {
