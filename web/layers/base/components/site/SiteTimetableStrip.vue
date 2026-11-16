@@ -15,7 +15,7 @@ const loaded = ref(false);
 const { openPopup } = useTimetableUi();
 
 const cards = computed(() =>
-	aroundNow(entries.value, new Date(), 3).slice(0, 6),
+	aroundNow(entries.value, new Date(), 3).slice(0, 4),
 );
 const visible = computed(() => loaded.value && cards.value.length > 0);
 
@@ -141,7 +141,8 @@ function go(entry: TimetableEntry) {
 }
 
 .timetable-strip__item {
-  flex: 0 0 min(280px, 78vw);
+  flex: 1 1 0;
+  min-width: 0;
   scroll-snap-align: start;
 }
 
@@ -214,5 +215,12 @@ function go(entry: TimetableEntry) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+@media (max-width: 900px) {
+  .timetable-strip__item {
+    flex: 0 0 78vw;
+    min-width: 0;
+  }
 }
 </style>
