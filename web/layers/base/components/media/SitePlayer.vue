@@ -1,5 +1,6 @@
 ﻿<script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useMainStore } from "~/stores/mainStore";
 import { usePlayerStore } from "~/stores/playerStore";
 import { usePlayerAnalytics } from "~~/layers/base/composables/usePlayerAnalytics";
 import { usePlayerController } from "~~/layers/base/composables/usePlayerController";
@@ -17,8 +18,15 @@ interface PlayerLink {
 const store = usePlayerStore();
 const controller = usePlayerController();
 const analytics = usePlayerAnalytics();
+const config = useRuntimeConfig();
+const mainStore = useMainStore();
 const localePath = useLocalePath();
 const playerRef = ref<HTMLElement | null>(null);
+
+const chatEnabled = computed(
+	() => import.meta.dev || Boolean(config.public.chatEnabled),
+);
+const showSchedule = computed(() => Boolean(mainStore?.siteNav?.schedulePage));
 
 const isSet = computed(() => store.mode === "set" && Boolean(store.set));
 const tracklistOpen = ref(false);
@@ -334,6 +342,8 @@ onBeforeUnmount(() => {
 					>
 						☰
 					</button>
+					<SiteChatButton v-if="chatEnabled" />
+					<SiteScheduleButton v-if="showSchedule" aria-label="Sendeplan" />
 					<span v-if="streamClock" class="site-player__time">{{ streamClock }}</span>
 					<span v-if="streamEndLabel" class="site-player__until">{{ streamEndLabel }}</span>
 					<span class="site-player__status">
