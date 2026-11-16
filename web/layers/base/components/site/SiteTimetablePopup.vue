@@ -67,10 +67,20 @@ function windowFor() {
 	return { from, to };
 }
 
+let requestId = 0;
+
+function localDateKey(date: Date) {
+	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
 async function load() {
+	const id = ++requestId;
 	loading.value = true;
 	const { from, to } = windowFor();
-	payload.value = await fetchTimetable(from.toISOString(), to.toISOString());
+	const next = await fetchTimetable(from.toISOString(), to.toISOString());
+	// A slower reply from the previous view must not overwrite the current one.
+	if (id !== requestId) return;
+	payload.value = next;
 	loading.value = false;
 }
 
@@ -148,7 +158,7 @@ function shift(direction: number) {
 	if (view.value === "month") base.setMonth(base.getMonth() + direction);
 	else if (view.value === "week") base.setDate(base.getDate() + direction * 7);
 	else base.setDate(base.getDate() + direction);
-	day.value = base.toISOString().slice(0, 10);
+	day.value = localDateKey(base);
 }
 
 function go(entry: TimetableEntry) {
@@ -655,7 +665,7 @@ onBeforeUnmount(() => {
 /* MONTH */
 .tt-month__head {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   padding-bottom: 4px;
 }
 
@@ -667,7 +677,7 @@ onBeforeUnmount(() => {
 
 .tt-month__grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 1px;
   background: rgb(255 255 255 / 8%);
   border-radius: 5px;
@@ -675,12 +685,14 @@ onBeforeUnmount(() => {
 }
 
 .tt-month__cell {
+  min-width: 0;
   min-height: 96px;
   padding: 5px 6px;
   background: var(--color-bg);
   display: flex;
   flex-direction: column;
   gap: 2px;
+  overflow: hidden;
 }
 
 .tt-month__cell.is-out { opacity: 0.3; }
@@ -706,6 +718,8 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .tt-month__pill.is-live { background: var(--color-pink); color: #1a1013; font-weight: 550; }
