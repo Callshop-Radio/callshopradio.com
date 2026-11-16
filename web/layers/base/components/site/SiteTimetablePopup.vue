@@ -19,7 +19,7 @@ const loading = ref(false);
 const panel = ref<HTMLElement | null>(null);
 const scroller = ref<HTMLElement | null>(null);
 
-const HOUR = 52;
+const HOUR = 68;
 const now = ref(new Date());
 let clock: ReturnType<typeof setInterval> | null = null;
 
@@ -487,7 +487,7 @@ onBeforeUnmount(() => {
 .tt-day__lane {
   position: relative;
   border-left: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
-  background-image: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--color-text) 7%, transparent) 0 1px, transparent 1px 52px);
+  background-image: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--color-text) 7%, transparent) 0 1px, transparent 1px 68px);
 }
 
 .tt-day__now {
@@ -527,10 +527,10 @@ onBeforeUnmount(() => {
   right: 4px;
   z-index: 2;
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
-  gap: 10px;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 11px;
   align-items: start;
-  padding: 7px 10px;
+  padding: 9px 12px;
   border: 0;
   border-radius: 5px;
   background: color-mix(in srgb, var(--color-text) 8%, transparent);
@@ -552,8 +552,8 @@ onBeforeUnmount(() => {
 .tt-day__event.is-tight .tt-day__sub { display: none; }
 
 .tt-day__thumb {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 4px;
   object-fit: cover;
 }
@@ -563,7 +563,7 @@ onBeforeUnmount(() => {
 .tt-day__row { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
 
 .tt-day__title {
-  font-size: calc(var(--base-font-size) * 0.86);
+  font-size: calc(var(--base-font-size) * 0.92);
   font-weight: 550;
   white-space: nowrap;
   overflow: hidden;
@@ -632,7 +632,7 @@ onBeforeUnmount(() => {
 .tt-week__col {
   position: relative;
   border-left: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
-  background-image: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--color-text) 6%, transparent) 0 1px, transparent 1px 52px);
+  background-image: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--color-text) 6%, transparent) 0 1px, transparent 1px 68px);
 }
 
 .tt-week__event {
@@ -642,8 +642,8 @@ onBeforeUnmount(() => {
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  padding: 3px 4px;
+  gap: 2px;
+  padding: 5px 6px;
   border: 0;
   border-radius: 5px;
   background: color-mix(in srgb, var(--color-text) 8%, transparent);
@@ -657,8 +657,8 @@ onBeforeUnmount(() => {
 .tt-week__event.is-notumb { grid-template-columns: minmax(0, 1fr); }
 .tt-week__event.is-live { background: var(--color-pink); color: #1a1013; }
 
-.tt-week__time { font-size: 8px; opacity: 0.6; font-variant-numeric: tabular-nums; }
-.tt-week__title { font-size: 9.5px; font-weight: 550; }
+.tt-week__time { font-size: 9px; opacity: 0.6; font-variant-numeric: tabular-nums; }
+.tt-week__title { font-size: 10.5px; font-weight: 550; }
 
 .tt-week__now {
   position: absolute;
@@ -693,12 +693,12 @@ onBeforeUnmount(() => {
 
 .tt-month__cell {
   min-width: 0;
-  min-height: 96px;
-  padding: 5px 6px;
+  min-height: 112px;
+  padding: 7px 8px;
   background: var(--color-bg);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   overflow: hidden;
 }
 
