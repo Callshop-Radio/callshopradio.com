@@ -205,6 +205,17 @@ onMounted(() => {
 	clock = setInterval(() => {
 		now.value = new Date();
 	}, 30_000);
+
+	// Deep link: /?schedule=popup&view=week&day=2026-11-16 opens the popup.
+	const route = useRoute();
+	if (route.query.schedule === "popup") {
+		const nextView = route.query.view;
+		const nextDay = route.query.day;
+		openPopup(
+			nextView === "week" || nextView === "month" ? nextView : "day",
+			typeof nextDay === "string" && nextDay ? nextDay : null,
+		);
+	}
 });
 
 onBeforeUnmount(() => {
