@@ -6,6 +6,7 @@ const localePath = useLocalePath();
 const mainStore = useMainStore();
 const config = useRuntimeConfig();
 const { open: chatOpen } = useChatUi();
+const { openPopup: openTimetablePopup, expand: expandTimetable } = useTimetableUi();
 
 const chatEnabled = computed(
 	() => import.meta.dev || Boolean(config.public.chatEnabled),
@@ -19,20 +20,23 @@ const stations = [
 	{
 		code: "DUS",
 		city: { en: "Düsseldorf", de: "Düsseldorf" },
+		address: "Erkrather Straße 6, 40233 Düsseldorf",
 		email: "duesseldorf@callshopradio.com",
-		mapQuery: "Callshop Radio Düsseldorf",
+		mapQuery: "Erkrather Straße 6, 40233 Düsseldorf",
 	},
 	{
 		code: "LPZ",
 		city: { en: "Leipzig", de: "Leipzig" },
+		address: "Crottendorferstraße 10, 04317 Leipzig",
 		email: "leipzig@callshopradio.com",
 		mapQuery: "Crottendorferstraße 10, 04317 Leipzig",
 	},
 	{
 		code: "VIE",
 		city: { en: "Vienna", de: "Wien" },
+		address: "Praterstern 5, 1020 Wien",
 		email: "vienna@callshopradio.com",
-		mapQuery: "Callshop Radio Vienna",
+		mapQuery: "Praterstern 5, 1020 Wien",
 	},
 ];
 
@@ -45,16 +49,16 @@ const copy = computed(() => {
 		stations: de ? "Standorte" : "Stations",
 		maps: de ? "In Maps öffnen" : "Open in Maps",
 		explore: de ? "Entdecken" : "Explore",
-		information: de ? "Informationen" : "Information",
+		pages: de ? "Seiten" : "Pages",
+		apply: de ? "Bewerben" : "Apply for",
 		follow: de ? "Folgen" : "Follow",
 		shows: "Shows",
 		pool: "Pool",
 		words: "Words",
 		schedule: de ? "Programm" : "Schedule",
 		search: de ? "Suche" : "Search",
-		shop: "Shop",
+		merch: "Merch",
 		chat: "Chat",
-		contact: de ? "Kontakt" : "Contact",
 		legal: de ? "Impressum" : "Legal Notice",
 		legalPrivacy: de ? "Impressum & Datenschutz" : "Legal & Privacy",
 		privacy: de ? "Datenschutz" : "Privacy",
@@ -67,8 +71,56 @@ const copy = computed(() => {
 		registered: de ? "Vereinssitz" : "Registered office",
 		country: de ? "Deutschland" : "Germany",
 		backToTop: de ? "Nach oben" : "Back to top",
+		theme: de ? "Hell / Dunkel" : "Light / Dark",
+		residency: "Residency",
+		poolProfile: de ? "Pool-Profil" : "Pool-Profile",
+		guestSlots: de ? "Guest-Slots" : "Guest slots",
+		guestDusCity: "Düsseldorf",
+		guestLpzCity: "Leipzig",
+		guestVieCity: de ? "Wien" : "Vienna",
+		wordsMail: "words@callshopradio.com",
 	};
 });
+
+const applyLinks = computed(() => [
+	{
+		label: copy.value.residency,
+		href: "https://tally.so/r/gDRaB1",
+		external: true,
+		icon: "residency",
+	},
+	{
+		label: copy.value.poolProfile,
+		href: localePath("/konto"),
+		external: false,
+		icon: "pool",
+	},
+	{
+		label: copy.value.words,
+		href: `mailto:${copy.value.wordsMail}`,
+		external: false,
+		mail: true,
+		icon: "words",
+	},
+]);
+
+const guestSlots = computed(() => [
+	{
+		code: "DUS",
+		city: copy.value.guestDusCity,
+		href: "https://tally.so/r/31ap5O",
+	},
+	{
+		code: "LPZ",
+		city: copy.value.guestLpzCity,
+		href: "https://tally.so/r/wAk9Dy",
+	},
+	{
+		code: "VIE",
+		city: copy.value.guestVieCity,
+		href: "https://tally.so/r/nPor45",
+	},
+]);
 
 function mapsUrl(query) {
 	return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
@@ -80,6 +132,12 @@ function stationCity(station) {
 
 function openChat() {
 	chatOpen.value = true;
+}
+
+function openTimetable() {
+	openTimetablePopup("day");
+	// From the footer the full schedule is the point, not the compact panel.
+	expandTimetable();
 }
 
 function scrollToTop() {
@@ -136,6 +194,9 @@ function scrollToTop() {
 							<span class="station__city">
 								{{ stationCity(station) }}
 							</span>
+							<span class="station__address">
+								{{ station.address }}
+							</span>
 							<a
 								class="station__mail"
 								:href="`mailto:${station.email}`"
@@ -175,6 +236,56 @@ function scrollToTop() {
 							</a>
 						</li>
 					</ul>
+
+					<div class="site-footer__apply">
+						<h3 class="site-footer__label">{{ copy.apply }}</h3>
+
+						<div class="apply-chips">
+							<template v-for="link in applyLinks" :key="link.label">
+								<a
+									v-if="link.external"
+									class="apply-chip"
+									:href="link.href"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<SiteApplyIcon :name="link.icon" />
+									<span>{{ link.label }}</span>
+								</a>
+								<NuxtLink
+									v-else-if="!link.mail"
+									class="apply-chip"
+									:to="link.href"
+								>
+									<SiteApplyIcon :name="link.icon" />
+									<span>{{ link.label }}</span>
+								</NuxtLink>
+								<a v-else class="apply-chip" :href="link.href">
+									<SiteApplyIcon :name="link.icon" />
+									<span>{{ link.label }}</span>
+								</a>
+							</template>
+						</div>
+
+						<div class="apply-guests">
+							<span class="apply-guests__label">
+								<SiteApplyIcon name="guest" />
+								{{ copy.guestSlots }}
+							</span>
+							<a
+								v-for="slot in guestSlots"
+								:key="slot.code"
+								class="apply-city"
+								:href="slot.href"
+								target="_blank"
+								rel="noopener noreferrer"
+								:aria-label="`Guest-Slot ${slot.city}`"
+								:title="`Guest-Slot ${slot.city}`"
+							>
+								{{ slot.code }}
+							</a>
+						</div>
+					</div>
 				</div>
 			</div>
 
@@ -185,58 +296,47 @@ function scrollToTop() {
 					</h3>
 					<ul>
 						<li>
-							<NuxtLink :to="localePath('/shows')">
+							<NuxtLink :to="localePath('/shows')" class="footer-link--shows">
+								<SitePageIcon name="shows" />
 								{{ copy.shows }}
 							</NuxtLink>
 						</li>
 						<li>
-							<NuxtLink :to="localePath('/pool')">
+							<NuxtLink :to="localePath('/pool')" class="footer-link--pool">
+								<SitePageIcon name="pool" />
 								{{ copy.pool }}
 							</NuxtLink>
 						</li>
 						<li>
-							<NuxtLink :to="localePath('/words')">
+							<NuxtLink :to="localePath('/words')" class="footer-link--words">
+								<SitePageIcon name="words" />
 								{{ copy.words }}
 							</NuxtLink>
 						</li>
 						<li>
-							<a
-								href="https://index.callshopradio.com/"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
+							<NuxtLink :to="localePath('/index')" class="footer-link--index">
+								<SitePageIcon name="index" />
 								{{ copy.index }}
-								<svg
-									class="site-footer__external-icon"
-									width="10"
-									height="10"
-									viewBox="0 0 10 10"
-									fill="none"
-									aria-hidden="true"
-								>
-									<path
-										d="M2 8L8 2M3.2 2H8V6.8"
-										stroke="currentColor"
-										stroke-width="1.1"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-									/>
-								</svg>
-							</a>
-						</li>
-						<li>
-							<NuxtLink :to="localePath('/schedule')">
-								{{ copy.schedule }}
 							</NuxtLink>
 						</li>
 						<li>
-							<NuxtLink :to="localePath('/search')">
-								{{ copy.search }}
+							<NuxtLink :to="localePath('/merch')" class="footer-link--merch">
+								<SitePageIcon name="shop" />
+								{{ copy.merch }}
 							</NuxtLink>
 						</li>
+					</ul>
+				</nav>
+
+				<nav class="footer-column" aria-labelledby="footer-pages">
+					<h3 id="footer-pages" class="site-footer__label">
+						{{ copy.pages }}
+					</h3>
+					<ul>
 						<li>
-							<NuxtLink :to="localePath('/shop')">
-								{{ copy.shop }}
+							<NuxtLink :to="localePath('/konto')">
+								<SitePageIcon name="account" />
+								{{ copy.account }}
 							</NuxtLink>
 						</li>
 						<li v-if="chatEnabled">
@@ -245,30 +345,25 @@ function scrollToTop() {
 								class="site-footer__link-button"
 								@click="openChat"
 							>
+								<SitePageIcon name="chat" />
 								{{ copy.chat }}
 							</button>
 						</li>
-					</ul>
-				</nav>
-
-				<nav class="footer-column" aria-labelledby="footer-info">
-					<h3 id="footer-info" class="site-footer__label">
-						{{ copy.information }}
-					</h3>
-					<ul>
 						<li>
-							<NuxtLink :to="localePath('/contact')">
-								{{ copy.contact }}
-							</NuxtLink>
+							<button
+								type="button"
+								class="site-footer__link-button"
+								aria-haspopup="dialog"
+								@click="openTimetable"
+							>
+								<SitePageIcon name="calendar" />
+								{{ copy.schedule }}
+							</button>
 						</li>
 						<li>
 							<NuxtLink :to="localePath('/legal')">
+								<SitePageIcon name="legal" />
 								{{ copy.legalPrivacy }}
-							</NuxtLink>
-						</li>
-						<li>
-							<NuxtLink :to="localePath('/konto')">
-								{{ copy.account }}
 							</NuxtLink>
 						</li>
 					</ul>
@@ -285,6 +380,7 @@ function scrollToTop() {
 								target="_blank"
 								rel="noopener noreferrer"
 							>
+								<SiteSocialIcon name="instagram" />
 								{{ copy.instagram }}
 								<svg
 									class="site-footer__external-icon"
@@ -310,6 +406,7 @@ function scrollToTop() {
 								target="_blank"
 								rel="noopener noreferrer"
 							>
+								<SiteSocialIcon name="soundcloud" />
 								{{ copy.soundcloud }}
 								<svg
 									class="site-footer__external-icon"
@@ -335,6 +432,7 @@ function scrollToTop() {
 								target="_blank"
 								rel="noopener noreferrer"
 							>
+								<SiteSocialIcon name="bandcamp" />
 								{{ copy.bandcamp }}
 								<svg
 									class="site-footer__external-icon"
@@ -360,6 +458,7 @@ function scrollToTop() {
 								target="_blank"
 								rel="noopener noreferrer"
 							>
+								<SiteSocialIcon name="discord" />
 								{{ copy.discord }}
 								<svg
 									class="site-footer__external-icon"
@@ -381,6 +480,13 @@ function scrollToTop() {
 						</li>
 					</ul>
 				</nav>
+			</div>
+
+			<div class="site-footer__bottom">
+				<div class="site-footer__theme">
+					<span class="site-footer__label">{{ copy.theme }}</span>
+					<SiteDarkMode />
+				</div>
 
 				<button
 					type="button"
@@ -433,8 +539,8 @@ function scrollToTop() {
 
 .site-footer__top {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
-  gap: clamp(3rem, 7vw, 7rem);
+  grid-template-columns: minmax(0, 0.9fr) minmax(32rem, 1.1fr);
+  gap: clamp(2rem, 4vw, 4rem);
   padding-bottom: clamp(2.5rem, 5vw, 4rem);
   border-bottom: 1px solid var(--footer-line);
 }
@@ -534,11 +640,17 @@ function scrollToTop() {
   list-style: none;
 }
 
+.site-footer__stations {
+  max-width: 40rem;
+}
+
 .station {
   display: grid;
-  grid-template-columns: 2.8rem 6rem minmax(0, 1fr) auto;
+  grid-template-columns:
+    2.8rem 6rem max-content minmax(0, 1fr)
+    auto;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.6rem;
   padding: 0.8rem 0;
   border-top: 1px solid var(--footer-line);
 }
@@ -559,6 +671,13 @@ function scrollToTop() {
   font-family: var(--font-text-semibold);
   font-size: var(--base-font-size);
   white-space: nowrap;
+}
+
+.station__address {
+  min-width: 0;
+  color: var(--color-dark-grey);
+  font-size: var(--small-font-size);
+  line-height: 1.35;
 }
 
 .station__map {
@@ -595,6 +714,115 @@ function scrollToTop() {
   color: var(--color-pink);
 }
 
+.site-footer__apply {
+  margin-top: 2.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--footer-line);
+}
+
+.apply-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.apply-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
+  border-radius: 100px;
+  color: var(--color-text);
+  font-family: var(--font-text-medium);
+  font-size: var(--small-font-size);
+  line-height: 1.2;
+  text-decoration: none;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+
+  &:hover {
+    border-color: var(--color-pink);
+    color: var(--color-pink);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-pink);
+    outline-offset: 2px;
+  }
+}
+
+.apply-guests {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.apply-guests__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-right: 0.2rem;
+  color: var(--color-dark-grey);
+  font-size: var(--small-font-size);
+  letter-spacing: var(--button-letter-spacing);
+  text-transform: uppercase;
+}
+
+.apply-city {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.6rem;
+  padding: 0.28rem 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
+  border-radius: 100px;
+  color: var(--color-text);
+  font-family: var(--font-text-medium);
+  font-size: var(--small-font-size);
+  letter-spacing: var(--button-letter-spacing);
+  line-height: 1.2;
+  text-decoration: none;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+
+  &:hover {
+    border-color: var(--color-text);
+    background-color: var(--color-text);
+    color: var(--color-bg);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 2px;
+  }
+}
+
+.site-footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1.1rem 0 0;
+  border-top: 1px solid var(--footer-line);
+}
+
+.site-footer__theme {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  .site-footer__label {
+    margin: 0;
+  }
+}
+
 .site-footer__nav {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -623,6 +851,26 @@ function scrollToTop() {
 
 .footer-column a:hover {
   color: var(--color-pink);
+}
+
+.footer-column a.footer-link--shows:hover {
+  color: var(--color-pink);
+}
+
+.footer-column a.footer-link--pool:hover {
+  color: var(--color-blue);
+}
+
+.footer-column a.footer-link--words:hover {
+  color: var(--color-green);
+}
+
+.footer-column a.footer-link--index:hover {
+  color: var(--color-purple);
+}
+
+.footer-column a.footer-link--merch:hover {
+  color: var(--color-yellow);
 }
 
 .footer-column .site-footer__link-button {
@@ -694,6 +942,11 @@ function scrollToTop() {
   .site-footer {
     padding-bottom: 56px;
   }
+
+  .site-footer__top {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+  }
 }
 
 @media (max-width: 1000px) {
@@ -721,13 +974,39 @@ function scrollToTop() {
     gap: 3rem;
   }
 
-  .site-footer__stations {
-    max-width: 32rem;
-  }
-
   .site-footer__nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 2.5rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .station {
+    grid-template-columns: 2.2rem auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "code city email map"
+      ". address address address";
+    gap: 0.35rem 0.55rem;
+  }
+
+  .station__code {
+    grid-area: code;
+  }
+
+  .station__city {
+    grid-area: city;
+  }
+
+  .station__address {
+    grid-area: address;
+  }
+
+  .station__mail {
+    grid-area: email;
+  }
+
+  .station__map {
+    grid-area: map;
   }
 }
 
@@ -745,11 +1024,6 @@ function scrollToTop() {
 
   .site-footer__mark {
     width: 1.8rem;
-  }
-
-  .station {
-    grid-template-columns: 2.2rem auto minmax(0, 1fr) auto;
-    gap: 0.55rem;
   }
 
   .station__map {

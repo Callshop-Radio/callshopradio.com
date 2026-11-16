@@ -229,6 +229,8 @@ onMounted(() => {
 			nextView === "week" || nextView === "month" ? nextView : "day",
 			typeof nextDay === "string" && nextDay ? nextDay : null,
 		);
+		// The footer link and the retired /schedule route open the full view.
+		if (route.query.expanded === "1") expand();
 	}
 });
 
