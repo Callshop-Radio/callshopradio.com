@@ -4,6 +4,7 @@ import test from "node:test";
 import {
 	feedFromAzuraCast,
 	feedFromIcecast,
+	managerSetMatchesProgress,
 	unknownFeed,
 	videoFromStatus,
 } from "../server/utils/playerFallback.ts";
@@ -41,6 +42,21 @@ test("AzuraCast now playing carries the replay position", () => {
 		elapsedSeconds: 5171,
 		durationSeconds: 7507,
 	});
+});
+
+test("a manager replay only matches when its set duration matches the playing file", () => {
+	const feed = (setDuration: number, playedDuration: number | null) =>
+		({
+			state: "replay",
+			set: { title: "Soft Drive", path: null, durationSeconds: setDuration },
+			progress:
+				playedDuration === null
+					? null
+					: { elapsedSeconds: 0, durationSeconds: playedDuration },
+		}) as unknown as Parameters<typeof managerSetMatchesProgress>[0];
+	assert.equal(managerSetMatchesProgress(feed(3600, 3600)), true);
+	assert.equal(managerSetMatchesProgress(feed(3600, 1737)), false);
+	assert.equal(managerSetMatchesProgress(feed(3600, null)), true);
 });
 
 test("AzuraCast now playing becomes an auto feed without links", () => {

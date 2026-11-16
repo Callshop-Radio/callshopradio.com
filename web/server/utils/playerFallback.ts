@@ -54,6 +54,21 @@ function baseFeed({
 	};
 }
 
+/**
+ * A replay set only belongs to the row when AzuraCast is actually playing the
+ * entry's media. The manager can otherwise return yesterday's/today's planned
+ * set while AutoDJ is filling the failed slot. The file durations are the
+ * cheap, reliable witness: the set duration comes from the catalog, the progress
+ * duration from the file AzuraCast is playing right now.
+ */
+export function managerSetMatchesProgress(feed: PlayerFeed): boolean {
+	if (feed.state !== "replay" || !feed.set || !feed.progress) return true;
+	const setDuration = feed.set.durationSeconds;
+	const playedDuration = feed.progress.durationSeconds;
+	if (!setDuration || !playedDuration) return true;
+	return Math.abs(setDuration - playedDuration) <= 120;
+}
+
 /** AzuraCast now playing is display data only; it carries no editorial links. */
 export function feedFromAzuraCast(
 	np: unknown,

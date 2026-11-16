@@ -2,6 +2,7 @@ import type { PlayerFeed, PlayerVideo } from "../../../types/player";
 import {
 	feedFromAzuraCast,
 	feedFromIcecast,
+	managerSetMatchesProgress,
 	unknownFeed,
 	videoFromStatus,
 } from "../../utils/playerFallback";
@@ -68,7 +69,11 @@ const LAST_GOOD_MS = 5 * 60_000;
 const TOTAL_BUDGET_MS = 3_000;
 
 function lastGoodOrUnknown(audioUrl: string, fallbackUrl: string): PlayerFeed {
-	if (lastGoodFeed && Date.now() - lastGoodAt < LAST_GOOD_MS) {
+	if (
+		lastGoodFeed &&
+		Date.now() - lastGoodAt < LAST_GOOD_MS &&
+		managerSetMatchesProgress(lastGoodFeed)
+	) {
 		return { ...lastGoodFeed, updatedAt: new Date().toISOString() };
 	}
 	return unknownFeed({ audioUrl, fallbackUrl });
@@ -119,7 +124,7 @@ export default defineCachedEventHandler(
 				1_500,
 			);
 			if (manager?.version === 1) {
-				if (manager.state !== "unknown") {
+				if (manager.state !== "unknown" && managerSetMatchesProgress(manager)) {
 					manager.source = "manager";
 					manager.audio = {
 						...manager.audio,
@@ -148,7 +153,7 @@ export default defineCachedEventHandler(
 					lastGoodAt = Date.now();
 					return manager;
 				}
-				managerFallback = manager;
+				if (managerSetMatchesProgress(manager)) managerFallback = manager;
 			}
 
 			let feed: PlayerFeed | null = null;

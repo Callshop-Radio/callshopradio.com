@@ -131,11 +131,11 @@ test("streamShowProgress advances between feed polls", () => {
 	assert.equal(Math.round(progress?.percent ?? 0), 58);
 });
 
-test("streamShowProgress tracks an AutoDJ replay", () => {
+test("streamShowProgress tracks a replay position", () => {
 	const updatedAt = "2026-11-12T00:00:00Z";
 	const progress = streamShowProgress(
 		{
-			state: "auto",
+			state: "replay",
 			updatedAt,
 			progress: { elapsedSeconds: 5171, durationSeconds: 7507 },
 		},
