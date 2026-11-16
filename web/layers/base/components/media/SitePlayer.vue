@@ -417,7 +417,6 @@ onBeforeUnmount(() => {
 			aria-valuemax="100"
 			:aria-valuenow="Math.round(streamProgress.percent * 10) / 10"
 			:aria-valuetext="`${Math.round(streamProgress.percent * 10) / 10} %`"
-			:style="{ '--progress': `${streamProgress.percent}%` }"
 		>
 			<span :style="{ transform: `scaleX(${streamProgress.percent / 100})` }" />
 		</div>
@@ -803,58 +802,26 @@ onBeforeUnmount(() => {
   background: transparent;
   cursor: pointer;
 
-  /* The faint track fades out at both ends; the played fill stays solid so a
-     set that has only just started is still visible at the far left. */
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: color-mix(in srgb, var(--color-pink) 70%, transparent);
-    -webkit-mask-image: linear-gradient(
-      90deg,
-      transparent 0,
-      #000 2rem,
-      #000 calc(100% - 2rem),
-      transparent 100%
-    );
-    mask-image: linear-gradient(
-      90deg,
-      transparent 0,
-      #000 2rem,
-      #000 calc(100% - 2rem),
-      transparent 100%
-    );
-    pointer-events: none;
-  }
-
   span {
-    position: relative;
-    z-index: 1;
     display: block;
     height: 100%;
-    background: var(--color-pink);
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-pink) 45%, transparent),
+      var(--color-pink) 50%,
+      color-mix(in srgb, var(--color-pink) 45%, transparent)
+    );
+    border-radius: 2px;
     transform-origin: left;
+    filter: drop-shadow(
+      0 0 3px color-mix(in srgb, var(--color-pink) 70%, transparent)
+    );
   }
 }
 
 .site-player__progress--passive {
   cursor: default;
   pointer-events: none;
-
-  &::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: var(--progress, 0%);
-    z-index: 2;
-    width: 6px;
-    height: 6px;
-    border: 1px solid var(--color-bg);
-    border-radius: 50%;
-    background: var(--color-pink);
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-  }
 }
 
 .site-player__source {
