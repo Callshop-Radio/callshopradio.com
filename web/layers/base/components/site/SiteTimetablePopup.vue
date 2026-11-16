@@ -142,6 +142,15 @@ const nowTop = computed(
 	() => ((now.value.getHours() * 60 + now.value.getMinutes()) / 60) * HOUR,
 );
 
+// The entry that is running right now gets a subtle highlight, distinct from a
+// real live show (which stays pink).
+function isRunning(entry: TimetableEntry) {
+	const start = new Date(entry.startsAt).getTime();
+	const end = new Date(entry.endsAt).getTime();
+	const at = now.value.getTime();
+	return at >= start && at < end;
+}
+
 // The time indicator belongs to today only. On any other day it would claim a
 // "now" that does not exist there.
 const anchorIsToday = computed(
@@ -294,7 +303,7 @@ onBeforeUnmount(() => {
 								:key="entry.id"
 								type="button"
 								class="tt-day__event"
-								:class="{ 'is-live': isLiveEntry(entry), 'is-past': new Date(entry.endsAt) < now, 'is-tight': height(entry) < 46, 'is-notumb': !entry.cover }"
+								:class="{ 'is-live': isLiveEntry(entry), 'is-now': isRunning(entry), 'is-past': new Date(entry.endsAt) < now, 'is-tight': height(entry) < 46, 'is-notumb': !entry.cover }"
 								:style="{ top: top(entry) + 'px', height: height(entry) + 'px' }"
 								@click="go(entry)"
 							>
@@ -626,6 +635,10 @@ onBeforeUnmount(() => {
 
 .tt-day__event:hover { background: color-mix(in srgb, var(--color-text) 11%, transparent); }
 .tt-day__event.is-past { opacity: 0.42; }
+/* Running now: one step brighter than the normal card (darker in light mode). */
+.tt-day__event.is-now {
+  background: color-mix(in srgb, var(--color-text) 17%, transparent);
+}
 .tt-day__event.is-live { background: var(--color-pink); color: #1a1013; }
 .tt-day__event.is-tight { grid-template-columns: minmax(0, 1fr) auto; padding: 4px 8px; }
 /* No cover means no thumbnail column: without this the copy would slide into
