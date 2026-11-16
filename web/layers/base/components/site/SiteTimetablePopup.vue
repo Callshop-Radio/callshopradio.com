@@ -220,8 +220,8 @@ onBeforeUnmount(() => {
 			>
 				<header class="tt-popup__head">
 					<div class="tt-popup__nav">
-						<button type="button" class="tt-popup__arrow" aria-label="Previous" @click="shift(-1)">â†</button>
-						<button type="button" class="tt-popup__arrow" aria-label="Next" @click="shift(1)">â†’</button>
+						<button type="button" class="tt-popup__arrow" aria-label="Previous" @click="shift(-1)">&#8592;</button>
+						<button type="button" class="tt-popup__arrow" aria-label="Next" @click="shift(1)">&#8594;</button>
 						<strong class="tt-popup__date">{{ scheduleDay((day ? `${day}T12:00:00` : new Date().toISOString())) }}</strong>
 					</div>
 					<div class="tt-popup__views" role="group" aria-label="View">
@@ -237,7 +237,7 @@ onBeforeUnmount(() => {
 							{{ item.label }}
 						</button>
 					</div>
-					<button type="button" class="tt-popup__close" aria-label="Close" @click="closePopup">âœ•</button>
+					<button type="button" class="tt-popup__close" aria-label="Close" @click="closePopup">&#10005;</button>
 				</header>
 
 				<div ref="scroller" class="tt-popup__body">
@@ -257,7 +257,7 @@ onBeforeUnmount(() => {
 								:key="entry.id"
 								type="button"
 								class="tt-day__event"
-								:class="{ 'is-live': isLiveEntry(entry), 'is-past': new Date(entry.endsAt) < now, 'is-tight': height(entry) < 46 }"
+								:class="{ 'is-live': isLiveEntry(entry), 'is-past': new Date(entry.endsAt) < now, 'is-tight': height(entry) < 46, 'is-notumb': !entry.cover }"
 								:style="{ top: top(entry) + 'px', height: height(entry) + 'px' }"
 								@click="go(entry)"
 							>
@@ -303,7 +303,7 @@ onBeforeUnmount(() => {
 									:key="entry.id"
 									type="button"
 									class="tt-week__event"
-									:class="{ 'is-live': isLiveEntry(entry), 'is-past': new Date(entry.endsAt) < now }"
+									:class="{ 'is-live': isLiveEntry(entry), 'is-past': new Date(entry.endsAt) < now, 'is-notumb': !entry.cover }"
 									:style="{ top: top(entry) + 'px', height: height(entry) + 'px' }"
 									@click="go(entry)"
 								>
@@ -533,7 +533,7 @@ onBeforeUnmount(() => {
   padding: 7px 10px;
   border: 0;
   border-radius: 5px;
-  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
   color: var(--color-text);
   text-align: left;
   cursor: pointer;
@@ -544,6 +544,9 @@ onBeforeUnmount(() => {
 .tt-day__event.is-past { opacity: 0.42; }
 .tt-day__event.is-live { background: var(--color-pink); color: #1a1013; }
 .tt-day__event.is-tight { grid-template-columns: minmax(0, 1fr) auto; padding: 4px 8px; }
+/* No cover means no thumbnail column: without this the copy would slide into
+   the 44 px image track and wrap into a narrow column. */
+.tt-day__event.is-notumb { grid-template-columns: minmax(0, 1fr) auto; }
 .tt-day__event.is-tight .tt-day__thumb,
 .tt-day__event.is-tight .tt-day__tags,
 .tt-day__event.is-tight .tt-day__sub { display: none; }
@@ -651,6 +654,7 @@ onBeforeUnmount(() => {
 }
 
 .tt-week__event.is-past { opacity: 0.4; }
+.tt-week__event.is-notumb { grid-template-columns: minmax(0, 1fr); }
 .tt-week__event.is-live { background: var(--color-pink); color: #1a1013; }
 
 .tt-week__time { font-size: 8px; opacity: 0.6; font-variant-numeric: tabular-nums; }
