@@ -374,23 +374,23 @@ onBeforeUnmount(() => {
 <style lang="postcss" scoped>
 .tt-popup {
   position: fixed;
-  inset: 0;
+  right: 18px;
+  bottom: 96px;
   z-index: 1000;
-  display: grid;
-  place-items: center;
-  background: rgb(0 0 0 / 62%);
-  padding: 24px;
+  display: block;
+  padding: 0;
+  background: transparent;
 }
 
 .tt-popup__panel {
-  width: min(980px, 92vw);
-  height: min(780px, 90vh);
+  width: min(420px, calc(100vw - 36px));
+  height: min(700px, calc(100vh - 150px));
   display: grid;
   grid-template-rows: auto 1fr auto;
   background: var(--color-bg);
   border-radius: 5px;
   overflow: hidden;
-  box-shadow: 0 40px 120px rgb(0 0 0 / 60%);
+  box-shadow: 0 24px 70px rgb(0 0 0 / 55%);
   outline: none;
 }
 
@@ -761,8 +761,16 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 900px) {
-  .tt-popup { padding: 0; }
-  .tt-popup__panel { width: 100vw; height: 100vh; border-radius: 0; }
+  .tt-popup {
+    right: 0;
+    bottom: 0;
+  }
+
+  .tt-popup__panel {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
 }
 </style>
 

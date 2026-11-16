@@ -16,8 +16,11 @@ const { openPopup } = useTimetableUi();
 // In the player the trigger sits at the bottom of the viewport, so the panel
 // has to open upwards instead of below the button.
 const props = withDefaults(
-	defineProps<{ placement?: "bottom" | "top" }>(),
-	{ placement: "bottom" },
+	defineProps<{
+		placement?: "bottom" | "top";
+		mode?: "dropdown" | "panel";
+	}>(),
+	{ placement: "bottom", mode: "dropdown" },
 );
 
 const root = ref<HTMLElement | null>(null);
@@ -32,6 +35,12 @@ async function load() {
 }
 
 function toggle() {
+	// In the player the schedule opens as a chat-sized panel, not as a dropdown
+	// that the player's stacking context would clip.
+	if (props.mode === "panel") {
+		openPopup("day");
+		return;
+	}
 	open.value = !open.value;
 	if (open.value) {
 		void load();

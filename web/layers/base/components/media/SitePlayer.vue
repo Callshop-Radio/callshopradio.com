@@ -350,7 +350,7 @@ onBeforeUnmount(() => {
 					</span>
 					<span class="site-player__actions">
 						<SiteChatButton v-if="chatEnabled" />
-						<SiteTimetablePopover v-if="showSchedule" placement="top" />
+						<SiteTimetablePopover v-if="showSchedule" placement="top" mode="panel" />
 					</span>
 				</div>
 			</div>
