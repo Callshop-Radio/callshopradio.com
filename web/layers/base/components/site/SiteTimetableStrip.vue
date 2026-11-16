@@ -169,21 +169,25 @@ function go(entry: TimetableEntry) {
   padding: 6px 10px;
   border: 0;
   border-radius: 5px;
-  background: var(--color-bg);
-  filter: brightness(1.18);
+  /* A real surface, not a brightness filter on near-black: 8 % of the text
+     colour lifts the card off the page in dark mode and lowers it in light. */
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
   color: var(--color-text);
   text-align: left;
   cursor: pointer;
 }
 
 .timetable-strip__card:hover {
-  filter: brightness(1.3);
+  background: color-mix(in srgb, var(--color-text) 15%, transparent);
 }
 
 .timetable-strip__item.is-live .timetable-strip__card {
   background: var(--color-pink);
   color: #1a1013;
-  filter: none;
+}
+
+.timetable-strip__item.is-live .timetable-strip__card:hover {
+  background: color-mix(in srgb, #000 8%, var(--color-pink));
 }
 
 .timetable-strip__thumb {
