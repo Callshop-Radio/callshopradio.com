@@ -40,8 +40,10 @@ onBeforeUnmount(() => {
 });
 
 function go(entry: TimetableEntry) {
-	const target = entry.setPath || entry.showPath;
-	if (target) navigateTo(target);
+	// The manager's set link points at a manager route (/sets/<id>) that the
+	// website does not serve. Until the manager emits a site path, a card opens
+	// the schedule popup on that day instead of navigating into a 404.
+	openPopup("day", new Date(entry.startsAt).toISOString().slice(0, 10));
 }
 </script>
 
@@ -109,12 +111,10 @@ function go(entry: TimetableEntry) {
   flex-flow: column wrap;
   gap: 8px;
   /* The hero gradient is a fixed layer with z-index 0; the strip has to sit
-     above it, otherwise the animated colour covers the cards. */
+     above it, otherwise the animated colour covers the cards. No background:
+     the strip stays transparent and only the cards carry a surface. */
   position: relative;
   z-index: 1;
-  /* The hero gradient is a fixed layer behind the page; an opaque strip keeps
-     the animated colour from washing out the cards. */
-  background: var(--color-bg);
 }
 
 .timetable-strip__head {

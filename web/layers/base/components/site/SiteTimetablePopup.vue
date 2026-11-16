@@ -162,9 +162,12 @@ function shift(direction: number) {
 }
 
 function go(entry: TimetableEntry) {
-	const target = entry.setPath || entry.showPath;
-	closePopup();
-	if (target) navigateTo(target);
+	// `/sets/<id>` is a manager route; the website has no such page. Only a
+	// real show path navigates, everything else keeps the popup open.
+	if (entry.showPath) {
+		closePopup();
+		navigateTo(entry.showPath);
+	}
 }
 
 function onKey(event: KeyboardEvent) {

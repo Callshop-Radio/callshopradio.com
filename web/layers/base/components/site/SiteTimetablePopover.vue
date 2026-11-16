@@ -42,9 +42,9 @@ function expand() {
 }
 
 function go(entry: TimetableEntry) {
-	const target = entry.setPath || entry.showPath;
+	// Same rule as the strip: no manager route, open the day in the popup.
 	close();
-	if (target) navigateTo(target);
+	openPopup("day", new Date(entry.startsAt).toISOString().slice(0, 10));
 }
 
 function onDocumentClick(event: MouseEvent) {
