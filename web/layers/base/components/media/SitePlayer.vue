@@ -304,6 +304,10 @@ onBeforeUnmount(() => {
 				alt=""
 				loading="lazy"
 			/>
+			<!-- Many archive sets carry no artwork; a branded tile beats a blank box. -->
+			<span v-else class="site-player__cover site-player__cover--fallback" aria-hidden="true">
+				CSR
+			</span>
 		</Transition>
 
 		<div class="site-player__viewport">
@@ -576,6 +580,17 @@ onBeforeUnmount(() => {
     width: 40px;
     height: 40px;
   }
+}
+
+.site-player__cover--fallback {
+  display: inline-grid;
+  place-items: center;
+  background: #111;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 .site-player__viewport {
