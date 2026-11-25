@@ -417,7 +417,9 @@ onUnmounted(() => {
   position: absolute;
   top: calc(100% + 0.5rem);
   right: 0;
-  z-index: 999998;
+  /* The player row lives in the same header stacking context; the suggestions
+     have to paint above it. */
+  z-index: 1000000;
   width: 24rem;
   max-height: min(70vh, 30rem);
   overflow-y: auto;
@@ -576,7 +578,7 @@ onUnmounted(() => {
 
     &.is-open {
       position: fixed;
-      top: var(--nav-bar-height);
+      top: calc(var(--nav-bar-height) + var(--player-bar-height));
       right: 0;
       left: 0;
       z-index: 999998;
@@ -591,7 +593,9 @@ onUnmounted(() => {
 
   .search-suggestions {
     position: fixed;
-    top: calc(var(--nav-bar-height) + 2.75rem + 0.25rem);
+    top: calc(
+      var(--nav-bar-height) + var(--player-bar-height) + 2.75rem + 0.25rem
+    );
     right: var(--base-padding);
     left: var(--base-padding);
     width: auto;

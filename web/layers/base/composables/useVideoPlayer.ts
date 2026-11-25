@@ -9,7 +9,6 @@ import type { PlayerVideo } from "~~/types/player";
 
 const DEFAULT_WIDTH = 360;
 const WIDTH_KEY = "video:width";
-const MINIMIZED_KEY = "video:minimized";
 const DISMISSED_KEY = "video:dismissed";
 
 export function useVideoPlayer() {
@@ -18,7 +17,6 @@ export function useVideoPlayer() {
 	const route = useRoute();
 
 	const open = ref(false);
-	const minimized = ref(false);
 	const muted = ref(true);
 	const fullscreen = ref(false);
 	const width = ref(DEFAULT_WIDTH);
@@ -43,7 +41,6 @@ export function useVideoPlayer() {
 		if (Number.isFinite(storedWidth) && storedWidth > 0) {
 			width.value = clampVideoWidth(storedWidth, window.innerWidth);
 		}
-		minimized.value = sessionStorage.getItem(MINIMIZED_KEY) === "1";
 		const dismissed = sessionStorage.getItem(DISMISSED_KEY);
 		if (dismissed) dismissedSince.value = dismissed;
 	}
@@ -53,7 +50,6 @@ export function useVideoPlayer() {
 		(value) => {
 			if (!value?.live) {
 				open.value = false;
-				minimized.value = false;
 				return;
 			}
 			if (
@@ -70,25 +66,11 @@ export function useVideoPlayer() {
 	);
 
 	watch(
-		() => video.value?.since,
-		(since, previous) => {
-			if (since !== previous) minimized.value = false;
-		},
-	);
-
-	watch(
 		() => store.playing,
 		(playing) => {
 			if (playing) muted.value = true;
 		},
 	);
-
-	function toggleMinimize() {
-		minimized.value = !minimized.value;
-		if (import.meta.client) {
-			sessionStorage.setItem(MINIMIZED_KEY, minimized.value ? "1" : "0");
-		}
-	}
 
 	function close() {
 		open.value = false;
@@ -101,10 +83,8 @@ export function useVideoPlayer() {
 	function reopen() {
 		dismissedSince.value = null;
 		open.value = true;
-		minimized.value = false;
 		if (import.meta.client) {
 			sessionStorage.removeItem(DISMISSED_KEY);
-			sessionStorage.setItem(MINIMIZED_KEY, "0");
 		}
 	}
 
@@ -164,11 +144,9 @@ export function useVideoPlayer() {
 	return {
 		video,
 		open,
-		minimized,
 		muted,
 		fullscreen,
 		width,
-		toggleMinimize,
 		close,
 		reopen,
 		setWidth,

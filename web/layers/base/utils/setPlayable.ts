@@ -73,11 +73,16 @@ export function toSetPlayable(
 			.map((person) => {
 				const row = (person ?? {}) as Record<string, unknown>;
 				const slug = slugOf(row.slug);
+				const visible = row.poolVisibility === true;
 				return {
 					name: text(row.title) || text(row.name),
 					slug,
-					poolVisibility: row.poolVisibility === true,
-					path: text(row.path) || (slug ? `/pool/${slug}` : null),
+					poolVisibility: visible,
+					// Only a published pool profile may be linked. A slug alone
+					// is not enough: many set artists have an unpublished draft.
+					path: visible
+						? text(row.path) || (slug ? `/pool/${slug}` : null)
+						: null,
 				};
 			})
 			.filter((artist) => artist.name),

@@ -119,7 +119,9 @@ const setLinks = computed<PlayerLink[]>(() => {
 	for (const artist of value.artists) {
 		links.push({
 			label: artist.name,
-			path: artist.path || (artist.slug ? `/pool/${artist.slug}` : null),
+			// A slug on an unpublished draft is not a pool profile. Only link
+			// artists whose profile is actually visible.
+			path: artist.poolVisibility === true ? artist.path || null : null,
 		});
 	}
 	return links;

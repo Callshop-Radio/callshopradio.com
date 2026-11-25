@@ -72,7 +72,6 @@ await usePlayerFeed();
   @apply min-h-[100svh] flex flex-col items-stretch;
   max-width: 100svw;
   overflow-x: clip;
-  padding-bottom: var(--player-bar-height);
 
   main {
     @apply flex-grow-1;

@@ -10,11 +10,9 @@ const controller = usePlayerController();
 const {
 	video,
 	open,
-	minimized,
 	muted,
 	fullscreen,
 	width,
-	toggleMinimize,
 	close,
 	reopen,
 	setWidth,
@@ -57,9 +55,9 @@ watch(hlsState, (state) => {
 });
 
 watch(
-	[open, minimized, hlsUrl, videoEl],
-	([isOpen, isMinimized, url]) => {
-		if (isOpen && !isMinimized && url) void startHls();
+	[open, hlsUrl, videoEl],
+	([isOpen, url]) => {
+		if (isOpen && url) void startHls();
 		else stopHls();
 	},
 	{ immediate: true },
@@ -135,7 +133,7 @@ function onVisibilityChange() {
 	if (!element) return;
 	if (document.hidden) {
 		if (muted.value) element.pause();
-	} else if (open.value && !minimized.value) {
+	} else if (open.value) {
 		void element.play().catch(() => {});
 	}
 }
@@ -156,27 +154,36 @@ onBeforeUnmount(() => {
 			v-if="open && video"
 			ref="panelRef"
 			class="video-panel"
-			:class="{ 'is-minimized': minimized }"
 			:style="{ '--video-width': `${width}px` }"
 			role="dialog"
 			aria-label="Live Video"
 		>
 			<header class="video-panel__head">
 				<span class="video-panel__dot" :class="{ 'is-live': video.live }" aria-hidden="true" />
-				<span class="video-panel__title">{{ minimized ? "Video live" : video.title }}</span>
-				<template v-if="!minimized">
-					<button type="button" class="video-panel__icon" :aria-label="muted ? 'Ton an' : 'Ton aus'" @click="toggleMute">
-						{{ muted ? "Ton an" : "Ton aus" }}
-					</button>
-					<button type="button" class="video-panel__icon" :aria-label="fullscreen ? 'Vollbild verlassen' : 'Vollbild'" @click="enterFullscreen">⤢</button>
-				</template>
-				<button type="button" class="video-panel__icon" :aria-label="minimized ? 'Video vergrößern' : 'Video minimieren'" @click="toggleMinimize">
-					{{ minimized ? "▢" : "–" }}
+				<span class="video-panel__title">{{ video.title }}</span>
+				<button
+					type="button"
+					class="video-panel__icon video-panel__icon--sound"
+					:aria-label="muted ? 'Unmute video' : 'Mute video'"
+					:title="muted ? 'Unmute video' : 'Mute video'"
+					@click="toggleMute"
+				>
+					<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+						<path d="M4 9h3.2L12 5v14L7.2 15H4z" fill="currentColor" />
+						<template v-if="muted">
+							<path d="M16 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+						</template>
+						<template v-else>
+							<path d="M15.5 9a4.3 4.3 0 0 1 0 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+							<path d="M18.2 6.6a8 8 0 0 1 0 10.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+						</template>
+					</svg>
 				</button>
-				<button type="button" class="video-panel__icon" aria-label="Video schließen" @click="close">×</button>
+				<button type="button" class="video-panel__icon" :aria-label="fullscreen ? 'Exit fullscreen' : 'Fullscreen'" :title="fullscreen ? 'Exit fullscreen' : 'Fullscreen'" @click="enterFullscreen">⤢</button>
+				<button type="button" class="video-panel__icon" aria-label="Close video" title="Close video" @click="close">×</button>
 			</header>
 
-			<div v-if="!minimized" class="video-panel__body">
+			<div class="video-panel__body">
 				<video
 					ref="videoEl"
 					class="video-panel__video"
@@ -232,9 +239,7 @@ onBeforeUnmount(() => {
 <style lang="postcss" scoped>
 .video-panel {
   position: fixed;
-  bottom: calc(
-    1.5rem + env(safe-area-inset-bottom) + var(--player-bar-height)
-  );
+  bottom: calc(1.5rem + env(safe-area-inset-bottom));
   left: 1.5rem;
   z-index: 8990;
   width: var(--video-width, 360px);
@@ -249,14 +254,6 @@ onBeforeUnmount(() => {
     right: 1rem;
     left: 1rem;
     width: auto;
-  }
-
-  &.is-minimized {
-    width: 200px;
-
-    .video-panel__head {
-      padding: 0 0.5rem;
-    }
   }
 }
 
@@ -303,6 +300,10 @@ onBeforeUnmount(() => {
   color: inherit;
   font-size: var(--small-font-size);
   cursor: pointer;
+
+  svg {
+    display: block;
+  }
 
   &:hover {
     background: var(--color-grey);
@@ -407,9 +408,7 @@ onBeforeUnmount(() => {
 
 .video-panel__pill {
   position: fixed;
-  bottom: calc(
-    1.5rem + env(safe-area-inset-bottom) + var(--player-bar-height)
-  );
+  bottom: calc(1.5rem + env(safe-area-inset-bottom));
   left: 1.5rem;
   z-index: 8990;
   display: flex;

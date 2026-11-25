@@ -178,7 +178,8 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 
 .tt-popover__panel {
   position: absolute;
-  top: calc(100% + 10px);
+  /* Clears the fixed player row that now sits under the navigation. */
+  top: calc(100% + 10px + var(--player-bar-height));
   right: 0;
   width: 340px;
   max-height: 70vh;
@@ -218,7 +219,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
   opacity: 0.75;
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: 5px;
   display: grid;
   place-items: center;
 }
@@ -263,7 +264,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 .tt-popover__thumb {
   width: 28px;
   height: 28px;
-  border-radius: 4px;
+  border-radius: 5px;
   object-fit: cover;
   flex: none;
 }

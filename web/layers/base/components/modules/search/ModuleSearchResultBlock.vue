@@ -349,7 +349,7 @@ watch(
 						<!-- Artists -->
 						<div v-if="item.persons?.length > 0" class="show-artists">
 							<h3
-								v-for="(artist, index) in item.persons"
+								v-for="artist in item.persons"
 								:key="artist._id"
 								class="teaser-item__artist"
 							>
@@ -358,13 +358,9 @@ watch(
 									:pool="artist"
 									class="teaser-item__link"
 								>
-									{{ artist.title
-									}}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+									{{ artist.title }}
 								</ElementsContentLink>
-								<span v-else>
-									{{ artist.title
-									}}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
-								</span>
+								<span v-else>{{ artist.title }}</span>
 							</h3>
 						</div>
 					</div>
@@ -700,5 +696,9 @@ watch(
     margin: var(--card-content-padding-y) 0 0 0;
     gap: var(--card-content-gap);
   }
+}
+.teaser-item--sets .teaser-item__title {
+  font-size: 1.25rem;
+  line-height: 1.05;
 }
 </style>

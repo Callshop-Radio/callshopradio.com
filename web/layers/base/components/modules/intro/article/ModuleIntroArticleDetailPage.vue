@@ -9,6 +9,12 @@ const mainStore = useMainStore();
 interface Image {
 	asset?: {
 		url?: string;
+		metadata?: {
+			dimensions?: {
+				width?: number;
+				height?: number;
+			};
+		};
 	};
 }
 
@@ -50,9 +56,17 @@ const useImageManagement = () => {
 	function getItemImage(item?: Article): Image | null {
 		if (!item) return null;
 
-		// Image from the item itself
-		if (item.image || item.mainImage) {
-			return item.image || item.mainImage || null;
+		// The detail hero is full-bleed; prefer whichever image is larger.
+		// `image` is often the teaser/thumbnail, `mainImage` the original.
+		const candidates = [item.image, item.mainImage].filter(
+			(image): image is Image => Boolean(image?.asset?.url),
+		);
+		if (candidates.length) {
+			return candidates.reduce((best, current) => {
+				const bestWidth = best.asset?.metadata?.dimensions?.width ?? 0;
+				const currentWidth = current.asset?.metadata?.dimensions?.width ?? 0;
+				return currentWidth > bestWidth ? current : best;
+			});
 		}
 
 		// Fallback for articles
@@ -198,7 +212,7 @@ const currentArticleText = computed(() =>
 			<button
 				v-for="(tag, index) in cityTags"
 				:key="tag._id || index"
-				class="tag"
+				class="tag city"
 				type="button"
 			>
 					{{ getI18nLabel(tag?.title) }}
@@ -333,14 +347,17 @@ const currentArticleText = computed(() =>
     padding: 0 var(--mid-padding);
     box-sizing: border-box;
     .tag {
-      background-color: var(--color-green);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 1.25rem;
+      padding: 0 var(--base-padding);
       border: none;
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
-      border-top-right-radius: 8px;
-      border-top-left-radius: 8px;
-      padding: calc(var(--small-padding) / 2) calc(var(--base-padding) * 1.5);
-      font-size: var(--base-font-size);
+      /* A city flag: rounded on top, square where it meets the edge. */
+      border-radius: 8px 8px 0 0;
+      background-color: var(--color-green);
+      font-size: var(--small-font-size);
+      line-height: 1;
     }
   }
   .article-tags {

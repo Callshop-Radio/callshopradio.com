@@ -1,0 +1,1410 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Generative Form Playground — Callshop Radio</title>
+	<style>
+		@font-face {
+			font-family: "Icona-Sans-Regular";
+			src: url("/fonts/Icona-Sans-Regular.woff2") format("woff2");
+			font-weight: 300;
+			font-style: normal;
+			font-display: swap;
+		}
+		@font-face {
+			font-family: "Icona-Sans-Medium";
+			src: url("/fonts/Icona-Sans-Medium.woff2") format("woff2");
+			font-weight: 400;
+			font-style: normal;
+			font-display: swap;
+		}
+		@font-face {
+			font-family: "Icona-Sans-Semibold";
+			src: url("/fonts/Icona-Sans-Semibold.woff2") format("woff2");
+			font-weight: 550;
+			font-style: normal;
+			font-display: swap;
+		}
+
+		:root {
+			--font: "Icona-Sans-Regular", system-ui, sans-serif;
+			--font-medium: "Icona-Sans-Medium", system-ui, sans-serif;
+			--font-semibold: "Icona-Sans-Semibold", system-ui, sans-serif;
+			--accent: #f794b3;
+			--radius: 5px;
+			--bg: #090909;
+			--panel: #0d0d0d;
+			--stage: #0b0b0b;
+			--text: #f5f5f5;
+			--muted: #8d8d8d;
+			--line: rgba(255, 255, 255, 0.12);
+			--line-soft: rgba(255, 255, 255, 0.06);
+			--control: rgba(255, 255, 255, 0.04);
+			--control-active: #f5f5f5;
+			--control-active-text: #090909;
+		}
+
+		html[data-theme="dark"] { color-scheme: dark; }
+
+		html[data-theme="light"] {
+			color-scheme: light;
+			--bg: #f7f7f8;
+			--panel: #ffffff;
+			--stage: #f1f1f3;
+			--text: #090909;
+			--muted: #696969;
+			--line: rgba(0, 0, 0, 0.12);
+			--line-soft: rgba(0, 0, 0, 0.06);
+			--control: rgba(0, 0, 0, 0.035);
+			--control-active: #090909;
+			--control-active-text: #ffffff;
+		}
+
+		* { box-sizing: border-box; }
+
+		html, body {
+			margin: 0;
+			min-height: 100%;
+			background: var(--bg);
+			color: var(--text);
+			font-family: var(--font);
+			font-size: 13px;
+			line-height: 1.4;
+			-webkit-font-smoothing: antialiased;
+		}
+
+		body { overflow: hidden; }
+
+		button, input, select {
+			font: inherit;
+			color: inherit;
+		}
+
+		button { cursor: pointer; }
+
+		.app {
+			display: grid;
+			grid-template-columns: 360px minmax(0, 1fr);
+			height: 100dvh;
+			min-height: 640px;
+		}
+
+		/* --------------------------------------------------------------- panel */
+
+		.panel {
+			background: var(--panel);
+			border-right: 1px solid var(--line);
+			overflow-y: auto;
+			padding: 22px 18px 32px;
+			scrollbar-width: thin;
+			scrollbar-color: var(--line) transparent;
+		}
+
+		.brand {
+			display: flex;
+			align-items: center;
+			gap: 9px;
+			margin-bottom: 26px;
+			font-family: var(--font-semibold);
+			font-size: 11px;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+		}
+
+		.brand__mark {
+			width: 17px;
+			height: 17px;
+			border-radius: 4px;
+			background: var(--accent);
+			box-shadow:
+				6px 0 0 var(--accent),
+				6px 6px 0 var(--accent);
+			transform: translate(-6px, -6px);
+			margin-right: 8px;
+		}
+
+		.panel h1 {
+			margin: 0 0 6px;
+			font-family: var(--font-semibold);
+			font-size: 22px;
+			line-height: 1.05;
+			letter-spacing: -0.01em;
+			text-transform: uppercase;
+		}
+
+		.panel__lede {
+			margin: 0 0 24px;
+			max-width: 32ch;
+			color: var(--muted);
+			font-size: 11px;
+			line-height: 1.45;
+		}
+
+		.group {
+			padding: 16px 0;
+			border-top: 1px solid var(--line);
+		}
+
+		.group__head {
+			display: flex;
+			align-items: baseline;
+			justify-content: space-between;
+			gap: 10px;
+			margin-bottom: 12px;
+		}
+
+		.group h2 {
+			margin: 0;
+			font-family: var(--font-semibold);
+			font-size: 10px;
+			letter-spacing: 0.09em;
+			text-transform: uppercase;
+		}
+
+		.group__note {
+			color: var(--muted);
+			font-size: 9px;
+			letter-spacing: 0.05em;
+			text-transform: uppercase;
+		}
+
+		.row {
+			display: grid;
+			grid-template-columns: 1fr auto;
+			align-items: center;
+			gap: 4px 10px;
+			margin: 0 0 11px;
+		}
+
+		.row:last-child { margin-bottom: 0; }
+
+		.row label {
+			color: var(--muted);
+			font-size: 10px;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+		}
+
+		.row output {
+			font-variant-numeric: tabular-nums;
+			font-size: 10px;
+			color: var(--text);
+		}
+
+		.row input[type="range"] {
+			grid-column: 1 / -1;
+			width: 100%;
+			height: 16px;
+			margin: 0;
+			accent-color: var(--accent);
+			appearance: none;
+			-webkit-appearance: none;
+			background: transparent;
+		}
+
+		.row input[type="range"]::-webkit-slider-runnable-track {
+			height: 2px;
+			border-radius: 5px;
+			background: var(--line);
+		}
+
+		.row input[type="range"]::-webkit-slider-thumb {
+			-webkit-appearance: none;
+			width: 11px;
+			height: 11px;
+			margin-top: -4.5px;
+			border: 0;
+			border-radius: 50%;
+			background: var(--accent);
+		}
+
+		.row input[type="range"]::-moz-range-track {
+			height: 2px;
+			border-radius: 5px;
+			background: var(--line);
+		}
+
+		.row input[type="range"]::-moz-range-thumb {
+			width: 11px;
+			height: 11px;
+			border: 0;
+			border-radius: 50%;
+			background: var(--accent);
+		}
+
+		.row input[type="range"]:focus-visible {
+			outline: 1px solid var(--accent);
+			outline-offset: 4px;
+			border-radius: 5px;
+		}
+
+		.row input[type="number"],
+		.row input[type="text"],
+		.row select {
+			grid-column: 2;
+			width: 100%;
+			min-width: 0;
+			padding: 5px 7px;
+			border: 1px solid var(--line);
+			border-radius: var(--radius);
+			background: var(--control);
+			color: var(--text);
+			font-size: 11px;
+		}
+
+		.row input[type="color"] {
+			grid-column: 2;
+			width: 44px;
+			height: 26px;
+			padding: 2px;
+			border: 1px solid var(--line);
+			border-radius: var(--radius);
+			background: var(--control);
+		}
+
+		.seed-row {
+			display: grid;
+			grid-template-columns: 1fr 32px;
+			gap: 6px;
+			margin-bottom: 12px;
+		}
+
+		.seed-row input {
+			width: 100%;
+			padding: 6px 8px;
+			border: 1px solid var(--line);
+			border-radius: var(--radius);
+			background: var(--control);
+			color: var(--text);
+			font-size: 12px;
+			font-variant-numeric: tabular-nums;
+		}
+
+		.icon-button {
+			display: grid;
+			place-items: center;
+			border: 1px solid var(--line);
+			border-radius: var(--radius);
+			background: var(--control);
+			color: var(--text);
+			font-size: 14px;
+			line-height: 1;
+		}
+
+		.icon-button:hover { border-color: var(--accent); color: var(--accent); }
+
+		.seg {
+			display: flex;
+			gap: 3px;
+			margin-bottom: 12px;
+		}
+
+		.seg button {
+			flex: 1;
+			padding: 6px 4px;
+			border: 1px solid var(--line);
+			border-radius: var(--radius);
+			background: transparent;
+			color: var(--muted);
+			font-size: 9px;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+		}
+
+		.seg button:hover { color: var(--text); border-color: var(--text); }
+
+		.seg button.is-active {
+			background: var(--control-active);
+			border-color: var(--control-active);
+			color: var(--control-active-text);
+		}
+
+		.check-row {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			padding: 4px 0;
+			color: var(--muted);
+			font-size: 10px;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+		}
+
+		.check-row input {
+			width: 16px;
+			height: 16px;
+			accent-color: var(--accent);
+		}
+
+		.hint {
+			margin: 10px 0 0;
+			color: var(--muted);
+			font-size: 9px;
+			line-height: 1.45;
+		}
+
+		.actions {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 6px;
+			margin-top: 16px;
+		}
+
+		.actions button {
+			min-height: 32px;
+			padding: 7px 9px;
+			border: 1px solid var(--line);
+			border-radius: var(--radius);
+			background: var(--control);
+			color: var(--text);
+			font-size: 9px;
+			letter-spacing: 0.05em;
+			text-transform: uppercase;
+		}
+
+		.actions button:hover { border-color: var(--accent); color: var(--accent); }
+
+		.actions button.primary {
+			background: var(--accent);
+			border-color: var(--accent);
+			color: #090909;
+		}
+
+		.actions button.primary:hover { filter: brightness(1.06); color: #090909; }
+
+		details.rules {
+			margin-top: 16px;
+			padding-top: 14px;
+			border-top: 1px solid var(--line);
+			color: var(--muted);
+			font-size: 10px;
+			line-height: 1.5;
+		}
+
+		details.rules summary {
+			cursor: pointer;
+			color: var(--text);
+			font-family: var(--font-semibold);
+			font-size: 9px;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+		}
+
+		details.rules p { margin: 9px 0 0; }
+		details.rules b { color: var(--text); font-weight: 400; }
+
+		/* --------------------------------------------------------------- stage */
+
+		.stage-wrap {
+			position: relative;
+			display: grid;
+			place-items: center;
+			min-width: 0;
+			padding: 24px;
+			background:
+				radial-gradient(circle at 50% 35%, var(--line-soft), transparent 60%),
+				var(--bg);
+			overflow: hidden;
+		}
+
+		.stage {
+			position: relative;
+			width: min(100%, calc((100dvh - 96px) * 12 / 9));
+			aspect-ratio: 12 / 9;
+			border: 1px solid var(--line);
+			border-radius: var(--radius);
+			background: var(--stage);
+			overflow: hidden;
+			isolation: isolate;
+		}
+
+		.stage__form {
+			position: absolute;
+			inset: 0;
+			z-index: 2;
+			pointer-events: none;
+			color: var(--accent);
+		}
+
+		.stage__form svg {
+			width: 100%;
+			height: 100%;
+			display: block;
+			overflow: visible;
+		}
+
+		.stage__hud {
+			position: absolute;
+			left: 14px;
+			bottom: 12px;
+			z-index: 3;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 4px 14px;
+			max-width: calc(100% - 28px);
+			font-size: 9px;
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			color: var(--muted);
+			pointer-events: none;
+		}
+
+		.stage__hud b {
+			color: var(--text);
+			font-weight: 400;
+			font-variant-numeric: tabular-nums;
+		}
+
+		.stage__tag {
+			position: absolute;
+			top: 12px;
+			right: 14px;
+			z-index: 3;
+			font-size: 8px;
+			letter-spacing: 0.09em;
+			text-transform: uppercase;
+			color: var(--muted);
+			pointer-events: none;
+		}
+
+		/* --------------------------------------------------------------- mobile */
+
+		@media (max-width: 900px) {
+			body { overflow: auto; }
+
+			.app {
+				display: flex;
+				flex-direction: column;
+				height: auto;
+				min-height: 100dvh;
+			}
+
+			.panel {
+				order: 1;
+				border-right: 0;
+				border-bottom: 1px solid var(--line);
+				overflow: visible;
+				padding: 16px 14px 24px;
+			}
+
+			.brand { margin-bottom: 16px; }
+			.panel h1 { font-size: 19px; }
+			.panel__lede { margin-bottom: 16px; }
+
+			.stage-wrap {
+				order: 1;
+				position: sticky;
+				top: 0;
+				z-index: 20;
+				padding: 10px 14px;
+				min-height: 0;
+				background: var(--bg);
+				border-bottom: 1px solid var(--line);
+			}
+
+			.panel {
+				order: 2;
+			}
+
+			.stage {
+				width: 100%;
+				max-width: 720px;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="app">
+		<aside class="panel">
+			<div class="brand">
+				<span class="brand__mark" aria-hidden="true"></span>
+				<span>Callshop Radio</span>
+			</div>
+
+			<h1>Generative<br>Form Lab</h1>
+			<p class="panel__lede">
+				Rechteck-Union nach Regelkanon, Kontur, Corner-Rounding.
+				Danach als Border, Fläche oder beides.
+			</p>
+
+			<section class="group">
+				<div class="group__head">
+					<h2>Form</h2>
+					<span class="group__note">SVG · no canvas</span>
+				</div>
+
+				<div class="seed-row">
+					<input id="seed" type="number" min="0" max="999999" step="1" value="999939" aria-label="Seed">
+					<button id="reroll" class="icon-button" type="button" title="Neuer Seed">↻</button>
+				</div>
+
+				<div class="row">
+					<label for="blocks">Blocks</label>
+					<output id="outBlocks">6</output>
+					<input id="blocks" type="range" min="2" max="6" step="1" value="6">
+				</div>
+
+				<div class="row">
+					<label for="minSize">Min size</label>
+					<output id="outMinSize">2</output>
+					<input id="minSize" type="range" min="2" max="3" step="1" value="2">
+				</div>
+
+				<div class="row">
+					<label for="maxSize">Max size</label>
+					<output id="outMaxSize">3</output>
+					<input id="maxSize" type="range" min="3" max="6" step="1" value="3">
+				</div>
+
+				<div class="row">
+					<label for="overlap">Overlap</label>
+					<output id="outOverlap">1</output>
+					<input id="overlap" type="range" min="1" max="2" step="1" value="1">
+				</div>
+
+				<div class="row">
+					<label for="nesting">Nesting</label>
+					<output id="outNesting">0.75</output>
+					<input id="nesting" type="range" min="0" max="1" step="0.05" value="0.75">
+				</div>
+
+				<div class="row">
+					<label for="radius">Corner radius</label>
+					<output id="outRadius">0.50</output>
+					<input id="radius" type="range" min="0" max="1.5" step="0.05" value="0.5">
+				</div>
+
+				<div class="row">
+					<label for="strokeWidth">Border width</label>
+					<output id="outStrokeWidth">1.5</output>
+					<input id="strokeWidth" type="range" min="0.5" max="4" step="0.25" value="1.5">
+				</div>
+
+				<!-- biome-ignore lint/a11y/useSemanticElements: the three mode buttons are a toggle group, not a form fieldset -->
+				<div class="seg" role="group" aria-label="Darstellung">
+					<button type="button" data-mode="border" class="is-active">Border</button>
+					<button type="button" data-mode="fill">Fill</button>
+					<button type="button" data-mode="both">Both</button>
+				</div>
+
+				<div class="row">
+					<label for="colorPreset">Colour</label>
+					<select id="colorPreset">
+						<option value="shows">Shows / Pink</option>
+						<option value="pool">Pool / Blue</option>
+						<option value="words">Words / Green</option>
+						<option value="custom">Custom</option>
+					</select>
+				</div>
+
+				<div class="row">
+					<label for="customColor">Custom</label>
+					<input id="customColor" type="color" value="#f794b3" aria-label="Eigene Farbe">
+				</div>
+
+				<div class="check-row">
+					<span>Show construction</span>
+					<input id="construction" type="checkbox">
+				</div>
+				<div class="check-row">
+					<span>Show grid</span>
+					<input id="grid" type="checkbox">
+				</div>
+			</section>
+
+			<section class="group">
+				<div class="group__head">
+					<h2>Scene</h2>
+					<span class="group__note">performance</span>
+				</div>
+
+				<div class="row">
+					<label for="theme">Theme</label>
+					<select id="theme">
+						<option value="dark">Dark</option>
+						<option value="light">Light</option>
+					</select>
+				</div>
+
+				<p class="hint">
+					Form: statischer SVG-Path, keine Per-Frame-Berechnung.
+					Kontur, Fläche oder beides – die Geometrie bleibt eine
+					reine Rechteck-Union.
+				</p>
+			</section>
+
+			<div class="actions">
+				<button id="regen" class="primary" type="button">Regenerate</button>
+				<button id="copyPath" type="button">Copy path</button>
+				<button id="copyConfig" type="button">Copy config</button>
+				<button id="download" type="button">Download SVG</button>
+			</div>
+
+			<details class="rules">
+				<summary>Regelkanon</summary>
+				<p>
+					<b>Raster:</b> 12 × 9 Zellen, 1 Zelle Rand.<br>
+					<b>Blöcke:</b> 2–6 Rechtecke, jedes überlappt die bestehende
+					Union um 1–2 Zellen. Startblock 3–5 Zellen, danach Stufen
+					bevorzugt nach rechts/unten, gelegentlich links/oben.
+					Keine direkte Umkehr, keine Löcher, keine Diagonal-Berührung.
+				</p>
+				<p>
+					<b>Nesting:</b> Bei hohem Wert werden lange, schmale
+					„Beine“ eingesetzt und der nächste Block an deren Ende
+					angesetzt. Dadurch entstehen Überhänge und verschachtelte
+					Kanten statt einer Hauptfläche mit anliegenden Rechtecken.
+				</p>
+				<p>
+					<b>Look:</b> Union → orthogonal contour → jede 90°-Ecke
+					mit Radius r abrunden (Corner-Tool-Prinzip). Der Radius wird
+					pro Ecke auf die halbe angrenzende Kante begrenzt.
+				</p>
+				<p>
+					<b>Kontur:</b> Die Rechteck-Union wird als ein Pfad
+					gezeichnet; die Ecken werden per Arc gerundet und auf die
+					halbe angrenzende Kante begrenzt.
+				</p>
+			</details>
+		</aside>
+
+		<main class="stage-wrap">
+			<div class="stage" id="stage">
+				<div class="stage__form" id="form"></div>
+				<div class="stage__tag">SVG path · contour</div>
+				<div class="stage__hud" id="hud"></div>
+			</div>
+		</main>
+	</div>
+
+	<script>
+		(() => {
+			const COLS = 12;
+			const ROWS = 9;
+			const COLORS = {
+				shows: "#f794b3",
+				pool: "#557fb9",
+				words: "#78ce82",
+			};
+
+			const $ = (id) => document.getElementById(id);
+			const state = {
+				seed: 999939,
+				result: null,
+				mode: "border",
+				color: COLORS.shows,
+			};
+
+			/* ------------------------------------------------------------ random */
+
+			function mulberry32(seed) {
+				let a = seed >>> 0;
+				return () => {
+					a |= 0;
+					a = (a + 0x6d2b79f5) | 0;
+					let t = Math.imul(a ^ (a >>> 15), 1 | a);
+					t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+					return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+				};
+			}
+
+			function randInt(rng, min, max) {
+				return min + Math.floor(rng() * (max - min + 1));
+			}
+
+			function pick(rng, list) {
+				return list[Math.floor(rng() * list.length)];
+			}
+
+			function weightedPick(rng, entries) {
+				const total = entries.reduce((sum, [, weight]) => sum + weight, 0);
+				let value = rng() * total;
+				for (const [entry, weight] of entries) {
+					value -= weight;
+					if (value <= 0) return entry;
+				}
+				return entries[entries.length - 1][0];
+			}
+
+			/* ------------------------------------------------------------- grid */
+
+			function makeGrid() {
+				return Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+			}
+
+			function stamp(grid, rect) {
+				for (let y = rect.y; y < rect.y + rect.h; y++) {
+					for (let x = rect.x; x < rect.x + rect.w; x++) {
+						if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return false;
+						grid[y][x] = 1;
+					}
+				}
+				return true;
+			}
+
+			function cloneGrid(grid) {
+				return grid.map((row) => row.slice());
+			}
+
+			function countFilled(grid) {
+				return grid.reduce(
+					(sum, row) => sum + row.reduce((a, v) => a + v, 0),
+					0,
+				);
+			}
+
+			function isConnected(grid) {
+				const cells = [];
+				for (let y = 0; y < ROWS; y++) {
+					for (let x = 0; x < COLS; x++) if (grid[y][x]) cells.push([x, y]);
+				}
+				if (!cells.length) return false;
+				const seen = new Set();
+				const queue = [cells[0]];
+				seen.add(cells[0].join(","));
+				while (queue.length) {
+					const [x, y] = queue.shift();
+					for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+						const nx = x + dx;
+						const ny = y + dy;
+						if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS) continue;
+						if (!grid[ny][nx]) continue;
+						const key = `${nx},${ny}`;
+						if (seen.has(key)) continue;
+						seen.add(key);
+						queue.push([nx, ny]);
+					}
+				}
+				return seen.size === cells.length;
+			}
+
+			function hasHole(grid) {
+				const visited = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+				const queue = [];
+				for (let x = 0; x < COLS; x++) {
+					if (!grid[0][x]) queue.push([x, 0]);
+					if (!grid[ROWS - 1][x]) queue.push([x, ROWS - 1]);
+				}
+				for (let y = 0; y < ROWS; y++) {
+					if (!grid[y][0]) queue.push([0, y]);
+					if (!grid[y][COLS - 1]) queue.push([COLS - 1, y]);
+				}
+				queue.forEach(([x, y]) => { visited[y][x] = true; });
+				while (queue.length) {
+					const [x, y] = queue.shift();
+					for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+						const nx = x + dx;
+						const ny = y + dy;
+						if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS) continue;
+						if (grid[ny][nx] || visited[ny][nx]) continue;
+						visited[ny][nx] = true;
+						queue.push([nx, ny]);
+					}
+				}
+				for (let y = 0; y < ROWS; y++) {
+					for (let x = 0; x < COLS; x++) {
+						if (!grid[y][x] && !visited[y][x]) return true;
+					}
+				}
+				return false;
+			}
+
+			function hasPinch(grid) {
+				for (let y = 1; y < ROWS - 1; y++) {
+					for (let x = 1; x < COLS - 1; x++) {
+						if (grid[y][x]) continue;
+						const a = grid[y - 1][x - 1] && grid[y + 1][x + 1];
+						const b = grid[y - 1][x + 1] && grid[y + 1][x - 1];
+						const horizontal = grid[y][x - 1] && grid[y][x + 1];
+						const vertical = grid[y - 1][x] && grid[y + 1][x];
+						if ((a || b) && !horizontal && !vertical) return true;
+					}
+				}
+				return false;
+			}
+
+			function boundsOf(grid) {
+				let minX = COLS;
+				let minY = ROWS;
+				let maxX = -1;
+				let maxY = -1;
+				for (let y = 0; y < ROWS; y++) {
+					for (let x = 0; x < COLS; x++) {
+						if (!grid[y][x]) continue;
+						minX = Math.min(minX, x);
+						minY = Math.min(minY, y);
+						maxX = Math.max(maxX, x);
+						maxY = Math.max(maxY, y);
+					}
+				}
+				return { minX, minY, maxX, maxY };
+			}
+
+			function boundaryCells(grid, dir) {
+				const cells = [];
+				for (let y = 0; y < ROWS; y++) {
+					for (let x = 0; x < COLS; x++) {
+						if (!grid[y][x]) continue;
+						if (dir === "right" && (x + 1 >= COLS || !grid[y][x + 1])) cells.push([x, y]);
+						if (dir === "left" && (x - 1 < 0 || !grid[y][x - 1])) cells.push([x, y]);
+						if (dir === "down" && (y + 1 >= ROWS || !grid[y + 1][x])) cells.push([x, y]);
+						if (dir === "up" && (y - 1 < 0 || !grid[y - 1][x])) cells.push([x, y]);
+					}
+				}
+				return cells;
+			}
+
+			/* ---------------------------------------------------------- contour */
+
+			function traceContour(grid) {
+				const edges = [];
+				for (let y = 0; y < ROWS; y++) {
+					for (let x = 0; x < COLS; x++) {
+						if (!grid[y][x]) continue;
+						if (y === 0 || !grid[y - 1][x]) {
+							edges.push({ a: [x, y], b: [x + 1, y] });
+						}
+						if (x === COLS - 1 || !grid[y][x + 1]) {
+							edges.push({ a: [x + 1, y], b: [x + 1, y + 1] });
+						}
+						if (y === ROWS - 1 || !grid[y + 1][x]) {
+							edges.push({ a: [x + 1, y + 1], b: [x, y + 1] });
+						}
+						if (x === 0 || !grid[y][x - 1]) {
+							edges.push({ a: [x, y + 1], b: [x, y] });
+						}
+					}
+				}
+
+				const byStart = new Map();
+				edges.forEach((edge) => {
+					const key = edge.a.join(",");
+					if (!byStart.has(key)) byStart.set(key, []);
+					byStart.get(key).push(edge);
+				});
+
+				const first = edges[0];
+				const points = [];
+				let current = first;
+				let guard = 0;
+				do {
+					points.push(current.a);
+					const candidates = byStart.get(current.b.join(",")) || [];
+					if (!candidates.length) break;
+					current = candidates.find((edge) => edge !== current) || candidates[0];
+					guard += 1;
+				} while (current !== first && guard < edges.length + 4);
+
+				// Simplify collinear runs.
+				let changed = true;
+				while (changed && points.length > 4) {
+					changed = false;
+					for (let i = 0; i < points.length; i++) {
+						const p = points[i];
+						const prev = points[(i - 1 + points.length) % points.length];
+						const next = points[(i + 1) % points.length];
+						if (
+							(prev[0] === p[0] && p[0] === next[0]) ||
+							(prev[1] === p[1] && p[1] === next[1])
+						) {
+							points.splice(i, 1);
+							changed = true;
+							break;
+						}
+					}
+				}
+
+				return points;
+			}
+
+			function polygonPath(points) {
+				if (!points.length) return "";
+				return `M ${points.map(([x, y]) => `${x} ${y}`).join(" L ")} Z`;
+			}
+
+			function cornerTurns(points) {
+				let left = 0;
+				let right = 0;
+				for (let i = 0; i < points.length; i++) {
+					const p = points[i];
+					const prev = points[(i - 1 + points.length) % points.length];
+					const next = points[(i + 1) % points.length];
+					const inX = Math.sign(p[0] - prev[0]);
+					const inY = Math.sign(p[1] - prev[1]);
+					const outX = Math.sign(next[0] - p[0]);
+					const outY = Math.sign(next[1] - p[1]);
+					const cross = inX * outY - inY * outX;
+					if (cross > 0) right += 1;
+					if (cross < 0) left += 1;
+				}
+				return { left, right };
+			}
+
+			/* -------------------------------------------------------- rounding */
+
+			function roundedPath(points, radius) {
+				const n = points.length;
+				if (n < 4) return polygonPath(points);
+				const corners = [];
+				for (let i = 0; i < n; i++) {
+					const p = points[i];
+					const prev = points[(i - 1 + n) % n];
+					const next = points[(i + 1) % n];
+					const inX = Math.sign(p[0] - prev[0]);
+					const inY = Math.sign(p[1] - prev[1]);
+					const outX = Math.sign(next[0] - p[0]);
+					const outY = Math.sign(next[1] - p[1]);
+					const lenPrev = Math.abs(p[0] - prev[0]) + Math.abs(p[1] - prev[1]);
+					const lenNext = Math.abs(next[0] - p[0]) + Math.abs(next[1] - p[1]);
+					const r = Math.min(radius, lenPrev / 2, lenNext / 2);
+					corners.push({
+						p,
+						inX,
+						inY,
+						outX,
+						outY,
+						r,
+						sweep: inX * outY - inY * outX > 0 ? 1 : 0,
+					});
+				}
+
+				const fmt = (value) => Number(value.toFixed(3));
+				const before = corners.map((c) => [
+					c.p[0] - c.inX * c.r,
+					c.p[1] - c.inY * c.r,
+				]);
+				const after = corners.map((c) => [
+					c.p[0] + c.outX * c.r,
+					c.p[1] + c.outY * c.r,
+				]);
+
+				let d = `M ${fmt(before[0][0])} ${fmt(before[0][1])}`;
+				for (let i = 0; i < n; i++) {
+					const c = corners[i];
+					if (c.r > 0.001) {
+						d += ` A ${fmt(c.r)} ${fmt(c.r)} 0 0 ${c.sweep} ${fmt(after[i][0])} ${fmt(after[i][1])}`;
+					} else {
+						d += ` L ${fmt(c.p[0])} ${fmt(c.p[1])}`;
+					}
+					const nextBefore = before[(i + 1) % n];
+					d += ` L ${fmt(nextBefore[0])} ${fmt(nextBefore[1])}`;
+				}
+				return `${d} Z`;
+			}
+
+			/* -------------------------------------------------------- generator */
+
+			function validate(grid) {
+				if (!isConnected(grid)) return false;
+				if (hasHole(grid)) return false;
+				if (hasPinch(grid)) return false;
+				const area = countFilled(grid);
+				if (area < 10 || area > 72) return false;
+				const bounds = boundsOf(grid);
+				if (bounds.minX < 1 || bounds.minY < 1) return false;
+				if (bounds.maxX > COLS - 2 || bounds.maxY > ROWS - 2) return false;
+				const points = traceContour(grid);
+				if (points.length < 8) return false;
+				const turns = cornerTurns(points);
+				if (turns.left < 1 || turns.right < 1) return false;
+				return true;
+			}
+
+			function pickShift(rng, min, max, nesting) {
+				if (nesting > 0 && rng() < nesting) {
+					return rng() < 0.5 ? min : max;
+				}
+				return randInt(rng, min, max);
+			}
+
+			function generate(seed, options) {
+				const rng = mulberry32(seed);
+				const minSize = Math.min(options.minSize, options.maxSize);
+				const maxSize = Math.max(options.minSize, options.maxSize);
+				const nesting = Math.max(0, Math.min(1, options.nesting ?? 0));
+				const target = options.blocks;
+
+				for (let attempt = 0; attempt < 120; attempt++) {
+					const grid = makeGrid();
+					const rects = [];
+					const startW = randInt(rng, 3, Math.min(5, maxSize + 1));
+					const startH = randInt(rng, 2, Math.min(4, maxSize + 1));
+					const startX = randInt(rng, 1, Math.max(1, COLS - startW - 2));
+					const startY = randInt(rng, 1, Math.max(1, ROWS - startH - 2));
+					const start = { x: startX, y: startY, w: startW, h: startH };
+					if (!stamp(grid, start)) continue;
+					rects.push(start);
+
+					let lastDir = null;
+					let lastLong = false;
+					for (let block = 1; block < target; block++) {
+						const prev = rects[rects.length - 1];
+						let placed = false;
+
+						for (let tries = 0; tries < 30 && !placed; tries++) {
+							const opposite = {
+								right: "left",
+								left: "right",
+								down: "up",
+								up: "down",
+							};
+							const directions = ["right", "down", "left", "up"].filter(
+								(dir) => dir !== opposite[lastDir],
+							);
+							const weighted = directions.map((dir) => {
+								let weight = dir === "right" || dir === "down" ? 0.36 : 0.14;
+								if (lastDir === "right" && dir === "down") weight += 0.2;
+								if (lastDir === "down" && dir === "right") weight += 0.2;
+								if (lastDir === "left" && dir === "up") weight += 0.12;
+								if (lastDir === "up" && dir === "left") weight += 0.12;
+								return [dir, weight];
+							});
+							const dir = weightedPick(rng, weighted);
+							const horizontal = dir === "right" || dir === "left";
+							const longLeg = rng() < nesting * 0.85;
+							let w;
+							let h;
+
+							if (horizontal) {
+								w = longLeg
+									? randInt(rng, minSize, Math.min(3, maxSize))
+									: randInt(rng, minSize, maxSize);
+								h = longLeg
+									? randInt(
+											rng,
+											Math.max(4, maxSize - 1),
+											Math.min(6, maxSize + 1),
+										)
+									: randInt(rng, minSize, maxSize);
+							} else {
+								h = longLeg
+									? randInt(rng, minSize, Math.min(3, maxSize))
+									: randInt(rng, minSize, maxSize);
+								w = longLeg
+									? randInt(
+											rng,
+											Math.max(4, maxSize - 1),
+											Math.min(6, maxSize + 1),
+										)
+									: randInt(rng, minSize, maxSize);
+							}
+
+							// A long leg is followed by a larger counter-block.
+							if (lastLong && !longLeg && rng() < 0.75) {
+								w = Math.max(w, randInt(rng, 3, maxSize));
+								h = Math.max(h, randInt(rng, 3, maxSize));
+							}
+
+							const overlap = options.overlap;
+							let x;
+							let y;
+
+							if (dir === "right") {
+								x = prev.x + prev.w - overlap;
+								y = prev.y + pickShift(
+									rng,
+									-(h - overlap),
+									prev.h - overlap,
+									nesting,
+								);
+							} else if (dir === "left") {
+								x = prev.x - w + overlap;
+								y = prev.y + pickShift(
+									rng,
+									-(h - overlap),
+									prev.h - overlap,
+									nesting,
+								);
+							} else if (dir === "down") {
+								y = prev.y + prev.h - overlap;
+								x = prev.x + pickShift(
+									rng,
+									-(w - overlap),
+									prev.w - overlap,
+									nesting,
+								);
+							} else {
+								y = prev.y - h + overlap;
+								x = prev.x + pickShift(
+									rng,
+									-(w - overlap),
+									prev.w - overlap,
+									nesting,
+								);
+							}
+
+							const rect = { x, y, w, h };
+							if (x < 1 || y < 1) continue;
+							if (x + w > COLS - 1 || y + h > ROWS - 1) continue;
+							const nextGrid = cloneGrid(grid);
+							if (!stamp(nextGrid, rect)) continue;
+							const before = countFilled(grid);
+							const after = countFilled(nextGrid);
+							if (after - before < 1) continue;
+							if (!isConnected(nextGrid) || hasHole(nextGrid) || hasPinch(nextGrid)) continue;
+
+							grid.splice(0, grid.length, ...nextGrid);
+							rects.push(rect);
+							lastDir = dir;
+							lastLong = longLeg;
+							placed = true;
+						}
+						if (!placed) break;
+					}
+
+					if (rects.length < target) continue;
+					if (!validate(grid)) continue;
+					const points = traceContour(grid);
+					const turns = cornerTurns(points);
+					if (turns.left < 1 || turns.right < 1) continue;
+					return { grid, rects, points, seed, area: countFilled(grid), turns };
+				}
+
+				// Deterministic fallback: a three-block L/step with a real notch.
+				const fallbackRects = [
+					{ x: 2, y: 2, w: 4, h: 3 },
+					{ x: 5, y: 4, w: 3, h: 4 },
+					{ x: 7, y: 6, w: 3, h: 2 },
+				];
+				const grid = makeGrid();
+				fallbackRects.forEach((rect) => stamp(grid, rect));
+				const points = traceContour(grid);
+				return {
+					grid,
+					rects: fallbackRects,
+					points,
+					seed,
+					area: countFilled(grid),
+					turns: cornerTurns(points),
+				};
+			}
+
+			/* ------------------------------------------------------------ render */
+
+			function currentColor() {
+				const preset = $("colorPreset").value;
+				return preset === "custom" ? $("customColor").value : COLORS[preset];
+			}
+
+			function formViewBox() {
+				const points = state.result?.points || [];
+				if (!points.length) return `0 0 ${COLS} ${ROWS}`;
+				const xs = points.map(([x]) => x);
+				const ys = points.map(([, y]) => y);
+				const pad = 0.75;
+				const minX = Math.min(...xs) - pad;
+				const minY = Math.min(...ys) - pad;
+				const width = Math.max(...xs) - Math.min(...xs) + pad * 2;
+				const height = Math.max(...ys) - Math.min(...ys) + pad * 2;
+				return `${minX} ${minY} ${width} ${height}`;
+			}
+
+			function renderForm() {
+				if (!state.result) return;
+				const radius = Number($("radius").value);
+				const strokeWidth = Number($("strokeWidth").value);
+				const path = roundedPath(state.result.points, radius);
+				const sharpPath = polygonPath(state.result.points);
+				const viewBox = formViewBox();
+				const mode = state.mode;
+				const fill = mode === "border" ? "none" : "currentColor";
+				const fillOpacity = mode === "both" ? "0.15" : "1";
+				const stroke = mode === "fill" ? "none" : "currentColor";
+
+				const construction = $("construction").checked;
+				const showGrid = $("grid").checked;
+				const gridLines = [];
+				if (showGrid) {
+					for (let x = 1; x < COLS; x++) {
+						gridLines.push(`<line x1="${x}" y1="0" x2="${x}" y2="${ROWS}" />`);
+					}
+					for (let y = 1; y < ROWS; y++) {
+						gridLines.push(`<line x1="0" y1="${y}" x2="${COLS}" y2="${y}" />`);
+					}
+				}
+
+				const rects = construction
+					? state.result.rects
+							.map(
+								(rect) =>
+									`<rect x="${rect.x}" y="${rect.y}" width="${rect.w}" height="${rect.h}" />`,
+							)
+							.join("")
+					: "";
+
+				const corners = construction
+					? state.result.points
+							.map(
+								([x, y]) =>
+									`<circle cx="${x}" cy="${y}" r="${Math.min(radius, 0.75)}" />`,
+							)
+							.join("")
+					: "";
+
+				$("form").innerHTML = `
+					<svg viewBox="${viewBox}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" aria-label="Generierte Form">
+						<g class="construction" fill="none" stroke="currentColor">
+							${gridLines.length ? `<g opacity="0.14" stroke-width="0.01">${gridLines.join("")}</g>` : ""}
+							${rects ? `<g fill="currentColor" fill-opacity="0.06" stroke-opacity="0.34" stroke-width="0.02" stroke-dasharray="0.08 0.06">${rects}</g>` : ""}
+							${construction ? `<path d="${sharpPath}" stroke-opacity="0.28" stroke-width="0.02" stroke-dasharray="0.1 0.08" />` : ""}
+							${corners ? `<g stroke-opacity="0.6" stroke-width="0.015" fill="none" stroke-dasharray="0.06 0.05">${corners}</g>` : ""}
+						</g>
+						<path d="${path}" fill="${fill}" fill-opacity="${fillOpacity}" stroke="${stroke}" stroke-width="${strokeWidth}" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+					</svg>
+				`;
+
+				const stage = $("stage");
+				stage.style.setProperty("--accent", state.color);
+				document.documentElement.style.setProperty("--accent", state.color);
+
+				const actualBlocks = state.result.rects.length;
+				const hud = [
+					`SEED <b>${state.seed}</b>`,
+					`BLOCKS <b>${actualBlocks}</b>`,
+					`CELLS <b>${state.result.area}</b>`,
+					`CORNERS <b>${state.result.points.length}</b>`,
+					`R <b>${radius.toFixed(2)}</b>`,
+					`TURNS <b>${state.result.turns.left}L / ${state.result.turns.right}R</b>`,
+				];
+				$("hud").innerHTML = hud.join("");
+			}
+
+			function regenerate() {
+				state.seed = Math.max(0, Number($("seed").value) || 0);
+				state.result = generate(state.seed, {
+					blocks: Number($("blocks").value),
+					minSize: Number($("minSize").value),
+					maxSize: Number($("maxSize").value),
+					overlap: Number($("overlap").value),
+					nesting: Number($("nesting").value),
+				});
+				renderForm();
+			}
+
+			/* ------------------------------------------------------------- events */
+
+			function syncOutputs() {
+				const pairs = [
+					["blocks", "outBlocks"],
+					["minSize", "outMinSize"],
+					["maxSize", "outMaxSize"],
+					["overlap", "outOverlap"],
+					["nesting", "outNesting", (v) => Number(v).toFixed(2)],
+					["radius", "outRadius", (v) => Number(v).toFixed(2)],
+					["strokeWidth", "outStrokeWidth", (v) => Number(v).toFixed(2)],
+				];
+				pairs.forEach(([input, output, format]) => {
+					const el = $(input);
+					$(output).textContent = format ? format(el.value) : el.value;
+				});
+			}
+
+			function scheduleForm() {
+				window.cancelAnimationFrame(scheduleForm.raf);
+				scheduleForm.raf = window.requestAnimationFrame(regenerate);
+			}
+
+			function bind() {
+				["blocks", "minSize", "maxSize", "overlap", "nesting", "seed"].forEach((id) => {
+					$(id).addEventListener("input", () => { syncOutputs(); scheduleForm(); });
+				});
+				["radius", "strokeWidth"].forEach((id) => {
+					$(id).addEventListener("input", () => { syncOutputs(); renderForm(); });
+				});
+				$("construction").addEventListener("change", renderForm);
+				$("grid").addEventListener("change", renderForm);
+				$("theme").addEventListener("change", () => {
+					document.documentElement.dataset.theme = $("theme").value;
+				});
+				$("colorPreset").addEventListener("change", () => {
+					state.color = currentColor();
+					renderForm();
+				});
+				$("customColor").addEventListener("input", () => {
+					state.color = $("customColor").value;
+					renderForm();
+				});
+				document.querySelectorAll("[data-mode]").forEach((button) => {
+					button.addEventListener("click", () => {
+						state.mode = button.dataset.mode;
+						document.querySelectorAll("[data-mode]").forEach((el) => el.classList.toggle("is-active", el === button));
+						renderForm();
+					});
+				});
+				$("reroll").addEventListener("click", () => {
+					$("seed").value = String(Math.floor(Math.random() * 999999));
+					regenerate();
+				});
+				$("regen").addEventListener("click", regenerate);
+				$("copyPath").addEventListener("click", () => {
+					if (!state.result) return;
+					const path = roundedPath(state.result.points, Number($("radius").value));
+					copyText(path);
+					flash("copyPath", "Copied");
+				});
+				$("copyConfig").addEventListener("click", () => {
+					copyText(JSON.stringify({
+						seed: state.seed,
+						blocks: Number($("blocks").value),
+						minSize: Number($("minSize").value),
+						maxSize: Number($("maxSize").value),
+						overlap: Number($("overlap").value),
+						nesting: Number($("nesting").value),
+						radius: Number($("radius").value),
+						mode: state.mode,
+						color: state.color,
+					}, null, 2));
+					flash("copyConfig", "Copied");
+				});
+				$("download").addEventListener("click", downloadSvg);
+			}
+
+			function copyText(text) {
+				if (navigator.clipboard?.writeText) {
+					navigator.clipboard.writeText(text).catch(() => {});
+					return;
+				}
+				const area = document.createElement("textarea");
+				area.value = text;
+				document.body.appendChild(area);
+				area.select();
+				document.execCommand("copy");
+				area.remove();
+			}
+
+			function flash(id, label) {
+				const button = $(id);
+				const original = button.textContent;
+				button.textContent = label;
+				setTimeout(() => { button.textContent = original; }, 900);
+			}
+
+			function downloadSvg() {
+				if (!state.result) return;
+				const path = roundedPath(state.result.points, Number($("radius").value));
+				const mode = state.mode;
+				const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${formViewBox()}" width="1200" height="900">
+					<path d="${path}" fill="${mode === "border" ? "none" : state.color}" fill-opacity="${mode === "both" ? 0.15 : 1}" stroke="${mode === "fill" ? "none" : state.color}" stroke-width="${Number($("strokeWidth").value)}" stroke-linejoin="round" />
+				</svg>`;
+				const blob = new Blob([svg], { type: "image/svg+xml" });
+				const url = URL.createObjectURL(blob);
+				const link = document.createElement("a");
+				link.href = url;
+				link.download = `callshop-form-${state.seed}.svg`;
+				link.click();
+				URL.revokeObjectURL(url);
+			}
+
+			/* --------------------------------------------------------------- init */
+
+			state.color = currentColor();
+			document.documentElement.style.setProperty("--accent", state.color);
+			bind();
+			syncOutputs();
+			regenerate();
+		})();
+	</script>
+</body>
+</html>

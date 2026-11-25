@@ -119,10 +119,15 @@ export function aroundNow(
 export async function fetchTimetable(
 	from?: string,
 	to?: string,
+	cacheBust = false,
 ): Promise<TimetablePayload> {
 	try {
 		return await $fetch<TimetablePayload>("/api/timetable", {
-			query: { from, to },
+			query: {
+				from,
+				to,
+				...(cacheBust ? { t: Date.now() } : {}),
+			},
 		});
 	} catch {
 		return {

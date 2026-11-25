@@ -6,7 +6,8 @@ const localePath = useLocalePath();
 const mainStore = useMainStore();
 const config = useRuntimeConfig();
 const { open: chatOpen } = useChatUi();
-const { openPopup: openTimetablePopup, expand: expandTimetable } = useTimetableUi();
+const { openPopup: openTimetablePopup, expand: expandTimetable } =
+	useTimetableUi();
 
 const chatEnabled = computed(
 	() => import.meta.dev || Boolean(config.public.chatEnabled),
@@ -870,7 +871,7 @@ function scrollToTop() {
 }
 
 .footer-column a.footer-link--merch:hover {
-  color: var(--color-yellow);
+  color: var(--color-merch);
 }
 
 .footer-column .site-footer__link-button {

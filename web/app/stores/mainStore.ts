@@ -22,7 +22,6 @@ export const useMainStore = defineStore("mainStore", () => {
 	const activeScheduleLocation = ref("channelOne");
 	const currentHeroContentType = ref("");
 	const isDarkMode = ref<boolean | undefined>(undefined);
-	const menuOpen = ref(false);
 
 	// actions as functions
 	async function nuxtServerInit() {
@@ -44,10 +43,6 @@ export const useMainStore = defineStore("mainStore", () => {
 
 	function setActiveScheduleLocation(location: string) {
 		activeScheduleLocation.value = location;
-	}
-
-	function toggleMenu() {
-		menuOpen.value = !menuOpen.value;
 	}
 
 	function setCurrentHeroContentType(type: string) {
@@ -111,7 +106,6 @@ export const useMainStore = defineStore("mainStore", () => {
 		active,
 		activeScheduleLocation,
 		currentHeroContentType, // Export new variable
-		menuOpen,
 		isDarkMode,
 		detectSystemDarkMode,
 		nuxtServerInit,
@@ -120,6 +114,5 @@ export const useMainStore = defineStore("mainStore", () => {
 		setCurrentHeroContentType, // Export new function
 		updateColors,
 		toggleDarkMode,
-		toggleMenu,
 	};
 });

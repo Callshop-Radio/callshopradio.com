@@ -218,7 +218,6 @@ const coverFlowTeaserBlocks = computed(() => {
   width: 100%;
   background-color: var(--color-text);
   border-radius: 12px;
-  border: 1px solid var(--color-text);
   overflow: hidden;
   padding: 0;
   height: auto;

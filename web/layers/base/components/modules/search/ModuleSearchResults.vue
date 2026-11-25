@@ -1519,7 +1519,6 @@ watch(
     max-width: calc(50% - var(--big-padding) * 1.5);
     background-color: var(--color-text);
     border-radius: 12px;
-    border: 1px solid var(--color-text);
     overflow: hidden;
     padding: 0;
 
@@ -1535,8 +1534,13 @@ watch(
       object-fit: cover;
     }
 
-    &__image img {
-      aspect-ratio: 3 / 1.5;
+    &__image {
+      border-radius: 5px 5px 0 0 !important;
+
+      img {
+        aspect-ratio: 3 / 1.5;
+        border-radius: 5px 5px 0 0 !important;
+      }
     }
 
     &__content {

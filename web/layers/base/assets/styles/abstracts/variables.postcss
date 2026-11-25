@@ -12,6 +12,15 @@
   --color-pink: #f794b3;
   --color-blue: #557fb9;
   --color-green: #78ce82;
+  --color-purple: #b178ce;
+  /* Merch accent (apricot coral). Sits next to the other section accents and
+     stays legible as a fill behind black text in both themes. */
+  --color-merch: #ff8f77;
+  --color-merch-ink: color-mix(
+    in srgb,
+    var(--color-merch) 62%,
+    var(--color-text)
+  );
   --color-white: #f6f6f8;
   --color-grey: rgb(232, 232, 232);
 
@@ -52,6 +61,16 @@
 
   /* Fixed player bar: 56 px row plus the top and bottom rules. */
   --player-bar-height: 58px;
+
+  /* Chat and timetable share one footprint. Both open below the fixed
+     navigation + player strip, so their height has to leave room for both. */
+  --side-panel-width: 24rem;
+  --side-panel-height: min(
+    34rem,
+    calc(
+      100svh - var(--nav-bar-height) - var(--player-bar-height) - 3rem
+    )
+  );
 
   /* Top navigation: the 56 px row plus 20 %. */
   --nav-bar-height: 67.2px;

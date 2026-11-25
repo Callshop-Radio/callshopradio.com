@@ -164,7 +164,7 @@ button {
 	display: grid;
 	place-items: center;
 	padding: 0.3125rem;
-	border-radius: 6px;
+	border-radius: 5px;
 	cursor: pointer;
 	border: 1px solid transparent;
 

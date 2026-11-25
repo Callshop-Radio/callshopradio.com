@@ -101,6 +101,10 @@ const categoryType = computed(() => {
 	return "";
 });
 
+const isPoolContent = computed(() =>
+	["pool", "persons", "venues", "all"].includes(contentType.value),
+);
+
 const _themeColor = computed(
 	() => CONTENT_TYPE_COLORS[contentType.value] || "pink",
 );
@@ -813,6 +817,12 @@ function handlePoolCloudClick(item: PoolTagCloudItem) {
 		return;
 	}
 	toggleFilter(item.tag._id);
+}
+
+/** A tag on a pool card is also a shortcut into the pool filter. */
+function applyCardTagFilter(tag: Tag) {
+	if (!tag?._id) return;
+	toggleFilter(tag._id);
 }
 
 // ==================== TAG HELPERS ====================
@@ -1980,12 +1990,25 @@ onUnmounted(() => {
 						v-if="contentType !== 'words'"
 						class="grid-item__tags city-tags"
 					>
-						<span
+						<template
 							v-for="tag in getItemCityTags(item)"
 							:key="tag._id"
-							class="tag city"
-						>{{ getI18nLabel(tag?.short) }}</span
 						>
+							<button
+								v-if="isPoolContent && tag._id"
+								type="button"
+								class="tag city clickable"
+								:class="{
+									'filter-tag--active': activeFilters.has(tag._id),
+								}"
+								@click.stop.prevent="toggleFilter(tag._id)"
+							>
+								{{ getI18nLabel(tag?.short) }}
+							</button>
+							<span v-else class="tag city">
+								{{ getI18nLabel(tag?.short) }}
+							</span>
+						</template>
 					</div>
 
 					<!-- Image -->
@@ -2078,7 +2101,7 @@ onUnmounted(() => {
 							</ElementsContentLink>
 							<div v-if="item.persons?.length > 0" class="show-artists">
 								<h3
-									v-for="(artist, index) in item.persons"
+									v-for="artist in item.persons"
 									:key="artist._id"
 									class="grid-item__artist"
 								>
@@ -2087,15 +2110,9 @@ onUnmounted(() => {
 										:pool="artist"
 										class="grid-item__link"
 									>
-										{{ artist.title
-										}}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+										{{ artist.title }}
 									</ElementsContentLink>
-									<span v-else
-									>{{ artist.title
-									}}{{
-										index < item.persons.length - 1 ? "," : ""
-									}}&nbsp;</span
-									>
+									<span v-else>{{ artist.title }}</span>
 								</h3>
 							</div>
 						</div>
@@ -2196,12 +2213,25 @@ onUnmounted(() => {
 							v-else-if="getItemNonCityTags(item).length > 0"
 							class="grid-item__tags tags"
 						>
-							<span
+							<template
 								v-for="tag in getItemNonCityTags(item)"
 								:key="tag._id"
-								class="tag"
-							>{{ getI18nLabel(tag.title) }}</span
 							>
+								<button
+									v-if="isPoolContent && tag._id"
+									type="button"
+									class="tag clickable"
+									:class="{
+										'filter-tag--active': activeFilters.has(tag._id),
+									}"
+									@click.stop.prevent="applyCardTagFilter(tag)"
+								>
+									{{ getI18nLabel(tag.title) }}
+								</button>
+								<span v-else class="tag">
+									{{ getI18nLabel(tag.title) }}
+								</span>
+							</template>
 						</div>
 					</div>
 				</div>
@@ -2932,6 +2962,10 @@ onUnmounted(() => {
     width: 100%;
     padding: 0 0 calc(var(--big-margin) / 2) 0;
 
+    .tag.clickable {
+      cursor: pointer;
+    }
+
     &:last-of-type {
       justify-self: flex-start;
       margin: 0 auto 0 0;
@@ -3043,6 +3077,11 @@ onUnmounted(() => {
   }
 
   /* Content type specific styles */
+  &.sets .grid-item__content .grid-item__title {
+    font-size: 1.25rem;
+    line-height: 1.05;
+  }
+
   &.pool .grid-item__image img {
     aspect-ratio: 3 / 4;
   }
@@ -3065,7 +3104,6 @@ onUnmounted(() => {
       max-width: calc(50% - var(--big-padding) * 1.5);
       background-color: var(--color-text);
       border-radius: 12px;
-      border: 1px solid var(--color-text);
       overflow: hidden;
       padding: 0;
       margin-right: 0;
@@ -3081,10 +3119,12 @@ onUnmounted(() => {
 
       &__image {
         width: 100%;
+        border-radius: 5px 5px 0 0 !important;
 
         img {
           aspect-ratio: 3 / 1.5 !important;
           width: 100%;
+          border-radius: 5px 5px 0 0 !important;
         }
       }
 
@@ -3153,9 +3193,7 @@ onUnmounted(() => {
 /* Tablet: 2 columns */
 @media (max-width: 1100px) {
   .content-grid {
-    padding-bottom: calc(
-      64px + env(safe-area-inset-bottom) + var(--player-bar-height)
-    );
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
 
     &__filter-bar--desktop {
       display: none;
@@ -3168,7 +3206,7 @@ onUnmounted(() => {
       position: fixed;
       top: auto;
       right: 0;
-      bottom: var(--player-bar-height);
+      bottom: 0;
       left: 0;
       z-index: 9998;
       max-height: 88dvh;
@@ -3246,9 +3284,7 @@ onUnmounted(() => {
     &__mobile-filter-tab {
       position: fixed;
       left: 50%;
-      bottom: calc(
-        var(--player-bar-height) + var(--small-padding) + env(safe-area-inset-bottom)
-      );
+      bottom: calc(var(--small-padding) + env(safe-area-inset-bottom));
       z-index: 9999;
       display: inline-flex;
       align-items: center;
@@ -3828,16 +3864,14 @@ onUnmounted(() => {
 }
 @media (min-width: 1101px) {
   .content-grid {
-    padding-bottom: calc(
-      max(var(--filter-dock-height, 0px), 160px) + var(--player-bar-height)
-    );
+    padding-bottom: max(var(--filter-dock-height, 0px), 160px);
   }
 
   .content-grid__filter-section {
     position: fixed;
     top: auto;
     right: 0;
-    bottom: var(--player-bar-height);
+    bottom: 0;
     left: 0;
     z-index: 9999;
     display: flex;
@@ -3865,7 +3899,7 @@ onUnmounted(() => {
     display: block;
     position: fixed;
     right: 0;
-    bottom: var(--player-bar-height);
+    bottom: 0;
     left: 0;
     z-index: 9998;
     height: 30vh;
@@ -3931,7 +3965,10 @@ onUnmounted(() => {
     border: 0;
     border-radius: 0;
     background: transparent;
-    backdrop-filter: none;
+    /* Same glass as the bar below, so the tag cloud stays readable over
+       scrolling cards without painting a separate black plate. */
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
     opacity: 1;
   }
 

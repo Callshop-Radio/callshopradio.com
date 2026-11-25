@@ -4,6 +4,40 @@
 @import url("./base/_base-dir.postcss");
 @import url("./modules/_modules-dir.postcss");
 
+/* Set/show cards: the artist line carries a pool-link indicator dot. Grey means
+   no published profile; blue means the name links into the Pool. */
+.show-artists {
+  gap: 0.25rem 0.5rem;
+  margin-top: var(--small-padding);
+}
+
+.show-artists > .grid-item__artist,
+.show-artists > .teaser-item__artist,
+.show-artists > .related-item__artist {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  /* The card components set their own artist size, so this sits above them:
+     13px base → ~10px keeps the title hierarchy without shrinking to microtype. */
+  font-size: calc(var(--base-font-size) * 0.78) !important;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+
+  &::before {
+    content: "";
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--color-dark-grey);
+    flex: none;
+  }
+
+  &:has(a)::before {
+    background: var(--color-blue);
+  }
+}
+
 /* 2026-11: one corner radius for every image and every card. Existing
    component radii (pills, avatars, round buttons) are excluded. */
 img:not(.avatar) {
@@ -174,8 +208,7 @@ img:not(.avatar) {
 .content-grid__filter-bar,
 .content-grid__mobile-filter-bar,
 .content-grid__mobile-filter-tab,
-.player-nav button,
-.load-more-button.more {
+.player-nav button {
   border-radius: var(--pill-radius) !important;
 }
 

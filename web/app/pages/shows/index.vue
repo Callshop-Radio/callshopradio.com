@@ -1,6 +1,5 @@
 ﻿<script setup>
-import { computed, onMounted, onUnmounted, ref } from "vue";
-import { useMainStore } from "~/stores/mainStore";
+import { computed } from "vue";
 import { SHOWSARCHIVE_QUERY } from "~~/queries/sanity.queries.ts";
 
 definePageMeta({
@@ -9,10 +8,6 @@ definePageMeta({
 
 const query = groq`${SHOWSARCHIVE_QUERY}`;
 const { data } = await useCachedSanityQuery(query);
-
-// Dark mode needs a brighter, tighter glow: on black the same opacity that
-// reads as soft pink on white disappears. Mirrors the set detail page.
-const mainStore = useMainStore();
 
 const slider = computed(() => data.value?.slider);
 const { featured: featuredSets } = await useCoverFlowSliderItems(
@@ -23,100 +18,28 @@ const { featured: featuredSets } = await useCoverFlowSliderItems(
 	},
 );
 
-// Wide aurora behind the coverflow. It drifts horizontally with the pointer
-// and keeps the morphing SVG as its main motion.
-const reduceMotion = ref(false);
-const glowOffset = ref({ x: 0, y: 0 });
-let lastPointerMove = 0;
-let lastGlowX = 0;
-let lastGlowY = 0;
-
-function onGlowPointerMove(event) {
-	if (reduceMotion.value || event.pointerType === "touch") return;
-	const now = performance.now();
-	if (now - lastPointerMove < 200) return;
-	const nx = Math.min(
-		0.5,
-		Math.max(-0.5, event.clientX / window.innerWidth - 0.5),
-	);
-	const ny = Math.min(
-		0.5,
-		Math.max(-0.5, event.clientY / window.innerHeight - 0.5),
-	);
-	const x = Math.round(nx * 44);
-	const y = Math.round(ny * 20);
-	if (Math.abs(x - lastGlowX) < 1 && Math.abs(y - lastGlowY) < 1) return;
-	lastPointerMove = now;
-	lastGlowX = x;
-	lastGlowY = y;
-	glowOffset.value = { x, y };
-}
-
-function resetGlow() {
-	lastPointerMove = 0;
-	lastGlowX = 0;
-	lastGlowY = 0;
-	glowOffset.value = { x: 0, y: 0 };
-}
-
-const glowStyle = computed(() => ({
-	"--glow-x": `${glowOffset.value.x}px`,
-	"--glow-y": `${glowOffset.value.y}px`,
-}));
-
-onMounted(() => {
-	reduceMotion.value = window.matchMedia(
-		"(prefers-reduced-motion: reduce)",
-	).matches;
-	window.addEventListener("pointermove", onGlowPointerMove, { passive: true });
-	document.documentElement.addEventListener("pointerleave", resetGlow);
-});
-
-onUnmounted(() => {
-	window.removeEventListener("pointermove", onGlowPointerMove);
-	document.documentElement.removeEventListener("pointerleave", resetGlow);
-});
-
 usePageSeo(data?.value?.seo);
 </script>
 
 <template>
 	<div class="shows-archive">
+		<SiteArchiveMasthead
+			title="Shows"
+			lede="Live sessions, radio shows and every set in the archive."
+			accent="var(--color-pink)"
+		/>
 		<section v-if="featuredSets.length > 0" class="intro-section">
-			<div
-				class="shows-glow"
-				:class="{ 'is-dark': mainStore.isDarkMode }"
-				:style="glowStyle"
-				aria-hidden="true"
-			>
-				<AnimatedGradient
-					class="shows-glow__blob shows-glow__blob--a"
-					color="#be618a"
-				/>
-				<AnimatedGradient
-					class="shows-glow__blob shows-glow__blob--b"
-					color="#be618a"
-				/>
-				<AnimatedGradient
-					class="shows-glow__blob shows-glow__blob--c"
-					color="#be618a"
-				/>
-			</div>
-			<ModuleIntroCoverFlow :items="featuredSets" nav-label="Set" area="show">
-				<template #default="{ item, mediaActive, isCenter }">
-					<ModuleIntroSet
-						layout="cover-flow"
-						:set="item"
-						:media-active="mediaActive"
-						:is-center="isCenter"
-					/>
-				</template>
-			</ModuleIntroCoverFlow>
+			<SiteHeroSlider
+				:items="featuredSets"
+				page="shows"
+				accent="var(--color-pink)"
+			/>
 		</section>
 		<section
 			v-if="data?.modules && data?.modules?.length > 0"
 			class="module-section"
 		>
+			<h2 class="archive-sr-only">All sets</h2>
 			<ModuleRenderer :modules="data?.modules" />
 		</section>
 	</div>
@@ -129,103 +52,37 @@ usePageSeo(data?.value?.seo);
   flex-flow: column wrap;
   justify-content: flex-start;
   align-items: center;
+  overflow-x: clip;
 
   .intro-section {
-    position: relative;
-    isolation: isolate;
     width: 100%;
     max-width: 100%;
-    margin-top: calc(var(--first-content-distance) + 50px);
-
-    @media screen and (max-width: 900px) {
-      margin-top: calc(var(--base-margin) + 50px);
-    }
-
-    :deep(.intro-cover-flow) {
-      position: relative;
-      z-index: 1;
-    }
-  }
-}
-
-.shows-glow {
-  position: absolute;
-  inset: 0 0 4% 0;
-  z-index: 0;
-  pointer-events: none;
-  transform: translate3d(var(--glow-x, 0px), var(--glow-y, 0px), 0);
-  transition: transform 1400ms cubic-bezier(0.22, 1, 0.36, 1);
-
-  @media screen and (max-width: 900px) {
-    inset: 2% 0 6% 0;
+    margin-top: 0.75rem;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-  }
-
-  /* Same treatment as the set detail glow: on black the light-mode opacity
-     reads as a grey smudge, so raise it and tighten the blur. The fill stays
-     exactly on the CI shows colour (#be618a), no hue/saturation shift. */
-  &.is-dark .shows-glow__blob {
-    opacity: 1;
-    filter: blur(22px);
-
-    &--b {
-      opacity: 0.8;
-      filter: blur(40px);
-    }
-
-    &--c {
-      opacity: 0.58;
-      filter: blur(52px);
-    }
-  }
-}
-
-.shows-glow__blob {
-  position: absolute;
-  display: block;
-  opacity: 0.56;
-  filter: blur(34px);
-
-  :deep(svg) {
+  .module-section {
     width: 100%;
-    height: 100%;
   }
 
-  :deep(svg path) {
-    opacity: 1;
+  .archive-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
   }
 
-  &--a {
-    top: -26%;
-    right: -16%;
-    width: 108%;
-    height: 138%;
-    opacity: 0.58;
-    transform: scaleX(-1) rotate(8deg);
+  /* The filter console keeps its dark surface; only the shape follows the
+     5px card language. The tag cloud itself stays transparent so it reads as
+     part of the glass dock instead of a black plate (same as Words). */
+  :deep(.content-grid__filter-section),
+  :deep(.content-grid__filter-bar) {
+    border-radius: 5px !important;
   }
 
-  &--b {
-    bottom: -34%;
-    left: -16%;
-    width: 100%;
-    height: 120%;
-    opacity: 0.44;
-    filter: blur(46px);
-    transform: rotate(-6deg);
-  }
-
-  &--c {
-    top: 6%;
-    left: 26%;
-    width: 76%;
-    height: 88%;
-    opacity: 0.3;
-    filter: blur(58px);
-    transform: rotate(14deg);
-  }
 }
 </style>
-

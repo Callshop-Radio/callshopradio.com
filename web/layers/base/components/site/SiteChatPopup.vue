@@ -29,26 +29,6 @@ const {
 
 const pickerOpen = ref(false);
 const closeButton = ref<HTMLButtonElement | null>(null);
-const height = ref(544);
-const dragging = ref(false);
-const isMobile = ref(false);
-
-const MIN_HEIGHT = 288;
-
-const maxHeight = () =>
-	Math.max(
-		MIN_HEIGHT,
-		(typeof window === "undefined" ? 900 : window.innerHeight) - 112,
-	);
-
-const clampHeight = (value: number) =>
-	Math.min(Math.max(value, MIN_HEIGHT), maxHeight());
-
-const persistHeight = () => {
-	if (typeof window !== "undefined") {
-		localStorage.setItem("chat:height", String(Math.round(height.value)));
-	}
-};
 
 const persistMinimized = (value: boolean) => {
 	if (typeof window !== "undefined") {
@@ -65,34 +45,6 @@ const onMinimize = () => {
 const onTicker = () => {
 	minimized.value = false;
 	persistMinimized(false);
-};
-
-const startDrag = (event: PointerEvent) => {
-	if (isMobile.value) return;
-	event.preventDefault();
-	dragging.value = true;
-	const startY = event.clientY;
-	const startHeight = height.value;
-	const move = (moveEvent: PointerEvent) => {
-		height.value = clampHeight(startHeight + (startY - moveEvent.clientY));
-	};
-	const end = () => {
-		dragging.value = false;
-		window.removeEventListener("pointermove", move);
-		window.removeEventListener("pointerup", end);
-		persistHeight();
-	};
-	window.addEventListener("pointermove", move);
-	window.addEventListener("pointerup", end);
-};
-
-const onGripKey = (event: KeyboardEvent) => {
-	if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
-	event.preventDefault();
-	height.value = clampHeight(
-		height.value + (event.key === "ArrowUp" ? 24 : -24),
-	);
-	persistHeight();
 };
 
 const latestLine = computed(() => {
@@ -113,11 +65,6 @@ const latestLine = computed(() => {
 	if (last.kind === "sticker") return `${name}: Sticker`;
 	return `${name}: ${last.body}`;
 });
-
-const onResize = () => {
-	height.value = clampHeight(height.value);
-	isMobile.value = window.matchMedia("(max-width: 600px)").matches;
-};
 
 const togglePicker = () => {
 	pickerOpen.value = !pickerOpen.value;
@@ -143,12 +90,6 @@ watch(open, async (value) => {
 
 onMounted(() => {
 	window.addEventListener("keydown", onKeydown);
-	window.addEventListener("resize", onResize);
-	onResize();
-	const stored = Number(localStorage.getItem("chat:height"));
-	if (Number.isFinite(stored) && stored > 0) {
-		height.value = clampHeight(stored);
-	}
 	minimized.value = localStorage.getItem("chat:minimized") === "1";
 	if (localStorage.getItem("chat:open") !== "0") {
 		open.value = true;
@@ -157,7 +98,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
 	window.removeEventListener("keydown", onKeydown);
-	window.removeEventListener("resize", onResize);
 });
 </script>
 
@@ -166,25 +106,11 @@ onBeforeUnmount(() => {
 		<section
 			v-if="open && enabled"
 			class="chat-popup"
-			:class="{ 'is-minimized': minimized, 'is-dragging': dragging }"
-			:style="
-				minimized || isMobile ? undefined : { height: `${height}px` }
-			"
+			:class="{ 'is-minimized': minimized }"
 			role="dialog"
 			aria-label="Chat"
 			aria-modal="false"
 		>
-			<div
-				v-if="!minimized"
-				class="chat-popup__grip"
-				role="separator"
-				aria-orientation="horizontal"
-				aria-label="Chat-Höhe ändern"
-				tabindex="0"
-				@pointerdown="startDrag"
-				@keydown="onGripKey"
-			/>
-
 			<header class="chat-popup__head">
 				<span class="chat-popup__title">Chat</span>
 				<span class="chat-popup__count">
@@ -285,19 +211,28 @@ onBeforeUnmount(() => {
 
   position: fixed;
   right: 1.5rem;
-  /* Sit above the fixed player row, like the video panel. */
-  bottom: calc(1.5rem + var(--player-bar-height));
+  /* The player now sits under the navigation, so side panels open below it. */
+  top: calc(
+    var(--nav-bar-height) + var(--player-bar-height) + 1.5rem
+  );
+  bottom: auto;
   z-index: 9000;
-  width: min(24rem, calc(100vw - 2rem));
-  height: min(34rem, calc(100vh - var(--player-bar-height) - 7rem));
+  width: min(var(--side-panel-width), calc(100vw - 2rem));
+  height: var(--side-panel-height);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background-color: var(--color-bg);
   color: var(--color-text);
   border: 1px solid var(--chat-line);
-  border-radius: 12px;
+  border-radius: 5px;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
+}
+
+/* The site-wide pill rule rounds these to 12px; keep the panel at 5px. */
+.chat-popup :deep(.composer__send),
+.chat-popup :deep(.composer__signin-btn) {
+  border-radius: 5px !important;
 }
 
 .chat-popup__head {
@@ -354,23 +289,6 @@ onBeforeUnmount(() => {
 
   &.is-up {
     transform: rotate(180deg);
-  }
-}
-
-.chat-popup__grip {
-  flex: none;
-  width: 2.25rem;
-  height: 0.25rem;
-  margin: 0.4375rem auto 0;
-  border-radius: 999px;
-  background-color: color-mix(in srgb, var(--color-text) 20%, transparent);
-  cursor: ns-resize;
-  touch-action: none;
-  transition: background-color var(--transition-fast);
-
-  &:hover,
-  .chat-popup.is-dragging & {
-    background-color: var(--color-pink);
   }
 }
 
@@ -469,10 +387,9 @@ onBeforeUnmount(() => {
 
 @media screen and (max-width: 600px) {
   .chat-popup {
-    top: var(--nav-height);
+    top: calc(var(--nav-bar-height) + var(--player-bar-height));
     right: 0;
-    /* Leave the player row visible and tappable underneath. */
-    bottom: var(--player-bar-height);
+    bottom: 0;
     left: 0;
     width: auto;
     height: auto;
@@ -487,6 +404,7 @@ onBeforeUnmount(() => {
 
   .chat-popup.is-minimized {
     top: auto;
+    bottom: 0;
   }
 }
 </style>

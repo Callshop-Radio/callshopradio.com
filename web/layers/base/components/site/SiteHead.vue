@@ -84,6 +84,9 @@ const chatEnabled = computed(
   height: auto;
   min-height: max-content;
   z-index: 999999;
+  /* The player row is fixed under the navigation; reserve its height here so
+     page content starts below it instead of underneath it. */
+  padding-bottom: var(--player-bar-height);
 
   /* Full-bleed rule under the navigation; the fixed player has its own. */
   &::after {
@@ -153,9 +156,11 @@ const chatEnabled = computed(
     gap: var(--small-padding);
   }
   &__audio-player-section {
+    /* The player sits right under the navigation and stays there while the
+       page scrolls; the header reserves its height in the flow. */
     position: fixed;
+    top: var(--nav-bar-height);
     right: 0;
-    bottom: 0;
     left: 0;
     z-index: 999999;
     width: 100%;

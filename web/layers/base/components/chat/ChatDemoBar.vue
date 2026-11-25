@@ -79,14 +79,14 @@ button {
 .chat-demo {
 	position: fixed;
 	left: 0.75rem;
-	bottom: calc(0.75rem + var(--player-bar-height));
+	bottom: 0.75rem;
 	z-index: 1200;
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
 	gap: 0.25rem;
 	padding: 0.375rem 0.5rem;
-	border-radius: 8px;
+	border-radius: 5px;
 	background-color: rgba(17, 17, 17, 0.92);
 	color: #fff;
 	font-family: system-ui, sans-serif;

@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import {
 	entryLabel,
 	entrySubline,
@@ -12,10 +12,12 @@ import {
 	type TimetablePayload,
 } from "../../composables/useTimetable";
 
-const { open, view, day, closePopup, openPopup, expanded, expand } = useTimetableUi();
+const { open, view, day, closePopup, openPopup, expanded, expand, collapse } =
+	useTimetableUi();
 
 const payload = ref<TimetablePayload | null>(null);
 const loading = ref(false);
+const pendingScroll = ref(false);
 const panel = ref<HTMLElement | null>(null);
 const scroller = ref<HTMLElement | null>(null);
 
@@ -38,7 +40,7 @@ const anchor = computed(() => {
 // When the chat is open, the timetable takes the slot to its left instead of
 // stacking on top of it.
 const chatUi = useChatUi();
-const chatOpen = computed(() => chatUi.open.value && !chatUi.minimized.value);
+const chatOpen = computed(() => chatUi.open.value);
 
 function startOfDay(date: Date) {
 	const copy = new Date(date);
@@ -156,7 +158,9 @@ function isRunning(entry: TimetableEntry) {
 const anchorIsToday = computed(
 	() => anchor.value.toDateString() === new Date().toDateString(),
 );
-const weekHasToday = computed(() => weekDays.value.some((dayItem) => dayItem.isToday));
+const weekHasToday = computed(() =>
+	weekDays.value.some((dayItem) => dayItem.isToday),
+);
 
 function top(entry: TimetableEntry) {
 	const minutes = minutesOfDay(entry.startsAt);
@@ -175,20 +179,32 @@ function setView(next: "day" | "week" | "month") {
 }
 
 /** Jump to the current time, switching back to today first if needed. */
+function scrollToNowPosition() {
+	nextTick(() => {
+		scroller.value?.scrollTo({
+			top: Math.max(0, nowTop.value - 160),
+			behavior: "smooth",
+		});
+	});
+}
+
 function scrollToNow() {
 	const today = localDateKey(new Date());
-	const jump = () => {
-		nextTick(() => {
-			scroller.value?.scrollTo({
-				top: Math.max(0, nowTop.value - 160),
-				behavior: "smooth",
-			});
-		});
-	};
-	if (day.value !== today) {
+	const changed = view.value !== "day" || day.value !== today;
+	if (changed) {
+		// Set the target day first; the view/day watcher loads it and then
+		// performs the scroll. This makes a single press enough.
+		pendingScroll.value = true;
+		view.value = "day";
 		day.value = today;
+		return;
 	}
-	jump();
+	scrollToNowPosition();
+}
+
+function toggleExpanded() {
+	if (expanded.value) collapse();
+	else expand();
 }
 
 function shift(direction: number) {
@@ -212,8 +228,13 @@ function onKey(event: KeyboardEvent) {
 	if (event.key === "Escape") closePopup();
 }
 
-watch([view, () => day.value], () => {
-	if (open.value) void load();
+watch([view, () => day.value], async () => {
+	if (!open.value) return;
+	await load();
+	if (pendingScroll.value) {
+		pendingScroll.value = false;
+		scrollToNowPosition();
+	}
 });
 
 watch(open, async (value) => {
@@ -223,10 +244,11 @@ watch(open, async (value) => {
 		nextTick(() => {
 			panel.value?.focus();
 			if (view.value === "day" && scroller.value) {
-				scroller.value.scrollTop = Math.max(0, nowTop.value - 160);
+				scrollToNowPosition();
 			}
 		});
 	} else {
+		pendingScroll.value = false;
 		document.body.style.overflow = "";
 	}
 });
@@ -293,15 +315,28 @@ onBeforeUnmount(() => {
 							Now
 						</button>
 						<button
-							v-if="!expanded"
 							type="button"
 							class="tt-popup__expand"
-							aria-label="Expand schedule"
-							@click="expand"
+							:aria-label="expanded ? 'Collapse schedule' : 'Expand schedule'"
+							:aria-expanded="expanded"
+							@click="toggleExpanded"
 						>
-							<span>Expand</span>
+							<span>{{ expanded ? "Collapse" : "Expand" }}</span>
 							<svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-								<path d="M6 2H2v4M10 14h4v-4M14 6V2h-4M2 10v4h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+								<path
+									v-if="!expanded"
+									d="M6 2H2v4M10 14h4v-4M14 6V2h-4M2 10v4h4"
+									stroke="currentColor"
+									stroke-width="1.4"
+									stroke-linecap="round"
+								/>
+								<path
+									v-else
+									d="M2 6h4V2M14 10h-4v4M10 2v4h4M6 14v-4H2"
+									stroke="currentColor"
+									stroke-width="1.4"
+									stroke-linecap="round"
+								/>
 							</svg>
 						</button>
 						<button type="button" class="tt-popup__close" aria-label="Close" @click="closePopup">&#10005;</button>
@@ -309,7 +344,7 @@ onBeforeUnmount(() => {
 				</header>
 
 				<div ref="scroller" class="tt-popup__body">
-					<p v-if="loading" class="tt-popup__hint">Loading scheduleâ€¦</p>
+					<p v-if="loading" class="tt-popup__hint">Loading schedule…</p>
 
 					<!-- DAY -->
 					<div v-else-if="view === 'day'" class="tt-day">
@@ -406,7 +441,7 @@ onBeforeUnmount(() => {
 								>
 									{{ scheduleTime(entry.startsAt) }} {{ entryLabel(entry) }}
 								</button>
-								<span v-if="cell.entries.length === 0 && cell.inMonth" class="tt-month__empty">â€”</span>
+								<span v-if="cell.entries.length === 0 && cell.inMonth" class="tt-month__empty">—</span>
 							</div>
 						</div>
 					</div>
@@ -425,8 +460,12 @@ onBeforeUnmount(() => {
 .tt-popup {
   position: fixed;
   right: 1.5rem;
-  bottom: calc(1.5rem + var(--player-bar-height));
-  z-index: 1000;
+  /* Opens under the navigation + player strip. */
+  top: calc(
+    var(--nav-bar-height) + var(--player-bar-height) + 1.5rem
+  );
+  bottom: auto;
+  z-index: 9500;
   display: block;
   width: max-content;
   padding: 0;
@@ -434,7 +473,7 @@ onBeforeUnmount(() => {
 }
 
 .tt-popup.is-shifted {
-  right: calc(1.5rem + 24rem + 0.75rem);
+  right: calc(1.5rem + var(--side-panel-width) + 0.75rem);
 }
 
 /* Expanded: the same component becomes the full schedule view. */
@@ -442,6 +481,9 @@ onBeforeUnmount(() => {
   inset: 0;
   right: auto;
   bottom: auto;
+  width: 100vw;
+  height: 100svh;
+  z-index: 1000000;
   display: grid;
   place-items: center;
   padding: 24px;
@@ -449,8 +491,21 @@ onBeforeUnmount(() => {
 }
 
 .tt-popup.is-expanded .tt-popup__panel {
-  width: min(980px, 92vw);
-  height: min(780px, 90vh);
+  width: min(980px, calc(100vw - 3rem));
+  height: min(780px, calc(100svh - 3rem));
+  animation: tt-panel-in 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes tt-panel-in {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .tt-popup__actions {
@@ -463,7 +518,7 @@ onBeforeUnmount(() => {
 .tt-popup__now {
   appearance: none;
   border: 0;
-  border-radius: 4px;
+  border-radius: 5px;
   background: color-mix(in srgb, var(--color-text) 10%, transparent);
   color: var(--color-text);
   opacity: 0.8;
@@ -487,7 +542,7 @@ onBeforeUnmount(() => {
   opacity: 0.75;
   cursor: pointer;
   padding: 6px 8px;
-  border-radius: 4px;
+  border-radius: 5px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -501,22 +556,26 @@ onBeforeUnmount(() => {
 }
 
 .tt-popup__panel {
-  width: min(24rem, calc(100vw - 2rem));
-  height: min(34rem, calc(100vh - var(--player-bar-height) - 7rem));
+  width: min(var(--side-panel-width), calc(100vw - 2rem));
+  height: var(--side-panel-height);
   display: grid;
   grid-template-rows: auto 1fr auto;
-  background: var(--color-bg);
+  border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
   border-radius: 5px;
+  background: var(--color-bg);
   overflow: hidden;
-  box-shadow: 0 24px 70px rgb(0 0 0 / 55%);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
   outline: none;
 }
 
 .tt-popup__head {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 12px 16px;
+  background: var(--color-bg);
 }
 
 .tt-popup__nav {
@@ -534,7 +593,7 @@ onBeforeUnmount(() => {
   font-size: 16px;
   cursor: pointer;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 5px;
 }
 
 .tt-popup__arrow:hover { opacity: 1; color: var(--color-pink); }
@@ -576,7 +635,7 @@ onBeforeUnmount(() => {
   cursor: pointer;
   font-size: 14px;
   padding: 6px;
-  border-radius: 4px;
+  border-radius: 5px;
 }
 
 .tt-popup__close:hover { opacity: 1; }
@@ -692,7 +751,7 @@ onBeforeUnmount(() => {
 .tt-day__thumb {
   width: 48px;
   height: 48px;
-  border-radius: 4px;
+  border-radius: 5px;
   object-fit: cover;
 }
 
@@ -731,14 +790,14 @@ onBeforeUnmount(() => {
   opacity: 0.55;
 }
 
-.tt-day__tags span + span::before { content: "Â·"; margin-right: 7px; }
+.tt-day__tags span + span::before { content: "·"; margin-right: 7px; }
 
 .tt-day__live {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.08em;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 5px;
   background: #1a1013;
   color: var(--color-pink);
 }
@@ -852,7 +911,7 @@ onBeforeUnmount(() => {
 .tt-month__pill {
   appearance: none;
   border: 0;
-  border-radius: 4px;
+  border-radius: 5px;
   background: color-mix(in srgb, var(--color-text) 7%, transparent);
   color: var(--color-text);
   font: inherit;
@@ -876,20 +935,57 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 12px;
   padding: 9px 16px;
+  background: var(--color-bg);
   font-size: calc(var(--base-font-size) * 0.66);
   opacity: 0.5;
 }
 
 @media (max-width: 900px) {
-  .tt-popup {
+  .tt-popup:not(.is-expanded) {
+    top: calc(var(--nav-bar-height) + var(--player-bar-height));
     right: 0;
     bottom: 0;
+    left: 0;
+    width: auto;
+    height: auto;
   }
 
-  .tt-popup__panel {
-    width: 100vw;
-    height: 100vh;
+  .tt-popup:not(.is-expanded) .tt-popup__panel {
+    width: 100%;
+    height: 100%;
     border-radius: 0;
+  }
+
+  .tt-popup.is-expanded {
+    padding: 0;
+  }
+
+  .tt-popup.is-expanded .tt-popup__panel {
+    width: 100vw;
+    height: 100svh;
+    border-radius: 0;
+  }
+
+  .tt-popup__head {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+
+  .tt-popup__views {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+
+  .tt-popup__actions {
+    margin-left: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-popup.is-expanded .tt-popup__panel {
+    animation: none;
   }
 }
 </style>

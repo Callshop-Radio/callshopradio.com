@@ -320,6 +320,7 @@ export const SHOW_QUERY = defineQuery(`
     _type,
     title,
     slug,
+    poolVisibility,
     image ${IMAGE_QUERY},
     "tags": tags[]->{
       _id,
@@ -492,6 +493,7 @@ export const ENTRY_QUERY = defineQuery(`
     title,
     slug,
     image ${IMAGE_QUERY},
+    mainImage ${IMAGE_QUERY},
     text[] ${I18N_RICH_TEXT_VALUE_QUERY},
     datetime,
     useTeaserText,

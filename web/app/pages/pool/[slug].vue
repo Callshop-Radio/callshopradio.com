@@ -32,6 +32,20 @@ usePageSeo(data?.value?.seo);
 		<section v-if="data" class="pool-detail__intro-section">
 			<ModuleIntroPoolDetailPage :pool-item="data" :title="'Pool Profile'" />
 		</section>
+		<!-- Every set this artist is credited on, right under the profile card. -->
+		<section
+			v-if="data?._type === 'person' && data?.relatedSets?.length > 0"
+			class="pool-detail__related-content pool-detail__sets"
+		>
+			<div class="inner">
+				<h3>Sets</h3>
+				<ModuleRelatedContent
+					:items="data.relatedSets"
+					type="sets"
+					:limit="data.relatedSets.length"
+				/>
+			</div>
+		</section>
 		<section
 			v-if="data?.modules && data?.modules.length > 0"
 			class="module-section"
@@ -52,7 +66,10 @@ usePageSeo(data?.value?.seo);
 			</div>
 		</section>
 		<section
-			v-if="data?.relatedContent?.length <= 0"
+			v-if="
+				data?._type !== 'person' &&
+					data?.relatedContent?.length <= 0
+			"
 			class="pool-detail__related-content"
 		>
 			<div class="inner">
@@ -93,7 +110,8 @@ section {
     /* max-width: var(--page-max-width); */
   }
   &__related-content,
-  &__more-content {
+  &__more-content,
+  &__sets {
     /* @media screen and (max-width: 900px) {
       padding: 0 var(--big-margin);
     } */

@@ -266,7 +266,7 @@ onMounted(() => scrollToBottom());
 	gap: 0.5rem;
 	padding: 0.5rem 0.75rem;
 	border-left: 3px solid var(--color-pink);
-	border-radius: 0 8px 8px 0;
+	border-radius: 0 5px 5px 0;
 	background-color: color-mix(in srgb, var(--color-pink) 9%, transparent);
 }
 

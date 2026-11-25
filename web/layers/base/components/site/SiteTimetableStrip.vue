@@ -1,42 +1,106 @@
 <script setup lang="ts">
 import {
-	aroundNow,
 	entryLabel,
 	entrySubline,
 	fetchTimetable,
 	isLiveEntry,
 	scheduleRange,
-	scheduleTime,
 	type TimetableEntry,
+	upcoming,
 } from "../../composables/useTimetable";
 
 const entries = ref<TimetableEntry[]>([]);
+const now = ref(new Date());
 const loaded = ref(false);
 const width = ref(0);
 const { openPopup } = useTimetableUi();
 
 // More room, more schedule: 4 on a laptop, 5 on a wide screen, 6 on a very
 // wide one. Below 900px the list scrolls horizontally instead.
-const count = computed(() => (width.value >= 1600 ? 6 : width.value >= 1200 ? 5 : 4));
-// The window must be wide enough to actually fill the row: at 1600 px we show
-// six cards, so six hours of schedule are needed, not three.
-const cards = computed(() => aroundNow(entries.value, new Date(), 6).slice(0, count.value));
+const count = computed(() =>
+	width.value >= 1600 ? 6 : width.value >= 1200 ? 5 : 4,
+);
+// Only entries that have not ended yet: a finished show must disappear as
+// soon as the next one starts. The old one-hour lookback kept it on screen.
+const cards = computed(() => upcoming(entries.value, count.value, now.value));
 const visible = computed(() => loaded.value && cards.value.length > 0);
+
+let clock: ReturnType<typeof setInterval> | null = null;
+let boundaryTimer: ReturnType<typeof setTimeout> | null = null;
+let requestId = 0;
 
 function measure() {
 	width.value = window.innerWidth;
 }
 
+function nextBoundary() {
+	const at = Date.now();
+	let next = Number.POSITIVE_INFINITY;
+	for (const entry of entries.value) {
+		const start = new Date(entry.startsAt).getTime();
+		const end = new Date(entry.endsAt).getTime();
+		if (start > at && start < next) next = start;
+		if (end > at && end < next) next = end;
+	}
+	return next;
+}
+
+function scheduleBoundary() {
+	if (boundaryTimer) clearTimeout(boundaryTimer);
+	const next = nextBoundary();
+	if (!Number.isFinite(next)) {
+		// No future entry in the last payload: retry instead of going silent.
+		boundaryTimer = setTimeout(() => void load(true), 60_000);
+		return;
+	}
+
+	// A long gap still gets a periodic wake-up so a throttled tab, a missed
+	// timer or a schedule change cannot leave the strip on an old show.
+	const delay = Math.min(Math.max(next - Date.now() + 500, 1000), 5 * 60_000);
+	boundaryTimer = setTimeout(async () => {
+		if (Date.now() >= next - 500) {
+			await load(true);
+			return;
+		}
+		now.value = new Date();
+		scheduleBoundary();
+	}, delay);
+}
+
+async function load(cacheBust = false) {
+	const id = ++requestId;
+	const payload = await fetchTimetable(undefined, undefined, cacheBust);
+	if (id !== requestId) return;
+	const nextEntries = payload.entries ?? [];
+	if (nextEntries.length > 0 || !loaded.value) {
+		entries.value = nextEntries;
+		loaded.value = true;
+	}
+	now.value = new Date();
+	scheduleBoundary();
+}
+
+function onVisibility() {
+	if (document.visibilityState !== "visible") return;
+	now.value = new Date();
+	void load(true);
+}
+
 onMounted(async () => {
 	measure();
 	window.addEventListener("resize", measure, { passive: true });
-	const payload = await fetchTimetable();
-	entries.value = payload.entries ?? [];
-	loaded.value = true;
+	document.addEventListener("visibilitychange", onVisibility);
+	await load();
+	clock = setInterval(() => {
+		now.value = new Date();
+	}, 30_000);
 });
 
 onBeforeUnmount(() => {
 	window.removeEventListener("resize", measure);
+	document.removeEventListener("visibilitychange", onVisibility);
+	if (clock) clearInterval(clock);
+	if (boundaryTimer) clearTimeout(boundaryTimer);
 });
 
 function go(entry: TimetableEntry) {
@@ -44,6 +108,14 @@ function go(entry: TimetableEntry) {
 	// website does not serve. Until the manager emits a site path, a card opens
 	// the schedule popup on that day instead of navigating into a 404.
 	openPopup("day", new Date(entry.startsAt).toISOString().slice(0, 10));
+}
+
+/** The set that is airing right now, including replays. */
+function isCurrent(entry: TimetableEntry): boolean {
+	const start = new Date(entry.startsAt).getTime();
+	const end = new Date(entry.endsAt).getTime();
+	const at = now.value.getTime();
+	return start <= at && end > at;
 }
 </script>
 
@@ -71,11 +143,12 @@ function go(entry: TimetableEntry) {
 				v-for="entry in cards"
 				:key="entry.id"
 				class="timetable-strip__item"
-				:class="{ 'is-live': isLiveEntry(entry) }"
+				:class="{ 'is-live': isLiveEntry(entry), 'is-now': isCurrent(entry) }"
 			>
 				<button
 					type="button"
 					class="timetable-strip__card"
+					:aria-current="isCurrent(entry) ? 'true' : undefined"
 					@click="go(entry)"
 				>
 					<img
@@ -232,10 +305,20 @@ function go(entry: TimetableEntry) {
   background: color-mix(in srgb, #000 8%, var(--color-pink));
 }
 
+/* A recorded show that is on air gets a slightly stronger surface: lighter in
+   dark mode, darker in light mode. Live shows already carry the pink card. */
+.timetable-strip__item.is-now:not(.is-live) .timetable-strip__card {
+  background: color-mix(in srgb, var(--color-text) 18%, var(--color-bg));
+}
+
+.timetable-strip__item.is-now:not(.is-live) .timetable-strip__card:hover {
+  background: color-mix(in srgb, var(--color-text) 24%, var(--color-bg));
+}
+
 .timetable-strip__thumb {
   width: 44px;
   height: 44px;
-  border-radius: 4px;
+  border-radius: 5px;
   object-fit: cover;
   flex: none;
 }

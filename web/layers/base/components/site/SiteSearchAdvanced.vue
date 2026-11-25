@@ -767,9 +767,9 @@ onUnmounted(() => {
 													@click="openSet(item)"
 												>
 													<img
-														v-if="imageUrl(item, 120)"
+														v-if="imageUrl(item, 120) || group.imageUrl"
 														class="advanced-set__thumb"
-														:src="imageUrl(item, 120)"
+														:src="imageUrl(item, 120) || group.imageUrl"
 														alt=""
 														loading="lazy"
 													>
@@ -819,7 +819,7 @@ onUnmounted(() => {
 <style lang="postcss" scoped>
 .advanced-search__overlay {
   position: fixed;
-  top: var(--nav-bar-height);
+  top: calc(var(--nav-bar-height) + var(--player-bar-height));
   right: 0;
   bottom: 0;
   left: 0;
@@ -837,14 +837,25 @@ onUnmounted(() => {
 }
 
 .advanced-search {
+  /* One filled-surface scale for the whole dialog: inputs, reset, close and the
+     quiet row hovers share it, so almost nothing needs an outline. */
+  --as-surface: color-mix(in srgb, var(--color-text) 7%, var(--color-bg));
+  --as-surface-hover: color-mix(
+    in srgb,
+    var(--color-text) 11%,
+    var(--color-bg)
+  );
+  --as-line: color-mix(in srgb, var(--color-text) 12%, transparent);
+
   display: flex;
   flex-direction: column;
   width: 100%;
   max-width: 66rem;
   max-height: calc(100svh - var(--nav-bar-height) - var(--player-bar-height) - 2rem);
   overflow: hidden;
-  background: var(--color-bg);
-  border: 1px solid var(--color-text);
+  /* No outline: the dialog separates itself with a hair-thin surface lift and
+     the shadow, which reads in both themes. */
+  background: color-mix(in srgb, var(--color-text) 3%, var(--color-bg));
   border-radius: var(--pill-radius);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
 
@@ -884,9 +895,9 @@ onUnmounted(() => {
     width: 2rem;
     height: 2rem;
     padding: 0;
-    border: 1px solid var(--color-text);
+    border: 0;
     border-radius: 50%;
-    background: transparent;
+    background: var(--as-surface);
     color: var(--color-text);
     cursor: pointer;
     transition: background var(--transition-fast), color var(--transition-fast);
@@ -902,7 +913,7 @@ onUnmounted(() => {
     flex-direction: column;
     gap: var(--base-padding);
     padding: var(--base-padding) var(--big-padding) var(--mid-padding);
-    border-top: 1px solid var(--color-grey);
+    border-top: 1px solid var(--as-line);
   }
 
   &__label {
@@ -924,17 +935,22 @@ onUnmounted(() => {
       width: 100%;
       height: 2.75rem;
       padding: 0 0.875rem;
-      border: 1px solid var(--color-text);
+      border: 0;
       border-radius: var(--pill-radius);
-      background: var(--color-bg);
+      background: var(--as-surface);
       color: var(--color-text);
       font-family: var(--font-text-semibold);
       font-size: var(--small-font-size);
       outline: none;
+      transition: background var(--transition-fast);
+
+      &:hover {
+        background: var(--as-surface-hover);
+      }
 
       &:focus-visible {
-        border-color: var(--color-pink);
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-pink) 45%, transparent);
+        background: var(--as-surface-hover);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-pink) 40%, transparent);
       }
     }
 
@@ -964,14 +980,19 @@ onUnmounted(() => {
     gap: var(--base-padding);
     height: 3rem;
     padding: 0 1rem;
-    border: 1px solid var(--color-text);
+    border: 0;
     border-radius: var(--pill-radius);
-    background: var(--color-bg);
+    background: var(--as-surface);
     color: var(--color-text);
+    transition: background var(--transition-fast);
+
+    &:hover {
+      background: var(--as-surface-hover);
+    }
 
     &:focus-within {
-      border-color: var(--color-pink);
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-pink) 45%, transparent);
+      background: var(--as-surface-hover);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-pink) 40%, transparent);
     }
 
     svg {
@@ -1054,20 +1075,19 @@ onUnmounted(() => {
   }
 
   &__apply {
-    border: 1px solid var(--color-pink);
+    border: 0;
     background: var(--color-pink);
     color: var(--color-white);
 
     &:hover {
       background: var(--color-text);
-      border-color: var(--color-text);
       color: var(--color-bg);
     }
   }
 
   &__reset {
-    border: 1px solid var(--color-text);
-    background: transparent;
+    border: 0;
+    background: var(--as-surface);
     color: var(--color-text);
 
     &:hover {
@@ -1088,7 +1108,7 @@ onUnmounted(() => {
     min-height: 6rem;
     overflow-y: auto;
     padding: var(--small-padding) var(--big-padding) var(--big-padding);
-    border-top: 1px solid var(--color-grey);
+    border-top: 1px solid var(--as-line);
   }
 
   &__empty {
@@ -1121,7 +1141,7 @@ onUnmounted(() => {
 .advanced-other {
   --row-accent: var(--color-pink);
   padding: 0.25rem 0 0.55rem;
-  border-bottom: 1px solid var(--color-grey);
+  border-bottom: 1px solid var(--as-line, var(--color-grey));
 
   &--pool {
     --row-accent: var(--color-blue);
@@ -1157,20 +1177,17 @@ onUnmounted(() => {
     gap: var(--base-padding);
     width: 100%;
     padding: 0.45rem 0.5rem;
-    border: 1px solid transparent;
+    border: 0;
     border-radius: 5px;
     background: transparent;
     color: var(--color-text);
     text-align: left;
     cursor: pointer;
-    transition:
-      border-color var(--transition-fast),
-      background var(--transition-fast);
+    transition: background var(--transition-fast);
 
     &:hover,
     &:focus-visible {
-      border-color: var(--row-accent);
-      background: var(--color-grey-transparent);
+      background: color-mix(in srgb, var(--row-accent) 14%, transparent);
       outline: none;
     }
   }
@@ -1210,9 +1227,10 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   flex: none;
-  padding: 0.05rem 0.35rem;
-  border: 1px solid currentColor;
+  padding: 0.05rem 0.4rem;
+  border: 0;
   border-radius: var(--pill-radius);
+  background: color-mix(in srgb, currentColor 16%, transparent);
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
   letter-spacing: var(--button-letter-spacing);
@@ -1235,8 +1253,9 @@ onUnmounted(() => {
 
 .advanced-tag {
   padding: 0.0625rem 0.375rem;
-  border: 1px solid var(--color-text);
+  border: 0;
   border-radius: var(--pill-radius);
+  background: var(--as-surface, color-mix(in srgb, var(--color-text) 7%, var(--color-bg)));
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
   line-height: 1.2;
@@ -1245,7 +1264,7 @@ onUnmounted(() => {
 }
 
 .advanced-group {
-  border-bottom: 1px solid var(--color-grey);
+  border-bottom: 1px solid var(--as-line, var(--color-grey));
 
   &:last-child {
     border-bottom: 0;
@@ -1258,7 +1277,7 @@ onUnmounted(() => {
     width: calc(100% + 0.8rem);
     margin: 0 -0.4rem;
     padding: var(--base-padding) 0.4rem;
-    border: 1px solid transparent;
+    border: 0;
     border-radius: 5px;
     background: var(--color-bg);
     color: var(--color-text);
@@ -1268,13 +1287,10 @@ onUnmounted(() => {
     position: sticky;
     top: 0;
     z-index: 1;
-    transition:
-      border-color var(--transition-fast),
-      background var(--transition-fast);
+    transition: background var(--transition-fast);
 
     &:hover {
-      border-color: var(--color-pink);
-      background: color-mix(in srgb, var(--color-text) 4%, var(--color-bg));
+      background: color-mix(in srgb, var(--color-text) 6%, var(--color-bg));
     }
   }
 
@@ -1341,15 +1357,12 @@ onUnmounted(() => {
   gap: 0.35rem;
   width: 100%;
   padding: 0.25rem;
-  border: 1px solid transparent;
+  border: 0;
   border-radius: 5px;
-  transition:
-    border-color var(--transition-fast),
-    background var(--transition-fast);
+  transition: background var(--transition-fast);
 
   &:hover {
-    border-color: var(--color-pink);
-    background: var(--color-grey-transparent);
+    background: color-mix(in srgb, var(--color-text) 6%, transparent);
   }
 
   &__play {
@@ -1360,18 +1373,16 @@ onUnmounted(() => {
     height: 1.75rem;
     flex: none;
     padding: 0;
-    border: 1px solid var(--color-text);
+    border: 0;
     border-radius: 50%;
-    background: transparent;
+    background: var(--as-surface, color-mix(in srgb, var(--color-text) 7%, var(--color-bg)));
     color: var(--color-text);
     cursor: pointer;
     transition:
-      border-color var(--transition-fast),
       background var(--transition-fast),
       color var(--transition-fast);
 
     &:hover {
-      border-color: var(--color-pink);
       background: var(--color-pink);
       color: var(--color-white);
     }

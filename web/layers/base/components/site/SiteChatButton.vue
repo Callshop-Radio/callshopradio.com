@@ -4,11 +4,11 @@ import { computed, onBeforeUnmount, ref, watch } from "vue";
 const { open, toggle } = useChatUi();
 const timetableUi = useTimetableUi();
 
-// One panel toggle for both surfaces: the chat icon shows or hides the chat and
-// the timetable together, so they never stack or leave a half-open state.
+// The chat icon owns the chat only. Opening it closes the timetable so the
+// two panels cannot stack, but the chat button never opens the timetable.
 const togglePanels = () => {
+	if (!open.value) timetableUi.closePopup();
 	toggle();
-	timetableUi.open.value = open.value;
 };
 const { messages, loaded } = useChatRoom();
 
