@@ -275,7 +275,6 @@ function onDialogClose() {
   margin: 0;
   font-family: var(--font-text-medium);
   font-size: clamp(2.75rem, 7vw, 5rem);
-  font-weight: 500;
   letter-spacing: -0.045em;
   line-height: 0.9;
   text-transform: uppercase;
@@ -366,7 +365,6 @@ function onDialogClose() {
   margin: 0;
   font-family: var(--font-text-semibold);
   font-size: var(--text-lg);
-  font-weight: 500;
   letter-spacing: 0.015em;
   line-height: 1.25;
   text-transform: uppercase;
@@ -660,7 +658,6 @@ function onDialogClose() {
   margin: 0;
   font-family: var(--font-text-semibold);
   font-size: clamp(1.2rem, 1rem + 0.8vw, 1.6rem);
-  font-weight: 500;
   letter-spacing: 0.01em;
   line-height: 1.2;
   text-transform: uppercase;

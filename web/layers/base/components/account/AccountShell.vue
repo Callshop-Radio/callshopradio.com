@@ -83,7 +83,6 @@ defineProps<{
 .account-page__head h1 {
 	margin: 0;
 	font-family: var(--font-text-semibold);
-	font-weight: 500;
 	font-size: max(2rem, min(4.4vw, 3.4rem));
 	line-height: 0.95;
 	text-transform: uppercase;

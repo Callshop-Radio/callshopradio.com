@@ -99,8 +99,12 @@ p {
   }
 }
 
-strong {
-  font-weight: 400;
+strong,
+b {
+  /* The face is declared at 550; asking for the same value keeps the browser
+     from synthesising a bold on top of it. */
+  font-family: var(--font-text-semibold);
+  font-weight: 550;
 }
 
 nav,

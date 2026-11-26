@@ -905,7 +905,7 @@ watch(
   flex-grow: 1;
 
   & > * {
-    font-weight: 550;
+    font-family: var(--font-text-semibold);
     text-transform: uppercase;
   }
 
@@ -1087,7 +1087,7 @@ watch(
   &__time {
     font-size: var(--text-sm);
     color: var(--color-pink);
-    font-weight: 600;
+    font-family: var(--font-text-semibold);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     background-color: var(--color-bg);

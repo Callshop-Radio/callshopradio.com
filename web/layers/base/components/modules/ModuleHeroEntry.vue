@@ -491,7 +491,6 @@ onMounted(() => {
       .hero-entry-show-artists-artist {
         font-size: var(--text-md);
         font-family: var(--font-text-semibold);
-        font-weight: 500;
         text-transform: uppercase;
         width: max-content;
         max-width: 100%;
@@ -560,7 +559,6 @@ onMounted(() => {
         background-color: var(--color-text);
         color: var(--color-bg);
         text-decoration: none;
-        font-weight: 500;
         transition: background-color 0.2s ease;
 
         &:hover {

@@ -370,7 +370,6 @@ onMounted(() => loadArtworkUrl());
       .set__artist {
         font-size: var(--text-md);
         font-family: var(--font-text-semibold);
-        font-weight: 500;
         text-transform: uppercase;
         a,
         &a {

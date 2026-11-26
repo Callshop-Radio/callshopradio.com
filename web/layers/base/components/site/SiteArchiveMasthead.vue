@@ -85,7 +85,6 @@ withDefaults(
 .archive-masthead__title {
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-weight: 500;
   font-size: clamp(3.2rem, 8.2vw, 7.4rem);
   line-height: 0.82;
   letter-spacing: -0.025em;

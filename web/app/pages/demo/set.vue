@@ -615,7 +615,6 @@ const tagPath = (tag: string) =>
     margin: 0 0 var(--mid-padding);
     font-size: var(--text-sm);
     font-family: var(--font-text-semibold);
-    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
   }
@@ -669,7 +668,6 @@ const tagPath = (tag: string) =>
     margin: 0;
     font-size: var(--text-sm);
     font-family: var(--font-text-semibold);
-    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
   }
@@ -752,7 +750,6 @@ const tagPath = (tag: string) =>
     font-size: var(--text-md);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
-    font-weight: 500;
   }
 
   a {
@@ -821,7 +818,6 @@ const tagPath = (tag: string) =>
     font-size: var(--text-md);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
-    font-weight: 500;
   }
 
   &__artist {
@@ -927,7 +923,6 @@ const tagPath = (tag: string) =>
     font-size: var(--text-md);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
-    font-weight: 500;
 
     a {
       color: var(--color-text);
@@ -973,7 +968,6 @@ const tagPath = (tag: string) =>
     font-size: var(--text-md);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
-    font-weight: 500;
 
     a {
       color: var(--color-text);
@@ -1081,7 +1075,6 @@ const tagPath = (tag: string) =>
     font-size: var(--text-sm);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
-    font-weight: 500;
 
     a {
       color: var(--color-text);
@@ -1169,7 +1162,6 @@ const tagPath = (tag: string) =>
     font-size: var(--text-md);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
-    font-weight: 500;
 
     a {
       color: var(--color-text);

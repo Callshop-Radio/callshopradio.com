@@ -653,7 +653,7 @@ onBeforeUnmount(() => {
   background: var(--color-black);
   color: rgba(255, 255, 255, 0.72);
   font-size: var(--text-sm);
-  font-weight: 700;
+  font-family: var(--font-text-semibold);
   letter-spacing: var(--label-letter-spacing);
   border: 1px solid rgba(255, 255, 255, 0.14);
 }

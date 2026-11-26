@@ -304,7 +304,6 @@ function openTag(tag: Tag) {
   margin: 0;
   font-family: var(--font-text-semibold);
   font-size: clamp(2rem, 3.4vw, 3rem);
-  font-weight: 500;
   line-height: 0.94;
   letter-spacing: -0.015em;
   text-transform: uppercase;

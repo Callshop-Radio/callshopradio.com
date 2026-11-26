@@ -1486,7 +1486,7 @@ watch(
 
   h3 {
     font-size: var(--text-xl);
-    font-weight: 600;
+    font-family: var(--font-text-semibold);
     margin-bottom: var(--small-padding);
   }
 

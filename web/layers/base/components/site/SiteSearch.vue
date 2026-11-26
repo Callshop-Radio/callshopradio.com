@@ -439,7 +439,6 @@ watch(results, () => {
 
   p {
     font-size: var(--text-lg);
-    font-weight: 500;
     margin-bottom: var(--small-padding);
     color: var(--color-text);
   }

@@ -488,7 +488,6 @@ const coverFlowDescriptionBlocks = computed(() => {
       .pool-title {
         font-size: var(--text-lg);
         font-family: var(--font-text-semibold);
-        font-weight: 500;
         text-transform: uppercase;
         width: 100%;
         color: var(--color-bg);
@@ -568,7 +567,6 @@ const coverFlowDescriptionBlocks = computed(() => {
     .set-title {
       font-size: var(--text-md);
       font-family: var(--font-text-semibold);
-      font-weight: 500;
       text-transform: uppercase;
       color: var(--color-text);
       width: 100%;

@@ -510,7 +510,6 @@ onUnmounted(() => {
 .set-title {
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-weight: 500;
   font-size: clamp(2.4rem, 5.6vw, 5rem);
   line-height: 0.92;
   text-transform: uppercase;
@@ -865,7 +864,6 @@ onUnmounted(() => {
 .label {
   margin: 0 0 var(--mid-padding);
   font-family: var(--font-text-semibold);
-  font-weight: 500;
   font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);

@@ -265,7 +265,7 @@ onBeforeUnmount(stopCooldown);
 	background: var(--color-pink);
 	color: var(--color-black);
 	font: inherit;
-	font-weight: 600;
+	font-family: var(--font-text-semibold);
 	cursor: pointer;
 	transition:
 		transform 160ms ease,

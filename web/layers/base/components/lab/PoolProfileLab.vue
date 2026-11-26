@@ -328,7 +328,6 @@ const sampleSocials = {
   margin: 0;
   font-family: var(--font-text-semibold);
   font-size: clamp(1.9rem, 3.4vw, 3rem);
-  font-weight: 500;
   line-height: 0.94;
   letter-spacing: -0.015em;
   text-transform: uppercase;
@@ -511,7 +510,6 @@ const sampleSocials = {
   margin: 0;
   font-family: var(--font-text-semibold);
   font-size: clamp(1.9rem, 3.2vw, 2.9rem);
-  font-weight: 500;
   line-height: 0.94;
   letter-spacing: -0.015em;
   text-transform: uppercase;
@@ -577,7 +575,6 @@ const sampleSocials = {
   strong {
     font-family: var(--font-text-semibold);
     font-size: var(--text-sm);
-    font-weight: 500;
     text-transform: uppercase;
   }
 

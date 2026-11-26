@@ -787,10 +787,9 @@ onUnmounted(() => {
 
   .hero-title {
     font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 700;
     letter-spacing: -0.02em;
     margin-bottom: var(--small-padding);
-    font-family: var(--font-text);
+    font-family: var(--font-text-semibold);
   }
 
   .hero-subtitle {
@@ -1123,7 +1122,6 @@ onUnmounted(() => {
   .category-label {
     flex: 1;
     text-align: left;
-    font-weight: 500;
   }
 
   .category-count {
@@ -1282,7 +1280,7 @@ onUnmounted(() => {
 
   .card-title {
     font-size: var(--text-xl);
-    font-weight: 600;
+    font-family: var(--font-text-semibold);
     color: var(--color-text);
     margin-bottom: 4px;
   }

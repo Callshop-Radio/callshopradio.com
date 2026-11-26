@@ -240,7 +240,7 @@ onMounted(check);
 	background: var(--color-pink);
 	color: var(--color-black);
 	font: inherit;
-	font-weight: 600;
+	font-family: var(--font-text-semibold);
 	text-decoration: none;
 	cursor: pointer;
 }
@@ -259,7 +259,7 @@ onMounted(check);
 
 .invite-mail {
 	margin: 0;
-	font-weight: 600;
+	font-family: var(--font-text-semibold);
 }
 
 .invite-secret {

@@ -103,7 +103,7 @@ onMounted(load);
 }
 
 .account-role__value {
-	font-weight: 600;
+	font-family: var(--font-text-semibold);
 }
 
 .account-cards {
@@ -124,7 +124,7 @@ onMounted(load);
 
 .account-card__value {
 	font-size: 2rem;
-	font-weight: 600;
+	font-family: var(--font-text-semibold);
 }
 
 .account-secondary {

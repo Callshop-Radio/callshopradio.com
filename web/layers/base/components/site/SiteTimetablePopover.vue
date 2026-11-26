@@ -313,7 +313,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 }
 
 .tt-popover__live {
-  font-weight: 600;
+  font-family: var(--font-text-semibold);
   letter-spacing: 0.05em;
 }
 

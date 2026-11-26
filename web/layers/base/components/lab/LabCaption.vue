@@ -206,7 +206,6 @@ const teaserBlocks = computed(() => {
     margin: 0;
     font-family: var(--font-text-semibold);
     font-size: var(--lab-caption-title-size);
-    font-weight: 550;
     line-height: 1.08;
     text-transform: uppercase;
     letter-spacing: 0.01em;

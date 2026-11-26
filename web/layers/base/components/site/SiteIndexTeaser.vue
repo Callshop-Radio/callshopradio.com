@@ -119,7 +119,6 @@ const copy = computed(() => {
   margin: 0;
   font-family: var(--font-text-medium);
   font-size: var(--text-xl);
-  font-weight: 550;
   line-height: 1.1;
   text-transform: uppercase;
 }

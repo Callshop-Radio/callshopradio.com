@@ -268,7 +268,6 @@ function tagLabel(tag: Tag): string {
   overflow-wrap: anywhere;
   color: var(--color-ink);
   font-family: var(--font-text-semibold);
-  font-weight: 500;
   font-size: clamp(2.2rem, 5.6vw, 4.2rem);
   line-height: 0.92;
   letter-spacing: -0.01em;
@@ -329,7 +328,6 @@ function tagLabel(tag: Tag): string {
 .show-project__label {
   margin: 0 0 var(--mid-padding);
   font-family: var(--font-text-semibold);
-  font-weight: 500;
   font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);

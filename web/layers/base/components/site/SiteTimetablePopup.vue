@@ -604,7 +604,7 @@ onBeforeUnmount(() => {
 
 .tt-popup__date {
   font-size: var(--text-sm);
-  font-weight: 550;
+  font-family: var(--font-text-semibold);
   margin-left: 4px;
 }
 
@@ -765,7 +765,7 @@ onBeforeUnmount(() => {
 
 .tt-day__title {
   font-size: var(--text-md);
-  font-weight: 550;
+  font-family: var(--font-text-semibold);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -798,7 +798,7 @@ onBeforeUnmount(() => {
 
 .tt-day__live {
   font-size: var(--text-sm);
-  font-weight: 700;
+  font-family: var(--font-text-semibold);
   letter-spacing: var(--kicker-letter-spacing);
   padding: 2px 6px;
   border-radius: var(--radius-media);
@@ -859,7 +859,7 @@ onBeforeUnmount(() => {
 .tt-week__event.is-live { background: var(--color-pink); color: var(--color-ink); }
 
 .tt-week__time { font-size: 9px; opacity: 0.6; font-variant-numeric: tabular-nums; }
-.tt-week__title { font-size: 10.5px; font-weight: 550; }
+.tt-week__title { font-size: 10.5px; font-family: var(--font-text-semibold); }
 
 .tt-week__now {
   position: absolute;
@@ -904,7 +904,7 @@ onBeforeUnmount(() => {
 }
 
 .tt-month__cell.is-out { opacity: 0.3; }
-.tt-month__cell.is-today .tt-month__num { color: var(--color-pink); font-weight: 600; }
+.tt-month__cell.is-today .tt-month__num { color: var(--color-pink); font-family: var(--font-text-semibold); }
 
 .tt-month__num {
   font-size: var(--text-sm);
@@ -930,7 +930,7 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 
-.tt-month__pill.is-live { background: var(--color-pink); color: var(--color-ink); font-weight: 550; }
+.tt-month__pill.is-live { background: var(--color-pink); color: var(--color-ink); font-family: var(--font-text-semibold); }
 
 .tt-month__empty { font-size: 10px; opacity: 0.25; }
 

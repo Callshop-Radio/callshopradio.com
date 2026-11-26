@@ -831,7 +831,6 @@ function itemLabel(item: LabItem) {
     color: #fff;
     font-family: var(--font-text-semibold);
     font-size: clamp(2.4rem, 5vw, 4rem);
-    font-weight: 550;
     letter-spacing: -0.04em;
     line-height: 0.8;
     mix-blend-mode: difference;

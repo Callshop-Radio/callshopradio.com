@@ -340,13 +340,13 @@ function isCurrent(entry: TimetableEntry): boolean {
 }
 
 .timetable-strip__live {
-  font-weight: 600;
+  font-family: var(--font-text-semibold);
   letter-spacing: var(--label-letter-spacing);
 }
 
 .timetable-strip__name {
   font-size: var(--text-sm);
-  font-weight: 550;
+  font-family: var(--font-text-semibold);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
