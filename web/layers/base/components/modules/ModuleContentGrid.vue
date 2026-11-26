@@ -306,15 +306,18 @@ watch(
 // the masthead again, so the filter area lands right under the fixed header.
 onMounted(() => {
 	if (!initialTagSlugs.length) return;
-	nextTick(() => {
-		const rect = filterSection.value?.getBoundingClientRect();
-		if (!rect) return;
+	window.setTimeout(() => {
+		const target =
+			filterSection.value ??
+			(document.querySelector(".module-section") as HTMLElement | null);
+		if (!target) return;
+		const rect = target.getBoundingClientRect();
 		const headerOffset = 67.2 + 58 + 12;
 		window.scrollTo({
 			top: window.scrollY + rect.top - headerOffset,
 			behavior: "smooth",
 		});
-	});
+	}, 250);
 });
 
 const needsSelfLoad = computed(() => {
