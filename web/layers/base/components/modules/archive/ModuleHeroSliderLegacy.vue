@@ -118,7 +118,7 @@ onMounted(() => {
 							v-for="(_, index) in slides"
 							:key="index"
 							:class="['slider__dot', { 'is-selected': index === currentIndex }]"
-							@click="scrollTo(index)"
+							@click="scrollTo(Number(index))"
 						/>
 					</div>
 
@@ -145,10 +145,6 @@ onMounted(() => {
 		</div>
 
 		<div class="graphics-behind" :class="mainStore?.currentHeroContentType">
-			<AnimatedGradient
-				class="animated-gradient"
-				:type="mainStore?.currentHeroContentType"
-			/>
 			<AnimatedLogoBackground class="animated-logo-background" />
 		</div>
 
@@ -215,37 +211,6 @@ onMounted(() => {
     height: 100%;
     z-index: 0;
     pointer-events: none;
-    &.venue,
-    &.person {
-      .animated-gradient {
-        position: absolute;
-        
-        /* Mobile: centered for venue/person */
-        top: 30%;
-        left: -25%;
-        width: 190%;
-        height: 190%;
-        opacity: 0.85;
-        
-        /* Tablet: centered with more coverage */
-        @media screen and (min-width: 600px) and (max-width: 1100px) {
-          top: 15%;
-          left: -35%;
-          width: 200%;
-          height: 200%;
-          opacity: 0.9;
-        }
-        
-        /* Desktop: original position */
-        @media screen and (min-width: 1100px) {
-          top: -60%;
-          left: -15%;
-          width: 140%;
-          height: 140%;
-          opacity: 1;
-        }
-      }
-    }
     .animated-logo-background {
       position: absolute;
       z-index: 0;
@@ -281,36 +246,6 @@ onMounted(() => {
         opacity: 1;
       }
     }
-    .animated-gradient {
-      position: absolute;
-      transition: width 0.5s ease, height 0.5s ease, top 0.5s ease,
-        left 0.5s ease;
-      
-      /* Mobile: centered behind the content */
-      top: 30%;
-      left: -20%;
-      width: 180%;
-      height: 180%;
-      opacity: 0.85;
-      
-      /* Tablet: more centered with more coverage */
-      @media screen and (min-width: 600px) and (max-width: 1100px) {
-        top: 20%;
-        left: -30%;
-        width: 190%;
-        height: 190%;
-        opacity: 0.9;
-      }
-      
-      /* Desktop: original position */
-      @media screen and (min-width: 1100px) {
-        top: -33%;
-        left: -45%;
-        width: 110%;
-        height: 110%;
-        opacity: 1;
-      }
-    }
   }
   .graphics-front {
     pointer-events: none;
@@ -319,7 +254,10 @@ onMounted(() => {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 0;
+    /* Above the active slide (z-index: 2), so the SVG line runs over the
+       artwork instead of being clipped at its edge. The slider nav (z-index
+       10/20) remains above it. */
+    z-index: 3;
     .animated-logo {
       position: absolute;
       z-index: 0;

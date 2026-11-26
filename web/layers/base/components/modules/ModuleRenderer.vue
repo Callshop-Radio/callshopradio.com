@@ -29,7 +29,11 @@ withDefaults(
 			:module="module"
 			:eager="index === 0"
 		/>
-		<ModuleHeroSlider
+		<!-- One hero for all content kinds: sets square/pink, pool portrait/blue,
+		     words landscape/green. The former landing slider is archived in
+		     modules/archive/ModuleHeroSliderLegacy.vue and can be re-registered
+		     here if needed. -->
+		<SiteMixedHero
 			v-if="module._type == 'module.heroSlider'"
 			:module="module"
 			:eager="index === 0"
