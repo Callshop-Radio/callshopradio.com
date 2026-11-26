@@ -8,6 +8,7 @@ const copy = useAccountCopy();
 const request = useAccountRequest();
 const localePath = useLocalePath();
 const { locale } = useI18n();
+const mainStore = useMainStore();
 const de = computed(() => locale.value === "de");
 
 type Item = {
@@ -44,8 +45,13 @@ const dirty = computed(
 	() => Boolean(list.value) && name.value.trim() !== list.value?.name,
 );
 
+const fallbackCover = computed(
+	() => mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url ?? "",
+);
+
 function imageOf(setId: string): string {
-	return cards.value[setId]?.image?.asset?.url ?? "";
+	const url = cards.value[setId]?.image?.asset?.url || fallbackCover.value;
+	return sanityImageUrl(url, 240) ?? "";
 }
 
 function titleOf(setId: string): string {

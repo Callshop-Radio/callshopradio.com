@@ -7,6 +7,7 @@ const copy = useAccountCopy();
 const request = useAccountRequest();
 const localePath = useLocalePath();
 const { locale } = useI18n();
+const mainStore = useMainStore();
 const de = computed(() => locale.value === "de");
 
 type ListInfo = {
@@ -45,8 +46,13 @@ const meta = computed(() => {
 	return `${savedCount.value} ${savedCount.value === 1 ? "gemerktes Set" : "gemerkte Sets"} · ${lists.value.length} ${lists.value.length === 1 ? "Liste" : "Listen"}`;
 });
 
+const fallbackCover = computed(
+	() => mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url ?? "",
+);
+
 function imageOf(card: SetCard | undefined): string {
-	return card?.image?.asset?.url ?? "";
+	const url = card?.image?.asset?.url || fallbackCover.value;
+	return sanityImageUrl(url, 240) ?? "";
 }
 
 function titleOf(card: SetCard | undefined): string {
