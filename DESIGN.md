@@ -28,7 +28,7 @@ this document covers markup, styles and the few strings baked into components.
 
 1. **Editorial, not app-like.** White (or near-black) page, one typeface, thin rules,
    coloured pills. No shadows except on fixed layers (player, chat, dialogs).
-2. **Small type, generous space.** The page is set at 13 px and the rhythm comes from
+2. **Small type, generous space.** Body copy sits at 16 px and the rhythm comes from
    margins, not from size. Big type is reserved for page titles and mastheads.
 3. **Colour is an accent, never a surface.** Pink, blue, green, purple and coral mark
    sections and tags; the page itself stays neutral.
