@@ -40,7 +40,7 @@ usePageSeo(data?.value?.seo);
 			<div class="inner">
 				<h3 v-if="data?.title === 'No Show'">Similar Sets</h3>
 				<h3 v-else>
-					More Episodes of <span>{{ data?.title }}</span>
+					More Sets from <span>{{ data?.title }}</span>
 				</h3>
 				<ModuleRelatedContent
 					:items="data?.sets"
@@ -74,10 +74,11 @@ section {
   align-items: center;
   /* gap: var(--content-gap); */
   &__intro-section {
-    margin: 0 0 0;
+    margin: calc(var(--first-content-distance) + 50px) 0 0;
     width: 100%;
 
     @media screen and (max-width: 900px) {
+      margin-top: calc(var(--base-margin) + 50px);
       padding-top: 0;
     }
   }

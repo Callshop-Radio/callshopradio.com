@@ -18,11 +18,14 @@ const props = withDefaults(
 		equalizeCardHeights?: boolean;
 		/** Content area — drives accent color for dots and arrow hover */
 		area?: "show" | "pool" | "words";
+		/** Fan direction. Pool uses a vertical card-file stack. */
+		orientation?: "horizontal" | "vertical";
 	}>(),
 	{
 		navLabel: "Slide",
 		equalizeCardHeights: false,
 		area: "show",
+		orientation: "horizontal",
 	},
 );
 
@@ -34,17 +37,24 @@ let resizeObserver: ResizeObserver | null = null;
 
 const {
 	currentIndex,
-	isAnimating,
 	total,
 	cardStyle,
 	getVisualOffset,
+	isSnapping,
 	scrollNext,
 	scrollPrev,
 	scrollTo,
-} = useIntroCoverFlow(itemsRef, stageRef);
+} = useIntroCoverFlow(itemsRef, stageRef, {
+	orientation: props.orientation,
+});
+
+const isVertical = computed(() => props.orientation === "vertical");
+const needsCardHeight = computed(
+	() => props.equalizeCardHeights || isVertical.value,
+);
 
 function measureUniformCardHeight() {
-	if (!props.equalizeCardHeights || !stageRef.value) return;
+	if (!needsCardHeight.value || !stageRef.value) return;
 
 	nextTick(() => {
 		requestAnimationFrame(() => {
@@ -67,7 +77,16 @@ function measureUniformCardHeight() {
 }
 
 const stageStyle = computed(() => {
-	if (!props.equalizeCardHeights || !uniformCardHeight.value) return undefined;
+	if (!needsCardHeight.value || !uniformCardHeight.value) return undefined;
+
+	if (isVertical.value) {
+		// The stack fans below the pulled-out card, so the stage needs room for
+		// the card plus the visible pile and the shadow.
+		return {
+			"--cover-flow-uniform-height": `${uniformCardHeight.value}px`,
+			minHeight: `calc(${uniformCardHeight.value}px + var(--cover-flow-stack-room, 12rem))`,
+		};
+	}
 
 	return {
 		"--cover-flow-uniform-height": `${uniformCardHeight.value}px`,
@@ -87,7 +106,7 @@ watch(
 onMounted(() => {
 	measureUniformCardHeight();
 
-	if (!props.equalizeCardHeights || !stageRef.value) return;
+	if (!needsCardHeight.value || !stageRef.value) return;
 
 	resizeObserver = new ResizeObserver(() => measureUniformCardHeight());
 	resizeObserver.observe(stageRef.value);
@@ -106,15 +125,29 @@ onUnmounted(() => {
 	<div
 		v-if="total > 0"
 		class="intro-cover-flow"
-		:class="`intro-cover-flow--${area}`"
+		:class="[
+			`intro-cover-flow--${area}`,
+			{ 'intro-cover-flow--vertical': isVertical },
+		]"
 	>
-		<div class="cover-flow">
+		<div
+			class="cover-flow"
+			role="region"
+			aria-roledescription="carousel"
+			:aria-label="`${navLabel} Karussell`"
+			tabindex="0"
+			@keydown.left.prevent="scrollPrev"
+			@keydown.right.prevent="scrollNext"
+			@keydown.up.prevent="scrollPrev"
+			@keydown.down.prevent="scrollNext"
+			@keydown.home.prevent="scrollTo(0)"
+			@keydown.end.prevent="scrollTo(total - 1)"
+		>
 			<button
 				v-if="total > 1"
 				class="cover-flow__arrow cover-flow__arrow--prev"
 				type="button"
 				:aria-label="`Vorheriger ${navLabel}`"
-				:disabled="isAnimating"
 				@mousedown.prevent
 				@click="scrollPrev"
 			>
@@ -143,6 +176,9 @@ onUnmounted(() => {
 					v-for="(item, index) in items"
 					:key="item._id"
 					class="cover-flow__card-wrap"
+					:class="{
+						'cover-flow__card-wrap--snap': isSnapping(item._id),
+					}"
 					:style="cardStyle(index)"
 					:data-offset="getVisualOffset(index)"
 				>
@@ -150,6 +186,7 @@ onUnmounted(() => {
 						:item="item"
 						:index="index"
 						:media-active="Math.abs(getVisualOffset(index)) <= 1"
+						:is-center="getVisualOffset(index) === 0"
 					/>
 				</div>
 			</div>
@@ -159,7 +196,6 @@ onUnmounted(() => {
 				class="cover-flow__arrow cover-flow__arrow--next"
 				type="button"
 				:aria-label="`Nächster ${navLabel}`"
-				:disabled="isAnimating"
 				@mousedown.prevent
 				@click="scrollNext"
 			>
@@ -191,7 +227,6 @@ onUnmounted(() => {
 				:class="['cover-flow__dot', { 'is-selected': index === currentIndex }]"
 				:aria-label="`${navLabel} ${index + 1}`"
 				:aria-current="index === currentIndex ? 'true' : undefined"
-				:disabled="isAnimating"
 				@mousedown.prevent
 				@click="scrollTo(index)"
 			/>
@@ -219,12 +254,87 @@ onUnmounted(() => {
   }
 
   width: 100%;
-  max-width: var(--page-max-width);
+  max-width: 100%;
   margin: 0 auto;
-  padding: var(--small-margin) 0 var(--base-margin);
+  padding: var(--small-margin) var(--small-padding) var(--base-margin);
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  /* Card-file stack: room below the pulled-out card for the pile. */
+  &--vertical {
+    --cover-flow-stack-room: 5rem;
+
+    .cover-flow {
+      width: 100%;
+      margin-inline: auto;
+      padding-inline: 0;
+    }
+
+    .cover-flow__dots {
+      margin-top: var(--small-padding);
+    }
+
+    .cover-flow__stage {
+      min-height: 24rem;
+    }
+
+    .cover-flow__card-wrap {
+      top: 0;
+      width: 100%;
+      transition:
+        transform 0.72s cubic-bezier(0.3, 1.14, 0.4, 1),
+        opacity 0.72s var(--cover-flow-ease),
+        filter 0.72s var(--cover-flow-ease);
+    }
+
+    /* The card that has been pulled out of the stack carries the shadow. */
+    .cover-flow__card-wrap :deep(.pool-main) {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      transition: box-shadow 0.72s var(--cover-flow-ease);
+    }
+
+    .cover-flow__card-wrap[data-offset="0"] :deep(.pool-main) {
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Controls move below the deck so the wide card stays untouched. */
+    .cover-flow__arrow {
+      top: 100%;
+      margin-top: var(--small-padding);
+      transform: none;
+      width: 2.25rem;
+      height: 2.25rem;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
+      border-radius: 999px;
+      background-color: var(--color-bg);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+    }
+
+    .cover-flow__arrow--prev {
+      left: calc(50% - 7rem);
+      right: auto;
+      svg {
+        transform: rotate(90deg);
+      }
+    }
+
+    .cover-flow__arrow--next {
+      right: calc(50% - 7rem);
+      left: auto;
+      svg {
+        transform: rotate(90deg);
+      }
+    }
+
+    .cover-flow__dots {
+      margin-top: var(--small-padding);
+      min-height: 2.25rem;
+    }
+  }
 }
 
 .cover-flow {
@@ -234,6 +344,12 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  &:focus-visible {
+    outline: 2px solid var(--cover-flow-accent);
+    outline-offset: 4px;
+    border-radius: 1.5rem;
+  }
 }
 
 .cover-flow__stage {
@@ -251,10 +367,17 @@ onUnmounted(() => {
   width: var(--cover-flow-card-width);
   transform-origin: center center;
   backface-visibility: hidden;
+  will-change: transform, opacity, filter;
   transition:
     transform 0.72s var(--cover-flow-ease),
     opacity 0.72s var(--cover-flow-ease),
-    filter 0.6s var(--cover-flow-ease);
+    filter 0.72s var(--cover-flow-ease);
+}
+
+/* Off-screen cards are placed directly at their new ring position; animating
+   them would sweep them across the stage during multi-step jumps. */
+.cover-flow__card-wrap--snap {
+  transition: none;
 }
 
 .cover-flow__arrow {
@@ -267,11 +390,6 @@ onUnmounted(() => {
   padding: var(--small-padding);
   transition: color var(--transition-fast);
 
-  &:disabled {
-    opacity: 0.35;
-    cursor: default;
-  }
-
   svg {
     width: 1.25rem;
     height: 1.25rem;
@@ -282,7 +400,7 @@ onUnmounted(() => {
     transition: fill var(--transition-fast);
   }
 
-  &:hover:not(:disabled) {
+  &:hover {
     @media (min-width: 1024px) {
       color: var(--cover-flow-accent);
     }
@@ -323,19 +441,16 @@ onUnmounted(() => {
     background-color: var(--cover-flow-accent);
   }
 
-  &:hover:not(:disabled) {
+  &:hover {
     @media (min-width: 1024px) {
       background-color: var(--cover-flow-accent);
     }
   }
-
-  &:disabled {
-    cursor: default;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cover-flow__card-wrap {
+  .cover-flow__card-wrap,
+  .intro-cover-flow--vertical .cover-flow__card-wrap {
     transition: none;
   }
 }
@@ -344,11 +459,19 @@ onUnmounted(() => {
   .intro-cover-flow {
     --cover-flow-card-width: min(17.5rem, 72vw);
     --cover-flow-arrow-gutter: 0.25rem;
-    padding-inline: 0;
+    padding-inline: var(--small-padding);
   }
 
   .cover-flow__stage {
     min-height: 26rem;
+  }
+
+  .intro-cover-flow--vertical {
+    --cover-flow-stack-room: 3.5rem;
+
+    .cover-flow__stage {
+      min-height: 30rem;
+    }
   }
 
   .cover-flow__arrow {

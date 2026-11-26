@@ -1,15 +1,21 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useMainStore } from "~/stores/mainStore";
-import type { Image } from "~/types/sanity";
+import type { Image, Tag } from "~~/types/sanity";
 
-const { locale: _locale, setLocale: _setLocale } = useI18n();
-// Type definitions
-interface Tag {
+interface PersonLink {
 	_id?: string;
 	_type?: string;
-	title?: string | unknown;
-	short?: string;
+	title?: string;
+	slug?: { current?: string };
+	poolVisibility?: boolean;
+}
+
+interface VenueLink {
+	_id?: string;
+	_type?: string;
+	title?: string;
+	slug?: { current?: string };
 }
 
 interface ShowItem {
@@ -17,567 +23,411 @@ interface ShowItem {
 	_type?: string;
 	title?: string;
 	name?: string;
-	content?: object;
+	content?: unknown[];
 	slug?: { current?: string };
 	image?: Image;
 	mainImage?: Image;
 	location?: string;
 	tags?: Tag[];
 	bio?: unknown[];
+	socials?: Record<string, string>;
+	contact?: string;
+	persons?: PersonLink[];
+	venues?: VenueLink[];
 }
 
-// Props
 const props = defineProps<{
 	showItem: ShowItem;
 }>();
 
-// Store
 const mainStore = useMainStore();
 
-// Composable for image management
-const useImageManagement = () => {
-	// Helper function for image fetching and fallbacks
-	function getItemImage(item?: PoolItem): Image | null {
-		if (!item) return null;
+const fallbacks = computed(
+	() =>
+		mainStore?.siteFallbacks as
+			| {
+					fallbackShow?: { image?: Image };
+					fallbackPerson?: { image?: Image };
+			  }
+			| undefined,
+);
 
-		// Image from the item itself
-		if (item.image || item.mainImage) {
-			return item.image || item.mainImage;
-		}
+const itemImage = computed<Record<string, unknown> | undefined>(() => {
+	const image =
+		props.showItem?.image ||
+		props.showItem?.mainImage ||
+		fallbacks.value?.fallbackShow?.image;
+	return (image as Record<string, unknown> | undefined) ?? undefined;
+});
 
-		// Fallbacks depending on content type
-		if (item._type === "person") {
-			return mainStore?.siteFallbacks?.fallbackPerson?.image;
-		} else if (item._type === "venue") {
-			return mainStore?.siteFallbacks?.fallbackVenue?.image;
-		}
+const itemTitle = computed(
+	() => props.showItem?.title || props.showItem?.name || "",
+);
 
-		// General fallback
-		return mainStore?.siteFallbacks?.fallbackPerson?.image;
-	}
-
-	// Computed property for the image
-	const itemImage = computed(() => {
-		return getItemImage(props.showItem);
-	});
-
+const titleClass = computed(() => {
+	const length = itemTitle.value.length;
 	return {
-		itemImage,
+		"is-long": length > 20 && length <= 32,
+		"is-very-long": length > 32,
 	};
-};
-
-// Application of the composables
-const { itemImage } = useImageManagement();
-
-// Formatted data
-const itemTitle = computed(() => {
-	return props.showItem?.title || props.showItem?.name || "";
 });
 
-const _itemType = computed(() => {
-	return props.showItem?._type === "person" ? "Person" : "Venue";
-});
+const cityTags = computed(() =>
+	(props.showItem?.tags ?? []).filter((tag) => tag._type === "tag.city"),
+);
 
-const _itemLocation = computed(() => {
-	return props.showItem?.location || "";
-});
+const otherTags = computed(() =>
+	(props.showItem?.tags ?? []).filter((tag) => tag._type !== "tag.city"),
+);
+
+const persons = computed(() => props.showItem?.persons ?? []);
+const venues = computed(() => props.showItem?.venues ?? []);
 
 const contactLink = computed(() => {
 	const contact = props.showItem?.contact;
 	if (!contact) return "#";
-
-	// Check email format
-	if (contact.includes("@")) {
-		return `mailto:${contact}`;
-	}
-
-	// Phone number (simplified check)
-	if (/^\+?[0-9\s()-]+$/.test(contact)) {
+	if (contact.includes("@")) return `mailto:${contact}`;
+	if (/^\+?[0-9\s()-]+$/.test(contact))
 		return `tel:${contact.replace(/\s/g, "")}`;
-	}
-
 	return contact;
 });
+
+function tagLabel(tag: Tag): string {
+	return getI18nLabel(tag.title);
+}
 </script>
 
 <template>
-	<div v-if="showItem" class="show-intro-content">
-		<div class="show-intro-container">
-			<!-- Tags icon -->
-			<div v-if="showItem?.tags?.length" class="city-tags">
-				<button
-					v-for="(tag, index) in showItem.tags"
-					:key="tag._id || index"
-					class="tag city"
-					type="button"
-				>
-						{{ getI18nLabel(tag?.title) }}
-				</button>
-			</div>
+	<article v-if="showItem" class="show-project">
+		<div class="show-project__poster">
+			<figure class="show-project__media">
+				<MediaImage
+					:image="itemImage"
+					:alt="itemTitle"
+					class="show-project__image"
+					:eager="true"
+				/>
+			</figure>
 
-			<!-- Content area -->
-			<div class="show-intro-info">
-				<div class="show-intro-info-container">
-					<!-- Title area -->
-					<div class="show-intro-header">
-						<!-- Type and location -->
-						<div class="show-intro-title">
-							<ElementsContentLink
-								:item="showItem"
-								class="show-intro-link"
-								:aria-label="showItem?.title || showItem?.name"
-							>
-								<h2 class="show-intro-title">
-									{{ itemTitle }}
-								</h2>
-							</ElementsContentLink>
-						</div>
-					</div>
-					<!-- Insert the teaser text logic here, analogous to the ContentSlider -->
-					<div v-if="showItem?.content" class="show-intro-text">
-						<!-- Case 1: Internationalized array with multiple entries -->
-						<!-- Debug output -->
+			<div class="show-project__titlecard">
+				<p class="show-project__eyebrow">
+					<span class="show-project__accent-dot" aria-hidden="true" />
+					Show profile
+					<template v-if="cityTags.length">
+						<span class="show-project__sep" aria-hidden="true">·</span>
+						{{ cityTags.map(tagLabel).join(" / ") }}
+					</template>
+				</p>
 
-						<RichText
-							v-if="showItem.content"
-							:blocks="showItem?.content"
-							class="show-intro-text"
-						/>
-					</div>
+				<h1 class="show-project__title" :class="titleClass">
+					{{ itemTitle }}
+				</h1>
 
-					<div class="show-intro-bottom">
-					<!-- Referenced shows -->
-					<div
-						v-if="showItem.shows && showItem.shows.length > 0"
-						class="show-intro-references-section"
+				<div v-if="otherTags.length" class="tags show-project__tags">
+					<span
+						v-for="tag in otherTags"
+						:key="tag._id || String(tag.title)"
+						class="tag show-project__tag"
 					>
-						<div class="show-intro-refs-list tags">
-							<div
-								v-for="show in showItem.shows"
-								:key="show._id"
-								class="show-intro-ref-item"
-							>
-								<ElementsContentLink :item="show" class="show-intro-ref-link">
-									<div class="show-intro-ref-info">
-										<svg
-											viewBox="0 0 22 22"
-											fill="none"
-											xmlns="http://www.w3.org/2000/svg"
-											class="detail-ref-icon"
-											aria-hidden="true"
-										>
-											<circle
-												cx="11"
-												cy="11"
-												r="11"
-												fill="#F794B3" />
-											<path
-												d="M16.7617 11.0002L8.11886 15.9901L8.11886 6.01023L16.7617 11.0002Z"
-												fill="white"
-											/>
-										</svg>
-
-										<h4 class="tag">{{ show.title }}</h4>
-									</div>
-								</ElementsContentLink>
-							</div>
-						</div>
-					</div>
-
-					<!-- Referenced persons -->
-					<div
-						v-if="showItem.persons && showItem.persons.length > 0"
-						class="show-intro-references-section"
-					>
-						<div class="show-intro-refs-list">
-							<svg
-								viewBox="0 0 22 22"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-								class="detail-ref-icon"
-								aria-hidden="true"
-							>
-								<circle
-									cx="11"
-									cy="11"
-									r="11"
-									fill="#557FB9" />
-								<g clip-path="url(#clip0_6005_7912)">
-									<path
-										d="M11.2529 9.95997C12.0452 9.95997 12.8051 9.66 13.3654 9.12605C13.9257 8.59211 14.2404 7.86792 14.2404 7.1128C14.2404 6.35768 13.9257 5.63349 13.3654 5.09954C12.8051 4.56559 12.0452 4.26562 11.2529 4.26562C10.4605 4.26563 9.70065 4.56559 9.14037 5.09954C8.5801 5.63349 8.26534 6.35768 8.26534 7.1128C8.26534 7.86792 8.5801 8.59211 9.14037 9.12605C9.70065 9.66 10.4605 9.95997 11.2529 9.95997ZM11.2529 11.2109C7.28075 11.2109 4.73438 13.2999 4.73438 14.317V16.2162H17.7714V14.317C17.7714 13.087 15.3607 11.2109 11.2529 11.2109Z"
-										fill="white"
-									/>
-								</g>
-								<defs>
-									<clipPath id="clip0_6005_7912">
-										<rect
-											width="14.6667"
-											height="14.6667"
-											fill="white"
-											transform="translate(4.19141 2.09375)"
-										/>
-									</clipPath>
-								</defs>
-							</svg>
-							<div
-								v-for="person in showItem.persons"
-								:key="person._id"
-								class="show-intro-ref-item tags"
-							>
-								<ElementsContentLink
-									v-if="person?.poolVisibility"
-									:pool="person"
-									class="show-intro-ref-link"
-								>
-									<div class="show-intro-ref-info">
-										<h4 class="tag">{{ person.title }}</h4>
-									</div>
-								</ElementsContentLink>
-								<div v-else class="show-intro-ref-link no-link">
-									<div class="show-intro-ref-info">
-										<h4 class="tag">{{ person.title }}</h4>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<!-- Only for person: referenced venues -->
-					<div
-						v-if="showItem.venues && showItem.venues.length > 0"
-						class="show-intro-references-section"
-					>
-						<div class="show-intro-refs-list">
-							<svg
-								viewBox="0 0 22 22"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-								class="detail-ref-icon"
-								aria-hidden="true"
-							>
-								<circle
-									cx="11"
-									cy="11"
-									r="11"
-									fill="#557FB9" />
-								<path
-									d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
-									fill="white"
-								/>
-							</svg>
-							<div
-								v-for="venue in showItem.venues"
-								:key="venue._id"
-								class="show-intro-ref-item"
-							>
-								<ElementsContentLink :item="venue" class="show-intro-ref-link">
-									<div class="show-intro-ref-info">
-										<h4 class="tag">{{ venue.title }}</h4>
-									</div>
-								</ElementsContentLink>
-							</div>
-						</div>
-					</div>
-						<IntroSocialLinks
-							:socials="showItem?.socials"
-							:contact="showItem?.contact"
-							:contact-href="contactLink"
-						/>
-					</div>
+						{{ tagLabel(tag) }}
+					</span>
 				</div>
 			</div>
-			<!-- Image/media area -->
-			<div class="show-intro-media">
-				<ElementsContentLink
-					:item="showItem"
-					class="show-intro-link"
-					:aria-label="showItem?.title || showItem?.name"
-				>
-					<MediaImage
-						:image="itemImage"
-						:alt="showItem?.title || showItem?.name"
-						class="show-intro-image"
-						:eager="true"
-					/>
-				</ElementsContentLink>
-			</div>
 		</div>
-	</div>
+
+		<div class="show-project__body">
+			<section v-if="showItem.content" class="show-project__about">
+				<h2 class="show-project__label">About the show</h2>
+				<RichText :blocks="showItem.content" class="show-project__rich" />
+			</section>
+
+			<aside class="show-project__aside">
+				<section v-if="persons.length" class="show-project__section">
+					<h2 class="show-project__label">Residents</h2>
+					<div class="show-project__refs">
+						<template
+							v-for="person in persons"
+							:key="person._id || person.title"
+						>
+							<ElementsContentLink
+								v-if="person.poolVisibility"
+								:pool="person"
+								class="show-project__ref show-project__ref--person"
+							>
+								{{ person.title }}
+							</ElementsContentLink>
+							<span
+								v-else
+								class="show-project__ref show-project__ref--person show-project__ref--muted"
+							>
+								{{ person.title }}
+							</span>
+						</template>
+					</div>
+				</section>
+
+				<section v-if="venues.length" class="show-project__section">
+					<h2 class="show-project__label">Venues</h2>
+					<div class="show-project__refs">
+						<ElementsContentLink
+							v-for="venue in venues"
+							:key="venue._id || venue.title"
+							:item="venue"
+							class="show-project__ref show-project__ref--venue"
+						>
+							{{ venue.title }}
+						</ElementsContentLink>
+					</div>
+				</section>
+
+				<IntroSocialLinks
+					v-if="showItem.socials || showItem.contact"
+					class="show-project__socials"
+					:socials="showItem.socials"
+					:contact="showItem.contact"
+					:contact-href="contactLink"
+				/>
+			</aside>
+		</div>
+	</article>
 </template>
 
 <style lang="postcss" scoped>
-.show-intro-content {
-  --detail-chip-size: calc(
-    var(--small-font-size) + var(--small-padding) * 2 + 0.2rem
-  );
-
+.show-project {
+  position: relative;
+  isolation: isolate;
   width: var(--page-max-width);
   max-width: 100%;
   margin: var(--big-margin) auto 0;
-  display: flex;
-  flex-flow: column wrap;
-  justify-content: center;
+}
+
+.show-project__poster {
   position: relative;
+}
 
-  @media screen and (max-width: 900px) {
-    margin: 0 auto 0;
-    padding-top: calc(var(--city-tag-height) + var(--base-margin));
+.show-project__media {
+  width: 100%;
+  aspect-ratio: 2.35 / 1;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--color-grey);
+}
+
+.show-project__image,
+.show-project__media :deep(img) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* A show is a broadcast identity, not a set spread: landscape banner with a
+   pink title card instead of a floating headline and square cover. */
+.show-project__titlecard {
+  position: absolute;
+  left: var(--base-margin);
+  bottom: var(--base-margin);
+  z-index: 1;
+  max-width: min(62%, 46rem);
+  padding: 1.25rem 1.5rem;
+  border-radius: 5px;
+  background: var(--color-pink);
+  color: #1a1013;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+}
+
+.show-project__eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  color: color-mix(in srgb, #1a1013 68%, transparent);
+  font-size: var(--small-font-size);
+  line-height: 1.2;
+  letter-spacing: var(--button-letter-spacing);
+  text-transform: uppercase;
+}
+
+.show-project__accent-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #1a1013;
+  flex: none;
+}
+
+.show-project__sep {
+  opacity: 0.4;
+}
+
+.show-project__title {
+  margin: 0.5rem 0 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: #1a1013;
+  font-family: var(--font-text-semibold);
+  font-weight: 500;
+  font-size: clamp(2.2rem, 5.6vw, 4.2rem);
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+
+  &.is-long {
+    font-size: clamp(1.9rem, 4.2vw, 3.2rem);
   }
 
-  .city-tags {
-    top: 0;
-    left: 1.5625rem;
-    transform: translate(0, calc(-100% - 0.0625rem));
-    position: absolute;
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: flex-start;
+  &.is-very-long {
+    font-size: clamp(1.6rem, 3.2vw, 2.5rem);
+  }
+}
 
-    @media screen and (max-width: 900px) {
-      left: var(--base-margin);
-    }
+.show-project__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.75rem;
+}
 
-    .tag {
-      background-color: var(--color-pink);
+.show-project__tag {
+  padding: calc(var(--small-padding) / 2) var(--small-padding);
+  border: 1px solid #1a1013;
+  border-radius: 5px;
+  background: #1a1013;
+  color: var(--color-white);
+  font-size: var(--mini-font-size);
+  line-height: 1.1;
+  letter-spacing: var(--button-letter-spacing);
+  text-transform: uppercase;
+}
+
+.show-project__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(15rem, 0.75fr);
+  gap: var(--big-margin);
+  align-items: start;
+  margin-top: var(--base-margin);
+}
+
+.show-project__about {
+  min-width: 0;
+}
+
+.show-project__aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--base-margin);
+  min-width: 0;
+}
+
+.show-project__section {
+  width: 100%;
+}
+
+.show-project__label {
+  margin: 0 0 var(--mid-padding);
+  font-family: var(--font-text-semibold);
+  font-weight: 500;
+  font-size: var(--small-font-size);
+  text-transform: uppercase;
+  letter-spacing: var(--button-letter-spacing);
+  opacity: 0.6;
+}
+
+.show-project__rich {
+  :deep(p) {
+    margin: 0 0 var(--mid-padding);
+    font-size: var(--base-font-size);
+    line-height: 1.6;
+  }
+
+  :deep(p:last-child) {
+    margin-bottom: 0;
+  }
+}
+
+.show-project__refs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.show-project__ref {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent);
+  border-radius: 5px;
+  color: var(--color-text);
+  font-family: var(--font-text-semibold);
+  font-size: var(--small-font-size);
+  line-height: 1.1;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+
+  &::before {
+    content: "";
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--color-blue);
+    flex: none;
+  }
+
+  &--venue::before {
+    background: var(--color-pink);
+  }
+
+  &--muted {
+    opacity: 0.55;
+
+    &::before {
+      background: var(--color-dark-grey);
     }
   }
 
-  .show-intro-container {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-between;
-    align-items: stretch;
-    gap: 0;
-    width: 100%;
-    max-width: var(--page-max-width);
-    background-color: var(--color-text);
-    border: 0.0625rem solid var(--color-text);
-    border-radius: 1.5625rem;
-    overflow: hidden;
+  &:hover {
+    border-color: var(--color-pink);
+    color: var(--color-pink);
+  }
+}
 
-    @media screen and (max-width: 900px) {
-      flex-flow: column wrap;
-      justify-content: flex-start;
-    }
+.show-project__socials {
+  margin-top: var(--small-padding);
+}
 
-    .show-intro-media {
-      aspect-ratio: 1 / 1;
-      width: 50%;
-      flex-shrink: 0;
-      overflow: hidden;
-
-      @media screen and (max-width: 900px) {
-        order: -1;
-        width: 100%;
-        border-bottom: 0.0625rem solid var(--color-text);
-      }
-
-      .show-intro-image,
-      .show-intro-image-placeholder,
-      :deep(img) {
-        object-fit: cover;
-        z-index: 0;
-        height: 100%;
-        width: 100%;
-        display: block;
-        aspect-ratio: 1 / 1;
-      }
-    }
+@media screen and (max-width: 900px) {
+  .show-project {
+    margin-top: var(--base-margin);
   }
 
-  .show-intro-info {
-    width: 50%;
-    shape-rendering: crispEdges;
-    z-index: 10;
-    border-right: 0.0625rem solid var(--color-text);
+  .show-project__media {
+    aspect-ratio: 16 / 9;
+  }
 
-    @media screen and (max-width: 900px) {
-      width: 100%;
-      border-right: none;
-    }
+  .show-project__titlecard {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    max-width: none;
+    margin: -2rem var(--mid-padding) 0;
+    padding: 1rem 1.25rem;
+  }
 
-    .show-intro-type-icon {
-      display: flex;
-      flex-flow: column wrap;
-      justify-content: center;
-      align-items: center;
-      border-radius: 100px;
-      aspect-ratio: 1/1;
-      width: max-content;
-      width: 4rem;
-      height: 4rem;
+  .show-project__title {
+    font-size: clamp(2rem, 10vw, 3.2rem);
+  }
 
-      svg {
-        width: calc(4rem - var(--base-padding) * 2);
-        height: calc(4rem - var(--base-padding) * 2);
-        path {
-          fill: var(--color-black);
-        }
-      }
-    }
-
-    &-container {
-      min-height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      gap: var(--mid-margin);
-      background-color: var(--color-text);
-      padding: var(--big-margin);
-
-      @media screen and (max-width: 900px) {
-        min-height: 0;
-        height: auto;
-        padding: var(--base-margin) var(--base-margin) var(--big-margin);
-      }
-    }
-
-    .show-intro-bottom {
-      margin-top: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: var(--big-padding);
-      flex-shrink: 0;
-    }
-
-    .show-intro-header {
-      display: flex;
-      flex-flow: column wrap;
-      justify-content: center;
-      gap: var(--mid-padding);
-
-      .show-intro-item-title {
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: flex-start;
-      }
-
-      .show-intro-title {
-        font-size: var(--h2-size);
-        font-weight: 400;
-        text-transform: uppercase;
-        width: 100%;
-        color: var(--color-bg);
-      }
-
-      .show-intro-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        .show-intro-type,
-        .show-intro-location {
-          font-size: var(--small-font-size);
-          text-transform: uppercase;
-        }
-      }
-    }
-    .show-intro-text {
-      margin: 0 0 calc(var(--big-margin) - var(--mid-margin)) 0;
-
-      & > * {
-        color: var(--color-bg);
-        font-size: var(--base-font-size);
-        line-height: var(--base-line-height);
-      }
-    }
-    .show-intro-references-section {
-      margin: 0;
-      display: flex;
-      flex-flow: row wrap;
-      justify-content: flex-start;
-      align-items: center;
-      flex-shrink: 0;
-
-      h3 {
-        font-size: var(--h3-size);
-        margin-bottom: var(--base-padding);
-        color: var(--color-bg);
-        text-transform: uppercase;
-      }
-    }
-
-    .show-intro-refs-list {
-      display: flex;
-      flex-flow: row wrap;
-      justify-content: flex-start;
-      align-items: center;
-      gap: var(--base-padding);
-
-      > .detail-ref-icon {
-        width: var(--detail-chip-size);
-        height: var(--detail-chip-size);
-        flex-shrink: 0;
-      }
-
-      .show-intro-ref-item {
-        border-radius: 8px;
-        overflow: hidden;
-        background-color: rgba(var(--color-bg-rgb), 0.1);
-
-        .show-intro-ref-link {
-          display: block;
-          text-decoration: none;
-          color: var(--color-bg);
-          height: 100%;
-
-          &.no-link {
-            pointer-events: none;
-          }
-
-          .show-intro-ref-info {
-            display: flex;
-            flex-flow: row wrap;
-            justify-content: flex-start;
-            align-items: center;
-            gap: var(--base-padding);
-
-            .detail-ref-icon {
-              width: var(--detail-chip-size);
-              height: var(--detail-chip-size);
-              flex-shrink: 0;
-            }
-
-            h4 {
-              font-size: var(--small-font-size);
-              background-color: var(--color-grey);
-              color: var(--color-black);
-              &:hover {
-                @media (min-width: 1024px) {
-                  background-color: var(--color-blue);
-                  color: var(--color-white);
-                }
-              }
-            }
-          }
-        }
-
-        .show-intro-ref-image {
-          aspect-ratio: 1/1;
-          overflow: hidden;
-
-          img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-          }
-        }
-
-        .show-intro-ref-info {
-          h4 {
-            font-size: var(--base-font-size);
-            margin-bottom: 0.25rem;
-          }
-
-          .show-intro-set-count,
-          .show-intro-venue-location {
-            font-size: var(--small-font-size);
-            opacity: 0.8;
-          }
-        }
-      }
-    }
+  .show-project__body {
+    grid-template-columns: 1fr;
+    gap: var(--base-margin);
+    margin-top: var(--base-margin);
   }
 }
 </style>
