@@ -63,7 +63,7 @@ export const SEARCH_AUTOCOMPLETE_QUERY = `
 }`;
 
 export function useSearch(options: UseSearchOptions = {}) {
-	const { to, searchTag } = useAppPath();
+	const { to, searchTag, tagFilter } = useAppPath();
 	// Increase default max results for better UX with scrolling
 	const { maxResults = 20, debounceMs = 150 } = options;
 
@@ -155,6 +155,11 @@ export function useSearch(options: UseSearchOptions = {}) {
 	// Localized route for a search result
 	const getResultPath = (result: SearchResult): string => {
 		if (result._type.startsWith("tag.")) {
+			// Genre pills never lead into the search, they open the archive
+			// filter. Other tag types keep the tag search.
+			if (result._type === "tag.genre" || result._type === "tag.subGenre") {
+				return tagFilter(result._type, result.title);
+			}
 			return searchTag(result.title);
 		}
 
@@ -169,8 +174,9 @@ export function useSearch(options: UseSearchOptions = {}) {
 			case "venue":
 				return "Pool";
 			case "show":
+				return "Show";
 			case "set":
-				return "Shows";
+				return "Set";
 			case "article":
 				return "Words";
 			default:

@@ -1338,22 +1338,7 @@ watch(
     margin-top: var(--mid-margin);
 
     .load-more-button {
-      display: flex;
-      align-items: center;
-      gap: var(--small-padding);
-      padding: var(--small-padding) var(--big-padding);
       margin: 0 calc(var(--big-margin) / 2 + 0.6rem) 0.6rem 0;
-      background-color: var(--color-bg);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: var(--font-text-semibold);
-      border-radius: 100px;
-
-      &:hover {
-        @media (min-width: 1024px) {
-          color: var(--color-bg);
-        }
-      }
     }
   }
 }
@@ -1534,7 +1519,6 @@ watch(
     max-width: calc(50% - var(--big-padding) * 1.5);
     background-color: var(--color-text);
     border-radius: 12px;
-    border: 1px solid var(--color-text);
     overflow: hidden;
     padding: 0;
 
@@ -1550,8 +1534,13 @@ watch(
       object-fit: cover;
     }
 
-    &__image img {
-      aspect-ratio: 3 / 1.5;
+    &__image {
+      border-radius: 5px 5px 0 0 !important;
+
+      img {
+        aspect-ratio: 3 / 1.5;
+        border-radius: 5px 5px 0 0 !important;
+      }
     }
 
     &__content {

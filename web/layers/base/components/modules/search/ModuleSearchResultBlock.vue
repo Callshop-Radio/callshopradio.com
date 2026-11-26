@@ -240,7 +240,7 @@ watch(
 						<template v-if="item._type === 'set'">
 							<img
 								v-if="item?.image?.asset?.url"
-								:src="item.image.asset.url"
+								:src="sanityImageUrl(item.image.asset.url)"
 								:alt="item?.title || ''"
 							>
 							<div v-else-if="item?.soundcloud" class="track-artwork">
@@ -255,7 +255,7 @@ watch(
 								v-else-if="
 									mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
 								"
-								:src="mainStore.siteFallbacks.fallbackSet.image.asset.url"
+								:src="sanityImageUrl(mainStore.siteFallbacks.fallbackSet.image.asset.url)"
 								alt="Fallback"
 							>
 						</template>
@@ -263,14 +263,14 @@ watch(
 						<template v-else>
 							<img
 								v-if="getItemImage(item)?.asset?.url"
-								:src="getItemImage(item).asset.url"
+								:src="sanityImageUrl(getItemImage(item).asset.url)"
 								:alt="item?.title || ''"
 							>
 							<img
 								v-else-if="
 									mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url
 								"
-								:src="mainStore.siteFallbacks.fallbackSet.image.asset.url"
+								:src="sanityImageUrl(mainStore.siteFallbacks.fallbackSet.image.asset.url)"
 								alt="Fallback"
 							>
 						</template>
@@ -292,17 +292,11 @@ watch(
 						</div>
 						<button
 							v-if="item._type === 'set' && item?.soundcloud"
-							class="play-button"
+							class="play-button" type="button"
 							@click.prevent="playTrack(item)"
 						>
 							<span class="sr-only">Play</span>
-							<svg
-								width="9"
-								height="12"
-								viewBox="0 0 9 12"
-								fill="none">
-								<path d="M9 6L0 11.1962L0 0.803847L9 6Z" fill="currentColor" />
-							</svg>
+							<img src="/icons/play-button.svg" alt="" aria-hidden="true" width="65" height="65" />
 						</button>
 					</section>
 
@@ -335,7 +329,7 @@ watch(
 						<!-- Artists -->
 						<div v-if="item.persons?.length > 0" class="show-artists">
 							<h3
-								v-for="(artist, index) in item.persons"
+								v-for="artist in item.persons"
 								:key="artist._id"
 								class="teaser-item__artist"
 							>
@@ -344,13 +338,9 @@ watch(
 									:pool="artist"
 									class="teaser-item__link"
 								>
-									{{ artist.title
-									}}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
+									{{ artist.title }}
 								</ElementsContentLink>
-								<span v-else>
-									{{ artist.title
-									}}{{ index < item.persons.length - 1 ? "," : "" }}&nbsp;
-								</span>
+								<span v-else>{{ artist.title }}</span>
 							</h3>
 						</div>
 					</div>
@@ -491,43 +481,12 @@ watch(
     justify-content: flex-end;
     margin-top: var(--mid-margin);
     padding: 0 calc(var(--big-margin) / 2);
-
-    .load-more-button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--small-padding);
-      padding: var(--small-padding) var(--big-padding);
-      background-color: transparent;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: var(--font-text-semibold);
-      background-color: var(--color-bg);
-      border-radius: 100px;
-      border: 0.09325rem solid var(--color-text);
-      box-shadow: 0 0 0.5rem 0.09325rem var(--color-text);
-      text-transform: uppercase;
-      font-size: var(--small-font-size);
-
-      &:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-text);
-          color: var(--color-bg);
-        }
-      }
-
-      svg {
-        width: var(--base-font-size);
-        height: var(--base-font-size);
-        path {
-          stroke: var(--color-text);
-        }
-      }
-    }
   }
 
   /* Content-type based styling for sets/shows */
   &--sets {
+    --load-more-accent: var(--color-pink);
+
     .teaser-item__tags.city-tags .tag.city {
       background-color: var(--color-pink);
       color: var(--color-white);
@@ -537,69 +496,28 @@ watch(
         background-color: var(--color-pink);
       }
     }
-    .load-more-button {
-      border-color: var(--color-pink);
-      box-shadow: 0 0 0.5rem 0.09325rem var(--color-pink);
-
-      &:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-pink);
-          color: var(--color-bg);
-        }
-      }
-
-      svg path {
-        stroke: var(--color-pink);
-      }
-    }
   }
 
   /* Content-type based styling for words */
   &--words {
+    --load-more-accent: var(--color-green);
+
     .teaser-item__tags.city-tags .tag.city {
       background-color: var(--color-green);
       color: var(--color-white);
-    }
-    .load-more-button {
-      border-color: var(--color-green);
-      box-shadow: 0 0 0.5rem 0.09325rem var(--color-green);
-
-      &:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-green);
-          color: var(--color-bg);
-        }
-      }
-
-      svg path {
-        stroke: var(--color-green);
-      }
     }
   }
 
   /* Content-type based styling for pool */
   &--pool {
+    --load-more-accent: var(--color-blue);
+
     .teaser-item__tags.city-tags .tag.city {
       background-color: var(--color-blue);
       color: var(--color-white);
     }
     .teaser-item__image img {
       aspect-ratio: 3 / 4;
-    }
-    .load-more-button {
-      border-color: var(--color-blue);
-      box-shadow: 0 0 0.5rem 0.09325rem var(--color-blue);
-
-      &:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-blue);
-          color: var(--color-bg);
-        }
-      }
-
-      svg path {
-        stroke: var(--color-blue);
-      }
     }
   }
 }
@@ -758,5 +676,9 @@ watch(
     margin: var(--card-content-padding-y) 0 0 0;
     gap: var(--card-content-gap);
   }
+}
+.teaser-item--sets .teaser-item__title {
+  font-size: 1.25rem;
+  line-height: 1.05;
 }
 </style>
