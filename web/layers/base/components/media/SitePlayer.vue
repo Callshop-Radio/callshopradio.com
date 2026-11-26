@@ -1,5 +1,6 @@
 ﻿<script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useMainStore } from "~/stores/mainStore";
 import { usePlayerStore } from "~/stores/playerStore";
 import { usePlayerAnalytics } from "~~/layers/base/composables/usePlayerAnalytics";
 import { usePlayerController } from "~~/layers/base/composables/usePlayerController";
@@ -17,8 +18,11 @@ interface PlayerLink {
 const store = usePlayerStore();
 const controller = usePlayerController();
 const analytics = usePlayerAnalytics();
+const mainStore = useMainStore();
 const localePath = useLocalePath();
 const playerRef = ref<HTMLElement | null>(null);
+
+const showSchedule = computed(() => Boolean(mainStore?.siteNav?.schedulePage));
 
 const isSet = computed(() => store.mode === "set" && Boolean(store.set));
 const tracklistOpen = ref(false);
@@ -469,6 +473,11 @@ onBeforeUnmount(() => {
 			</span>
 		</div>
 
+		<!-- Chat and schedule stay reachable in every player state. -->
+		<span class="site-player__actions">
+			<SiteTimetablePopover v-if="showSchedule" placement="top" mode="panel" />
+		</span>
+
 		<div
 			v-if="!isSet && streamProgress"
 			class="site-player__progress site-player__progress--passive"
@@ -763,6 +772,14 @@ onBeforeUnmount(() => {
   text-transform: uppercase;
 }
 
+.site-player__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  margin-left: auto;
+}
+
 /* The live third: shows what is on air while a set plays on the left. */
 .site-player__live {
   display: flex;
@@ -1016,6 +1033,12 @@ onBeforeUnmount(() => {
   /* With a set playing the cover gives its 40px to the two titles. */
   .site-player.is-set .site-player__cover,
   .site-player.is-set .site-player__cover-link {
+    display: none;
+  }
+
+  /* On phones the header already carries chat and schedule icons; the player
+     row keeps its space for the set title instead of doubling them. */
+  .site-player__actions {
     display: none;
   }
 

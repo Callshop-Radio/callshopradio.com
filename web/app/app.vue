@@ -48,7 +48,9 @@ await usePlayerFeed();
         <NuxtPage :page-key="(route) => route.fullPath" />
       </div>
     </main>
+    <SiteTimetableStrip />
     <SiteFoot class="footer" />
+    <SiteTimetablePopup />
     <SiteVideoPlayer />
     <ElementsPreviewMode />
   </div>
