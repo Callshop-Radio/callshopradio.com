@@ -63,12 +63,15 @@ and stay plain values.
 | `--color-white` | `#f6f6f8` | `#f6f6f8` | footer and teaser surface |
 | `--color-grey` | `rgb(232,232,232)` | same | panel fill, skeleton, dividers |
 | `--color-grey-transparent` | `rgba(232,232,232,.66)` | same | muted chip fill |
-| `--color-dark-grey` | `#525252` | `#878787` | secondary text, rules |
-| `--color-darker-grey` | `#2c2c2c` | same | hover fill on black |
-| `--color-text-light` | `#888` | `#888` | hints, counts, placeholders |
-| `--color-lines` | `currentcolor` | same | link underline |
-| `--color-code-bg` | `var(--color-grey)` | same | inline code chip |
-| `--color-fg-muted` | `var(--color-grey)` | same | loading skeleton |
+| `--color-dark-grey` | `light-dark(#525252, #878787)` | secondary text |
+| `--color-darker-grey` | `#2c2c2c` | hover fill on black |
+| `--color-text-light` | `#888` | hints, counts, placeholders |
+| `--color-line` | `color-mix(text 14%)` | rules, borders, separators |
+| `--color-surface` | `color-mix(text 7%, bg)` | raised row inside a panel |
+| `--color-surface-hover` | `color-mix(text 12%, bg)` | its hover state |
+| `--color-underline` | `currentcolor` | link underline in running text |
+| `--color-code-bg` | `var(--color-grey)` | inline code chip |
+| `--color-fg-muted` | `var(--color-grey)` | loading skeleton |
 
 ### Section accents
 
@@ -127,11 +130,6 @@ There is no display family: display titles are told apart by size and tracking, 
 second face. The semibold italic cut exists as a file but no CSS reaches it, so it is
 not declared.
 
-Each face is declared with a weight descriptor (300 / 400 / 550) so the browser never
-synthesises a bold. **Pick the weight with the family token, not with `font-weight`.**
-`font-weight: 700` and `600` still appear in a few legacy rules and produce synthetic
-bold (see *Open points*).
-
 ### Scale
 
 Desktop is the base from 600 px up; the `--phone-only` block (≤ 599 px) is the only
@@ -139,22 +137,40 @@ override. There is no separate tablet or desktop block — they were identical.
 
 | Token | Desktop | ≤ 599 px | Role |
 | --- | --- | --- | --- |
-| `--mini-font-size` | 8 px | 10 px | city flags, counters, index numbers |
-| `--small-font-size` | 10 px | 10 px | tags, meta, artist lines, nav labels |
-| `--base-font-size` | 13 px | 12 px | body copy, links, form labels |
-| `--body-large-font-size` | 14 px | 14 px | form fields, secondary body |
-| `--h4-size` | 16 px | 14 px | card subheads, long-form body |
-| `--h3-size` | 18 px | 16 px | rich-text headings, dialog titles |
-| `--h2-size` | 20 px | 18 px | card titles, section heads |
-| `--h1-size` | 25 px | 22 px | page titles |
+| `--text-xs` | 8 px | 10 px | city flags, counters, index numbers |
+| `--text-sm` | 10 px | 10 px | tags, meta, artist lines, nav labels |
+| `--text-md` | 13 px | 12 px | body copy, links, form labels |
+| `--text-lg` | 16 px | 14 px | article body, form fields, card subheads |
+| `--text-xl` | 20 px | 18 px | card titles, rich-text headings, section heads |
+| `--text-2xl` | 25 px | 22 px | page titles |
 
-**No other size exists.** Eight steps is the whole scale. If a component needs a ninth,
-the layout is wrong. There is no `--huge-font-size`: the largest type on the site is the
-fluid display tier below, not a token.
+**No other size exists.** Six steps is the whole scale. If a component needs a
+seventh, the layout is wrong. There is no 14 px and no 18 px step: they were merged
+into 16 and 20 because the difference was too small to choose deliberately.
 
-Line height is `1.25 ×` the size (`--base-line-height`, `--h2-line-height`, …).
-Navigation uses `--menu-line-height: 1.2`. Display headlines set their own tight
-leading (`1.02`–`1.1`) in the component.
+The names are sizes, not elements — `--h4-size` used to be the article body, which is
+exactly the confusion this removes.
+
+Line height is `1.25 ×` the size, written as `line-height: 1.25` where a rule needs it.
+Navigation is the one exception and tightens to `1.2`. There are no line-height tokens:
+they were derivable and only drifted.
+
+### Weight
+
+The site ships three faces, no bold:
+
+| Family token | Face | Declared weight |
+| --- | --- | --- |
+| `--font-text` | Icona-Sans-Regular | 300 |
+| `--font-text-medium` | Icona-Sans-Medium | 400 |
+| `--font-text-semibold` | Icona-Sans-Semibold | 550 |
+
+**The family decides the weight.** Do not write `font-weight` to make text bold — there
+is no bold file, so anything at 600 or above makes the browser fake a bold on one of
+these three faces. `strong` and `b` map to the semibold family and declare 550 so the
+user agent does not add a synthetic bold on top.
+
+Uppercase is used for tags, nav, artist lines and small labels — never for body copy.
 
 ### Display tier
 
@@ -199,10 +215,14 @@ One value per role, defined in `abstracts/variables.postcss`.
 
 Rules:
 
-- Image + card + panel share `--radius-media`; a card with a city flag loses its
-  **top-left** corner only.
+- Image + card + media share `--radius-media` (5 px). This is the default for anything
+  that is a surface with a picture in it.
+- Buttons, nav pills, filters and inputs are a different role and use `--radius-pill`
+  (12 px). A 28 px tall control with a 5 px corner reads as a rectangle, which is why the
+  two roles exist side by side.
 - Pills are chosen by role, not by height: a 20 px tag uses `--radius-pill-sm`, a 28 px
   nav pill uses `--radius-pill`.
+- A card with a city flag loses its **top-left** corner only, so the flag sits flush.
 - Round avatars use `50%`; icon buttons use `--radius-circle`. Both are a circle for a
   square box.
 - Split detail cards (pool, show, set, cover-flow) own the outer radius; the inner seam
@@ -253,32 +273,32 @@ that is not valid CSS and the block is silently dropped.
 ## 7. Components
 
 ### Navigation pill
-`.menu-main .tag` — 28 px tall, `--radius-pill`, 1 px accent border, `--small-font-size`
+`.menu-main .tag` — 28 px tall, `--radius-pill`, 1 px accent border, `--text-sm`
 uppercase, `--menu-letter-spacing`. One pill per section, accent = section colour.
 Active pill is filled with the accent.
 
 ### Content tag
 `.tag:not(.city)`, `.filter-tag`, `.genre` — 20 px tall, `--radius-pill-sm`,
-`--small-font-size`, uppercase, `padding: 0 var(--base-padding)`, no rule unless the
+`--text-sm`, uppercase, `padding: 0 var(--base-padding)`, no rule unless the
 variant is outlined. Filled = black surface, white text.
 
 ### City flag
-`.tag.city` — 15–16 px tall (`--city-tag-height`), `--radius-flag`, `--mini-font-size`,
+`.tag.city` — 15–16 px tall (`--city-tag-height`), `--radius-flag`, `--text-xs`,
 uppercase, sits flush on the card's top-left corner. The card loses that corner.
 
 ### Artist line
-`.show-artists` — `--small-font-size`, uppercase, `--label-letter-spacing`, 0.4 rem dot
+`.show-artists` — `--text-sm`, uppercase, `--label-letter-spacing`, 0.4 rem dot
 before each name. Dot is `--color-dark-grey` without a linked profile and `--color-blue`
 with one.
 
 ### Cards
 `.grid-item`, `.teaser-item`, `.related-item` — `--radius-media` on the card and image,
-image on top, date + play affordance, title at `--h2-size` in the semibold face, artist
+image on top, date + play affordance, title at `--text-xl` in the semibold face, artist
 line, then tags. No shadow, no border.
 
 ### Buttons
 `.action-btn`, `.type-filter-btn`, `.sort-options`, `.account-action`, `.login__primary`,
-`.save-to-list__button` — `--radius-pill`, `--small-font-size`, uppercase for filters,
+`.save-to-list__button` — `--radius-pill`, `--text-sm`, uppercase for filters,
 `--button-letter-spacing`. Primary = black fill, secondary = outline, both 1 px.
 
 ### Play button
@@ -287,10 +307,10 @@ corner or under the title; it never carries a label.
 
 ### Player bar
 58 px, fixed, `--color-bg-transparent` over the page, cover thumb at `--radius-xs`, time
-and status in `--small-font-size`, controls as icon buttons at `--radius-circle`.
+and status in `--text-sm`, controls as icon buttons at `--radius-circle`.
 
 ### Search
-Input 35 px tall, `--radius-pill`, `--base-font-size`; type filter pills at
+Input 35 px tall, `--radius-pill`, `--text-md`; type filter pills at
 `--radius-pill`; suggestion rows at `--radius-pill-sm` on hover; hints in
 `--color-text-light`.
 
@@ -299,14 +319,14 @@ Dialogs, dropdowns and popovers: `--radius-surface`, page background, 1 px
 `--color-grey` rule, no shadow except the fixed chat panel and the player.
 
 ### Lists and tables
-Timetable rows: title `--base-font-size`, meta `--small-font-size`, sub-meta
-`--mini-font-size`, 1 px rule between rows, alternating `--color-grey` fill for the
+Timetable rows: title `--text-md`, meta `--text-sm`, sub-meta
+`--text-xs`, 1 px rule between rows, alternating `--color-grey` fill for the
 current row only.
 
 ### Forms
-Labels `--base-font-size` in the medium face; fields `--body-large-font-size`,
+Labels `--text-md` in the medium face; fields `--text-lg`,
 `--radius-surface` or `--radius-pill` when the field is a single line; error text
-`--body-large-font-size` in the section accent; helper text in `--color-text-light`.
+`--text-lg` in the section accent; helper text in `--color-text-light`.
 
 ---
 
@@ -334,7 +354,7 @@ inside running text, so touch devices do not keep a hover state.
 | Nav | text pills | icon pills | icon pills |
 | Filter dock | fixed bottom bar, genre + city rows | collapsed sheet with one row | same, full width |
 | Grid | 3–5 columns | 2 columns | 1 column |
-| Card title | `--h2-size` | `--h2-size` | `--h2-size` (18 px) |
+| Card title | `--text-xl` | `--text-xl` | `--text-xl` (18 px) |
 | Type scale | desktop column | desktop column | phone column (§ 4) |
 | Display headlines | `clamp()` max | `clamp()` mid | `clamp()` min |
 
@@ -391,13 +411,17 @@ Measured over every `<style>` block in `web/layers` + `web/app` (excluding the
 
 | Metric | Before | After |
 | --- | --- | --- |
-| distinct `font-size` values | 92 in 486 declarations | 50, of which 8 tokens cover the scale; the rest is the display tier |
+| distinct `font-size` values | 92 in 486 declarations | 6 tokens cover the scale; the rest is the display tier |
+| type scale tokens | 10 (+ 3 aliases) | 6 |
 | distinct `border-radius` values | 39 in 348 declarations | 24, of which 7 tokens + `50%` + `0`; the rest is the design-lab |
 | hardcoded hex colours | 10 distinct outside tokens, 48 occurrences | 4 (`#000`, `#fff` in shadows/gradients, plus two lab values) |
 | undefined tokens in use | 33 (82 uses of `--color-text-light` alone) | 6, each either set by JS (`--grid-index`, `--filter-dock-global`) or read with a fallback (`--lab-motion`, `--mid-gap`, `--max-width`, `--lab-media-radius-mobile`) |
 | defined but unused tokens | 9 | 0 |
 | accent variables | 9 names for one idea | 1 (`--accent`) |
+| line colours | 3 locals (12 / 14 / 16 %) | 1 (`--color-line`) + 1 underline token |
+| `font-weight` declarations | 7 values, 14 of them synthetic | 0; the family token decides |
 | cross-component `!important` guard | 20 declarations over 60+ selectors | 0 - the card radius lives in the cards |
+| `!important` total | 75 | 58, each with a reason in §12 |
 | theme value sources | CSS tokens + 8 inline `setProperty` calls | CSS only (`light-dark()` + one attribute) |
 | rendered font sizes on the home page | 14 | 7 |
 | rendered radii on the home page | 11 | 6 |
@@ -419,34 +443,41 @@ rhythm was intended, set it deliberately in a media query and update this file.
 
 ## 12. Open points
 
-1. **`font-weight: 700`** on `.search-hero__title`, `.site-player__cover--fallback` and
-   `.tt-day__live`, and `600` in ten rules. On a single-face declaration these produce
-   synthetic bold. Replace with the semibold family.
-2. **Body copy is 13 px** (12 px on phones). It is deliberate and unchanged, but it is
+1. **Body copy is 13 px** (12 px on phones). It is deliberate and unchanged, but it is
    below common accessibility guidance for long text; long-form articles sit at 16 px.
-3. **`--color-text-light` is the same `#888` in both themes.** It reads well on black,
+   The root font-size stays 16 px, so anything without a size of its own inherits that.
+2. **`--color-text-light` is the same `#888` in both themes.** It reads well on black,
    but it is the one token that does not flip. Consider `--color-dark-grey` in dark.
-4. **`--color-lines` is `currentcolor`**, so rich-text link underlines inherit the text
-   colour rather than a rule colour. Changing it is a visual decision, not a fix.
-5. **`50%` vs `--radius-circle`** are both circles. Unify once the non-square cases are
+3. **`--color-underline` is `currentcolor`**, so rich-text link underlines inherit the
+   text colour rather than a rule colour. Changing it is a visual decision, not a fix.
+4. **`50%` vs `--radius-circle`** are both circles. Unify once the non-square cases are
    known.
-6. **`design-lab.vue`** contains its own scale, its own accent and two raw values. It is a
+5. **`design-lab.vue`** contains its own scale, its own accent and two raw values. It is a
    prototype and out of scope; do not copy from it.
-7. **40 `!important` remain inside component styles** (`ModuleContentTeaser` 8,
-   `modules/main.postcss` 14, …). They are local overrides, not the old global guard, but
-   each one is a rule that lost a specificity argument. Worth a pass of its own.
-8. **Component-local tokens** (`--lab-*`, `--cover-flow-*`, `--chat-line`, `--as-surface`)
-   are real configuration but they live next to design tokens without a marker. A prefix
-   convention (`--cfg-*`) would separate the two vocabularies.
+6. **58 `!important` remain.** They are load-bearing, not leftovers:
+   - 10 third-party (`plyr`) in `modules/main.postcss`
+   - ~12 split-card seams in `main.postcss` (flag corner, set/cover-flow inner square)
+   - ~17 `:deep(img)` radius and `aspect-ratio` guards, because the child rule from
+     `MediaImage` arrives later in the cascade
+   - the rest cancel an inline or animated state (mobile header, lab transform, loop jump)
+   Removing the card-radius group was measured and changed nothing, so it is gone; the
+   others changed rendering when tested.
+7. **Component configuration vs design tokens.** `--lab-*`, `--cover-flow-*`,
+   `--schedule-*`, `--mixed-*` are module configuration, not part of the palette or the
+   scale. Rule: anything declared inside a component's own style block is configuration.
+   Design tokens live in `assets/styles/` and use the prefixes `--color-`, `--radius-`,
+   `--text-`, `--tracking-`, `--transition-`, `--page-`, `--nav-`, `--player-`, `--side-`.
+   Anything else is not a design token, even if it looks like one.
 
 ---
 
 ## 13. Checklist for a new component
 
 - [ ] Every colour is a token; nothing hardcoded except raw black/white in overlays.
-- [ ] Every size is one of the eight scale tokens.
-- [ ] Radius comes from § 5 by role, not by eye.
-- [ ] Weight comes from the family token.
+- [ ] Every size is one of the six scale tokens.
+- [ ] Radius comes from § 5 by role, not by eye: 5 px surface, 12 px button.
+- [ ] Weight comes from the family token; no `font-weight` above 550.
+- [ ] A rule or separator uses `--color-line`, not a local mix.
 - [ ] Spacing uses `--base/big/mid/small-padding` and `-margin`.
 - [ ] Uppercase only for labels, tags and nav.
 - [ ] Light and dark checked at 1440 px and 390 px.
