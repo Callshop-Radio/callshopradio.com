@@ -1,4 +1,5 @@
 <script setup>
+import { PRIVACY_SLUGS, privacyContentBlocks } from "~/utils/privacyPage";
 import { SLUG_PAGE_QUERY } from "~~/queries/sanity.queries";
 
 definePageMeta({
@@ -20,12 +21,23 @@ if (!data?.value) {
 }
 
 usePageSeo(data?.value?.seo);
+
+const route = useRoute();
+const { locale } = useI18n();
+
+const contentBlocks = computed(() => {
+	const blocks = parseI18nObj(data.value?.content) ?? [];
+	const slug = String(route.params.slug || "");
+	if (!PRIVACY_SLUGS.includes(slug)) return blocks;
+
+	return privacyContentBlocks(blocks, locale.value);
+});
 </script>
 
 <template>
 	<div class="default">
 		<section v-if="data" class="default__content">
-			<RichText :blocks="parseI18nObj(data?.content)" />
+			<RichText :blocks="contentBlocks" />
 		</section>
 		<section
 			v-if="data?.modules && data.modules.length > 0"

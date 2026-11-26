@@ -68,15 +68,9 @@ export default defineNuxtConfig({
 		"@nuxtjs/sanity",
 		"@pinia/nuxt",
 		"@vueuse/nuxt",
-		"nuxt-gtag",
 		"@nuxtjs/i18n",
 		"@nuxtjs/sitemap",
 	],
-
-	gtag: {
-		id: process.env.NUXT_GTAG_ID,
-		initialConsent: false,
-	},
 
 	sanity: {
 		projectId: process.env.NUXT_SANITY_PROJECT_ID,
@@ -228,6 +222,11 @@ export default defineNuxtConfig({
 		netlifySiteId: process.env.NETLIFY_SITE_ID,
 		public: {
 			baseUrl: process.env.NUXT_PUBLIC_SITE_URL,
+			// Self-hosted Umami. The script is only injected after the visitor
+			// accepts the "analytics" cookie category (see umami.client.ts).
+			umamiHost: process.env.NUXT_PUBLIC_UMAMI_HOST,
+			umamiId: process.env.NUXT_PUBLIC_UMAMI_ID,
+			umamiDomains: process.env.NUXT_PUBLIC_UMAMI_DOMAINS,
 		},
 	},
 
