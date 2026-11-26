@@ -73,11 +73,11 @@ export function upstreamHeaders({
 	accept?: string;
 }): Record<string, string> {
 	const headers: Record<string, string> = {
-		"x-site-client": clientSecret,
+		"x-listener-client": clientSecret,
 		accept: accept?.startsWith("image/") ? accept : "application/json",
 	};
 	if (token) headers.authorization = `Bearer ${token}`;
-	if (ipKey) headers["x-site-ip-key"] = ipKey;
+	if (ipKey) headers["x-listener-ip-key"] = ipKey;
 	if (contentType)
 		headers["content-type"] = (contentType.split(";")[0] ?? "")
 			.trim()

@@ -145,7 +145,7 @@ export default defineEventHandler(async (event) => {
 
 	let response: Response;
 	try {
-		response = await fetch(`${base}/api/site/v1/${path}${search}`, {
+		response = await fetch(`${base}/api/listener/v1/${path}${search}`, {
 			method,
 			headers: upstreamHeaders({
 				token,

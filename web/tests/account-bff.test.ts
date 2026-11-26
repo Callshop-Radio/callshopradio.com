@@ -102,8 +102,8 @@ test("upstream headers carry only the BFF-owned values", () => {
 		accept: "application/json",
 	});
 	assert.deepEqual(headers, {
-		"x-site-client": "secret",
-		"x-site-ip-key": "abc",
+		"x-listener-client": "secret",
+		"x-listener-ip-key": "abc",
 		authorization: "Bearer usr_x",
 		"content-type": "application/json",
 		accept: "application/json",
