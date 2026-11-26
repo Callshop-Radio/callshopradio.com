@@ -23,7 +23,6 @@
 		"@unocss/transformer-variant-group": "^66.7.2",
 		"cssnano": "^8.0.2",
 		"nuxt": "^4.4.8",
-		"nuxt-gtag": "^4.1.0",
 		"postcss": "^8.5.15",
 		"postcss-cli": "^11.0.1",
 		"postcss-nested": "^7.0.2",
