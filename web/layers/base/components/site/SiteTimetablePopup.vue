@@ -239,7 +239,6 @@ watch([view, () => day.value], async () => {
 
 watch(open, async (value) => {
 	if (value) {
-		document.body.style.overflow = "hidden";
 		await load();
 		nextTick(() => {
 			panel.value?.focus();
@@ -249,8 +248,15 @@ watch(open, async (value) => {
 		});
 	} else {
 		pendingScroll.value = false;
+		expanded.value = false;
 		document.body.style.overflow = "";
 	}
+});
+
+// Only the full-screen schedule locks the page; the compact panel floats above
+// it and leaves wheel/touch scrolling alone.
+watch(expanded, (value) => {
+	document.body.style.overflow = value ? "hidden" : "";
 });
 
 onMounted(() => {
@@ -460,10 +466,8 @@ onBeforeUnmount(() => {
 .tt-popup {
   position: fixed;
   right: 1.5rem;
-  /* Opens under the navigation + player strip. */
-  top: calc(
-    var(--nav-bar-height) + var(--player-bar-height) + 1.5rem
-  );
+  /* Hangs directly below the navigation + player strip, no gap. */
+  top: calc(var(--nav-bar-height) + var(--player-bar-height));
   bottom: auto;
   z-index: 9500;
   display: block;

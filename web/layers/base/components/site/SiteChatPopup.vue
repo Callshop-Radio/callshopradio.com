@@ -211,10 +211,9 @@ onBeforeUnmount(() => {
 
   position: fixed;
   right: 1.5rem;
-  /* The player now sits under the navigation, so side panels open below it. */
-  top: calc(
-    var(--nav-bar-height) + var(--player-bar-height) + 1.5rem
-  );
+  /* The player now sits under the navigation: the panel hangs directly from
+     the bar, without a gap. */
+  top: calc(var(--nav-bar-height) + var(--player-bar-height));
   bottom: auto;
   z-index: 9000;
   width: min(var(--side-panel-width), calc(100vw - 2rem));

@@ -160,6 +160,30 @@ const isOnAir = computed(() => {
 	const state = store.feed?.state;
 	return state === "live" || state === "replay" || state === "auto";
 });
+
+/**
+ * The live strip keeps reporting the station while a set plays, so it needs the
+ * stream status without the "Set" override.
+ */
+const liveStatusLabel = computed(() => {
+	if (store.feed?.state === "live") return "Live";
+	if (scheduledShow.value) return "Sendeplan";
+	switch (store.feed?.state) {
+		case "replay":
+			return "Replay";
+		case "auto":
+			return "AutoDJ";
+		case "offline":
+			return "Offline";
+		default:
+			return "Radio";
+	}
+});
+
+const liveIsOnAir = computed(() => {
+	const state = store.feed?.state;
+	return state === "live" || state === "replay" || state === "auto";
+});
 const progressPercent = computed(() => {
 	const value = store.progress;
 	if (!value || value.durationMs <= 0) return 0;
@@ -168,12 +192,16 @@ const progressPercent = computed(() => {
 		Math.max(0, (value.positionMs / value.durationMs) * 100),
 	);
 });
+const progressNow = computed(() =>
+	formatPlayerTime((store.progress?.positionMs ?? 0) / 1000),
+);
+const progressTotal = computed(() =>
+	formatPlayerTime((store.progress?.durationMs ?? 0) / 1000),
+);
 const progressTime = computed(() => {
 	const value = store.progress;
 	if (!value) return "";
-	return `${formatPlayerTime(value.positionMs / 1000)} / ${formatPlayerTime(
-		value.durationMs / 1000,
-	)}`;
+	return `${progressNow.value} / ${progressTotal.value}`;
 });
 const progressTimeWidth = computed(() => {
 	const value = store.progress;
@@ -194,10 +222,10 @@ const streamEndLabel = computed(() => {
 	});
 	return `Until ${time}`;
 });
-const streamClock = computed(() => {
-	if (!streamProgress.value) return "";
+const streamTimes = computed(() => {
+	if (!streamProgress.value) return null;
 	const value = store.feed?.progress;
-	if (!value || value.durationSeconds <= 0) return "";
+	if (!value || value.durationSeconds <= 0) return null;
 	const updatedAt = Date.parse(store.feed?.updatedAt ?? "");
 	const drift = Number.isFinite(updatedAt)
 		? Math.max(0, (nowMs.value - updatedAt) / 1000)
@@ -206,9 +234,10 @@ const streamClock = computed(() => {
 		value.durationSeconds,
 		Math.max(0, value.elapsedSeconds + drift),
 	);
-	return `${formatPlayerTime(elapsed)} / ${formatPlayerTime(
-		value.durationSeconds,
-	)}`;
+	return {
+		now: formatPlayerTime(elapsed),
+		total: formatPlayerTime(value.durationSeconds),
+	};
 });
 
 function seek(event: MouseEvent) {
@@ -348,15 +377,14 @@ onBeforeUnmount(() => {
 					>
 						☰
 					</button>
-					<span v-if="streamClock" class="site-player__time">{{ streamClock }}</span>
+					<span v-if="streamTimes" class="site-player__time">
+						<span class="site-player__now">{{ streamTimes.now }}</span>
+						<span class="site-player__total">/ {{ streamTimes.total }}</span>
+					</span>
 					<span v-if="streamEndLabel" class="site-player__until">{{ streamEndLabel }}</span>
 					<span class="site-player__status">
 						<span class="site-player__dot" :class="{ 'is-on-air': isOnAir }" aria-hidden="true" />
 						<span>{{ statusLabel }}</span>
-					</span>
-					<span class="site-player__actions">
-						<SiteChatButton v-if="chatEnabled" />
-						<SiteTimetablePopover v-if="showSchedule" placement="top" mode="panel" />
 					</span>
 				</div>
 			</div>
@@ -404,7 +432,10 @@ onBeforeUnmount(() => {
 						v-if="progressTime"
 						class="site-player__time"
 						:style="progressTimeWidth ? { width: progressTimeWidth } : undefined"
-					>{{ progressTime }}</span>
+					>
+						<span class="site-player__now">{{ progressNow }}</span>
+						<span class="site-player__total">/ {{ progressTotal }}</span>
+					</span>
 					<ElementsHeartButton
 						v-if="store.set?.id"
 						:set-id="store.set.id"
@@ -425,6 +456,38 @@ onBeforeUnmount(() => {
 				</div>
 			</div>
 		</div>
+
+		<!-- While a set plays, the live stream keeps its own third of the bar so
+		     you can always see what is on air. -->
+		<div v-if="isSet" class="site-player__live">
+			<span
+				class="site-player__dot"
+				:class="{ 'is-on-air': liveIsOnAir }"
+				aria-hidden="true"
+			/>
+			<div class="site-player__live-copy">
+				<span class="site-player__live-label">{{ liveStatusLabel }}</span>
+				<NuxtLink
+					v-if="streamTitle.path"
+					:to="localePath(streamTitle.path)"
+					class="site-player__live-title"
+					@click.stop
+				>
+					{{ streamTitle.label }}
+				</NuxtLink>
+				<span v-else class="site-player__live-title">{{ streamTitle.label }}</span>
+			</div>
+			<span v-if="streamTimes" class="site-player__live-time">
+				<span class="site-player__now">{{ streamTimes.now }}</span>
+				<span class="site-player__total">/ {{ streamTimes.total }}</span>
+			</span>
+		</div>
+
+		<!-- Chat and schedule stay reachable in every player state. -->
+		<span class="site-player__actions">
+			<SiteChatButton v-if="chatEnabled" />
+			<SiteTimetablePopover v-if="showSchedule" placement="top" mode="panel" />
+		</span>
 
 		<div
 			v-if="!isSet && streamProgress"
@@ -724,7 +787,59 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  flex: none;
   margin-left: auto;
+}
+
+/* The live third: shows what is on air while a set plays on the left. */
+.site-player__live {
+  display: flex;
+  flex: 0 0 clamp(14rem, 30%, 24rem);
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  padding-left: 0.75rem;
+  border-left: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
+}
+
+.site-player__live-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
+.site-player__live-label {
+  color: var(--color-dark-grey);
+  font-size: 0.5625rem;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.site-player__live-title {
+  overflow: hidden;
+  color: inherit;
+  font-family: var(--font-text-semibold);
+  font-size: var(--base-font-size);
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+}
+
+.site-player__live-time {
+  flex: none;
+  margin-left: auto;
+  color: var(--color-dark-grey);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .site-player__dot {
@@ -745,6 +860,15 @@ onBeforeUnmount(() => {
   font-variant-numeric: tabular-nums;
   text-align: right;
   white-space: nowrap;
+}
+
+/* The running position reads at full contrast; total and "Until" stay quiet. */
+.site-player__now {
+  color: var(--color-text);
+}
+
+.site-player__total {
+  color: var(--color-dark-grey);
 }
 
 .site-player__until {
@@ -912,8 +1036,42 @@ onBeforeUnmount(() => {
     display: none;
   }
 
+  /* Phones: keep the live dot and name, drop the label and clock. */
+  .site-player__live {
+    flex: 0 0 38%;
+    min-width: 0;
+    padding-left: 0.5rem;
+  }
+
+  .site-player__live-label,
+  .site-player__live-time {
+    display: none;
+  }
+
+  .site-player__live-title {
+    max-width: none;
+  }
+
+  /* The external SoundCloud link is a desktop nicety; the row needs the space
+     for the set title next to the live strip. */
+  .site-player__source {
+    display: none;
+  }
+
+  /* With a set playing the cover gives its 40px to the two titles. */
+  .site-player.is-set .site-player__cover,
+  .site-player.is-set .site-player__cover-link {
+    display: none;
+  }
+
+  /* On phones the header already carries chat and schedule icons; the player
+     row keeps its space for the set title instead of doubling them. */
+  .site-player__actions {
+    display: none;
+  }
+
   /* On phones the row has no horizontal room for a readable waveform, so it
-     moves to a full-width second line while the info and SoundCloud stay above. */
+     moves to a full-width second line while the set info stays above. */
   .site-player.is-set .site-player__layer--set {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;

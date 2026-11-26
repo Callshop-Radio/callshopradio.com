@@ -11,7 +11,7 @@ import {
 
 const open = ref(false);
 const entries = ref<TimetableEntry[]>([]);
-const { openPopup, open: panelOpen } = useTimetableUi();
+const { openPopup, closePopup, open: panelOpen } = useTimetableUi();
 
 // In the player the trigger sits at the bottom of the viewport, so the panel
 // has to open upwards instead of below the button.
@@ -36,9 +36,10 @@ async function load() {
 
 function toggle() {
 	// In the player the schedule opens as a chat-sized panel, not as a dropdown
-	// that the player's stacking context would clip.
+	// that the player's stacking context would clip. A second click closes it.
 	if (props.mode === "panel") {
-		openPopup("day");
+		if (panelOpen.value) closePopup();
+		else openPopup("day");
 		return;
 	}
 	open.value = !open.value;
@@ -88,10 +89,31 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 			@click.stop="toggle"
 		>
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-				<circle cx="12" cy="12" r="11.5" stroke="var(--color-text)" />
+				<circle
+					cx="12"
+					cy="12"
+					r="11.5"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.4"
+				/>
+				<rect
+					x="7"
+					y="8.2"
+					width="10"
+					height="9.4"
+					rx="1.4"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.4"
+				/>
+				<path d="M7 11.2h10" fill="none" stroke="currentColor" stroke-width="1.4" />
 				<path
-					d="M16.7143 6.91667H15.4286V6.45833C15.4286 6.20624 15.2357 6 15 6C14.7643 6 14.5714 6.20624 14.5714 6.45833V6.91667H9.42857V6.45833C9.42857 6.20624 9.23572 6 9 6C8.76428 6 8.57143 6.20624 8.57143 6.45833V6.91667H7.28571C6.57858 6.91667 6 7.53542 6 8.29167V15.625C6 16.3812 6.57858 17 7.28571 17H16.7143C17.4214 17 18 16.3812 18 15.625V8.29167C18 7.53542 17.4214 6.91667 16.7143 6.91667ZM6.85714 8.29167C6.85714 8.03958 7.04999 7.83333 7.28571 7.83333H8.57143V8.29167C8.57143 8.54376 8.76428 8.75 9 8.75C9.23572 8.75 9.42857 8.54376 9.42857 8.29167V7.83333H14.5714V8.29167C14.5714 8.54376 14.7643 8.75 15 8.75C15.2357 8.75 15.4286 8.54376 15.4286 8.29167V7.83333H16.7143C16.95 7.83333 17.1429 8.03958 17.1429 8.29167V9.66667H6.85714V8.29167ZM17.1429 15.625C17.1429 15.8771 16.95 16.0833 16.7143 16.0833H7.28571C7.04999 16.0833 6.85714 15.8771 6.85714 15.625V10.5833H17.1429V15.625Z"
-					fill="var(--color-text)"
+					d="M9.8 6.6v2.4M14.2 6.6v2.4"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.4"
+					stroke-linecap="round"
 				/>
 			</svg>
 		</button>
@@ -157,6 +179,11 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
   cursor: pointer;
   display: grid;
   place-items: center;
+
+  svg {
+    width: 26px;
+    height: 26px;
+  }
 }
 
 .tt-popover__trigger circle {
@@ -172,8 +199,9 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
   fill: var(--color-pink);
 }
 
-.tt-popover__trigger.is-active path {
-  fill: var(--color-bg);
+.tt-popover__trigger.is-active path,
+.tt-popover__trigger.is-active rect {
+  stroke: var(--color-bg);
 }
 
 .tt-popover__panel {

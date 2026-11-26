@@ -32,20 +32,26 @@ onMounted(async () => {
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
 			>
-				<circle cx="12" cy="12" r="11.5" stroke="currentColor" />
+				<circle
+					cx="12"
+					cy="12"
+					r="11.5"
+					stroke="currentColor"
+					stroke-width="1.4"
+				/>
 				<circle
 					cx="12"
 					cy="9.2"
 					r="2.9"
 					fill="none"
 					stroke="currentColor"
-					stroke-width="1.25"
+					stroke-width="1.4"
 				/>
 				<path
 					d="M6.7 17.4c.5-2.5 2.7-4.1 5.3-4.1s4.8 1.6 5.3 4.1"
 					fill="none"
 					stroke="currentColor"
-					stroke-width="1.25"
+					stroke-width="1.4"
 					stroke-linecap="round"
 				/>
 			</svg>
@@ -64,20 +70,26 @@ onMounted(async () => {
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
 			>
-				<circle cx="12" cy="12" r="11.5" stroke="currentColor" />
+				<circle
+					cx="12"
+					cy="12"
+					r="11.5"
+					stroke="currentColor"
+					stroke-width="1.4"
+				/>
 				<circle
 					cx="12"
 					cy="9.2"
 					r="2.9"
 					fill="none"
 					stroke="currentColor"
-					stroke-width="1.25"
+					stroke-width="1.4"
 				/>
 				<path
 					d="M6.7 17.4c.5-2.5 2.7-4.1 5.3-4.1s4.8 1.6 5.3 4.1"
 					fill="none"
 					stroke="currentColor"
-					stroke-width="1.25"
+					stroke-width="1.4"
 					stroke-linecap="round"
 				/>
 			</svg>
@@ -103,8 +115,8 @@ onMounted(async () => {
 
   svg {
     overflow: visible;
-    width: calc(var(--base-font-size) + var(--small-padding) * 2);
-    height: calc(var(--base-font-size) + var(--small-padding) * 2);
+    width: 26px;
+    height: 26px;
     cursor: pointer;
     color: inherit;
   }

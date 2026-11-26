@@ -118,7 +118,7 @@ onMounted(() => {
 							v-for="(_, index) in slides"
 							:key="index"
 							:class="['slider__dot', { 'is-selected': index === currentIndex }]"
-							@click="scrollTo(index)"
+							@click="scrollTo(Number(index))"
 						/>
 					</div>
 

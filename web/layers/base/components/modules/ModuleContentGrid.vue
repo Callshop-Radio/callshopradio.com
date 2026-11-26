@@ -2672,10 +2672,12 @@ onUnmounted(() => {
       flex-direction: column;
       align-items: center;
       row-gap: var(--small-padding);
-      background-color: var(--color-bg-transparent);
+      /* Genres and subgenres float over the archive: no tint, no blur. */
+      background-color: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
       transform: translate(0, calc(var(--mid-padding) * -1.75));
       padding: calc(var(--mid-padding) * 1.75) 0 var(--mid-padding);
-      backdrop-filter: blur(10px);
       border-bottom-right-radius: 1.56125rem;
       border-bottom-left-radius: 1.56125rem;
       border: 1px solid var(--color-bg);
@@ -3965,10 +3967,9 @@ onUnmounted(() => {
     border: 0;
     border-radius: 0;
     background: transparent;
-    /* Same glass as the bar below, so the tag cloud stays readable over
-       scrolling cards without painting a separate black plate. */
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    /* Fully transparent tag cloud: no tint, no backdrop blur. */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     opacity: 1;
   }
 
