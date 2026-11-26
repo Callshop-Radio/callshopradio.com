@@ -63,6 +63,7 @@ const hiddenDocTypes = (listItem) => {
     "timetable",
     "words",
     "media.tag",
+    "media.folder",
     "page",
     "set",
     "siteNav",
