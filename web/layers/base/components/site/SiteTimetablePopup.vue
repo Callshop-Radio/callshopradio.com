@@ -37,6 +37,11 @@ const anchor = computed(() => {
 	return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
 });
 
+// When the chat is open, the timetable takes the slot to its left instead of
+// stacking on top of it.
+const chatUi = useChatUi();
+const chatOpen = computed(() => chatUi.open.value);
+
 function startOfDay(date: Date) {
 	const copy = new Date(date);
 	copy.setHours(0, 0, 0, 0);
@@ -283,7 +288,7 @@ onBeforeUnmount(() => {
 
 <template>
 	<Teleport to="body">
-		<div v-if="open" class="tt-popup" :class="{ 'is-expanded': expanded }" @click.self="closePopup">
+		<div v-if="open" class="tt-popup" :class="{ 'is-shifted': chatOpen, 'is-expanded': expanded }" @click.self="closePopup">
 			<section
 				ref="panel"
 				class="tt-popup__panel"
@@ -469,6 +474,10 @@ onBeforeUnmount(() => {
   width: max-content;
   padding: 0;
   background: transparent;
+}
+
+.tt-popup.is-shifted {
+  right: calc(1.5rem + var(--side-panel-width) + 0.75rem);
 }
 
 /* Expanded: the same component becomes the full schedule view. */

@@ -236,6 +236,7 @@ export default defineNuxtConfig({
 		accountClientSecret: process.env.NUXT_ACCOUNT_CLIENT_SECRET,
 		accountIpSecret: process.env.NUXT_ACCOUNT_IP_SECRET,
 		accountAllowedOrigins: process.env.NUXT_ACCOUNT_ALLOWED_ORIGINS,
+		chatClientSecret: process.env.NUXT_CHAT_CLIENT_SECRET,
 		// Server-only SoundCloud API client id; used by the BFF to fetch waveform data.
 		soundcloudClientId: process.env.NUXT_SOUNDCLOUD_CLIENT_ID,
 		soundcloudClientSecret: process.env.NUXT_SOUNDCLOUD_CLIENT_SECRET,
@@ -256,6 +257,10 @@ export default defineNuxtConfig({
 			umamiHost: process.env.NUXT_PUBLIC_UMAMI_HOST,
 			umamiId: process.env.NUXT_PUBLIC_UMAMI_ID,
 			umamiDomains: process.env.NUXT_PUBLIC_UMAMI_DOMAINS,
+			// Public chat. Off unless explicitly enabled; dev always shows it.
+			chatEnabled: process.env.NUXT_PUBLIC_CHAT_ENABLED === "1",
+			// Use the real Manager room instead of the local mock.
+			chatReal: process.env.NUXT_PUBLIC_CHAT_REAL === "1",
 			streamUrl:
 				process.env.NUXT_PUBLIC_STREAM_URL ||
 				"https://stream.callshopradio.live/radio.mp3",
