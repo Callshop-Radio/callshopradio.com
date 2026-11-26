@@ -536,7 +536,7 @@ onMounted(() => {
   margin: var(--mid-margin) 0;
 
   &__title {
-    font-size: var(--h2-size);
+    font-size: var(--text-xl);
     margin-bottom: var(--mid-margin);
   }
 
@@ -573,7 +573,7 @@ onMounted(() => {
 
   .related-item__content__show {
     min-height: calc(
-      var(--base-font-size) * 1.15 + var(--base-font-size) + var(--mid-padding)
+      --text-md * 1.15 + --text-md + var(--mid-padding)
     );
   }
 
@@ -653,7 +653,7 @@ onMounted(() => {
         align-items: center;
 
         .related-item__date {
-          font-size: var(--small-font-size);
+          font-size: var(--text-sm);
           text-transform: uppercase;
         }
 
@@ -666,11 +666,11 @@ onMounted(() => {
           border-radius: var(--radius-circle);
           border: none;
           padding: 4px;
-          width: calc(var(--base-font-size) + 4px);
-          height: calc(var(--base-font-size) + 4px);
+          width: calc(var(--text-md) + 4px);
+          height: calc(var(--text-md) + 4px);
 
           svg {
-            height: var(--base-font-size);
+            height: var(--text-md);
             transform: translate(1px, 0);
             path {
               fill: var(--color-bg);
@@ -680,14 +680,14 @@ onMounted(() => {
       }
 
       .related-item__title {
-        font-size: var(--base-font-size);
+        font-size: var(--text-md);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
       }
 
       .related-item__artist {
-        font-size: var(--base-font-size);
+        font-size: var(--text-md);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
@@ -907,7 +907,7 @@ onMounted(() => {
   }
 }
 .related-content.sets .related-item .related-item__title {
-  font-size: var(--h2-size);
+  font-size: var(--text-xl);
   line-height: 1.05;
 }
 </style>

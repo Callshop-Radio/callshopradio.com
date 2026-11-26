@@ -173,7 +173,7 @@ const teaserBlocks = computed(() => {
 <style lang="postcss" scoped>
 .lab-caption {
   --lab-caption-gap: 0.5rem;
-  --lab-caption-title-size: var(--h3-size);
+  --lab-caption-title-size: var(--text-xl);
 
   display: flex;
   flex-direction: column;
@@ -187,7 +187,7 @@ const teaserBlocks = computed(() => {
     justify-content: space-between;
     align-items: baseline;
     gap: var(--mid-padding);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     line-height: 1.1;
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
@@ -215,7 +215,7 @@ const teaserBlocks = computed(() => {
 
   &__meta {
     margin: 0;
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     line-height: 1.25;
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
@@ -228,7 +228,7 @@ const teaserBlocks = computed(() => {
     gap: var(--small-padding);
 
     .tag {
-      font-size: var(--mini-font-size);
+      font-size: var(--text-xs);
       padding: calc(var(--small-padding) / 2) var(--small-padding);
     }
   }
@@ -236,7 +236,7 @@ const teaserBlocks = computed(() => {
   &__teaser {
     margin: 0;
     max-width: 44ch;
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     line-height: 1.45;
     color: var(--color-text);
 
@@ -268,7 +268,7 @@ const teaserBlocks = computed(() => {
     background: transparent;
     color: var(--color-text);
     font-family: var(--font-text-medium);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     cursor: pointer;
@@ -372,7 +372,7 @@ const teaserBlocks = computed(() => {
     padding-left: var(--base-margin);
     border-left: 1px solid
       color-mix(in srgb, var(--color-text) 18%, transparent);
-    --lab-caption-title-size: var(--h2-size);
+    --lab-caption-title-size: var(--text-xl);
   }
 
   &--overlay {

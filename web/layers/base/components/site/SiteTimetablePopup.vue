@@ -529,7 +529,7 @@ onBeforeUnmount(() => {
   cursor: pointer;
   padding: 6px 10px;
   font: inherit;
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
 }
 
 .tt-popup__now:hover {
@@ -551,7 +551,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 6px;
   font: inherit;
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
 }
 
 .tt-popup__expand:hover {
@@ -594,7 +594,7 @@ onBeforeUnmount(() => {
   background: transparent;
   color: var(--color-text);
   opacity: 0.55;
-  font-size: var(--h4-size);
+  font-size: var(--text-lg);
   cursor: pointer;
   padding: 2px 6px;
   border-radius: var(--radius-media);
@@ -603,7 +603,7 @@ onBeforeUnmount(() => {
 .tt-popup__arrow:hover { opacity: 1; color: var(--color-pink); }
 
 .tt-popup__date {
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   font-weight: 550;
   margin-left: 4px;
 }
@@ -619,7 +619,7 @@ onBeforeUnmount(() => {
   color: var(--color-text);
   opacity: 0.55;
   font: inherit;
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   padding: 6px 12px;
   border-radius: var(--radius-pill);
   cursor: pointer;
@@ -637,7 +637,7 @@ onBeforeUnmount(() => {
   color: var(--color-text);
   opacity: 0.55;
   cursor: pointer;
-  font-size: var(--body-large-font-size);
+  font-size: var(--text-lg);
   padding: 6px;
   border-radius: var(--radius-media);
 }
@@ -652,7 +652,7 @@ onBeforeUnmount(() => {
 
 .tt-popup__hint {
   opacity: 0.5;
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   padding: 12px 0;
 }
 
@@ -674,7 +674,7 @@ onBeforeUnmount(() => {
   left: 0;
   width: 38px;
   text-align: right;
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   color: var(--color-text);
   opacity: 0.45;
   transform: translateY(-6px);
@@ -702,7 +702,7 @@ onBeforeUnmount(() => {
   top: -7px;
   width: 38px;
   text-align: right;
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   color: var(--color-pink);
   font-variant-numeric: tabular-nums;
 }
@@ -764,7 +764,7 @@ onBeforeUnmount(() => {
 .tt-day__row { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
 
 .tt-day__title {
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   font-weight: 550;
   white-space: nowrap;
   overflow: hidden;
@@ -773,14 +773,14 @@ onBeforeUnmount(() => {
 
 .tt-day__time {
   margin-left: auto;
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   opacity: 0.6;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
 .tt-day__sub {
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   opacity: 0.6;
   white-space: nowrap;
   overflow: hidden;
@@ -790,14 +790,14 @@ onBeforeUnmount(() => {
 .tt-day__tags {
   display: flex;
   gap: 7px;
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   opacity: 0.55;
 }
 
 .tt-day__tags span + span::before { content: "·"; margin-right: 7px; }
 
 .tt-day__live {
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   font-weight: 700;
   letter-spacing: var(--kicker-letter-spacing);
   padding: 2px 6px;
@@ -816,7 +816,7 @@ onBeforeUnmount(() => {
 
 .tt-week__head span {
   text-align: center;
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   opacity: 0.55;
 }
 
@@ -878,7 +878,7 @@ onBeforeUnmount(() => {
 }
 
 .tt-month__head span {
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   opacity: 0.5;
   text-align: center;
 }
@@ -907,7 +907,7 @@ onBeforeUnmount(() => {
 .tt-month__cell.is-today .tt-month__num { color: var(--color-pink); font-weight: 600; }
 
 .tt-month__num {
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   opacity: 0.6;
   font-variant-numeric: tabular-nums;
 }
@@ -919,7 +919,7 @@ onBeforeUnmount(() => {
   background: color-mix(in srgb, var(--color-text) 7%, transparent);
   color: var(--color-text);
   font: inherit;
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   text-align: left;
   padding: 1px 4px;
   cursor: pointer;
@@ -940,7 +940,7 @@ onBeforeUnmount(() => {
   gap: 12px;
   padding: 9px 16px;
   background: var(--color-bg);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   opacity: 0.5;
 }
 

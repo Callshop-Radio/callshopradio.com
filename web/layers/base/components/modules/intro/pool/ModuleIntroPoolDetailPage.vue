@@ -265,7 +265,7 @@ function openTag(tag: Tag) {
   background: var(--color-blue);
   color: var(--color-white);
   font-family: var(--font-text-semibold);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   letter-spacing: var(--label-letter-spacing);
   text-transform: uppercase;
 }
@@ -280,7 +280,7 @@ function openTag(tag: Tag) {
 
 .pool-profile__index {
   font-family: var(--font-text-semibold);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   letter-spacing: var(--kicker-letter-spacing);
   color: color-mix(in srgb, var(--color-text) 40%, transparent);
   text-transform: uppercase;
@@ -325,7 +325,7 @@ function openTag(tag: Tag) {
   background: transparent;
   color: var(--color-text);
   font-family: var(--font-text);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   line-height: 1.1;
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
@@ -369,7 +369,7 @@ function openTag(tag: Tag) {
     margin: 0;
     color: var(--color-blue);
     font-family: var(--font-text-semibold);
-    font-size: var(--mini-font-size);
+    font-size: var(--text-xs);
     letter-spacing: var(--label-letter-spacing);
     text-transform: uppercase;
   }
@@ -396,7 +396,7 @@ function openTag(tag: Tag) {
   border-radius: var(--radius-media);
   color: var(--color-text);
   font-family: var(--font-text-semibold);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   line-height: 1.1;
   text-decoration: none;
   text-transform: uppercase;
@@ -432,7 +432,7 @@ function openTag(tag: Tag) {
 
 .pool-profile__bio {
   max-width: 52ch;
-  font-size: var(--body-large-font-size);
+  font-size: var(--text-lg);
   line-height: 1.55;
   color: color-mix(in srgb, var(--color-text) 72%, transparent);
 
@@ -461,7 +461,7 @@ function openTag(tag: Tag) {
   border-radius: var(--radius-media);
   color: var(--color-text);
   font-family: var(--font-text-semibold);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   line-height: 1.1;
   text-decoration: none;
   text-transform: uppercase;

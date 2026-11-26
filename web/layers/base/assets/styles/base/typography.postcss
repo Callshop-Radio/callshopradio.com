@@ -6,49 +6,37 @@
   --font-text-italic: "Icona-Sans-Italic", system-ui, sans-serif;
   --font-text-medium-italic: "Icona-Sans-Medium-Italic", system-ui, sans-serif;
 
-  /* Font Options
-     One scale, one place. Every size on the site is one of these steps;
-     see DESIGN.md. The desktop column is the base, the mobile block below
-     only shrinks it. Display sizes (hero headlines, marquee) are a
-     separate fluid tier and are not part of this scale. */
-  --h1-size: 1.5625rem; /* 25px */
-  --h2-size: 1.25rem; /* 20px */
-  --h3-size: 1.125rem; /* 18px */
-  --h4-size: 1rem; /* 16px */
-  --body-large-font-size: 0.875rem; /* 14px, forms and secondary body */
-  --base-font-size: 0.8125rem; /* 13px */
-  --small-font-size: 0.625rem; /* 10px */
-  --mini-font-size: 0.5rem; /* 8px */
-  --menu-text-size: 0.8125rem; /* 13px */
+  /* Type scale: six sizes, one place. Every size on the site is one of
+     these steps; see DESIGN.md. The phone block below only shrinks the top
+     end. Display sizes (hero headlines, marquee) are a separate fluid tier
+     and are not part of this scale. */
+  --text-xs: 0.5rem; /* 8px */
+  --text-sm: 0.625rem; /* 10px */
+  --text-md: 0.8125rem; /* 13px - body */
+  --text-lg: 1rem; /* 16px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5625rem; /* 25px */
 
-  --base-line-height: calc(var(--base-font-size) * 1.25);
-  --h2-line-height: calc(var(--h2-size) * 1.25);
-  --h3-line-height: calc(var(--h3-size) * 1.25);
-  --h4-line-height: calc(var(--h4-size) * 1.25);
-  --menu-line-height: 1.2;
-
+  /* Leading is 1.25 x the size, applied inline where a rule needs it. The
+     navigation is the one exception and tightens to 1.2. */
   --menu-letter-spacing: 0.0625rem;
   --button-letter-spacing: 0.0425rem;
   --label-letter-spacing: 0.06em; /* uppercase labels and tags */
   --kicker-letter-spacing: 0.08em; /* editorial kickers */
 
   @media (--phone-only) {
-    --menu-text-size: 0.75rem;
-
-    --h1-size: 1.375rem; /* 22px */
-    --h2-size: 1.125rem; /* 18px */
-    --h3-size: 1rem; /* 16px */
-    --h4-size: 0.875rem; /* 14px */
-    --base-font-size: 0.75rem; /* 12px */
-    --small-font-size: 0.625rem; /* 10px */
-    --mini-font-size: 0.625rem; /* 10px: micro text does not shrink further */
+    --text-xs: 0.625rem; /* 10px: micro text does not shrink further */
+    --text-md: 0.75rem; /* 12px */
+    --text-lg: 0.875rem; /* 14px */
+    --text-xl: 1.125rem; /* 18px */
+    --text-2xl: 1.375rem; /* 22px */
   }
 
+  /* Narrow phones collapse every heading into body size. */
   @media (--mini-phone-only) {
-    --h1-size: var(--base-font-size);
-    --h2-size: var(--base-font-size);
-    --h3-size: var(--base-font-size);
-    --h4-size: var(--base-font-size);
+    --text-lg: var(--text-md);
+    --text-xl: var(--text-md);
+    --text-2xl: var(--text-md);
   }
 }
 
@@ -87,27 +75,27 @@ h6 {
 }
 
 h1 {
-  font-size: var(--h1-size);
+  font-size: var(--text-2xl);
   margin: 0;
 }
 h2 {
-  font-size: var(--h2-size);
+  font-size: var(--text-xl);
 }
 h3 {
-  font-size: var(--h3-size);
+  font-size: var(--text-xl);
 }
 h4,
 h5,
 h6 {
-  font-size: var(--h4-size);
+  font-size: var(--text-lg);
 }
 
 p {
-  font-size: var(--base-font-size);
-  line-height: var(--base-line-height);
+  font-size: var(--text-md);
+  line-height: 1.25;
   & > * {
-    font-size: var(--base-font-size);
-    line-height: var(--base-line-height);
+    font-size: var(--text-md);
+    line-height: 1.25;
   }
 }
 
@@ -119,11 +107,11 @@ nav,
 header,
 nav a,
 nav a h2 {
-  font-size: var(--menu-text-size);
-  line-height: var(--menu-line-height);
+  font-size: var(--text-md);
+  line-height: 1.2;
   & > * {
-    font-size: var(--menu-text-size);
-    line-height: var(--menu-line-height);
+    font-size: var(--text-md);
+    line-height: 1.2;
   }
 }
 
@@ -176,7 +164,7 @@ strong {
   .rich-text {
     h1,
     h2 {
-      font-size: var(--h1-size);
+      font-size: var(--text-2xl);
       margin-bottom: var(--mid-margin);
       font-family: var(--font-text-medium);
     }
@@ -196,8 +184,8 @@ strong {
     a {
       /* Long-form body holds the 16 px step so articles keep their
          reading size even though h3 is 18 px. */
-      font-size: var(--h4-size);
-      line-height: var(--h4-line-height);
+      font-size: var(--text-lg);
+      line-height: 1.25;
       margin: 0 0 var(--mid-margin);
       strong,
       s,
@@ -228,7 +216,7 @@ strong {
         justify-content: flex-start;
         align-items: start;
         figcaption {
-          font-size: var(--base-font-size);
+          font-size: var(--text-md);
           margin: var(--small-margin) 0 0 0;
         }
         img {
@@ -253,7 +241,7 @@ strong {
     h1,
     h2,
     h3 {
-      font-size: var(--h3-size);
+      font-size: var(--text-xl);
     }
 
     h1,
@@ -271,7 +259,7 @@ strong {
     h4,
     h5,
     h6 {
-      font-size: var(--base-font-size);
+      font-size: var(--text-md);
     }
 
     h4 a,
@@ -284,7 +272,7 @@ strong {
     }
 
     p {
-      font-size: var(--base-font-size);
+      font-size: var(--text-md);
     }
   }
 }
@@ -309,7 +297,7 @@ strong {
     max-width: 80ch;
     white-space: pre-wrap;
     font-family: var(--font-text-italic);
-    font-size: var(--h2-size);
+    font-size: var(--text-xl);
     line-height: 1.5;
   }
 

@@ -527,8 +527,8 @@ function scrollToTop() {
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-text);
-  font-size: var(--base-font-size);
-  line-height: var(--base-line-height);
+  font-size: var(--text-md);
+  line-height: 1.25;
 }
 
 .site-footer__inner {
@@ -590,7 +590,7 @@ function scrollToTop() {
 .site-footer__tagline {
   margin: 1.5rem 0 0;
   color: var(--color-text);
-  font-size: var(--h2-size);
+  font-size: var(--text-xl);
   line-height: 1.5;
 }
 
@@ -601,7 +601,7 @@ function scrollToTop() {
   border-bottom: 1px solid var(--color-pink);
   color: var(--color-pink);
   font-family: var(--font-text-medium);
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   text-decoration: none;
 }
 
@@ -612,7 +612,7 @@ function scrollToTop() {
 .site-footer__address {
   margin: 1.1rem 0 0;
   color: var(--color-text);
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   line-height: 1.6;
 }
 
@@ -620,7 +620,7 @@ function scrollToTop() {
   display: inline-block;
   margin-bottom: 0.2rem;
   color: var(--color-text);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   letter-spacing: var(--menu-letter-spacing);
   text-transform: uppercase;
 }
@@ -629,7 +629,7 @@ function scrollToTop() {
   margin: 0 0 1.1rem;
   color: var(--color-text);
   font-family: var(--font-text-medium);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   letter-spacing: var(--menu-letter-spacing);
   line-height: 1;
   text-transform: uppercase;
@@ -663,21 +663,21 @@ function scrollToTop() {
 
 .station__code {
   color: var(--color-pink);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   letter-spacing: var(--menu-letter-spacing);
 }
 
 .station__city {
   color: var(--color-text);
   font-family: var(--font-text-semibold);
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   white-space: nowrap;
 }
 
 .station__address {
   min-width: 0;
   color: var(--color-dark-grey);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   line-height: 1.35;
 }
 
@@ -705,7 +705,7 @@ function scrollToTop() {
   min-width: 0;
   overflow: hidden;
   color: var(--color-text);
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -736,7 +736,7 @@ function scrollToTop() {
   border-radius: var(--radius-pill);
   color: var(--color-text);
   font-family: var(--font-text-medium);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   line-height: 1.2;
   text-decoration: none;
   transition:
@@ -768,7 +768,7 @@ function scrollToTop() {
   gap: 0.35rem;
   margin-right: 0.2rem;
   color: var(--color-dark-grey);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
 }
@@ -783,7 +783,7 @@ function scrollToTop() {
   border-radius: var(--radius-pill);
   color: var(--color-text);
   font-family: var(--font-text-medium);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   letter-spacing: var(--button-letter-spacing);
   line-height: 1.2;
   text-decoration: none;
@@ -845,7 +845,7 @@ function scrollToTop() {
   align-items: center;
   gap: 0.35rem;
   color: var(--color-text);
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   line-height: 1.4;
   text-decoration: none;
 }
@@ -883,7 +883,7 @@ function scrollToTop() {
   background: none;
   color: var(--color-text);
   font: inherit;
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   line-height: 1.4;
   text-decoration: none;
   cursor: pointer;
@@ -911,7 +911,7 @@ function scrollToTop() {
   background: none;
   color: var(--color-text);
   font: inherit;
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   letter-spacing: var(--menu-letter-spacing);
   text-transform: uppercase;
   cursor: pointer;

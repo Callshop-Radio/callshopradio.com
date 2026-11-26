@@ -489,7 +489,7 @@ onMounted(() => {
 
       .hero-entry-title,
       .hero-entry-show-artists-artist {
-        font-size: var(--base-font-size);
+        font-size: var(--text-md);
         font-family: var(--font-text-semibold);
         font-weight: 500;
         text-transform: uppercase;
@@ -503,7 +503,7 @@ onMounted(() => {
         align-items: center;
 
         .hero-date {
-          font-size: var(--small-font-size);
+          font-size: var(--text-sm);
           text-transform: uppercase;
         }
 
@@ -516,7 +516,7 @@ onMounted(() => {
           border: none;
           padding: var(--small-padding) var(--mid-padding);
           border-radius: var(--radius-circle);
-          font-size: var(--small-font-size);
+          font-size: var(--text-sm);
           transition: background-color 0.2s ease;
           cursor: pointer;
 
@@ -538,7 +538,7 @@ onMounted(() => {
     }
 
     .hero-entry-text {
-      font-size: var(--base-font-size);
+      font-size: var(--text-md);
 
       :deep(p) {
         margin-bottom: var(--mid-padding);

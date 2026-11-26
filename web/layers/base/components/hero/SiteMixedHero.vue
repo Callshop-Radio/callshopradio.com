@@ -452,7 +452,7 @@ onUnmounted(() => {
   z-index: 12;
   color: color-mix(in srgb, var(--color-text) 62%, transparent);
   font-family: var(--font-text);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   letter-spacing: var(--button-letter-spacing);
   line-height: 1;
   pointer-events: none;
@@ -528,7 +528,7 @@ onUnmounted(() => {
   backdrop-filter: blur(6px);
   color: var(--color-text);
   font-family: var(--font-text);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   line-height: 1.1;
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
@@ -636,7 +636,7 @@ onUnmounted(() => {
   gap: 0.4rem;
   color: color-mix(in srgb, var(--color-text) 65%, transparent);
   font-family: var(--font-text);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
 }
@@ -682,7 +682,7 @@ onUnmounted(() => {
   margin: 0;
   max-width: 52ch;
   color: color-mix(in srgb, var(--color-text) 68%, transparent);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   line-height: 1.35;
 }
 
@@ -706,7 +706,7 @@ onUnmounted(() => {
   background: transparent;
   color: var(--accent, var(--color-text));
   font-family: var(--font-text-semibold);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
   cursor: pointer;
@@ -734,7 +734,7 @@ onUnmounted(() => {
   gap: 0.4rem;
   color: var(--color-text);
   font-family: var(--font-text-semibold);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   letter-spacing: var(--button-letter-spacing);
   text-decoration: none;
   text-transform: uppercase;

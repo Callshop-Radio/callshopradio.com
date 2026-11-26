@@ -117,7 +117,7 @@ button {
 }
 
 .picker__tab {
-	font-size: var(--small-font-size);
+	font-size: var(--text-sm);
 	padding: 0.125rem 0.5rem;
 	border-radius: var(--radius-pill);
 	border: 1px solid var(--chat-line);

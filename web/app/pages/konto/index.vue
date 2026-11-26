@@ -116,7 +116,7 @@ onMounted(loadName);
 	background-color: color-mix(in srgb, var(--color-text) 7%, transparent);
 	color: inherit;
 	font: inherit;
-	font-size: var(--small-font-size);
+	font-size: var(--text-sm);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	cursor: pointer;

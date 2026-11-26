@@ -875,7 +875,7 @@ onUnmounted(() => {
 
   &__eyebrow {
     font-family: var(--font-text-semibold);
-    font-size: var(--mini-font-size);
+    font-size: var(--text-xs);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     color: var(--color-text-light, var(--color-dark-grey));
@@ -918,7 +918,7 @@ onUnmounted(() => {
 
   &__label {
     font-family: var(--font-text-semibold);
-    font-size: var(--mini-font-size);
+    font-size: var(--text-xs);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     color: var(--color-text-light, var(--color-dark-grey));
@@ -940,7 +940,7 @@ onUnmounted(() => {
       background: var(--as-surface);
       color: var(--color-text);
       font-family: var(--font-text-semibold);
-      font-size: var(--small-font-size);
+      font-size: var(--text-sm);
       outline: none;
       transition: background var(--transition-fast);
 
@@ -1017,7 +1017,7 @@ onUnmounted(() => {
       background: transparent;
       color: inherit;
       font-family: var(--font-text-semibold);
-      font-size: var(--base-font-size);
+      font-size: var(--text-md);
       outline: none;
       box-shadow: none;
 
@@ -1064,7 +1064,7 @@ onUnmounted(() => {
     padding: 0 var(--mid-padding);
     border-radius: var(--radius-pill);
     font-family: var(--font-text-semibold);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     cursor: pointer;
@@ -1099,7 +1099,7 @@ onUnmounted(() => {
   &__count {
     margin-left: auto;
     font-family: var(--font-text);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     color: var(--color-text-light, var(--color-dark-grey));
   }
 
@@ -1133,7 +1133,7 @@ onUnmounted(() => {
   &__hint {
     padding: var(--small-padding) 0 0;
     font-family: var(--font-text);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     color: var(--color-text-light, var(--color-dark-grey));
   }
 }
@@ -1157,7 +1157,7 @@ onUnmounted(() => {
     gap: 0.35rem;
     margin: 0.75rem 0 0.35rem;
     font-family: var(--font-text-semibold);
-    font-size: var(--mini-font-size);
+    font-size: var(--text-xs);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     color: var(--color-text-light, var(--color-dark-grey));
@@ -1210,7 +1210,7 @@ onUnmounted(() => {
 
   &__title {
     font-family: var(--font-text-semibold);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1232,7 +1232,7 @@ onUnmounted(() => {
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, currentColor 16%, transparent);
   font-family: var(--font-text-semibold);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   letter-spacing: var(--button-letter-spacing);
   line-height: 1.25;
   text-transform: uppercase;
@@ -1257,7 +1257,7 @@ onUnmounted(() => {
   border-radius: var(--radius-pill);
   background: var(--as-surface, color-mix(in srgb, var(--color-text) 7%, var(--color-bg)));
   font-family: var(--font-text-semibold);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   line-height: 1.2;
   color: var(--color-text-light, var(--color-dark-grey));
   white-space: nowrap;
@@ -1298,7 +1298,7 @@ onUnmounted(() => {
     flex: none;
     margin-left: 0.4rem;
     font-family: var(--font-text-semibold);
-    font-size: var(--base-font-size);
+    font-size: var(--text-md);
     line-height: 1;
   }
 
@@ -1320,7 +1320,7 @@ onUnmounted(() => {
 
   &__title {
     font-family: var(--font-text-semibold);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1328,14 +1328,14 @@ onUnmounted(() => {
 
   &__meta {
     font-family: var(--font-text);
-    font-size: var(--mini-font-size);
+    font-size: var(--text-xs);
     color: var(--color-text-light, var(--color-dark-grey));
   }
 
   &__count {
     flex: none;
     font-family: var(--font-text);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     color: var(--color-text-light, var(--color-dark-grey));
 
     b {
@@ -1435,7 +1435,7 @@ onUnmounted(() => {
 
   &__title {
     font-family: var(--font-text-semibold);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1455,7 +1455,7 @@ onUnmounted(() => {
     gap: 0.125rem;
     flex: none;
     font-family: var(--font-text);
-    font-size: var(--mini-font-size);
+    font-size: var(--text-xs);
     color: var(--color-text-light, var(--color-dark-grey));
     white-space: nowrap;
   }

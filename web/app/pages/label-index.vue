@@ -172,7 +172,7 @@ watch(
 .index-intro__count {
   margin: 0;
   color: var(--color-dark-grey);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   letter-spacing: var(--menu-letter-spacing);
   text-transform: uppercase;
 }
@@ -194,7 +194,7 @@ watch(
 .index-intro__lede {
   max-width: 58ch;
   margin: 0.6rem 0 0;
-  font-size: var(--h2-size);
+  font-size: var(--text-xl);
   line-height: 1.4;
 }
 
@@ -214,7 +214,7 @@ watch(
 .index-empty {
   margin: 3rem 0;
   color: var(--color-dark-grey);
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
 }
 
 @media screen and (max-width: 1100px) {

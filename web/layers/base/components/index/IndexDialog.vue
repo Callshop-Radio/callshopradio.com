@@ -299,7 +299,7 @@ function orDash(value: string) {
   margin: 0;
   padding-right: 2.5rem;
   font-family: var(--font-text-medium);
-  font-size: var(--h2-size);
+  font-size: var(--text-xl);
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -316,14 +316,14 @@ function orDash(value: string) {
 
   dt {
     color: var(--color-dark-grey);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
   }
 
   dd {
     margin: 0;
-    font-size: var(--base-font-size);
+    font-size: var(--text-md);
     line-height: 1.4;
   }
 }
@@ -342,7 +342,7 @@ function orDash(value: string) {
     border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
     border-radius: var(--radius-circle);
     color: var(--color-text);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     text-decoration: none;

@@ -62,7 +62,7 @@ const excerpt = computed(() => {
   background: none;
   color: var(--color-text);
   font-family: var(--font-text-medium);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   letter-spacing: var(--button-letter-spacing);
   text-align: left;
   text-transform: uppercase;
@@ -79,7 +79,7 @@ const excerpt = computed(() => {
 }
 
 .index-about__sign {
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   color: var(--accent, var(--color-purple));
 }
 
@@ -87,7 +87,7 @@ const excerpt = computed(() => {
   max-width: 82ch;
   margin: 0.9rem 0 0;
   color: var(--color-dark-grey);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   line-height: 1.55;
 }
 
@@ -96,7 +96,7 @@ const excerpt = computed(() => {
   columns: 2;
   column-gap: clamp(2rem, 4vw, 4rem);
   color: var(--color-text);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   line-height: 1.65;
 
   p {
@@ -116,7 +116,7 @@ const excerpt = computed(() => {
 @media screen and (max-width: 900px) {
   .index-about__body {
     columns: 1;
-    font-size: var(--base-font-size);
+    font-size: var(--text-md);
   }
 }
 </style>

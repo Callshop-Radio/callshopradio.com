@@ -413,7 +413,7 @@ onBeforeUnmount(clearTimers);
 	margin: 0;
 	padding: 0.7rem;
 	opacity: 0.65;
-	font-size: var(--body-large-font-size);
+	font-size: var(--text-lg);
 }
 
 .menu-enter-active,

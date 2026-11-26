@@ -119,7 +119,7 @@ function setSort(value: SortMode) {
     background: transparent;
     color: var(--color-text);
     font: inherit;
-    font-size: var(--base-font-size);
+    font-size: var(--text-md);
 
     &::placeholder {
       color: var(--color-dark-grey);
@@ -155,7 +155,7 @@ function setSort(value: SortMode) {
     background: transparent;
     color: var(--color-text);
     font-family: var(--font-text-medium);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     cursor: pointer;
@@ -185,7 +185,7 @@ function setSort(value: SortMode) {
 .index-filter__count {
   margin: 0 0 0 auto;
   color: var(--accent, var(--color-purple));
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;

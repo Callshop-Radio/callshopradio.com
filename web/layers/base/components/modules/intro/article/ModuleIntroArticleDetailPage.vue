@@ -356,7 +356,7 @@ const currentArticleText = computed(() =>
       /* A city flag: rounded on top, square where it meets the edge. */
       border-radius: var(--radius-flag);
       background-color: var(--color-green);
-      font-size: var(--small-font-size);
+      font-size: var(--text-sm);
       line-height: 1;
     }
   }
@@ -388,12 +388,12 @@ const currentArticleText = computed(() =>
   max-width: var(--page-max-width);
   margin: 0 auto var(--big-margin);
   .article-title {
-    font-size: var(--h1-size);
+    font-size: var(--text-2xl);
     font-family: var(--font-text-medium);
     margin: 0 0 var(--base-padding);
   }
   .article-date {
-    font-size: var(--base-font-size);
+    font-size: var(--text-md);
     font-family: var(--font-text);
     color: var(--color-green);
     margin-bottom: var(--base-padding);
@@ -414,12 +414,12 @@ const currentArticleText = computed(() =>
     display: flex;
     align-items: center;
     width: 70px;
-    height: calc(var(--base-font-size) + var(--small-padding));
+    height: calc(var(--text-md) + var(--small-padding));
     padding: 4px;
     background: var(--color-text);
     backdrop-filter: blur(5px);
     border-radius: var(--radius-pill);
-    max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
+    max-height: calc(var(--text-md) + var(--small-padding) * 2);
     margin: 0 var(--base-margin);
 
     .lang-btn {
@@ -432,7 +432,7 @@ const currentArticleText = computed(() =>
       background: transparent;
       color: var(--color-bg);
       font-weight: 400;
-      font-size: var(--small-font-size);
+      font-size: var(--text-sm);
       font-family: var(--font-text-medium);
       cursor: pointer;
       transition: color 0.2s ease;
@@ -460,7 +460,7 @@ const currentArticleText = computed(() =>
       position: absolute;
       top: 2px;
       width: calc(50% - 4px);
-      max-height: calc(var(--base-font-size) - var(--small-padding) * 2);
+      max-height: calc(var(--text-md) - var(--small-padding) * 2);
       height: 100%;
       background-color: var(--color-green);
       border-radius: var(--radius-circle);
@@ -517,7 +517,7 @@ const currentArticleText = computed(() =>
     padding: 0;
 
     .article-title {
-      font-size: var(--h2-size);
+      font-size: var(--text-xl);
     }
   }
 

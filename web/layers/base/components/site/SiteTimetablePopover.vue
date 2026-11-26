@@ -233,7 +233,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 }
 
 .tt-popover__title {
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   letter-spacing: var(--kicker-letter-spacing);
   text-transform: uppercase;
   opacity: 0.55;
@@ -307,7 +307,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 .tt-popover__meta {
   display: flex;
   gap: 6px;
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   opacity: 0.65;
   font-variant-numeric: tabular-nums;
 }
@@ -318,14 +318,14 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 }
 
 .tt-popover__name {
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .tt-popover__sub {
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   opacity: 0.55;
   white-space: nowrap;
   overflow: hidden;
@@ -335,7 +335,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 .tt-popover__empty {
   padding: 14px 10px;
   opacity: 0.5;
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
 }
 
 .tt-popover__foot {
@@ -347,7 +347,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
   padding: 10px 12px;
   text-align: left;
   font: inherit;
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   opacity: 0.7;
   cursor: pointer;
 }

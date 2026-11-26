@@ -244,7 +244,7 @@ function tagLabel(tag: Tag): string {
   gap: 0.4rem;
   margin: 0;
   color: color-mix(in srgb, var(--color-ink) 68%, transparent);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   line-height: 1.2;
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
@@ -297,7 +297,7 @@ function tagLabel(tag: Tag): string {
   border-radius: var(--radius-media);
   background: var(--color-ink);
   color: var(--color-white);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   line-height: 1.1;
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
@@ -330,7 +330,7 @@ function tagLabel(tag: Tag): string {
   margin: 0 0 var(--mid-padding);
   font-family: var(--font-text-semibold);
   font-weight: 500;
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
   opacity: 0.6;
@@ -339,7 +339,7 @@ function tagLabel(tag: Tag): string {
 .show-project__rich {
   :deep(p) {
     margin: 0 0 var(--mid-padding);
-    font-size: var(--base-font-size);
+    font-size: var(--text-md);
     line-height: 1.6;
   }
 
@@ -363,7 +363,7 @@ function tagLabel(tag: Tag): string {
   border-radius: var(--radius-media);
   color: var(--color-text);
   font-family: var(--font-text-semibold);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   line-height: 1.1;
   text-transform: uppercase;
   text-decoration: none;

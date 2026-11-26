@@ -783,7 +783,7 @@ watch(
   top: var(--base-margin);
   @apply flex items-center justify-start flex-row flex-wrap items-stretch;
   gap: 0 var(--mid-padding);
-  height: calc(var(--base-font-size) + var(--small-padding) * 2);
+  height: calc(var(--text-md) + var(--small-padding) * 2);
   z-index: 999;
   margin: var(--base-margin) var(--schedule-edge-inset);
 }
@@ -793,12 +793,12 @@ watch(
   display: flex;
   align-items: center;
   width: 70px;
-  height: calc(var(--base-font-size) + var(--small-padding));
+  height: calc(var(--text-md) + var(--small-padding));
   padding: 4px;
   background: rgba(225, 225, 225, 0.25);
   backdrop-filter: blur(5px);
   border-radius: var(--radius-pill);
-  max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
+  max-height: calc(var(--text-md) + var(--small-padding) * 2);
   height: 100%;
 
   &__btn {
@@ -811,7 +811,7 @@ watch(
     background: transparent;
     color: #555;
     font-weight: 400;
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     cursor: pointer;
     transition: color 0.2s ease;
     user-select: none;
@@ -832,7 +832,7 @@ watch(
     position: absolute;
     top: 2px;
     width: calc(50% - 4px);
-    max-height: calc(var(--base-font-size) - var(--small-padding) * 2);
+    max-height: calc(var(--text-md) - var(--small-padding) * 2);
     height: 100%;
     background-color: var(--color-pink);
     border-radius: var(--radius-circle);
@@ -854,7 +854,7 @@ watch(
   padding: var(--small-padding) var(--base-padding);
   border-radius: var(--radius-circle);
   background-color: rgba(225, 225, 225, 0.25);
-  max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
+  max-height: calc(var(--text-md) + var(--small-padding) * 2);
   backdrop-filter: blur(3px);
 
   .dot {
@@ -878,7 +878,7 @@ watch(
 .arrow-navigation {
   @apply flex items-center;
   gap: 0 var(--mid-margin);
-  height: calc(var(--base-font-size) + var(--small-padding) * 2);
+  height: calc(var(--text-md) + var(--small-padding) * 2);
   padding: 0 var(--small-padding);
   border-radius: var(--radius-circle);
   background-color: rgba(225, 225, 225, 0.25);
@@ -910,7 +910,7 @@ watch(
   }
 
   &__heading {
-    font-size: var(--h4-size);
+    font-size: var(--text-lg);
     color: var(--color-text);
     margin: 0 0 var(--small-padding) var(--small-padding);
     .today-badge {
@@ -1004,7 +1004,7 @@ watch(
   }
 
   .live-indicator {
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     font-weight: 400;
     color: var(--color-grey);
     margin-right: 4px;
@@ -1018,14 +1018,14 @@ watch(
   }
 
   &__time {
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     margin: 0 0 calc(var(--small-padding) / 2) 0;
     opacity: 75%;
     line-height: 1.2;
   }
 
   &__title {
-    font-size: var(--h4-size);
+    font-size: var(--text-lg);
     font-weight: 400;
     overflow: hidden;
     display: -webkit-box;
@@ -1035,7 +1035,7 @@ watch(
   }
 
   &__artist {
-    font-size: var(--h4-size);
+    font-size: var(--text-lg);
     font-weight: 400;
     margin-top: calc(var(--small-padding) / 4);
     overflow: hidden;
@@ -1085,7 +1085,7 @@ watch(
   }
 
   &__time {
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     color: var(--color-pink);
     font-weight: 600;
     text-transform: uppercase;
@@ -1135,14 +1135,14 @@ watch(
     align-items: center;
     justify-content: flex-start;
     gap: 0 var(--mid-padding);
-    height: calc(var(--base-font-size) + var(--small-padding) * 2);
+    height: calc(var(--text-md) + var(--small-padding) * 2);
   }
 
   .location-switch,
   .dot-navigation,
   .arrow-navigation {
     flex-shrink: 0;
-    height: calc(var(--base-font-size) + var(--small-padding) * 2);
+    height: calc(var(--text-md) + var(--small-padding) * 2);
   }
 
   .schedule__content {

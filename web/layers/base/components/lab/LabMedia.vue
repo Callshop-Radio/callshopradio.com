@@ -141,7 +141,7 @@ function onArtworkError() {
     place-items: center;
     padding: var(--mid-padding);
     text-align: center;
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     color: var(--color-bg);

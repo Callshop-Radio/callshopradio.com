@@ -70,7 +70,7 @@ select {
 	background: transparent;
 	color: inherit;
 	font: inherit;
-	font-size: var(--base-font-size);
+	font-size: var(--text-md);
 }
 
 .save-to-list__button {
@@ -80,13 +80,13 @@ select {
 	background: transparent;
 	color: inherit;
 	font: inherit;
-	font-size: var(--base-font-size);
+	font-size: var(--text-md);
 	cursor: pointer;
 }
 
 .save-to-list__message {
 	margin: 0;
-	font-size: var(--base-font-size);
+	font-size: var(--text-md);
 	opacity: 0.7;
 	flex-basis: 100%;
 }

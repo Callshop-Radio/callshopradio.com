@@ -74,7 +74,7 @@ defineProps<{
 
 .account-page__eyebrow {
 	margin: 0 0 0.35rem;
-	font-size: var(--small-font-size);
+	font-size: var(--text-sm);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	color: var(--color-pink);
@@ -92,7 +92,7 @@ defineProps<{
 
 .account-page__subtitle {
 	margin: 0.5rem 0 0;
-	font-size: var(--small-font-size);
+	font-size: var(--text-sm);
 	color: color-mix(in srgb, var(--color-text) 50%, transparent);
 }
 
@@ -110,7 +110,7 @@ defineProps<{
 	background-color: color-mix(in srgb, var(--color-text) 7%, transparent);
 	color: inherit;
 	font: inherit;
-	font-size: var(--small-font-size);
+	font-size: var(--text-sm);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	text-decoration: none;

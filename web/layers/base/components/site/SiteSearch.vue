@@ -263,7 +263,7 @@ watch(results, () => {
     flex: 1;
     border: none;
     background: transparent;
-    font-size: var(--h3-size);
+    font-size: var(--text-xl);
     color: var(--color-text);
     outline: none;
     font-family: var(--font-text);
@@ -320,7 +320,7 @@ watch(results, () => {
   font-family: var(--font-text-semibold);
   
   .link-text {
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     color: var(--color-text);
     white-space: nowrap;
     overflow: hidden;
@@ -389,7 +389,7 @@ watch(results, () => {
 
   .autocomplete-title {
     flex: 1;
-    font-size: var(--body-large-font-size); /* Matched from previous result-title */
+    font-size: var(--text-lg); /* Matched from previous result-title */
     font-family: var(--font-text-semibold);
     color: var(--color-text);
     white-space: nowrap;
@@ -398,7 +398,7 @@ watch(results, () => {
   }
 
   .autocomplete-type {
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     font-family: var(--font-text-semibold);
     color: var(--color-text-light);
     text-transform: uppercase;
@@ -438,14 +438,14 @@ watch(results, () => {
   color: var(--color-text-light);
 
   p {
-    font-size: var(--body-large-font-size);
+    font-size: var(--text-lg);
     font-weight: 500;
     margin-bottom: var(--small-padding);
     color: var(--color-text);
   }
 
   span {
-    font-size: var(--base-font-size);
+    font-size: var(--text-md);
   }
 }
 
@@ -461,7 +461,7 @@ watch(results, () => {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: var(--base-font-size);
+    font-size: var(--text-md);
     color: var(--color-text-light);
 
     kbd {
@@ -474,7 +474,7 @@ watch(results, () => {
       background: var(--color-bg);
       border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.15));
       border-radius: var(--radius-xs);
-      font-size: var(--small-font-size);
+      font-size: var(--text-sm);
       font-family: var(--font-text);
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }

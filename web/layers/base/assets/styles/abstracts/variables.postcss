@@ -52,7 +52,7 @@
 
   /* Modules */
   --city-tag-height: calc(
-    var(--small-padding) / 2 + var(--small-padding) / 2 + var(--mini-font-size)
+    var(--small-padding) / 2 + var(--small-padding) / 2 + --text-xs
   );
 
   /* Carousel */
@@ -62,7 +62,7 @@
   /* Calculated Heights */
   --nav-height: calc(
     28px + (var(--base-padding) * 2) + (var(--small-padding) * 2) +
-      var(--base-font-size)
+      --text-md
   );
 
   /* Fixed player bar: 56 px row plus the top and bottom rules. */
@@ -84,8 +84,8 @@
   --first-content-distance: calc(28px + (var(--base-padding) * 2) - 4px);
 
   --schedule-block-height: calc(
-    (var(--small-padding) * 2) + (var(--base-font-size) * 4) +
-      var(--small-font-size) + (var(--small-padding) / 2)
+    (var(--small-padding) * 2) + (--text-md * 4) +
+      --text-sm + (var(--small-padding) / 2)
   );
 
   /* Sizes */
@@ -144,7 +144,6 @@
     --mid-margin: 0.575rem;
     --small-margin: 0.4375rem;
 
-    --base-line-height: calc(var(--base-font-size) * 1.25);
   }
   @media (--tablet-portrait-up) {
     --base-padding: 0.625rem;
@@ -158,7 +157,6 @@
     --mid-margin: 1.575rem;
     --small-margin: 0.4375rem;
 
-    --base-line-height: calc(var(--base-font-size) * 1.25);
   }
   @media (--xl-up) {
     --page-max-width: clamp(0rem, 96rem, 100%);

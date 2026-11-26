@@ -942,10 +942,10 @@ watch(
       top: 0;
       left: 0;
       width: 100%;
-      height: calc(var(--first-content-distance) + (var(--small-padding) * 2 + var(--small-font-size) / 2));
+      height: calc(var(--first-content-distance) + (var(--small-padding) * 2 + var(--text-sm) / 2));
       background-color: var(--color-bg);
       z-index: -1;
-      transform: translateY(calc(-100% + (var(--small-padding) * 2 + var(--small-font-size) / 2)));
+      transform: translateY(calc(-100% + (var(--small-padding) * 2 + var(--text-sm) / 2)));
     }
   }
 
@@ -980,16 +980,16 @@ watch(
         flex-flow: row wrap;
         align-items: center;
         justify-content: center;
-        font-size: var(--small-font-size);
+        font-size: var(--text-sm);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
-        height: var(--small-font-size);
+        height: var(--text-sm);
         cursor: pointer;
 
         .toggle-arrow {
           position: absolute;
-          font-size: var(--small-font-size);
+          font-size: var(--text-sm);
           transform: translate(0, -1px);
         }
 
@@ -1026,7 +1026,7 @@ watch(
       .active-filter {
         background-color: var(--color-grey);
         color: var(--color-dark-grey);
-        font-size: var(--small-font-size);
+        font-size: var(--text-sm);
         position: relative;
         min-width: max-content;
 
@@ -1039,7 +1039,7 @@ watch(
         &__name {
           min-width: max-content;
           cursor: pointer;
-          font-size: var(--small-font-size);
+          font-size: var(--text-sm);
           padding: 0 8px 0 0;
         }
       }
@@ -1055,7 +1055,7 @@ watch(
       padding: 0 calc(var(--mid-margin) / 2);
 
       &__title {
-        font-size: var(--small-font-size);
+        font-size: var(--text-sm);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
@@ -1094,7 +1094,7 @@ watch(
         flex-flow: row wrap;
         align-items: center;
         justify-content: center;
-        font-size: var(--small-font-size);
+        font-size: var(--text-sm);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
@@ -1108,7 +1108,7 @@ watch(
         align-items: center;
         gap: var(--small-padding);
         background-color: transparent;
-        font-size: var(--small-font-size);
+        font-size: var(--text-sm);
         color: var(--color-dark-grey);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
@@ -1225,7 +1225,7 @@ watch(
     .filter-category {
       &__label {
         display: block;
-        font-size: var(--small-font-size);
+        font-size: var(--text-sm);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-text);
@@ -1236,7 +1236,7 @@ watch(
     }
 
     .filter-tag {
-      font-size: var(--small-font-size);
+      font-size: var(--text-sm);
       cursor: pointer;
       transition: all 0.2s ease;
       background-color: var(--color-bg);
@@ -1255,7 +1255,7 @@ watch(
       }
 
       &--subgenre {
-        font-size: var(--small-font-size);
+        font-size: var(--text-sm);
       }
       
       /* Color-specific styles */
@@ -1416,7 +1416,7 @@ watch(
         align-items: center;
 
         .grid-item__date {
-          font-size: var(--small-font-size);
+          font-size: var(--text-sm);
           text-transform: uppercase;
         }
 
@@ -1430,11 +1430,11 @@ watch(
           border-radius: var(--radius-circle);
           border: none;
           padding: 4px;
-          width: calc(var(--base-font-size) + 4px);
-          height: calc(var(--base-font-size) + 4px);
+          width: calc(var(--text-md) + 4px);
+          height: calc(var(--text-md) + 4px);
 
           svg {
-            height: var(--base-font-size);
+            height: var(--text-md);
             transform: translate(1px, 0);
             path {
               fill: var(--color-bg);
@@ -1445,7 +1445,7 @@ watch(
 
       .grid-item__title,
       .grid-item__artist {
-        font-size: var(--base-font-size);
+        font-size: var(--text-md);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
@@ -1485,7 +1485,7 @@ watch(
   }
 
   h3 {
-    font-size: var(--h2-size);
+    font-size: var(--text-xl);
     font-weight: 600;
     margin-bottom: var(--small-padding);
   }
@@ -1565,7 +1565,7 @@ watch(
       }
 
       .grid-item__title {
-        font-size: var(--h2-size);
+        font-size: var(--text-xl);
         font-weight: 400;
         font-family: var(--font-text);
         color: var(--color-bg);

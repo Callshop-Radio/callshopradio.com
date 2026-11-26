@@ -328,7 +328,7 @@ onUnmounted(() => {
     gap: 0.45rem;
     padding-left: 0.45rem;
     font-family: var(--font-text-semibold);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     text-transform: uppercase;
     letter-spacing: 0.06em;
     white-space: nowrap;
@@ -365,7 +365,7 @@ onUnmounted(() => {
     background: transparent;
     color: var(--color-dark-grey);
     font-family: var(--font-text-medium);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     cursor: pointer;
@@ -402,7 +402,7 @@ onUnmounted(() => {
 
   &__bg-index {
     font-variant-numeric: tabular-nums;
-    font-size: var(--mini-font-size);
+    font-size: var(--text-xs);
     color: var(--color-dark-grey);
   }
 
@@ -446,7 +446,7 @@ onUnmounted(() => {
     border-radius: 5px;
     color: var(--color-blue);
     font-family: var(--font-text-semibold);
-    font-size: var(--mini-font-size);
+    font-size: var(--text-xs);
     letter-spacing: 0.04em;
     text-decoration: none;
     text-transform: uppercase;
@@ -466,7 +466,7 @@ onUnmounted(() => {
   align-items: baseline;
   gap: 0.35rem var(--mid-padding);
   margin-top: var(--small-margin);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   line-height: 1.3;
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
@@ -489,7 +489,7 @@ onUnmounted(() => {
 .lab-bg-note {
   max-width: 86ch;
   margin: 0.2rem 0 0;
-  font-size: var(--mini-font-size);
+  font-size: var(--text-xs);
   line-height: 1.4;
   color: var(--color-dark-grey);
 }
@@ -521,7 +521,7 @@ onUnmounted(() => {
   margin: 0 0 0.5rem;
   color: var(--color-blue);
   font-family: var(--font-text-semibold);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
 }
@@ -529,7 +529,7 @@ onUnmounted(() => {
 .pool-lab__title {
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-size: var(--h2-size);
+  font-size: var(--text-xl);
   font-weight: 500;
   line-height: 0.95;
   letter-spacing: -0.015em;
@@ -540,7 +540,7 @@ onUnmounted(() => {
   max-width: 70ch;
   margin: var(--mid-padding) 0 0;
   color: var(--color-dark-grey);
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   line-height: 1.5;
 }
 
@@ -565,14 +565,14 @@ onUnmounted(() => {
   background: var(--color-blue);
   color: var(--color-white);
   font-family: var(--font-text-semibold);
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   flex: none;
 }
 
 .pool-lab__variant-head h3 {
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-size: var(--h3-size);
+  font-size: var(--text-xl);
   font-weight: 500;
   line-height: 1;
   text-transform: uppercase;
@@ -582,7 +582,7 @@ onUnmounted(() => {
   max-width: 68ch;
   margin: 0.35rem 0 0;
   color: var(--color-dark-grey);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   line-height: 1.45;
 }
 
@@ -594,7 +594,7 @@ onUnmounted(() => {
 
 .lab-empty {
   padding: var(--big-margin) 0;
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   color: var(--color-dark-grey);
 }
 

@@ -309,7 +309,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.5rem;
   width: 6.5rem;
-  height: calc(var(--base-font-size) + var(--small-padding) * 2);
+  height: calc(var(--text-md) + var(--small-padding) * 2);
   padding: 0 calc(var(--small-padding)) 0 var(--base-padding);
   box-sizing: border-box;
   overflow: hidden;
@@ -360,7 +360,7 @@ onUnmounted(() => {
   background: transparent;
   color: inherit;
   font-family: var(--font-text-semibold);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
   cursor: pointer;
@@ -376,7 +376,7 @@ onUnmounted(() => {
   background: transparent;
   color: inherit;
   font-family: var(--font-text-semibold);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   outline: none;
 
   &::placeholder {
@@ -443,7 +443,7 @@ onUnmounted(() => {
     text-align: left;
     cursor: pointer;
     font-family: var(--font-text-semibold);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     transition:
       background var(--transition-fast),
       border-color var(--transition-fast);
@@ -487,7 +487,7 @@ onUnmounted(() => {
     padding: 0.05rem 0.4rem;
     border: 1px solid currentColor;
     border-radius: var(--radius-pill);
-    font-size: var(--mini-font-size);
+    font-size: var(--text-xs);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     color: var(--color-text-light, var(--color-dark-grey));
@@ -512,7 +512,7 @@ onUnmounted(() => {
   &__empty {
     padding: 0.75rem 0.6rem;
     font-family: var(--font-text);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     color: var(--color-text-light, var(--color-dark-grey));
   }
 
@@ -529,7 +529,7 @@ onUnmounted(() => {
     background: transparent;
     color: var(--color-text);
     font-family: var(--font-text-semibold);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     text-align: left;
     cursor: pointer;
 
@@ -563,12 +563,12 @@ onUnmounted(() => {
      header so the icon group does not jump sideways. */
   .site-search-button-wrapper.is-open {
     flex: none;
-    width: calc(var(--base-font-size) + var(--small-padding) * 2);
+    width: calc(var(--text-md) + var(--small-padding) * 2);
   }
 
   .search-pill {
     justify-content: center;
-    width: calc(var(--base-font-size) + var(--small-padding) * 2);
+    width: calc(var(--text-md) + var(--small-padding) * 2);
     padding: 0;
     border-radius: 50%;
 

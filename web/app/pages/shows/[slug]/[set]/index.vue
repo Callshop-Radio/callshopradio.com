@@ -106,7 +106,7 @@ section {
       padding: 0 var(--big-margin);
     } */
     h3 {
-      font-size: var(--h3-size);
+      font-size: var(--text-xl);
       text-transform: uppercase;
       span {
         color: var(--color-pink);

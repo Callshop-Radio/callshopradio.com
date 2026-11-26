@@ -794,7 +794,7 @@ onUnmounted(() => {
   }
 
   .hero-subtitle {
-    font-size: var(--h3-size);
+    font-size: var(--text-xl);
     color: var(--color-text-light);
     font-family: var(--font-text);
   }
@@ -820,14 +820,14 @@ onUnmounted(() => {
   border: 1px solid var(--color-text);
   border-radius: var(--radius-pill);
   transition: all 0.2s ease;
-  height: calc(var(--base-font-size) + var(--base-padding) * 2 + 2px);
+  height: calc(var(--text-md) + var(--base-padding) * 2 + 2px);
 
   .search-icon {
     display: flex;
     align-items: center;
     svg {
-      width: var(--base-font-size);
-      height: var(--base-font-size);
+      width: var(--text-md);
+      height: var(--text-md);
       path {
         fill: var(--color-text);
       }
@@ -841,8 +841,8 @@ onUnmounted(() => {
     flex: 1;
     border: none;
     background: transparent;
-    font-size: var(--base-font-size);
-    height: calc(var(--base-font-size) + var(--base-padding) * 2);
+    font-size: var(--text-md);
+    height: calc(var(--text-md) + var(--base-padding) * 2);
     color: var(--color-text);
     outline: none;
     font-family: var(--font-text-semibold);
@@ -894,7 +894,7 @@ onUnmounted(() => {
 
 .type-filter-btn {
   color: var(--color-text);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   font-family: var(--font-text-semibold);
   font-weight: 400;
   text-transform: uppercase;
@@ -955,7 +955,7 @@ onUnmounted(() => {
   }
 
   .type-icon {
-    font-size: var(--h4-size);
+    font-size: var(--text-lg);
   }
 }
 
@@ -988,7 +988,7 @@ onUnmounted(() => {
   background: color-mix(in srgb, var(--color-text) 5%, transparent);
   border: none;
   border-bottom: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.1));
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   font-family: var(--font-text);
   color: var(--color-text-light);
   cursor: pointer;
@@ -1018,18 +1018,18 @@ onUnmounted(() => {
   }
 
   .autocomplete-icon {
-    font-size: var(--h2-size);
+    font-size: var(--text-xl);
   }
 
   .autocomplete-title {
     flex: 1;
-    font-size: var(--base-font-size);
+    font-size: var(--text-md);
     font-family: var(--font-text-semibold);
     color: var(--color-text);
   }
 
   .autocomplete-type {
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     font-family: var(--font-text-semibold);
     color: var(--color-text-light);
     text-transform: uppercase;
@@ -1101,7 +1101,7 @@ onUnmounted(() => {
   background: transparent;
   border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.15));
   border-radius: var(--radius-pill-sm);
-  font-size: var(--body-large-font-size);
+  font-size: var(--text-lg);
   font-family: var(--font-text);
   color: var(--color-text);
   cursor: pointer;
@@ -1117,7 +1117,7 @@ onUnmounted(() => {
   }
 
   .category-icon {
-    font-size: var(--h4-size);
+    font-size: var(--text-lg);
   }
 
   .category-label {
@@ -1128,11 +1128,11 @@ onUnmounted(() => {
 
   .category-count {
     color: var(--color-text-light);
-    font-size: var(--base-font-size);
+    font-size: var(--text-md);
   }
 
   .expand-icon {
-    font-size: var(--h2-size);
+    font-size: var(--text-xl);
     font-weight: 300;
   }
 }
@@ -1152,7 +1152,7 @@ onUnmounted(() => {
   background: var(--color-bg);
   border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.2));
   border-radius: var(--radius-pill);
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   font-family: var(--font-text);
   color: var(--color-text);
   cursor: pointer;
@@ -1178,7 +1178,7 @@ onUnmounted(() => {
   margin-top: var(--small-padding);
 
   .active-label {
-    font-size: var(--base-font-size);
+    font-size: var(--text-md);
     color: var(--color-text-light);
   }
 
@@ -1187,7 +1187,7 @@ onUnmounted(() => {
     background: transparent;
     border: 1px solid var(--color-pink);
     border-radius: var(--radius-pill);
-    font-size: var(--base-font-size);
+    font-size: var(--text-md);
     font-family: var(--font-text);
     color: var(--color-pink);
     cursor: pointer;
@@ -1217,7 +1217,7 @@ onUnmounted(() => {
 
 .empty-state-text {
   color: var(--color-text-light);
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   font-family: var(--font-text);
   margin-bottom: var(--big-padding);
 }
@@ -1281,14 +1281,14 @@ onUnmounted(() => {
   }
 
   .card-title {
-    font-size: var(--h3-size);
+    font-size: var(--text-xl);
     font-weight: 600;
     color: var(--color-text);
     margin-bottom: 4px;
   }
 
   .card-desc {
-    font-size: var(--body-large-font-size);
+    font-size: var(--text-lg);
     color: var(--color-text-light);
   }
 }

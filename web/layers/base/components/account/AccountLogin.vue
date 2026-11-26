@@ -223,7 +223,7 @@ onBeforeUnmount(stopCooldown);
 .login__field {
 	display: grid;
 	gap: 0.45rem;
-	font-size: var(--base-font-size);
+	font-size: var(--text-md);
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
 }
@@ -236,7 +236,7 @@ onBeforeUnmount(stopCooldown);
 	background: transparent;
 	color: inherit;
 	font: inherit;
-	font-size: var(--h4-size);
+	font-size: var(--text-lg);
 	letter-spacing: normal;
 	text-transform: none;
 	transition:
@@ -251,7 +251,7 @@ onBeforeUnmount(stopCooldown);
 }
 
 .login__field--code input {
-	font-size: var(--h1-size);
+	font-size: var(--text-2xl);
 	letter-spacing: 0.4em;
 	font-variant-numeric: tabular-nums;
 }
@@ -285,20 +285,20 @@ onBeforeUnmount(stopCooldown);
 .login__hint {
 	margin: 0;
 	max-width: 38ch;
-	font-size: var(--base-font-size);
+	font-size: var(--text-md);
 	opacity: 0.6;
 }
 
 .login__sent {
 	margin: 0;
-	font-size: var(--body-large-font-size);
+	font-size: var(--text-lg);
 	opacity: 0.75;
 }
 
 .login__error {
 	margin: 0;
 	color: var(--color-pink);
-	font-size: var(--body-large-font-size);
+	font-size: var(--text-lg);
 }
 
 .login__actions {
@@ -313,7 +313,7 @@ onBeforeUnmount(stopCooldown);
 	background: none;
 	color: inherit;
 	font: inherit;
-	font-size: var(--base-font-size);
+	font-size: var(--text-md);
 	opacity: 0.7;
 	text-decoration: underline;
 	cursor: pointer;
@@ -352,7 +352,7 @@ onBeforeUnmount(stopCooldown);
   display: flex;
   gap: 0.6rem;
   align-items: flex-start;
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   line-height: 1.45;
   opacity: 0.85;
   cursor: pointer;

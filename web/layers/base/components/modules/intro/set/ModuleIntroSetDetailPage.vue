@@ -497,7 +497,7 @@ onUnmounted(() => {
 
 .eyebrow {
   margin: 0;
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
 
@@ -544,7 +544,7 @@ onUnmounted(() => {
   gap: 0.45rem;
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-size: var(--base-font-size);
+  font-size: var(--text-md);
   text-transform: uppercase;
 
   &__link {
@@ -596,7 +596,7 @@ onUnmounted(() => {
   background-color: var(--color-text);
   color: var(--color-bg);
   font-family: var(--font-text);
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
   cursor: pointer;
@@ -787,7 +787,7 @@ onUnmounted(() => {
     background-color: var(--color-blue);
     color: #fff;
     font-family: var(--font-text);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     letter-spacing: var(--label-letter-spacing);
     text-transform: uppercase;
     opacity: 0;
@@ -823,7 +823,7 @@ onUnmounted(() => {
     background-color: var(--color-text);
     color: var(--color-bg);
     font-family: var(--font-text-semibold);
-    font-size: var(--small-font-size);
+    font-size: var(--text-sm);
     letter-spacing: 0.02em;
     flex: none;
   }
@@ -866,7 +866,7 @@ onUnmounted(() => {
   margin: 0 0 var(--mid-padding);
   font-family: var(--font-text-semibold);
   font-weight: 500;
-  font-size: var(--small-font-size);
+  font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
   opacity: 0.6;
@@ -874,7 +874,7 @@ onUnmounted(() => {
 
 .set-about {
   :deep(.rich-text) {
-    font-size: var(--base-font-size);
+    font-size: var(--text-md);
     line-height: 1.6;
   }
 
