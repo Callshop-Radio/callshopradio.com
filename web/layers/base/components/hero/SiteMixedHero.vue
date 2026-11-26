@@ -390,10 +390,19 @@ onUnmounted(() => {
 					>
 						<svg
 							class="mixed-caption__play-icon"
-							viewBox="0 0 24 24"
+							viewBox="0 0 65 65"
 							aria-hidden="true"
 						>
-							<path d="M8 5.5 19 12 8 18.5z" />
+							<circle
+								class="mixed-caption__play-disc"
+								cx="32.17"
+								cy="32.17"
+								r="32.17"
+							/>
+							<path
+								class="mixed-caption__play-triangle"
+								d="M50.56 32.17L22.98 48.09V16.25L50.56 32.17Z"
+							/>
 						</svg>
 					</button>
 					<NuxtLink
@@ -714,21 +723,26 @@ onUnmounted(() => {
   background: transparent;
   color: var(--lab-accent);
   cursor: pointer;
-  transition:
-    color var(--transition-fast),
-    transform var(--transition-fast);
+  transition: transform var(--transition-fast);
 
   &:hover {
     background: transparent;
-    color: var(--color-text);
     transform: scale(1.06);
   }
 }
 
 .mixed-caption__play-icon {
-  width: 1.6rem;
-  height: 1.6rem;
-  fill: currentColor;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.mixed-caption__play-disc {
+  fill: #e8e8e8;
+}
+
+.mixed-caption__play-triangle {
+  fill: var(--color-bg);
 }
 
 .mixed-caption__link {

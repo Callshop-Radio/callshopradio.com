@@ -139,10 +139,19 @@ const teaserBlocks = computed(() => {
 			>
 				<svg
 					class="lab-caption__play-icon"
-					viewBox="0 0 24 24"
+					viewBox="0 0 65 65"
 					aria-hidden="true"
 				>
-					<path d="M8 5.5 19 12 8 18.5z" />
+					<circle
+						class="lab-caption__play-disc"
+						cx="32.17"
+						cy="32.17"
+						r="32.17"
+					/>
+					<path
+						class="lab-caption__play-triangle"
+						d="M50.56 32.17L22.98 48.09V16.25L50.56 32.17Z"
+					/>
 				</svg>
 			</button>
 			<button
@@ -299,9 +308,17 @@ const teaserBlocks = computed(() => {
   }
 
   &__play-icon {
-    width: 1.35rem;
-    height: 1.35rem;
-    fill: currentColor;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  &__play-disc {
+    fill: #e8e8e8;
+  }
+
+  &__play-triangle {
+    fill: var(--color-bg);
   }
 
   &__action--play {
@@ -311,12 +328,10 @@ const teaserBlocks = computed(() => {
     padding: 0;
     border: 0;
     border-radius: 50%;
-    color: var(--lab-accent);
 
     &:hover {
       border: 0;
       background: transparent;
-      color: var(--color-text);
       transform: scale(1.06);
     }
   }
