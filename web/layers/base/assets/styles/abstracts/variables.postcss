@@ -104,7 +104,9 @@
   --schedule-nav-height: calc(var(--base-font-size) + var(--base-margin) * 2);
 
   /* Sizes */
-  --content-gap: 10.5rem;
+  /* Section rhythm. Every width used 7.5rem in practice; the 10.5rem base
+     value was overridden by each breakpoint, so it lives here as one value. */
+  --content-gap: 7.5rem;
   --base-padding: 0.75rem;
   --big-padding: 1.25rem;
   --mid-padding: 1rem;
@@ -147,8 +149,6 @@
   --transition-slow: 400ms ease-out;
 
   @media (--phone-only) {
-    --content-gap: 7.5rem;
-
     --base-padding: 0.625rem;
     --big-padding: 1.125rem;
     --mid-padding: 0.8125rem;
@@ -163,8 +163,6 @@
     --base-line-height: calc(var(--base-font-size) * 1.25);
   }
   @media (--tablet-portrait-up) {
-    --content-gap: 7.5rem;
-
     --base-padding: 0.625rem;
     --big-padding: 1.125rem;
     --mid-padding: 0.8125rem;
@@ -177,11 +175,6 @@
     --small-margin: 0.4375rem;
 
     --base-line-height: calc(var(--base-font-size) * 1.25);
-  }
-  @media (--desktop-up) {
-    /* Desktop keeps the wider section rhythm; everything else already
-       matches the base block above. */
-    --content-gap: 10.5rem;
   }
   @media (--xl-up) {
     --page-max-width: clamp(0rem, 96rem, 100%);

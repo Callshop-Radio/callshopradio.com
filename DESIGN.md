@@ -208,7 +208,7 @@ the tokens directly and must not rely on the guard.**
 | `--base-margin` | 2.75 rem | 2 rem |
 | `--big-margin` | 4.25 rem | 3 rem |
 | `--huge-margin` | 11 rem | 11 rem |
-| `--content-gap` | 10.5 rem | 7.5 rem |
+| `--content-gap` | 7.5 rem | 7.5 rem |
 
 - Page width: `--page-max-width: clamp(0, 78rem, 100%)` (1248 px); from 1800 px it grows
   to `96rem` (1536 px).
@@ -308,7 +308,7 @@ inside running text, so touch devices do not keep a hover state.
 | What | ≥ 900 px | < 900 px | ≤ 599 px |
 | --- | --- | --- | --- |
 | Page gutter | `--big-margin` | `--mid-padding` | `--mid-padding` |
-| Content gap | 10.5 rem | 7.5 rem | 7.5 rem |
+| Content gap | 7.5 rem | 7.5 rem | 7.5 rem |
 | Nav | text pills | icon pills | icon pills |
 | Filter dock | fixed bottom bar, genre + city rows | collapsed sheet with one row | same, full width |
 | Grid | 3–5 columns | 2 columns | 1 column |
@@ -380,9 +380,14 @@ Measured over every `<style>` block in `web/layers` + `web/app` (excluding the
 | `--h3-size` defined twice | 1 | 0 |
 
 Fixed in the same pass: `--h4-size` was never defined at base level, `--small-font-size`
-was 10.04 px instead of 10 px, `--mini-font-size` was 7.8 px instead of 8 px, the
-desktop spacing block was dropped by an invalid media query, and `--huge-margin` only
-existed inside media queries.
+was 10.04 px instead of 10 px, `--mini-font-size` was 7.8 px instead of 8 px, and
+`--huge-margin` only existed inside media queries.
+
+An invalid `@media (desktop-up: 1024px)` block was dropped by the browser. Its paddings
+and margins were identical to the tablet block; the only difference was `--content-gap`,
+which would have grown from 7.5 rem to 10.5 rem above 1024 px. That is a layout change,
+so the block was removed and `--content-gap` is one value at every width. If the wider
+rhythm was intended, set it deliberately in a media query and update this file.
 
 ---
 
