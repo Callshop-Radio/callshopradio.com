@@ -209,6 +209,33 @@ if (initialSubgenres.length) {
 	]);
 }
 
+// Tag pills on detail pages link with ?tag=<slug>. Genres keep their own
+// ?genre/?subgenre parameters; everything else (city, venue, craft, article)
+// lands here and becomes a normal filter chip.
+const initialTagSlugs = querySlugList(route.query.tag);
+
+const availablePlainTags = Object.values(props.module?.availableTags ?? {})
+	.flat()
+	.filter((tag): tag is Tag => Boolean(tag && (tag as Tag)._id))
+	.filter((tag) => !["tag.genre", "tag.subGenre"].includes(String(tag._type)))
+	.map((tag) => ({
+		tag,
+		slug: tagSlug(
+			getI18nLabel(tag.title) || (tag as { name?: string }).name || "",
+		),
+	}));
+
+const initialPlainTags = availablePlainTags.filter((entry) =>
+	initialTagSlugs.includes(entry.slug),
+);
+
+if (initialPlainTags.length) {
+	for (const entry of initialPlainTags) {
+		activeFilters.value.add(entry.tag._id);
+		expandedTagTypes.value.add(String(entry.tag._type));
+	}
+}
+
 function querySlugList(raw: unknown): string[] {
 	return (Array.isArray(raw) ? raw : raw ? [raw] : [])
 		.map((value) => String(value))
@@ -218,7 +245,7 @@ function querySlugList(raw: unknown): string[] {
 // Keep the URL in sync with the selection, so a filtered view can be linked
 // and several genres/subgenres survive a reload.
 watch(
-	[activeGenres, activeSubGenres],
+	[activeGenres, activeSubGenres, activeFilters],
 	([genres, subgenres]) => {
 		const subgenreSlugs = [...subgenres]
 			.map(
@@ -236,9 +263,17 @@ watch(
 		const currentSubgenres = querySlugList(route.query.subgenre);
 		const currentGenres = querySlugList(route.query.genre);
 
+		const tagSlugs = [...activeFilters.value]
+			.map(
+				(id) => availablePlainTags.find((entry) => entry.tag._id === id)?.slug,
+			)
+			.filter((slug): slug is string => Boolean(slug));
+		const currentTags = querySlugList(route.query.tag);
+
 		if (
 			currentSubgenres.join("\u0000") === subgenreSlugs.join("\u0000") &&
-			currentGenres.join("\u0000") === genreSlugs.join("\u0000")
+			currentGenres.join("\u0000") === genreSlugs.join("\u0000") &&
+			currentTags.join("\u0000") === tagSlugs.join("\u0000")
 		)
 			return;
 
@@ -247,11 +282,27 @@ watch(
 				...route.query,
 				genre: genreSlugs.length ? genreSlugs : undefined,
 				subgenre: subgenreSlugs.length ? subgenreSlugs : undefined,
+				tag: tagSlugs.length ? tagSlugs : undefined,
 			},
 		});
 	},
 	{ deep: true },
 );
+
+// A tag pill jumps into the archive; the reader wants the filtered list, not
+// the masthead again, so the filter area lands right under the fixed header.
+onMounted(() => {
+	if (!initialTagSlugs.length) return;
+	nextTick(() => {
+		const rect = filterSection.value?.getBoundingClientRect();
+		if (!rect) return;
+		const headerOffset = 67.2 + 58 + 12;
+		window.scrollTo({
+			top: window.scrollY + rect.top - headerOffset,
+			behavior: "smooth",
+		});
+	});
+});
 
 const needsSelfLoad = computed(() => {
 	if (forceSelfLoad.value) return true;
