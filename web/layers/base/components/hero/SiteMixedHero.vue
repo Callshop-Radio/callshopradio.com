@@ -385,10 +385,16 @@ onUnmounted(() => {
 						v-if="activeItem.kind === 'shows' && activeItem.playable"
 						type="button"
 						class="mixed-caption__primary"
+						aria-label="Play set"
 						@click="playActive"
 					>
-						<span class="mixed-caption__play" aria-hidden="true" />
-						Play set
+						<svg
+							class="mixed-caption__play-icon"
+							viewBox="0 0 24 24"
+							aria-hidden="true"
+						>
+							<path d="M8 5.5 19 12 8 18.5z" />
+						</svg>
 					</button>
 					<NuxtLink
 						v-if="activeItem.href"
@@ -699,33 +705,30 @@ onUnmounted(() => {
 .mixed-caption__primary {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.55rem 0.9rem;
-  border: 1px solid var(--lab-accent);
-  border-radius: 5px;
+  justify-content: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
   background: transparent;
   color: var(--lab-accent);
-  font-family: var(--font-text-semibold);
-  font-size: var(--mini-font-size);
-  letter-spacing: var(--button-letter-spacing);
-  text-transform: uppercase;
   cursor: pointer;
   transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast);
+    color var(--transition-fast),
+    transform var(--transition-fast);
 
   &:hover {
-    background: var(--lab-accent);
-    color: var(--color-bg);
+    background: transparent;
+    color: var(--color-text);
+    transform: scale(1.06);
   }
 }
 
-.mixed-caption__play {
-  width: 0;
-  height: 0;
-  border-top: 0.3rem solid transparent;
-  border-bottom: 0.3rem solid transparent;
-  border-left: 0.5rem solid currentColor;
+.mixed-caption__play-icon {
+  width: 1.6rem;
+  height: 1.6rem;
+  fill: currentColor;
 }
 
 .mixed-caption__link {

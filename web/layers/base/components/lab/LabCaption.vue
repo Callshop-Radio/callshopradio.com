@@ -134,10 +134,16 @@ const teaserBlocks = computed(() => {
 				v-if="page === 'shows'"
 				type="button"
 				class="lab-caption__action lab-caption__action--play"
+				aria-label="Play set"
 				@click="$emit('play')"
 			>
-				<span class="lab-caption__play-icon" aria-hidden="true" />
-				Play set
+				<svg
+					class="lab-caption__play-icon"
+					viewBox="0 0 24 24"
+					aria-hidden="true"
+				>
+					<path d="M8 5.5 19 12 8 18.5z" />
+				</svg>
 			</button>
 			<button
 				v-if="page === 'shows'"
@@ -293,11 +299,26 @@ const teaserBlocks = computed(() => {
   }
 
   &__play-icon {
-    width: 0;
-    height: 0;
-    border-top: 0.26rem solid transparent;
-    border-bottom: 0.26rem solid transparent;
-    border-left: 0.42rem solid currentColor;
+    width: 1.35rem;
+    height: 1.35rem;
+    fill: currentColor;
+  }
+
+  &__action--play {
+    justify-content: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    color: var(--lab-accent);
+
+    &:hover {
+      border: 0;
+      background: transparent;
+      color: var(--color-text);
+      transform: scale(1.06);
+    }
   }
 
   &--stack {
