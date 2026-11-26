@@ -2,7 +2,6 @@
 withDefaults(
 	defineProps<{
 		title: string;
-		lede: string;
 		accent: string;
 		meta?: string;
 	}>(),
@@ -25,7 +24,6 @@ withDefaults(
 
 		<div class="archive-masthead__main">
 			<h1 class="archive-masthead__title">{{ title }}</h1>
-			<p class="archive-masthead__lede">{{ lede }}</p>
 		</div>
 
 		<div class="archive-masthead__rule" aria-hidden="true" />
@@ -90,15 +88,6 @@ withDefaults(
   line-height: 0.82;
   letter-spacing: -0.025em;
   text-transform: uppercase;
-}
-
-.archive-masthead__lede {
-  max-width: 32ch;
-  margin: 0 0 0.35rem;
-  font-size: var(--base-font-size);
-  line-height: 1.45;
-  color: color-mix(in srgb, var(--color-text) 68%, transparent);
-  text-wrap: balance;
 }
 
 .archive-masthead__rule {

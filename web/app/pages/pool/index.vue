@@ -25,7 +25,6 @@ usePageSeo(data?.value?.seo);
 	<div class="pool-archive">
 		<SiteArchiveMasthead
 			title="Pool"
-			lede="Artists, hosts, venues and the people behind the sound."
 			accent="var(--color-blue)"
 		/>
 		<section v-if="featuredProfiles.length > 0" class="intro-section">

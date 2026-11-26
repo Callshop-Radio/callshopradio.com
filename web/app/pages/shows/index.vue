@@ -25,7 +25,6 @@ usePageSeo(data?.value?.seo);
 	<div class="shows-archive">
 		<SiteArchiveMasthead
 			title="Shows"
-			lede="Live sessions, radio shows and every set in the archive."
 			accent="var(--color-pink)"
 		/>
 		<section v-if="featuredSets.length > 0" class="intro-section">
