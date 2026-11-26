@@ -12,6 +12,15 @@ export default defineNuxtConfig({
 
 	sitemap: {
 		sources: ["/api/sitemap"],
+		exclude: [
+			"/konto",
+			"/konto/**",
+			"/de/konto",
+			"/de/konto/**",
+			"/einladung/**",
+			"/de/einladung/**",
+			"/api/account/**",
+		],
 	},
 	devtools: { enabled: false },
 	ssr: true,
@@ -224,6 +233,9 @@ export default defineNuxtConfig({
 		// secret never reaches the browser; the room itself is public.
 		managerBaseUrl:
 			process.env.NUXT_MANAGER_BASE_URL || "https://air.callshopradio.live",
+		accountClientSecret: process.env.NUXT_ACCOUNT_CLIENT_SECRET,
+		accountIpSecret: process.env.NUXT_ACCOUNT_IP_SECRET,
+		accountAllowedOrigins: process.env.NUXT_ACCOUNT_ALLOWED_ORIGINS,
 		// Server-only SoundCloud API client id; used by the BFF to fetch waveform data.
 		soundcloudClientId: process.env.NUXT_SOUNDCLOUD_CLIENT_ID,
 		soundcloudClientSecret: process.env.NUXT_SOUNDCLOUD_CLIENT_SECRET,
@@ -301,6 +313,73 @@ export default defineNuxtConfig({
 	},
 
 	routeRules: {
+		// === Account pages: never cached, always SSR (personal data) ===
+		"/konto": {
+			isr: false,
+			prerender: false,
+			ssr: true,
+			headers: {
+				"Cache-Control": "no-store, must-revalidate",
+				"Netlify-CDN-Cache-Control": "no-store",
+			},
+		},
+		"/konto/**": {
+			isr: false,
+			prerender: false,
+			ssr: true,
+			headers: {
+				"Cache-Control": "no-store, must-revalidate",
+				"Netlify-CDN-Cache-Control": "no-store",
+			},
+		},
+		"/de/konto": {
+			isr: false,
+			prerender: false,
+			ssr: true,
+			headers: {
+				"Cache-Control": "no-store, must-revalidate",
+				"Netlify-CDN-Cache-Control": "no-store",
+			},
+		},
+		"/de/konto/**": {
+			isr: false,
+			prerender: false,
+			ssr: true,
+			headers: {
+				"Cache-Control": "no-store, must-revalidate",
+				"Netlify-CDN-Cache-Control": "no-store",
+			},
+		},
+		// Invitations carry a single-use token: never cached, never indexed,
+		// never prerendered. Both locale prefixes exist (prefix_except_default).
+		"/einladung/**": {
+			isr: false,
+			prerender: false,
+			ssr: true,
+			headers: {
+				"Cache-Control": "no-store, must-revalidate",
+				"Netlify-CDN-Cache-Control": "no-store",
+				"X-Robots-Tag": "noindex, nofollow",
+			},
+		},
+		"/de/einladung/**": {
+			isr: false,
+			prerender: false,
+			ssr: true,
+			headers: {
+				"Cache-Control": "no-store, must-revalidate",
+				"Netlify-CDN-Cache-Control": "no-store",
+				"X-Robots-Tag": "noindex, nofollow",
+			},
+		},
+		"/api/account/**": {
+			cors: false,
+			headers: {
+				"Cache-Control": "no-store",
+				"Netlify-CDN-Cache-Control": "no-store",
+			},
+		},
+
 		// === Sitemap (generated at build time) ===
 		"/sitemap.xml": { prerender: true },
 
@@ -332,6 +411,17 @@ export default defineNuxtConfig({
 			const slugs = await getPageSlugs();
 			nitroConfig.routeRules ||= {};
 			for (const slug of slugs) {
+				// Account and invitation pages must never inherit a CMS page's
+				// ISR rule.
+				if (
+					slug === "konto" ||
+					slug.startsWith("konto/") ||
+					slug.startsWith("de/konto") ||
+					slug === "einladung" ||
+					slug.startsWith("einladung/") ||
+					slug.startsWith("de/einladung")
+				)
+					continue;
 				nitroConfig.routeRules[`/${slug}`] = {
 					isr: true,
 					headers: { "Netlify-Cache-Tag": "page" },

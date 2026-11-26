@@ -13,6 +13,7 @@ const props = defineProps<{
 }>();
 
 const mainStore = useMainStore();
+const account = useAccountStore();
 
 const hasShow = computed(
 	() =>
@@ -183,6 +184,7 @@ onMounted(() => {
 	reduceMotion.value = window.matchMedia(
 		"(prefers-reduced-motion: reduce)",
 	).matches;
+	if (props.set?._id) account.loadVisible([props.set._id]);
 	window.addEventListener("pointermove", onGlowPointerMove, { passive: true });
 	document.documentElement.addEventListener("pointerleave", resetGlow);
 });
@@ -278,6 +280,12 @@ onUnmounted(() => {
 						<img src="/icons/play-button.svg" alt="" aria-hidden="true" />
 						<span>Listen to set</span>
 					</button>
+					<ElementsHeartButton
+						v-if="set?._id"
+						:set-id="set._id"
+						variant="inline"
+						class="set-heart"
+					/>
 				</div>
 			</div>
 
