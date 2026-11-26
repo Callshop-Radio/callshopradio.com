@@ -79,6 +79,12 @@ export default defineNitroPlugin(async (nitroApp) => {
 					changefreq: "weekly",
 					priority: 0.8,
 				},
+				{
+					loc: "/merch",
+					modifiedAt: new Date().toISOString(),
+					changefreq: "weekly",
+					priority: 0.8,
+				},
 			];
 
 			const allRoutes = [...validRoutes, ...staticRoutes];
@@ -151,6 +157,12 @@ ${uniqueRoutes
   </url>
   <url>
     <loc>${siteUrl}/words</loc>
+    <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${siteUrl}/merch</loc>
     <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

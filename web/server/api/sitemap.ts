@@ -62,6 +62,12 @@ export default defineEventHandler(async (_event) => {
 				changefreq: "weekly",
 				priority: 0.8,
 			},
+			{
+				loc: "/merch",
+				lastmod: new Date().toISOString(),
+				changefreq: "weekly",
+				priority: 0.8,
+			},
 		];
 
 		// Transform data to match @nuxtjs/sitemap format
@@ -131,6 +137,12 @@ export default defineEventHandler(async (_event) => {
 			},
 			{
 				loc: "/words",
+				lastmod: new Date().toISOString(),
+				changefreq: "weekly",
+				priority: 0.8,
+			},
+			{
+				loc: "/merch",
 				lastmod: new Date().toISOString(),
 				changefreq: "weekly",
 				priority: 0.8,
