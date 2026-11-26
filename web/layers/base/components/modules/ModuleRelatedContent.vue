@@ -771,12 +771,12 @@ onMounted(() => {
 
       &__image {
         width: 100%;
-        border-radius: var(--radius-media) var(--radius-media) 0 0 !important;
+        border-radius: var(--radius-media) var(--radius-media) 0 0;
 
         img {
           aspect-ratio: 3 / 1.5 !important;
           width: 100%;
-          border-radius: var(--radius-media) var(--radius-media) 0 0 !important;
+          border-radius: var(--radius-media) var(--radius-media) 0 0;
         }
       }
 

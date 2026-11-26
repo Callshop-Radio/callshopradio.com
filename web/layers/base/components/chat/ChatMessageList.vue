@@ -294,7 +294,7 @@ onMounted(() => scrollToBottom());
 	text-transform: uppercase;
 	line-height: 1.6;
 	padding: 0 0.375rem;
-	border-radius: var(--radius-pill);
+	border-radius: var(--radius-pill-sm);
 	background-color: var(--color-pink);
 	color: var(--color-black);
 }
