@@ -1,6 +1,10 @@
 export const ACCOUNT_COOKIE = "callshop_user";
 
-const TOKEN_SHAPE = /^usr_[A-Za-z0-9_-]{43}$/;
+/**
+ * The manager issues listener tokens as `lst_…`; `usr_…` is kept so an older
+ * deployment and the dev mock keep working. Anything else is not a token.
+ */
+const TOKEN_SHAPE = /^(?:usr|lst)_[A-Za-z0-9_-]{43}$/;
 
 export function tokenFromCookieHeader(
 	cookieHeader: string | undefined,
