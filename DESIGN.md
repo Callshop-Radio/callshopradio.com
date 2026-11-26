@@ -85,7 +85,6 @@ and stay plain values.
 | `--color-green` | `#78ce82` | Words |
 | `--color-purple` | `#b178ce` | Index |
 | `--color-merch` | `#ff8f77` | Merch |
-| `--color-yellow` | `#f9ab0f` | highlight only |
 
 Accents are used for the nav pill border and label, tag outlines, play affordances and
 the pool-link dot. They are never used as a text colour on the page surface.
@@ -428,7 +427,7 @@ Measured over every `<style>` block in `web/layers` + `web/app` (excluding the
 | line colours | 3 locals (12 / 14 / 16 %) | 1 (`--color-line`) + 1 underline token |
 | `font-weight` declarations | 7 values, 14 of them synthetic | 0; the family token decides |
 | cross-component `!important` guard | 20 declarations over 60+ selectors | 0 - the card radius lives in the cards |
-| `!important` total | 75 | 58, each with a reason in §12 |
+| `!important` total | 75 | 55, each with a reason in §12 |
 | theme value sources | CSS tokens + 8 inline `setProperty` calls | CSS only (`light-dark()` + one attribute) |
 | rendered font sizes on the home page | 14 | 7 |
 | rendered radii on the home page | 11 | 6 |
