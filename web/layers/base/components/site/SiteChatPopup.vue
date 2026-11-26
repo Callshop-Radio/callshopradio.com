@@ -224,14 +224,14 @@ onBeforeUnmount(() => {
   background-color: var(--color-bg);
   color: var(--color-text);
   border: 1px solid var(--chat-line);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
 }
 
 /* The site-wide pill rule rounds these to 12px; keep the panel at 5px. */
 .chat-popup :deep(.composer__send),
 .chat-popup :deep(.composer__signin-btn) {
-  border-radius: 5px !important;
+  border-radius: var(--radius-media) !important;
 }
 
 .chat-popup__head {
@@ -326,10 +326,10 @@ onBeforeUnmount(() => {
   &.is-live {
     background-color: var(--color-pink);
     border-color: var(--color-pink);
-    color: #111;
+    color: var(--color-black);
 
     .chat-popup__dot {
-      background-color: #111;
+      background-color: var(--color-black);
     }
   }
 }
@@ -344,7 +344,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: color-mix(in srgb, #111 62%, transparent);
+  color: color-mix(in srgb, var(--color-black) 62%, transparent);
 }
 
 .chat-popup__people {

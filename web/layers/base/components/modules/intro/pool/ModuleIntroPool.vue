@@ -403,7 +403,7 @@ const coverFlowDescriptionBlocks = computed(() => {
     width: 100%;
     height: 100%;
     border: 0.0625rem solid var(--color-text);
-    border-radius: 1.5625rem;
+    border-radius: var(--radius-media);
     overflow: hidden;
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
@@ -411,7 +411,7 @@ const coverFlowDescriptionBlocks = computed(() => {
 
     .pool-media {
       order: 2;
-      border-radius: 1.5625rem;
+      border-radius: var(--radius-media);
       width: 100%;
       height: 100%;
       max-width: 35.3125rem;
@@ -450,7 +450,7 @@ const coverFlowDescriptionBlocks = computed(() => {
       flex-flow: column wrap;
       justify-content: center;
       align-items: center;
-      border-radius: 100px;
+      border-radius: var(--radius-circle);
       aspect-ratio: 1/1;
       width: max-content;
       width: 4rem;
@@ -523,7 +523,7 @@ const coverFlowDescriptionBlocks = computed(() => {
     width: 100%;
     overflow: hidden;
     border: 0.0625rem solid var(--color-text);
-    border-radius: 1.5625rem;
+    border-radius: var(--radius-media);
     display: flex;
     flex-direction: column;
   }
@@ -545,7 +545,7 @@ const coverFlowDescriptionBlocks = computed(() => {
     gap: var(--mid-margin);
     background-color: var(--color-bg);
     border-bottom: none;
-    border-radius: 1.5625rem 1.5625rem 0 0;
+    border-radius: var(--radius-media);
     padding: var(--mid-padding);
     padding-bottom: calc(var(--mid-padding) + 1.25rem);
   }
@@ -621,7 +621,7 @@ const coverFlowDescriptionBlocks = computed(() => {
     max-width: 100%;
     aspect-ratio: 1 / 1;
     height: auto;
-    border-radius: 0 0 1.5625rem 1.5625rem;
+    border-radius: 0 0 var(--radius-media) var(--radius-media);
     overflow: hidden;
 
     .pool-image,

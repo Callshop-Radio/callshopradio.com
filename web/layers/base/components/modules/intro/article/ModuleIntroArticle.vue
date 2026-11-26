@@ -217,7 +217,7 @@ const coverFlowTeaserBlocks = computed(() => {
   justify-content: flex-start;
   width: 100%;
   background-color: var(--color-text);
-  border-radius: 12px;
+  border-radius: var(--radius-media);
   overflow: hidden;
   padding: 0;
   height: auto;
@@ -349,7 +349,7 @@ const coverFlowTeaserBlocks = computed(() => {
         font-size: var(--large-font-size);
         font-weight: 400;
         text-transform: uppercase;
-        font-family: var(--font-text-regular);
+        font-family: var(--font-text);
         margin: 0;
         color: var(--color-bg);
       }
@@ -366,7 +366,7 @@ const coverFlowTeaserBlocks = computed(() => {
   max-width: 100%;
   min-height: var(--cover-flow-uniform-height, auto);
   height: var(--cover-flow-uniform-height, auto);
-  border-radius: 12px;
+  border-radius: var(--radius-media);
   display: flex;
   flex-direction: column;
 

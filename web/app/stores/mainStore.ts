@@ -72,12 +72,24 @@ export const useMainStore = defineStore("mainStore", () => {
 	}
 
 	function updateColors() {
+		/* The theme toggle writes the themable tokens inline. These values must
+		   mirror the `@media (--dark)` block in variables.postcss — the media
+		   query covers the system setting, this covers the manual toggle. */
 		if (isDarkMode.value) {
-			document.documentElement.style.setProperty("--color-bg", "#000");
+			document.documentElement.style.setProperty("--color-bg", "#090909");
 			document.documentElement.style.setProperty("--color-text", "#fff");
 			document.documentElement.style.setProperty(
 				"--color-dark-grey",
 				"#878787",
+			);
+			document.documentElement.style.setProperty(
+				"--color-bg-transparent",
+				"rgba(9, 9, 9, 0.33)",
+			);
+			document.documentElement.style.setProperty("--color-bg-rgb", "9, 9, 9");
+			document.documentElement.style.setProperty(
+				"--color-text-rgb",
+				"255, 255, 255",
 			);
 			document.documentElement.style.setProperty("--logo-invert", "1");
 		} else {
@@ -87,6 +99,15 @@ export const useMainStore = defineStore("mainStore", () => {
 				"--color-dark-grey",
 				"#525252",
 			);
+			document.documentElement.style.setProperty(
+				"--color-bg-transparent",
+				"rgba(255, 255, 255, 0.5)",
+			);
+			document.documentElement.style.setProperty(
+				"--color-bg-rgb",
+				"255, 255, 255",
+			);
+			document.documentElement.style.setProperty("--color-text-rgb", "0, 0, 0");
 			document.documentElement.style.setProperty("--logo-invert", "0");
 		}
 	}

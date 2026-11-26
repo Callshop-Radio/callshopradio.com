@@ -192,7 +192,7 @@ onMounted(() => scrollToBottom());
 	border-radius: 50%;
 	background-color: color-mix(in srgb, var(--color-text) 8%, transparent);
 	color: color-mix(in srgb, var(--color-text) 70%, transparent);
-	font-size: 0.5625rem;
+	font-size: var(--small-font-size);
 	font-family: var(--font-text-medium);
 	letter-spacing: 0.02em;
 	user-select: none;
@@ -222,10 +222,10 @@ onMounted(() => scrollToBottom());
 }
 
 .message__role {
-	font-size: 0.625rem;
+	font-size: var(--small-font-size);
 	line-height: 1.35;
 	padding: 0 0.3125rem;
-	border-radius: 999px;
+	border-radius: var(--pill-radius);
 	border: 1px solid currentcolor;
 	transform: translateY(-1px);
 
@@ -282,21 +282,21 @@ onMounted(() => scrollToBottom());
 	gap: 0.5rem;
 	padding: 0.5rem 0.75rem;
 	border-left: 3px solid var(--color-pink);
-	border-radius: 0 5px 5px 0;
+	border-radius: 0 var(--radius-media) var(--radius-media) 0;
 	background-color: color-mix(in srgb, var(--color-pink) 9%, transparent);
 }
 
 .track-card__label {
 	flex: none;
-	font-size: 0.5625rem;
+	font-size: var(--small-font-size);
 	font-family: var(--font-text-semibold);
-	letter-spacing: 0.06em;
+	letter-spacing: var(--label-letter-spacing);
 	text-transform: uppercase;
 	line-height: 1.6;
 	padding: 0 0.375rem;
-	border-radius: 999px;
+	border-radius: var(--pill-radius);
 	background-color: var(--color-pink);
-	color: #111;
+	color: var(--color-black);
 }
 
 .track-card__title {

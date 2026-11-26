@@ -536,7 +536,7 @@ onMounted(() => {
   margin: var(--mid-margin) 0;
 
   &__title {
-    font-size: var(--heading-font-size);
+    font-size: var(--h2-size);
     margin-bottom: var(--mid-margin);
   }
 
@@ -663,7 +663,7 @@ onMounted(() => {
           align-items: center;
           margin-left: auto;
           background-color: var(--color-text);
-          border-radius: 100px;
+          border-radius: var(--radius-circle);
           border: none;
           padding: 4px;
           width: calc(var(--base-font-size) + 4px);
@@ -755,7 +755,7 @@ onMounted(() => {
       flex: 1 1 50%;
       max-width: calc(50% - var(--big-padding) * 1.5);
       background-color: var(--color-text);
-      border-radius: 12px;
+      border-radius: var(--radius-media);
       overflow: hidden;
       padding: 0;
       margin-right: 0;
@@ -771,12 +771,12 @@ onMounted(() => {
 
       &__image {
         width: 100%;
-        border-radius: 5px 5px 0 0 !important;
+        border-radius: var(--radius-media) var(--radius-media) 0 0 !important;
 
         img {
           aspect-ratio: 3 / 1.5 !important;
           width: 100%;
-          border-radius: 5px 5px 0 0 !important;
+          border-radius: var(--radius-media) var(--radius-media) 0 0 !important;
         }
       }
 
@@ -907,7 +907,7 @@ onMounted(() => {
   }
 }
 .related-content.sets .related-item .related-item__title {
-  font-size: 1.25rem;
+  font-size: var(--h2-size);
   line-height: 1.05;
 }
 </style>

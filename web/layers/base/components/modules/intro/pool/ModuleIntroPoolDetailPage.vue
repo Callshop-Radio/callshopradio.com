@@ -241,7 +241,7 @@ function openTag(tag: Tag) {
   margin: var(--big-margin) auto 0;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--color-text) 16%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: var(--color-bg);
   color: var(--color-text);
 }
@@ -261,12 +261,12 @@ function openTag(tag: Tag) {
   align-items: center;
   gap: 0.45rem;
   padding: 0.35rem 0.7rem;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: var(--color-blue);
   color: var(--color-white);
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--label-letter-spacing);
   text-transform: uppercase;
 }
 
@@ -281,7 +281,7 @@ function openTag(tag: Tag) {
 .pool-profile__index {
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--kicker-letter-spacing);
   color: color-mix(in srgb, var(--color-text) 40%, transparent);
   text-transform: uppercase;
 }
@@ -321,7 +321,7 @@ function openTag(tag: Tag) {
   padding: calc(var(--small-padding) / 2) var(--small-padding);
   border: 1px solid
     color-mix(in srgb, var(--color-blue) 45%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: transparent;
   color: var(--color-text);
   font-family: var(--font-text);
@@ -370,7 +370,7 @@ function openTag(tag: Tag) {
     color: var(--color-blue);
     font-family: var(--font-text-semibold);
     font-size: var(--mini-font-size);
-    letter-spacing: 0.06em;
+    letter-spacing: var(--label-letter-spacing);
     text-transform: uppercase;
   }
 
@@ -393,7 +393,7 @@ function openTag(tag: Tag) {
   padding: 0.3rem 0.55rem;
   border: 1px solid
     color-mix(in srgb, var(--color-text) 18%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   color: var(--color-text);
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
@@ -426,13 +426,13 @@ function openTag(tag: Tag) {
     transform: translate(-40%, -50%);
     border-top: 0.2rem solid transparent;
     border-bottom: 0.2rem solid transparent;
-    border-left: 0.28rem solid #1a1013;
+    border-left: 0.28rem solid var(--color-ink);
   }
 }
 
 .pool-profile__bio {
   max-width: 52ch;
-  font-size: calc(var(--base-font-size) * 1.08);
+  font-size: var(--body-large-font-size);
   line-height: 1.55;
   color: color-mix(in srgb, var(--color-text) 72%, transparent);
 
@@ -458,7 +458,7 @@ function openTag(tag: Tag) {
   padding: 0.3rem 0.55rem;
   border: 1px solid
     color-mix(in srgb, var(--color-text) 18%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   color: var(--color-text);
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
@@ -500,7 +500,7 @@ function openTag(tag: Tag) {
   aspect-ratio: 3 / 4;
   margin: 0;
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: var(--color-grey);
 }
 
@@ -510,7 +510,7 @@ function openTag(tag: Tag) {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 5px !important;
+  border-radius: var(--radius-media) !important;
 }
 
 @media screen and (max-width: 900px) {

@@ -236,7 +236,7 @@ function orDash(value: string) {
   max-height: calc(100svh - 2rem);
   margin: auto;
   border: 1px solid color-mix(in srgb, var(--color-text) 16%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background-color: var(--color-bg);
   overflow: hidden;
 }
@@ -340,7 +340,7 @@ function orDash(value: string) {
     gap: 0.35rem;
     padding: 0.35rem 0.75rem;
     border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
-    border-radius: 100px;
+    border-radius: var(--radius-circle);
     color: var(--color-text);
     font-size: var(--small-font-size);
     letter-spacing: var(--button-letter-spacing);

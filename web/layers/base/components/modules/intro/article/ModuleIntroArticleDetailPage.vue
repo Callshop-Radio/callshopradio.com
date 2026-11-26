@@ -354,7 +354,7 @@ const currentArticleText = computed(() =>
       padding: 0 var(--base-padding);
       border: none;
       /* A city flag: rounded on top, square where it meets the edge. */
-      border-radius: 8px 8px 0 0;
+      border-radius: var(--radius-flag);
       background-color: var(--color-green);
       font-size: var(--small-font-size);
       line-height: 1;
@@ -394,7 +394,7 @@ const currentArticleText = computed(() =>
   }
   .article-date {
     font-size: var(--base-font-size);
-    font-family: var(--font-text-regular);
+    font-family: var(--font-text);
     color: var(--color-green);
     margin-bottom: var(--base-padding);
   }
@@ -418,7 +418,7 @@ const currentArticleText = computed(() =>
     padding: 4px;
     background: var(--color-text);
     backdrop-filter: blur(5px);
-    border-radius: 30px;
+    border-radius: var(--pill-radius);
     max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
     margin: 0 var(--base-margin);
 
@@ -428,7 +428,7 @@ const currentArticleText = computed(() =>
       z-index: 2;
       height: 100%;
       border: none;
-      border-radius: 24px;
+      border-radius: var(--pill-radius);
       background: transparent;
       color: var(--color-bg);
       font-weight: 400;
@@ -463,7 +463,7 @@ const currentArticleText = computed(() =>
       max-height: calc(var(--base-font-size) - var(--small-padding) * 2);
       height: 100%;
       background-color: var(--color-green);
-      border-radius: 24px;
+      border-radius: var(--radius-circle);
       transition: transform 0.2s ease;
       z-index: 1;
     }

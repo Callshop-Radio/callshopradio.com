@@ -522,14 +522,14 @@ onBeforeUnmount(() => {
 .tt-popup__now {
   appearance: none;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: color-mix(in srgb, var(--color-text) 10%, transparent);
   color: var(--color-text);
   opacity: 0.8;
   cursor: pointer;
   padding: 6px 10px;
   font: inherit;
-  font-size: calc(var(--base-font-size) * 0.72);
+  font-size: var(--small-font-size);
 }
 
 .tt-popup__now:hover {
@@ -546,12 +546,12 @@ onBeforeUnmount(() => {
   opacity: 0.75;
   cursor: pointer;
   padding: 6px 8px;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font: inherit;
-  font-size: calc(var(--base-font-size) * 0.72);
+  font-size: var(--small-font-size);
 }
 
 .tt-popup__expand:hover {
@@ -565,7 +565,7 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-rows: auto 1fr auto;
   border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: var(--color-bg);
   overflow: hidden;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
@@ -594,16 +594,16 @@ onBeforeUnmount(() => {
   background: transparent;
   color: var(--color-text);
   opacity: 0.55;
-  font-size: 16px;
+  font-size: var(--h4-size);
   cursor: pointer;
   padding: 2px 6px;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
 }
 
 .tt-popup__arrow:hover { opacity: 1; color: var(--color-pink); }
 
 .tt-popup__date {
-  font-size: calc(var(--base-font-size) * 0.86);
+  font-size: var(--small-font-size);
   font-weight: 550;
   margin-left: 4px;
 }
@@ -619,9 +619,9 @@ onBeforeUnmount(() => {
   color: var(--color-text);
   opacity: 0.55;
   font: inherit;
-  font-size: calc(var(--base-font-size) * 0.76);
+  font-size: var(--small-font-size);
   padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: var(--pill-radius);
   cursor: pointer;
 }
 
@@ -637,9 +637,9 @@ onBeforeUnmount(() => {
   color: var(--color-text);
   opacity: 0.55;
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--body-large-font-size);
   padding: 6px;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
 }
 
 .tt-popup__close:hover { opacity: 1; }
@@ -652,7 +652,7 @@ onBeforeUnmount(() => {
 
 .tt-popup__hint {
   opacity: 0.5;
-  font-size: calc(var(--base-font-size) * 0.78);
+  font-size: var(--small-font-size);
   padding: 12px 0;
 }
 
@@ -674,7 +674,7 @@ onBeforeUnmount(() => {
   left: 0;
   width: 38px;
   text-align: right;
-  font-size: 10px;
+  font-size: var(--small-font-size);
   color: var(--color-text);
   opacity: 0.45;
   transform: translateY(-6px);
@@ -702,7 +702,7 @@ onBeforeUnmount(() => {
   top: -7px;
   width: 38px;
   text-align: right;
-  font-size: 9px;
+  font-size: var(--small-font-size);
   color: var(--color-pink);
   font-variant-numeric: tabular-nums;
 }
@@ -729,7 +729,7 @@ onBeforeUnmount(() => {
   align-items: start;
   padding: 9px 12px;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: color-mix(in srgb, var(--color-text) 8%, transparent);
   color: var(--color-text);
   text-align: left;
@@ -743,7 +743,7 @@ onBeforeUnmount(() => {
 .tt-day__event.is-now {
   background: color-mix(in srgb, var(--color-text) 17%, transparent);
 }
-.tt-day__event.is-live { background: var(--color-pink); color: #1a1013; }
+.tt-day__event.is-live { background: var(--color-pink); color: var(--color-ink); }
 .tt-day__event.is-tight { grid-template-columns: minmax(0, 1fr) auto; padding: 4px 8px; }
 /* No cover means no thumbnail column: without this the copy would slide into
    the 44 px image track and wrap into a narrow column. */
@@ -755,7 +755,7 @@ onBeforeUnmount(() => {
 .tt-day__thumb {
   width: 48px;
   height: 48px;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   object-fit: cover;
 }
 
@@ -764,7 +764,7 @@ onBeforeUnmount(() => {
 .tt-day__row { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
 
 .tt-day__title {
-  font-size: calc(var(--base-font-size) * 0.92);
+  font-size: var(--base-font-size);
   font-weight: 550;
   white-space: nowrap;
   overflow: hidden;
@@ -773,14 +773,14 @@ onBeforeUnmount(() => {
 
 .tt-day__time {
   margin-left: auto;
-  font-size: calc(var(--base-font-size) * 0.66);
+  font-size: var(--mini-font-size);
   opacity: 0.6;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
 .tt-day__sub {
-  font-size: calc(var(--base-font-size) * 0.7);
+  font-size: var(--small-font-size);
   opacity: 0.6;
   white-space: nowrap;
   overflow: hidden;
@@ -790,19 +790,19 @@ onBeforeUnmount(() => {
 .tt-day__tags {
   display: flex;
   gap: 7px;
-  font-size: calc(var(--base-font-size) * 0.62);
+  font-size: var(--mini-font-size);
   opacity: 0.55;
 }
 
 .tt-day__tags span + span::before { content: "·"; margin-right: 7px; }
 
 .tt-day__live {
-  font-size: 9px;
+  font-size: var(--small-font-size);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--kicker-letter-spacing);
   padding: 2px 6px;
-  border-radius: 5px;
-  background: #1a1013;
+  border-radius: var(--radius-media);
+  background: var(--color-ink);
   color: var(--color-pink);
 }
 
@@ -816,7 +816,7 @@ onBeforeUnmount(() => {
 
 .tt-week__head span {
   text-align: center;
-  font-size: 10px;
+  font-size: var(--small-font-size);
   opacity: 0.55;
 }
 
@@ -846,7 +846,7 @@ onBeforeUnmount(() => {
   gap: 2px;
   padding: 5px 6px;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: color-mix(in srgb, var(--color-text) 8%, transparent);
   color: var(--color-text);
   text-align: left;
@@ -856,7 +856,7 @@ onBeforeUnmount(() => {
 
 .tt-week__event.is-past { opacity: 0.4; }
 .tt-week__event.is-notumb { grid-template-columns: minmax(0, 1fr); }
-.tt-week__event.is-live { background: var(--color-pink); color: #1a1013; }
+.tt-week__event.is-live { background: var(--color-pink); color: var(--color-ink); }
 
 .tt-week__time { font-size: 9px; opacity: 0.6; font-variant-numeric: tabular-nums; }
 .tt-week__title { font-size: 10.5px; font-weight: 550; }
@@ -878,7 +878,7 @@ onBeforeUnmount(() => {
 }
 
 .tt-month__head span {
-  font-size: 10px;
+  font-size: var(--small-font-size);
   opacity: 0.5;
   text-align: center;
 }
@@ -888,7 +888,7 @@ onBeforeUnmount(() => {
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 1px;
   background: color-mix(in srgb, var(--color-text) 8%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   overflow: hidden;
 }
 
@@ -907,7 +907,7 @@ onBeforeUnmount(() => {
 .tt-month__cell.is-today .tt-month__num { color: var(--color-pink); font-weight: 600; }
 
 .tt-month__num {
-  font-size: 10px;
+  font-size: var(--small-font-size);
   opacity: 0.6;
   font-variant-numeric: tabular-nums;
 }
@@ -915,11 +915,11 @@ onBeforeUnmount(() => {
 .tt-month__pill {
   appearance: none;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: color-mix(in srgb, var(--color-text) 7%, transparent);
   color: var(--color-text);
   font: inherit;
-  font-size: 9px;
+  font-size: var(--small-font-size);
   text-align: left;
   padding: 1px 4px;
   cursor: pointer;
@@ -930,7 +930,7 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 
-.tt-month__pill.is-live { background: var(--color-pink); color: #1a1013; font-weight: 550; }
+.tt-month__pill.is-live { background: var(--color-pink); color: var(--color-ink); font-weight: 550; }
 
 .tt-month__empty { font-size: 10px; opacity: 0.25; }
 
@@ -940,7 +940,7 @@ onBeforeUnmount(() => {
   gap: 12px;
   padding: 9px 16px;
   background: var(--color-bg);
-  font-size: calc(var(--base-font-size) * 0.66);
+  font-size: var(--mini-font-size);
   opacity: 0.5;
 }
 

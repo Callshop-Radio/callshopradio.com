@@ -914,7 +914,7 @@ watch(
     justify-content: center;
     gap: var(--base-padding);
     padding: var(--big-padding);
-    color: var(--color-text-light, #888);
+    color: var(--color-text-light);
 
     .loading-spinner {
       width: 24px;
@@ -935,7 +935,7 @@ watch(
     margin-right: calc(var(--big-margin) * -1);
     padding-left: var(--big-margin);
     padding-right: var(--big-margin);
-    border-radius: 100px;
+    border-radius: var(--pill-radius);
     &::before {
       content: "";
       position: absolute;
@@ -956,7 +956,7 @@ watch(
     justify-content: space-between;
     padding: var(--small-padding) 0;
     background-color: var(--color-text);
-    border-radius: 100px;
+    border-radius: var(--pill-radius);
     z-index: 50;
 
     .active-filters {
@@ -1427,7 +1427,7 @@ watch(
           margin: 0 0 0 auto;
           color: transparent;
           background-color: var(--color-text);
-          border-radius: 100px;
+          border-radius: var(--radius-circle);
           border: none;
           padding: 4px;
           width: calc(var(--base-font-size) + 4px);
@@ -1485,13 +1485,13 @@ watch(
   }
 
   h3 {
-    font-size: 1.25rem;
+    font-size: var(--h2-size);
     font-weight: 600;
     margin-bottom: var(--small-padding);
   }
 
   p {
-    color: var(--color-text-light, #888);
+    color: var(--color-text-light);
     max-width: 400px;
     margin: 0 auto;
     line-height: 1.6;
@@ -1518,7 +1518,7 @@ watch(
     flex: 1 1 50%;
     max-width: calc(50% - var(--big-padding) * 1.5);
     background-color: var(--color-text);
-    border-radius: 12px;
+    border-radius: var(--radius-media);
     overflow: hidden;
     padding: 0;
 
@@ -1535,11 +1535,11 @@ watch(
     }
 
     &__image {
-      border-radius: 5px 5px 0 0 !important;
+      border-radius: var(--radius-media) var(--radius-media) 0 0 !important;
 
       img {
         aspect-ratio: 3 / 1.5;
-        border-radius: 5px 5px 0 0 !important;
+        border-radius: var(--radius-media) var(--radius-media) 0 0 !important;
       }
     }
 
@@ -1567,7 +1567,7 @@ watch(
       .grid-item__title {
         font-size: var(--large-font-size);
         font-weight: 400;
-        font-family: var(--font-text-regular);
+        font-family: var(--font-text);
         color: var(--color-bg);
       }
 

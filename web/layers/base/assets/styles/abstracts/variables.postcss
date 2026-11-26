@@ -31,6 +31,23 @@
   --color-dark-grey: #525252;
   --color-darker-grey: #2c2c2c;
   --color-yellow: #f9ab0f;
+  /* Warm near-black used for poster surfaces and name cards. */
+  --color-ink: #1a1013;
+
+  /* Muted meta text (hints, counts, placeholders). One value in both
+     themes: it sits on the page background, not on a surface. */
+  --color-text-light: #888;
+  /* Decorative rules and link underlines follow the text colour. */
+  --color-lines: currentcolor;
+  /* Inline code chip. */
+  --color-code-bg: var(--color-grey);
+  /* Loading skeleton fill. */
+  --color-fg-muted: var(--color-grey);
+
+  /* Channel triplets for rgba() shadows and tints. */
+  --color-bg-rgb: 255, 255, 255;
+  --color-text-rgb: 0, 0, 0;
+  --color-pink-rgb: 247, 148, 179;
 
   @media (--dark) {
     --color-bg: #090909;
@@ -38,6 +55,8 @@
     --color-text: #fff;
     --color-dark-grey: #878787;
     --logo-invert: 1;
+    --color-bg-rgb: 9, 9, 9;
+    --color-text-rgb: 255, 255, 255;
   }
 
   /* Video Player */
@@ -91,12 +110,23 @@
   --mid-padding: 1rem;
   --small-padding: 0.5rem;
 
-  /* Two pill sizes: compact tags stay flatter, navigation and buttons use
-     the full radius. Keep the role-based split; font size alone cannot tell
-     a 20 px tag from a 28 px navigation pill. */
+  /* Radii: one value per role. See DESIGN.md.
+     --radius-xs      hairline chips: kbd, thumbs, focus rings
+     --radius-media   images, cards, panels, media frames
+     --radius-flag    city flags sitting flush on a card's top edge
+     --radius-surface overlays: dialogs, dropdowns, popovers, menus
+     --pill-radius    every text-bearing pill: nav, buttons, filters, inputs
+     --pill-radius-sm compact content tags inside cards (20 px tall)
+     --radius-circle  square icon buttons, avatars, dots, play buttons */
+  --radius-xs: 4px;
+  --radius-media: 5px;
+  --radius-flag: 4px 4px 0 0;
+  --radius-surface: 0.75rem;
   --pill-radius: 0.75rem;
   --pill-radius-sm: 0.4rem;
+  --radius-circle: 999px;
 
+  --huge-margin: 11rem;
   --big-margin: 4.25rem;
   --base-margin: 2.75rem;
   --mid-margin: 2rem;
@@ -148,21 +178,10 @@
 
     --base-line-height: calc(var(--base-font-size) * 1.25);
   }
-  @media (desktop-up: 1024px) {
+  @media (--desktop-up) {
+    /* Desktop keeps the wider section rhythm; everything else already
+       matches the base block above. */
     --content-gap: 10.5rem;
-
-    --base-padding: 0.625rem;
-    --big-padding: 1.125rem;
-    --mid-padding: 0.8125rem;
-    --small-padding: 0.4375rem;
-
-    --huge-margin: 11rem;
-    --big-margin: 4rem;
-    --base-margin: 2.5rem;
-    --mid-margin: 1.575rem;
-    --small-margin: 0.4375rem;
-
-    --base-line-height: calc(var(--base-font-size) * 1.25);
   }
   @media (--xl-up) {
     --page-max-width: clamp(0rem, 96rem, 100%);

@@ -85,7 +85,7 @@ const fill = computed(() => {
     height: 2.25rem;
     padding: 0;
     border: 1px solid color-mix(in srgb, var(--color-text) 18%, transparent);
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     background: transparent;
     color: var(--color-text);
     cursor: pointer;

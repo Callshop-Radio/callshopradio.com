@@ -309,7 +309,7 @@ onUnmounted(() => {
       display: grid;
       place-items: center;
       border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
-      border-radius: 999px;
+      border-radius: var(--radius-circle);
       background-color: var(--color-bg);
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
     }
@@ -348,7 +348,7 @@ onUnmounted(() => {
   &:focus-visible {
     outline: 2px solid var(--cover-flow-accent);
     outline-offset: 4px;
-    border-radius: 1.5rem;
+    border-radius: var(--radius-media);
   }
 }
 
@@ -433,7 +433,7 @@ onUnmounted(() => {
 .cover-flow__dot {
   width: 7px;
   height: 7px;
-  border-radius: 999px;
+  border-radius: var(--radius-circle);
   background-color: var(--color-grey);
   transition: background-color var(--transition-fast);
 

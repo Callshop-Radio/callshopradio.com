@@ -562,7 +562,7 @@ onUnmounted(() => {
   .strata-plane {
     position: absolute;
     border: 1px solid color-mix(in srgb, var(--lab-accent) 16%, transparent);
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     background: color-mix(in srgb, var(--lab-accent) 6%, transparent);
     transform-origin: center center;
     will-change: transform;

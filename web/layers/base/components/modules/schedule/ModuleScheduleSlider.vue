@@ -797,7 +797,7 @@ watch(
   padding: 4px;
   background: rgba(225, 225, 225, 0.25);
   backdrop-filter: blur(5px);
-  border-radius: 30px;
+  border-radius: var(--pill-radius);
   max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
   height: 100%;
 
@@ -807,7 +807,7 @@ watch(
     z-index: 2;
     height: 100%;
     border: none;
-    border-radius: 24px;
+    border-radius: var(--pill-radius);
     background: transparent;
     color: #555;
     font-weight: 400;
@@ -835,7 +835,7 @@ watch(
     max-height: calc(var(--base-font-size) - var(--small-padding) * 2);
     height: 100%;
     background-color: var(--color-pink);
-    border-radius: 24px;
+    border-radius: var(--radius-circle);
     transition: transform 0.2s ease;
     z-index: 1;
   }
@@ -852,7 +852,7 @@ watch(
   @apply flex items-center;
   gap: 0 var(--small-padding);
   padding: var(--small-padding) var(--base-padding);
-  border-radius: 25px;
+  border-radius: var(--radius-circle);
   background-color: rgba(225, 225, 225, 0.25);
   max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
   backdrop-filter: blur(3px);
@@ -880,7 +880,7 @@ watch(
   gap: 0 var(--mid-margin);
   height: calc(var(--base-font-size) + var(--small-padding) * 2);
   padding: 0 var(--small-padding);
-  border-radius: 25px;
+  border-radius: var(--radius-circle);
   background-color: rgba(225, 225, 225, 0.25);
   backdrop-filter: blur(3px);
 
@@ -1092,7 +1092,7 @@ watch(
     letter-spacing: 0.5px;
     background-color: var(--color-bg);
     padding: 3px 8px;
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
     border: 1px solid var(--color-pink);
     white-space: nowrap;
     box-shadow: 0 2px 8px rgba(var(--color-pink-rgb), 0.2);

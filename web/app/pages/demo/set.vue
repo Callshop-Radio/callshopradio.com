@@ -499,7 +499,7 @@ const tagPath = (tag: string) =>
 
   &__tab-index {
     opacity: 0.55;
-    font-size: 0.625rem;
+    font-size: var(--small-font-size);
   }
 
   &__toggle {
@@ -780,7 +780,7 @@ const tagPath = (tag: string) =>
   }
 
   &__art {
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     overflow: hidden;
     background-color: var(--color-grey);
 
@@ -850,7 +850,7 @@ const tagPath = (tag: string) =>
 .v2 {
   &__stage {
     position: relative;
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     overflow: hidden;
     background: #0a0a0a;
     aspect-ratio: 16 / 9;
@@ -890,7 +890,7 @@ const tagPath = (tag: string) =>
     flex-flow: column;
     gap: var(--small-padding);
     padding: var(--mid-padding) var(--mid-margin) var(--mid-padding) var(--mid-padding);
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     background: color-mix(in srgb, var(--color-bg) 86%, transparent);
     backdrop-filter: blur(16px);
 
@@ -988,7 +988,7 @@ const tagPath = (tag: string) =>
   &__art {
     width: min(34rem, 100%);
     margin: var(--base-margin) 0 0;
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     overflow: hidden;
     background-color: var(--color-grey);
 
@@ -1040,7 +1040,7 @@ const tagPath = (tag: string) =>
   }
 
   &__thumb {
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     overflow: hidden;
     background-color: var(--color-grey);
 
@@ -1192,7 +1192,7 @@ const tagPath = (tag: string) =>
   &__art {
     position: sticky;
     top: calc(var(--nav-height) + var(--mid-padding));
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     overflow: hidden;
     background-color: var(--color-grey);
 

@@ -245,7 +245,7 @@ onBeforeUnmount(() => {
   width: var(--video-width, 360px);
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
-  border-radius: 12px;
+  border-radius: var(--radius-surface);
   background: var(--color-bg);
   color: var(--color-text);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
@@ -341,7 +341,7 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.6);
   color: #fff;
-  font-size: 1.25rem;
+  font-size: var(--h2-size);
   cursor: pointer;
   transform: translate(-50%, -50%);
 }
@@ -367,7 +367,7 @@ onBeforeUnmount(() => {
   button {
     padding: 0.25rem 0.75rem;
     border: 1px solid currentColor;
-    border-radius: 100px;
+    border-radius: var(--radius-circle);
     background: transparent;
     color: inherit;
     cursor: pointer;
@@ -417,7 +417,7 @@ onBeforeUnmount(() => {
   min-height: 40px;
   padding: 0 0.75rem;
   border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
-  border-radius: 999px;
+  border-radius: var(--pill-radius);
   background: var(--color-bg);
   color: var(--color-text);
   font-size: var(--small-font-size);

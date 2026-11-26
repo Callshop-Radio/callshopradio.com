@@ -264,7 +264,7 @@ onMounted(() => loadArtworkUrl());
     width: 100%;
     height: 100%;
     border: 0.0625rem solid var(--color-text);
-    border-radius: 1.5625rem;
+    border-radius: var(--radius-media);
     overflow: hidden;
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
@@ -272,7 +272,7 @@ onMounted(() => loadArtworkUrl());
 
     .set-media {
       order: 2;
-      border-radius: 1.5625rem;
+      border-radius: var(--radius-media);
       width: 100%;
       height: 100%;
       max-width: 35.3125rem;
@@ -311,7 +311,7 @@ onMounted(() => loadArtworkUrl());
       flex-flow: column wrap;
       justify-content: center;
       align-items: center;
-      border-radius: 100px;
+      border-radius: var(--radius-circle);
       aspect-ratio: 1/1;
       width: max-content;
       width: 4rem;
@@ -403,7 +403,7 @@ onMounted(() => loadArtworkUrl());
   .set-main {
     width: 100%;
     overflow: hidden;
-    border-radius: 1.5625rem;
+    border-radius: var(--radius-media);
   }
 
   .set-info {
@@ -411,7 +411,7 @@ onMounted(() => loadArtworkUrl());
     flex: 0 0 auto;
     width: 100%;
     border-bottom: none;
-    border-radius: 1.5625rem 1.5625rem 0 0;
+    border-radius: var(--radius-media);
     position: relative;
     z-index: 2;
     margin-bottom: -1.25rem;
@@ -429,7 +429,7 @@ onMounted(() => loadArtworkUrl());
     aspect-ratio: 1 / 1;
     height: auto;
     flex-shrink: 0;
-    border-radius: 0 0 1.5625rem 1.5625rem;
+    border-radius: 0 0 var(--radius-media) var(--radius-media);
     overflow: hidden;
 
     .track-artwork,

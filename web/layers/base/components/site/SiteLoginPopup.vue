@@ -65,7 +65,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
   overflow-y: auto;
   padding: 1.75rem 1.75rem 1.5rem;
   border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: var(--color-bg);
   color: var(--color-text);
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);

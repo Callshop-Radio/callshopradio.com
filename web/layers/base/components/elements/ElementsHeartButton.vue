@@ -307,7 +307,7 @@ onBeforeUnmount(clearTimers);
 .heart__button:focus-visible {
 	outline: 2px solid currentColor;
 	outline-offset: 2px;
-	border-radius: 999px;
+	border-radius: var(--radius-circle);
 }
 
 .heart__button.is-saved,
@@ -382,7 +382,7 @@ onBeforeUnmount(clearTimers);
 	overflow-y: auto;
 	padding: 0.35rem;
 	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
-	border-radius: 12px;
+	border-radius: var(--radius-surface);
 	background: var(--color-bg);
 	box-shadow: 0 18px 40px rgb(0 0 0 / 45%);
 	transform-origin: top left;
@@ -396,7 +396,7 @@ onBeforeUnmount(clearTimers);
 	width: 100%;
 	padding: 0.55rem 0.7rem;
 	border: 0;
-	border-radius: 8px;
+	border-radius: var(--pill-radius-sm);
 	background: none;
 	color: inherit;
 	font: inherit;
@@ -413,7 +413,7 @@ onBeforeUnmount(clearTimers);
 	margin: 0;
 	padding: 0.7rem;
 	opacity: 0.65;
-	font-size: 0.9rem;
+	font-size: var(--body-large-font-size);
 }
 
 .menu-enter-active,

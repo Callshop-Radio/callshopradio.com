@@ -313,7 +313,7 @@ onMounted(load);
 	min-width: 0;
 	padding: 0.85rem 1.1rem;
 	border: 0;
-	border-radius: 12px;
+	border-radius: var(--radius-surface);
 	background-color: color-mix(in srgb, var(--color-text) 6%, transparent);
 	color: var(--color-text);
 	font: inherit;
@@ -352,12 +352,12 @@ onMounted(load);
 
 	&:hover:not(:disabled) {
 		background-color: var(--color-pink);
-		color: #111;
+		color: var(--color-black);
 	}
 }
 
 .new-list__plus {
-	font-size: 1rem;
+	font-size: var(--h4-size);
 	line-height: 1;
 }
 
@@ -375,7 +375,7 @@ onMounted(load);
 	align-items: center;
 	gap: 0.9rem;
 	padding: 0.85rem 1rem;
-	border-radius: 12px;
+	border-radius: var(--radius-media);
 	background-color: color-mix(in srgb, var(--color-text) 5%, transparent);
 	color: inherit;
 	text-decoration: none;
@@ -401,7 +401,7 @@ onMounted(load);
 	display: block;
 	width: 2.1rem;
 	height: 2.1rem;
-	border-radius: 5px;
+	border-radius: var(--radius-media);
 	overflow: hidden;
 	background-color: color-mix(in srgb, var(--color-text) 8%, transparent);
 
@@ -439,11 +439,11 @@ onMounted(load);
 .list-card__tag {
 	margin-left: 0.4rem;
 	padding: 0.05rem 0.4rem;
-	border-radius: 999px;
+	border-radius: var(--pill-radius);
 	background-color: color-mix(in srgb, var(--color-pink) 18%, transparent);
 	color: var(--color-pink);
-	font-size: 0.625rem;
-	letter-spacing: 0.06em;
+	font-size: var(--small-font-size);
+	letter-spacing: var(--label-letter-spacing);
 	text-transform: uppercase;
 }
 
@@ -507,7 +507,7 @@ onMounted(load);
 	flex: none;
 	width: 3.25rem;
 	height: 3.25rem;
-	border-radius: 5px;
+	border-radius: var(--radius-media);
 	overflow: hidden;
 	background-color: color-mix(in srgb, var(--color-text) 7%, transparent);
 

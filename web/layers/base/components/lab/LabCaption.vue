@@ -264,7 +264,7 @@ const teaserBlocks = computed(() => {
     padding: 0.45rem 0.8rem;
     border: 1px solid
       color-mix(in srgb, var(--color-text) 22%, transparent);
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     background: transparent;
     color: var(--color-text);
     font-family: var(--font-text-medium);
@@ -380,7 +380,7 @@ const teaserBlocks = computed(() => {
     padding: var(--mid-padding);
     border: 1px solid
       color-mix(in srgb, var(--color-text) 18%, transparent);
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     background-color: var(--color-bg);
     box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.16);
   }

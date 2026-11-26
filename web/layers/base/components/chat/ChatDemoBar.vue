@@ -86,26 +86,26 @@ button {
 	flex-wrap: wrap;
 	gap: 0.25rem;
 	padding: 0.375rem 0.5rem;
-	border-radius: 5px;
+	border-radius: var(--radius-media);
 	background-color: rgba(17, 17, 17, 0.92);
 	color: #fff;
 	font-family: system-ui, sans-serif;
-	font-size: 11px;
+	font-size: var(--small-font-size);
 	line-height: 1;
 	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.28);
 	backdrop-filter: blur(6px);
 }
 
 .chat-demo__label {
-	letter-spacing: 0.06em;
-	color: #f794b3;
+	letter-spacing: var(--label-letter-spacing);
+	color: var(--color-pink);
 	padding-right: 0.25rem;
 }
 
 .chat-demo__btn {
 	font: inherit;
 	padding: 0.25rem 0.4375rem;
-	border-radius: 5px;
+	border-radius: var(--radius-media);
 	border: 1px solid rgba(255, 255, 255, 0.25);
 	background-color: transparent;
 	color: inherit;

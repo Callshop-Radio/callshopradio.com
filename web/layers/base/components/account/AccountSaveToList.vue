@@ -66,27 +66,27 @@ async function add() {
 select {
 	padding: 0.45rem 0.7rem;
 	border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
-	border-radius: 999px;
+	border-radius: var(--pill-radius);
 	background: transparent;
 	color: inherit;
 	font: inherit;
-	font-size: 0.85rem;
+	font-size: var(--base-font-size);
 }
 
 .save-to-list__button {
 	padding: 0.45rem 0.9rem;
 	border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
-	border-radius: 999px;
+	border-radius: var(--pill-radius);
 	background: transparent;
 	color: inherit;
 	font: inherit;
-	font-size: 0.85rem;
+	font-size: var(--base-font-size);
 	cursor: pointer;
 }
 
 .save-to-list__message {
 	margin: 0;
-	font-size: 0.8rem;
+	font-size: var(--base-font-size);
 	opacity: 0.7;
 	flex-basis: 100%;
 }

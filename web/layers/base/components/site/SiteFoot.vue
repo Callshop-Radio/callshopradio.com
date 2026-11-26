@@ -733,7 +733,7 @@ function scrollToTop() {
   gap: 0.4rem;
   padding: 0.32rem 0.7rem;
   border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
-  border-radius: 100px;
+  border-radius: var(--pill-radius);
   color: var(--color-text);
   font-family: var(--font-text-medium);
   font-size: var(--small-font-size);
@@ -780,7 +780,7 @@ function scrollToTop() {
   min-width: 2.6rem;
   padding: 0.28rem 0.5rem;
   border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
-  border-radius: 100px;
+  border-radius: var(--pill-radius);
   color: var(--color-text);
   font-family: var(--font-text-medium);
   font-size: var(--small-font-size);
@@ -923,7 +923,7 @@ function scrollToTop() {
 
 .site-footer a:focus-visible,
 .site-footer button:focus-visible {
-  border-radius: 0.15rem;
+  border-radius: var(--radius-xs);
   outline: 2px solid var(--color-pink);
   outline-offset: 0.25rem;
 }

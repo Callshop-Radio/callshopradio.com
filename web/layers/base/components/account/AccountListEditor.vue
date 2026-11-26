@@ -228,7 +228,7 @@ onMounted(load);
 	min-width: 0;
 	padding: 0.85rem 1.1rem;
 	border: 0;
-	border-radius: 12px;
+	border-radius: var(--radius-surface);
 	background-color: color-mix(in srgb, var(--color-text) 6%, transparent);
 	color: inherit;
 	font: inherit;
@@ -308,7 +308,7 @@ onMounted(load);
 	flex: none;
 	width: 3.25rem;
 	height: 3.25rem;
-	border-radius: 5px;
+	border-radius: var(--radius-media);
 	overflow: hidden;
 	background-color: color-mix(in srgb, var(--color-text) 7%, transparent);
 

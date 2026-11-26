@@ -58,7 +58,7 @@ onBeforeUnmount(() => {
   max-height: 40vh;
   overflow: auto;
   border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
-  border-radius: 10px;
+  border-radius: var(--radius-surface);
   background: var(--color-bg);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
 

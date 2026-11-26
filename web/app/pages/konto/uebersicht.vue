@@ -91,15 +91,15 @@ onMounted(load);
 	margin: 0;
 	padding: 0.4rem 0.9rem;
 	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
-	border-radius: 999px;
-	font-size: 0.85rem;
+	border-radius: var(--pill-radius);
+	font-size: var(--base-font-size);
 }
 
 .account-role__label {
 	opacity: 0.6;
 	text-transform: uppercase;
-	letter-spacing: 0.08em;
-	font-size: 0.7rem;
+	letter-spacing: var(--kicker-letter-spacing);
+	font-size: var(--small-font-size);
 }
 
 .account-role__value {
@@ -117,7 +117,7 @@ onMounted(load);
 	gap: 0.35rem;
 	padding: 1.25rem;
 	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
-	border-radius: 5px;
+	border-radius: var(--radius-media);
 	text-decoration: none;
 	color: inherit;
 }

@@ -264,7 +264,7 @@ const sampleSocials = {
   width: 100%;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--color-text) 16%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: var(--color-bg);
   color: var(--color-text);
 }
@@ -286,12 +286,12 @@ const sampleSocials = {
   align-items: center;
   gap: 0.45rem;
   padding: 0.35rem 0.7rem;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: var(--color-blue);
   color: var(--color-white);
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--label-letter-spacing);
   text-transform: uppercase;
 }
 
@@ -306,7 +306,7 @@ const sampleSocials = {
 .pool-card__index {
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--kicker-letter-spacing);
   color: color-mix(in srgb, var(--color-text) 40%, transparent);
 }
 
@@ -344,7 +344,7 @@ const sampleSocials = {
 .pool-card__tag {
   padding: calc(var(--small-padding) / 2) var(--small-padding);
   border: 1px solid color-mix(in srgb, var(--color-blue) 45%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: transparent;
   color: var(--color-text);
   font-size: var(--mini-font-size);
@@ -388,7 +388,7 @@ const sampleSocials = {
     color: var(--color-blue);
     font-family: var(--font-text-semibold);
     font-size: var(--mini-font-size);
-    letter-spacing: 0.06em;
+    letter-spacing: var(--label-letter-spacing);
     text-transform: uppercase;
   }
 
@@ -411,7 +411,7 @@ const sampleSocials = {
   padding: 0.3rem 0.55rem;
   border: 1px solid
     color-mix(in srgb, var(--color-text) 18%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   color: inherit;
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
@@ -442,7 +442,7 @@ const sampleSocials = {
     transform: translate(-40%, -50%);
     border-top: 0.2rem solid transparent;
     border-bottom: 0.2rem solid transparent;
-    border-left: 0.28rem solid #1a1013;
+    border-left: 0.28rem solid var(--color-ink);
   }
 }
 
@@ -450,7 +450,7 @@ const sampleSocials = {
   display: -webkit-box;
   max-width: 52ch;
   overflow: hidden;
-  font-size: calc(var(--base-font-size) * 1.08);
+  font-size: var(--body-large-font-size);
   line-height: 1.55;
   color: color-mix(in srgb, var(--color-text) 72%, transparent);
   -webkit-box-orient: vertical;
@@ -467,7 +467,7 @@ const sampleSocials = {
   min-height: 100%;
   margin: 0;
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: var(--color-grey);
   aspect-ratio: 3 / 4;
 }
@@ -478,7 +478,7 @@ const sampleSocials = {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 5px !important;
+  border-radius: var(--radius-media) !important;
 }
 
 /* ------------------------------------------------------------- variant C */
@@ -502,7 +502,7 @@ const sampleSocials = {
   margin-bottom: 0.45rem;
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--kicker-letter-spacing);
   text-transform: uppercase;
   opacity: 0.7;
 }
@@ -520,7 +520,7 @@ const sampleSocials = {
 .pool-sheet__index {
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--kicker-letter-spacing);
   opacity: 0.6;
   flex: none;
 }
@@ -536,7 +536,7 @@ const sampleSocials = {
 .pool-sheet__photo {
   margin: 0;
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: var(--color-grey);
   aspect-ratio: 3 / 4;
 }
@@ -547,7 +547,7 @@ const sampleSocials = {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 5px !important;
+  border-radius: var(--radius-media) !important;
 }
 
 .pool-sheet__fields {
@@ -570,7 +570,7 @@ const sampleSocials = {
     color: var(--color-blue);
     font-family: var(--font-text-semibold);
     font-size: var(--mini-font-size);
-    letter-spacing: 0.06em;
+    letter-spacing: var(--label-letter-spacing);
     text-transform: uppercase;
   }
 
@@ -614,7 +614,7 @@ const sampleSocials = {
   padding: 0.3rem 0.55rem;
   border: 1px solid
     color-mix(in srgb, var(--color-text) 18%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   color: inherit;
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
@@ -640,7 +640,7 @@ const sampleSocials = {
   p {
     max-width: 78ch;
     margin: 0;
-    font-size: calc(var(--base-font-size) * 0.9);
+    font-size: var(--base-font-size);
     line-height: 1.55;
     color: color-mix(in srgb, var(--color-text) 72%, transparent);
   }
@@ -652,7 +652,7 @@ const sampleSocials = {
   color: var(--color-blue);
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
-  letter-spacing: 0.06em;
+  letter-spacing: var(--label-letter-spacing);
   text-transform: uppercase;
 }
 

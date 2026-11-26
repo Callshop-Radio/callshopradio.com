@@ -40,7 +40,7 @@ const emit = defineEmits<{
   width: 100%;
   padding: 0;
   border: 1px solid color-mix(in srgb, var(--color-text) 16%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background-color: var(--color-bg);
   color: var(--color-text);
   font: inherit;

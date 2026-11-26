@@ -214,7 +214,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
   display: flex;
   flex-direction: column;
   background: var(--color-bg);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   box-shadow: 0 18px 48px rgb(0 0 0 / 45%);
   overflow: hidden;
   z-index: 60;
@@ -233,8 +233,8 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 }
 
 .tt-popover__title {
-  font-size: calc(var(--base-font-size) * 0.76);
-  letter-spacing: 0.08em;
+  font-size: var(--small-font-size);
+  letter-spacing: var(--kicker-letter-spacing);
   text-transform: uppercase;
   opacity: 0.55;
 }
@@ -247,7 +247,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
   opacity: 0.75;
   cursor: pointer;
   padding: 4px;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   display: grid;
   place-items: center;
 }
@@ -271,7 +271,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
   gap: 9px;
   padding: 7px 6px;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: transparent;
   color: var(--color-text);
   text-align: left;
@@ -286,13 +286,13 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 
 .tt-popover__item.is-live {
   background: var(--color-pink);
-  color: #1a1013;
+  color: var(--color-ink);
 }
 
 .tt-popover__thumb {
   width: 28px;
   height: 28px;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   object-fit: cover;
   flex: none;
 }
@@ -307,7 +307,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 .tt-popover__meta {
   display: flex;
   gap: 6px;
-  font-size: calc(var(--base-font-size) * 0.62);
+  font-size: var(--mini-font-size);
   opacity: 0.65;
   font-variant-numeric: tabular-nums;
 }
@@ -318,14 +318,14 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 }
 
 .tt-popover__name {
-  font-size: calc(var(--base-font-size) * 0.82);
+  font-size: var(--small-font-size);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .tt-popover__sub {
-  font-size: calc(var(--base-font-size) * 0.68);
+  font-size: var(--small-font-size);
   opacity: 0.55;
   white-space: nowrap;
   overflow: hidden;
@@ -335,7 +335,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
 .tt-popover__empty {
   padding: 14px 10px;
   opacity: 0.5;
-  font-size: calc(var(--base-font-size) * 0.78);
+  font-size: var(--small-font-size);
 }
 
 .tt-popover__foot {
@@ -347,7 +347,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
   padding: 10px 12px;
   text-align: left;
   font: inherit;
-  font-size: calc(var(--base-font-size) * 0.78);
+  font-size: var(--small-font-size);
   opacity: 0.7;
   cursor: pointer;
 }
@@ -366,7 +366,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onDocumentClick));
     right: 0;
     width: 100%;
     max-height: 60vh;
-    border-radius: 5px 5px 0 0;
+    border-radius: var(--radius-media) var(--radius-media) 0 0;
   }
 }
 </style>

@@ -501,7 +501,7 @@ onUnmounted(() => {
 .mixed-item__media {
   position: relative;
   width: 100%;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   overflow: hidden;
   background: var(--color-grey);
 }
@@ -522,7 +522,7 @@ onUnmounted(() => {
   z-index: 2;
   padding: 0.22rem 0.5rem;
   border: 1px solid color-mix(in srgb, var(--color-text) 28%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   /* Solid enough to stay readable on bright cover artwork. */
   background: color-mix(in srgb, var(--color-bg) 82%, transparent);
   backdrop-filter: blur(6px);
@@ -582,7 +582,7 @@ onUnmounted(() => {
   &:focus-visible {
     outline: 2px solid var(--lab-accent);
     outline-offset: 6px;
-    border-radius: 5px;
+    border-radius: var(--radius-media);
   }
 }
 
@@ -702,7 +702,7 @@ onUnmounted(() => {
   gap: 0.5rem;
   padding: 0.55rem 0.9rem;
   border: 1px solid var(--lab-accent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: transparent;
   color: var(--lab-accent);
   font-family: var(--font-text-semibold);

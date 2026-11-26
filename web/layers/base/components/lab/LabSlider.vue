@@ -674,7 +674,7 @@ function itemLabel(item: LabItem) {
   &:focus-visible {
     outline: 2px solid var(--lab-accent);
     outline-offset: 6px;
-    border-radius: 5px;
+    border-radius: var(--radius-media);
   }
 }
 
@@ -785,7 +785,7 @@ function itemLabel(item: LabItem) {
   height: 100%;
   padding: 0;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: transparent;
   cursor: pointer;
   transition: box-shadow var(--transition-fast);
@@ -812,7 +812,7 @@ function itemLabel(item: LabItem) {
   height: 1.75rem;
   padding: 0 0.35rem;
   border: 1px solid color-mix(in srgb, var(--color-text) 18%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background-color: var(--color-bg);
   color: var(--color-text);
   font-size: var(--mini-font-size);
@@ -865,7 +865,7 @@ function itemLabel(item: LabItem) {
   padding: 0.9rem var(--mid-padding) var(--mid-padding);
   border-top-width: 1px;
   border-top-color: color-mix(in srgb, var(--lab-accent) 42%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background-color: var(--color-bg);
 }
 
@@ -997,7 +997,7 @@ function itemLabel(item: LabItem) {
     calc(var(--mid-padding) + 0.25rem);
   border-top-width: 1px;
   border-top-color: color-mix(in srgb, var(--lab-accent) 40%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background-color: var(--color-bg);
   --lab-band-min-height: 9.5rem;
   --lab-caption-title-size: var(--h2-size);

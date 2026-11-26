@@ -437,7 +437,7 @@ onUnmounted(() => {
     width: 100%;
     padding: 0.45rem 0.6rem;
     border: 1px solid transparent;
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
     background: transparent;
     color: var(--color-text);
     text-align: left;

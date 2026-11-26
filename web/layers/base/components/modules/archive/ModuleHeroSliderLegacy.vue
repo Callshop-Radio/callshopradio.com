@@ -315,7 +315,7 @@ onMounted(() => {
       @apply flex row items-center justify-space-between;
       padding: var(--mid-padding);
       background-color: var(--color-bg);
-      border-radius: 100px;
+      border-radius: var(--radius-circle);
       border: 0.0625rem solid var(--color-text);
       shape-rendering: crispEdges;
       z-index: 10;

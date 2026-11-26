@@ -304,7 +304,7 @@ function onDialogClose() {
 .merch-card__media {
   position: relative;
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background-color: var(--color-grey);
   aspect-ratio: 16 / 9;
 
@@ -329,14 +329,14 @@ function onDialogClose() {
   top: 0.6rem;
   left: 0.7rem;
   padding: 0.1rem 0.45rem;
-  border-radius: 999px;
+  border-radius: var(--radius-circle);
   background: color-mix(in srgb, var(--color-bg) 78%, transparent);
   backdrop-filter: blur(6px);
   color: var(--color-text);
   font-family: var(--font-text-semibold);
   font-size: var(--small-font-size);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--label-letter-spacing);
 }
 
 .merch-card__badge {
@@ -346,7 +346,7 @@ function onDialogClose() {
   padding: 0.18rem 0.5rem;
   border-radius: var(--pill-radius-sm);
   background-color: var(--merch-accent);
-  color: #0b0b0b;
+  color: var(--color-black);
   font-family: var(--font-text-semibold);
   font-size: var(--small-font-size);
   letter-spacing: var(--button-letter-spacing);
@@ -365,7 +365,7 @@ function onDialogClose() {
   max-width: 34ch;
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-size: 1.0625rem;
+  font-size: var(--h4-size);
   font-weight: 500;
   letter-spacing: 0.015em;
   line-height: 1.25;
@@ -426,7 +426,7 @@ function onDialogClose() {
   aspect-ratio: 4 / 5;
   padding: 0;
   border: 0;
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   overflow: hidden;
   background-color: color-mix(in srgb, var(--color-text) 7%, var(--color-bg));
   cursor: pointer;
@@ -452,7 +452,7 @@ function onDialogClose() {
   padding: 0.45rem 0.9rem;
   border-radius: var(--pill-radius);
   background-color: var(--merch-accent);
-  color: #0b0b0b;
+  color: var(--color-black);
   font-family: var(--font-text-semibold);
   font-size: var(--small-font-size);
   letter-spacing: var(--button-letter-spacing);
@@ -511,7 +511,7 @@ function onDialogClose() {
   margin: auto;
   padding: 0;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--radius-surface);
   background-color: var(--color-bg);
   color: var(--color-text);
   box-shadow: 0 40px 120px rgba(0, 0, 0, 0.45);
@@ -546,17 +546,17 @@ function onDialogClose() {
   height: 2rem;
   padding: 0;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-circle);
   background-color: color-mix(in srgb, var(--color-bg) 82%, transparent);
   backdrop-filter: blur(6px);
   color: var(--color-text);
-  font-size: 1.1rem;
+  font-size: var(--h4-size);
   line-height: 1;
   cursor: pointer;
 
   &:hover {
     background-color: var(--color-merch);
-    color: #0b0b0b;
+    color: var(--color-black);
   }
 
   &:focus-visible {
@@ -596,7 +596,7 @@ function onDialogClose() {
   aspect-ratio: 4 / 5;
   padding: 0;
   border: 1px solid transparent;
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   overflow: hidden;
   background-color: color-mix(in srgb, var(--color-text) 7%, var(--color-bg));
   cursor: pointer;
@@ -650,7 +650,7 @@ function onDialogClose() {
   padding: 0.1rem 0.45rem;
   border-radius: var(--pill-radius-sm);
   background-color: var(--merch-accent);
-  color: #0b0b0b;
+  color: var(--color-black);
   font-family: var(--font-text-semibold);
   letter-spacing: var(--button-letter-spacing);
 }

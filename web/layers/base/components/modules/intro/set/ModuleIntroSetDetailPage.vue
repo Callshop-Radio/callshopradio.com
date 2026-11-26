@@ -632,7 +632,7 @@ onUnmounted(() => {
   aspect-ratio: 1 / 1;
   padding: 0;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   overflow: hidden;
   background-color: var(--color-grey);
   cursor: pointer;
@@ -773,7 +773,7 @@ onUnmounted(() => {
     &:focus-visible {
       outline: 2px solid var(--color-blue);
       outline-offset: 4px;
-      border-radius: 4px;
+      border-radius: var(--radius-xs);
     }
   }
 
@@ -787,8 +787,8 @@ onUnmounted(() => {
     background-color: var(--color-blue);
     color: #fff;
     font-family: var(--font-text);
-    font-size: 0.625rem;
-    letter-spacing: 0.06em;
+    font-size: var(--small-font-size);
+    letter-spacing: var(--label-letter-spacing);
     text-transform: uppercase;
     opacity: 0;
     pointer-events: none;
@@ -823,7 +823,7 @@ onUnmounted(() => {
     background-color: var(--color-text);
     color: var(--color-bg);
     font-family: var(--font-text-semibold);
-    font-size: 0.625rem;
+    font-size: var(--small-font-size);
     letter-spacing: 0.02em;
     flex: none;
   }

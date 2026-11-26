@@ -1178,7 +1178,7 @@ onUnmounted(() => {
     width: 100%;
     padding: 0.45rem 0.5rem;
     border: 0;
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     background: transparent;
     color: var(--color-text);
     text-align: left;
@@ -1196,7 +1196,7 @@ onUnmounted(() => {
     width: 2.25rem;
     height: 2.25rem;
     object-fit: cover;
-    border-radius: 0.25rem;
+    border-radius: var(--radius-xs);
     flex: none;
   }
 
@@ -1278,7 +1278,7 @@ onUnmounted(() => {
     margin: 0 -0.4rem;
     padding: var(--base-padding) 0.4rem;
     border: 0;
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     background: var(--color-bg);
     color: var(--color-text);
     text-align: left;
@@ -1306,7 +1306,7 @@ onUnmounted(() => {
     width: 2.5rem;
     height: 2.5rem;
     object-fit: cover;
-    border-radius: 0.25rem;
+    border-radius: var(--radius-xs);
     flex: none;
   }
 
@@ -1358,7 +1358,7 @@ onUnmounted(() => {
   width: 100%;
   padding: 0.25rem;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   transition: background var(--transition-fast);
 
   &:hover {
@@ -1421,7 +1421,7 @@ onUnmounted(() => {
     width: 2.75rem;
     height: 2.75rem;
     object-fit: cover;
-    border-radius: 0.25rem;
+    border-radius: var(--radius-xs);
     flex: none;
   }
 

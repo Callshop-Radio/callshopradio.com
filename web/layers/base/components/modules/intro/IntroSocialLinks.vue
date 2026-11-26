@@ -151,7 +151,7 @@ const hasLinks = computed(() =>
       calc(var(--small-font-size) + var(--small-padding) * 2 + 0.2rem)
     );
     padding: var(--small-padding) var(--base-padding);
-    border-radius: 100px;
+    border-radius: var(--radius-circle);
     font-size: var(--small-font-size);
     font-family: var(--font-text);
     letter-spacing: var(--button-letter-spacing);

@@ -115,7 +115,7 @@ function setSort(value: SortMode) {
     height: 2.25rem;
     padding: 0 0.9rem 0 2.3rem;
     border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
-    border-radius: 100px;
+    border-radius: var(--pill-radius);
     background: transparent;
     color: var(--color-text);
     font: inherit;
@@ -151,7 +151,7 @@ function setSort(value: SortMode) {
   button {
     padding: 0.32rem 0.75rem;
     border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
-    border-radius: 100px;
+    border-radius: var(--radius-circle);
     background: transparent;
     color: var(--color-text);
     font-family: var(--font-text-medium);

@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 import { usePlayerStore } from "~/stores/playerStore";
@@ -619,7 +619,7 @@ onBeforeUnmount(() => {
   width: 36px;
   height: 36px;
   flex: none;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   overflow: hidden;
 
   .site-player__cover {
@@ -637,7 +637,7 @@ onBeforeUnmount(() => {
   width: 36px;
   height: 36px;
   flex: none;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   object-fit: cover;
   background: var(--color-grey);
 
@@ -650,11 +650,11 @@ onBeforeUnmount(() => {
 .site-player__cover--fallback {
   display: inline-grid;
   place-items: center;
-  background: #111;
+  background: var(--color-black);
   color: rgba(255, 255, 255, 0.72);
-  font-size: 9px;
+  font-size: var(--small-font-size);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--label-letter-spacing);
   border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
@@ -778,7 +778,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.25rem;
   color: var(--color-dark-grey);
-  font-size: 0.625rem;
+  font-size: var(--small-font-size);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -811,8 +811,8 @@ onBeforeUnmount(() => {
 
 .site-player__live-label {
   color: var(--color-dark-grey);
-  font-size: 0.5625rem;
-  letter-spacing: 0.06em;
+  font-size: var(--small-font-size);
+  letter-spacing: var(--label-letter-spacing);
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -837,7 +837,7 @@ onBeforeUnmount(() => {
   flex: none;
   margin-left: auto;
   color: var(--color-dark-grey);
-  font-size: 0.625rem;
+  font-size: var(--small-font-size);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -856,7 +856,7 @@ onBeforeUnmount(() => {
 .site-player__time {
   flex: none;
   color: var(--color-dark-grey);
-  font-size: 0.625rem;
+  font-size: var(--small-font-size);
   font-variant-numeric: tabular-nums;
   text-align: right;
   white-space: nowrap;
@@ -874,7 +874,7 @@ onBeforeUnmount(() => {
 .site-player__until {
   flex: none;
   color: var(--color-dark-grey);
-  font-size: 0.625rem;
+  font-size: var(--small-font-size);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -938,7 +938,7 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   background: transparent;
   color: var(--color-text);
-  font-size: 0.875rem;
+  font-size: var(--body-large-font-size);
   cursor: pointer;
 
   &:hover {
@@ -971,7 +971,7 @@ onBeforeUnmount(() => {
       var(--color-pink) 50%,
       color-mix(in srgb, var(--color-pink) 45%, transparent)
     );
-    border-radius: 2px;
+    border-radius: var(--radius-xs);
     transform-origin: left;
     filter: drop-shadow(
       0 0 3px color-mix(in srgb, var(--color-pink) 70%, transparent)
@@ -986,7 +986,7 @@ onBeforeUnmount(() => {
 
 .site-player__source {
   color: var(--color-dark-grey);
-  font-size: 0.625rem;
+  font-size: var(--small-font-size);
   text-decoration: none;
 
   &:hover,
@@ -1004,12 +1004,12 @@ onBeforeUnmount(() => {
   gap: 0.5rem;
   margin: 0;
   color: var(--color-dark-grey);
-  font-size: 0.625rem;
+  font-size: var(--small-font-size);
 
   button {
     padding: 0.125rem 0.5rem;
     border: 1px solid currentColor;
-    border-radius: 100px;
+    border-radius: var(--radius-circle);
     background: transparent;
     color: inherit;
     font-size: inherit;

@@ -379,7 +379,7 @@ onMounted(() => {
   .hero-entry-media {
     overflow: hidden;
     order: 2;
-    border-radius: 1.5625rem;
+    border-radius: var(--radius-media);
 
     @media screen and (max-width: 900px) {
       transform: translate(0, 12.5%);
@@ -424,7 +424,7 @@ onMounted(() => {
     gap: var(--mid-margin);
     order: 1;
     padding: 1rem 2.25rem;
-    border-radius: 999px;
+    border-radius: var(--radius-circle);
     border: none;
     shape-rendering: crispEdges;
     width: clamp(300px, max-content, 397px);
@@ -453,7 +453,7 @@ onMounted(() => {
       flex-flow: column wrap;
       justify-content: center;
       align-items: center;
-      border-radius: 100px;
+      border-radius: var(--radius-circle);
       aspect-ratio: 1/1;
       flex: none;
       width: 5.5rem;
@@ -515,7 +515,7 @@ onMounted(() => {
           color: var(--color-bg);
           border: none;
           padding: var(--small-padding) var(--mid-padding);
-          border-radius: 100px;
+          border-radius: var(--radius-circle);
           font-size: var(--small-font-size);
           transition: background-color 0.2s ease;
           cursor: pointer;

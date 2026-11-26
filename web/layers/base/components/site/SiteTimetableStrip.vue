@@ -201,8 +201,8 @@ function isCurrent(entry: TimetableEntry): boolean {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: calc(var(--base-font-size) * 0.72);
-  letter-spacing: 0.08em;
+  font-size: var(--small-font-size);
+  letter-spacing: var(--kicker-letter-spacing);
   text-transform: uppercase;
   color: color-mix(in srgb, var(--color-text) 62%, transparent);
   /* Opacity stays off the container so the pulse dot keeps full strength. */
@@ -241,7 +241,7 @@ function isCurrent(entry: TimetableEntry): boolean {
   background: transparent;
   color: var(--color-text);
   font: inherit;
-  font-size: calc(var(--base-font-size) * 0.8);
+  font-size: var(--small-font-size);
   opacity: 0.6;
   cursor: pointer;
   padding: 0;
@@ -281,7 +281,7 @@ function isCurrent(entry: TimetableEntry): boolean {
   gap: 10px;
   padding: 6px 10px;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   /* A real surface, not a brightness filter on near-black: 8 % of the text
      colour lifts the card off the page in dark mode and lowers it in light. */
   /* Opaque surface: an alpha mix would let the animated hero gradient show
@@ -298,7 +298,7 @@ function isCurrent(entry: TimetableEntry): boolean {
 
 .timetable-strip__item.is-live .timetable-strip__card {
   background: var(--color-pink);
-  color: #1a1013;
+  color: var(--color-ink);
 }
 
 .timetable-strip__item.is-live .timetable-strip__card:hover {
@@ -318,7 +318,7 @@ function isCurrent(entry: TimetableEntry): boolean {
 .timetable-strip__thumb {
   width: 44px;
   height: 44px;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   object-fit: cover;
   flex: none;
 }
@@ -334,18 +334,18 @@ function isCurrent(entry: TimetableEntry): boolean {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: calc(var(--base-font-size) * 0.64);
+  font-size: var(--mini-font-size);
   opacity: 0.7;
   font-variant-numeric: tabular-nums;
 }
 
 .timetable-strip__live {
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--label-letter-spacing);
 }
 
 .timetable-strip__name {
-  font-size: calc(var(--base-font-size) * 0.86);
+  font-size: var(--small-font-size);
   font-weight: 550;
   white-space: nowrap;
   overflow: hidden;
@@ -353,7 +353,7 @@ function isCurrent(entry: TimetableEntry): boolean {
 }
 
 .timetable-strip__sub {
-  font-size: calc(var(--base-font-size) * 0.7);
+  font-size: var(--small-font-size);
   opacity: 0.6;
   white-space: nowrap;
   overflow: hidden;

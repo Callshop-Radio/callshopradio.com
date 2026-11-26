@@ -119,7 +119,7 @@ button {
 .picker__tab {
 	font-size: var(--small-font-size);
 	padding: 0.125rem 0.5rem;
-	border-radius: 999px;
+	border-radius: var(--pill-radius);
 	border: 1px solid var(--chat-line);
 	color: color-mix(in srgb, var(--color-text) 65%, transparent);
 	cursor: pointer;
@@ -164,7 +164,7 @@ button {
 	display: grid;
 	place-items: center;
 	padding: 0.3125rem;
-	border-radius: 5px;
+	border-radius: var(--radius-media);
 	cursor: pointer;
 	border: 1px solid transparent;
 

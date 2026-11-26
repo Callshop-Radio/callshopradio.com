@@ -434,7 +434,7 @@ watch(
 <style lang="postcss" scoped>
 .search-result-block {
   min-width: calc(var(--page-max-width) + var(--big-margin));
-  margin: 0 0 var(--large-margin) calc(var(--big-margin) * -0.5);
+  margin: 0 0 0 calc(var(--big-margin) * -0.5);
   margin-bottom: var(--first-content-distance);
 
   &__header {
@@ -453,7 +453,7 @@ watch(
   &__pill {
     display: inline-block;
     padding: var(--small-padding) var(--mid-padding);
-    border-radius: 100px;
+    border-radius: var(--pill-radius);
     font-size: var(--small-font-size);
     font-family: var(--font-text-semibold);
     text-transform: uppercase;
@@ -627,7 +627,7 @@ watch(
         margin: 0 0 0 auto;
         color: transparent;
         background-color: var(--color-text);
-        border-radius: 100px;
+        border-radius: var(--radius-circle);
         border: none;
         padding: 4px;
         width: calc(var(--base-font-size) + 4px);
@@ -698,7 +698,7 @@ watch(
   }
 }
 .teaser-item--sets .teaser-item__title {
-  font-size: 1.25rem;
+  font-size: var(--h2-size);
   line-height: 1.05;
 }
 </style>

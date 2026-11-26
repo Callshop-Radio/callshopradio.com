@@ -2298,8 +2298,8 @@ onUnmounted(() => {
 .skeleton-header {
   width: 200px;
   height: 24px;
-  background: var(--color-fg-muted, #e0e0e0);
-  border-radius: 4px;
+  background: var(--color-fg-muted, var(--color-grey));
+  border-radius: var(--radius-xs);
   margin-bottom: var(--mid-margin, 1rem);
 }
 
@@ -2311,8 +2311,8 @@ onUnmounted(() => {
 
 .skeleton-item {
   aspect-ratio: 1 / 1;
-  background: var(--color-fg-muted, #e0e0e0);
-  border-radius: 4px;
+  background: var(--color-fg-muted, var(--color-grey));
+  border-radius: var(--radius-xs);
 }
 
 @keyframes skeleton-pulse {
@@ -2431,7 +2431,7 @@ onUnmounted(() => {
     .action-btn {
       padding: var(--small-padding) var(--mid-padding);
       border: 1px solid var(--color-text);
-      border-radius: 100px;
+      border-radius: var(--pill-radius);
       background: transparent;
       cursor: pointer;
       font-family: var(--font-text);
@@ -2455,7 +2455,7 @@ onUnmounted(() => {
     margin-right: calc(var(--big-margin) * -1);
     padding-left: var(--big-margin);
     padding-right: var(--big-margin);
-    border-radius: 100px;
+    border-radius: var(--pill-radius);
     &::before {
       content: "";
       position: absolute;
@@ -2481,7 +2481,7 @@ onUnmounted(() => {
     justify-content: space-between;
     padding: var(--small-padding) 0;
     background-color: var(--color-text);
-    border-radius: 100px;
+    border-radius: var(--pill-radius);
     z-index: 50;
 
     .active-filters {
@@ -2889,7 +2889,7 @@ onUnmounted(() => {
           padding: calc(var(--small-padding) * 0.4)
             calc(var(--base-padding) * 0.45);
           border-width: 1px;
-          font-size: calc(var(--small-font-size) * 0.86);
+          font-size: var(--mini-font-size);
           line-height: 1.05;
         }
       }
@@ -2902,7 +2902,7 @@ onUnmounted(() => {
         .tag {
           padding: calc(var(--small-padding) * 0.32)
             calc(var(--base-padding) * 0.36);
-          font-size: calc(var(--small-font-size) * 0.78);
+          font-size: var(--mini-font-size);
         }
       }
     }
@@ -3044,7 +3044,7 @@ onUnmounted(() => {
           margin: 0 0 0 auto;
           color: transparent;
           background-color: var(--color-text);
-          border-radius: 100px;
+          border-radius: var(--radius-circle);
           border: none;
           padding: 4px;
           width: calc(var(--base-font-size) + 4px);
@@ -3080,7 +3080,7 @@ onUnmounted(() => {
 
   /* Content type specific styles */
   &.sets .grid-item__content .grid-item__title {
-    font-size: 1.25rem;
+    font-size: var(--h2-size);
     line-height: 1.05;
   }
 
@@ -3105,7 +3105,7 @@ onUnmounted(() => {
       flex: 1 1 50%;
       max-width: calc(50% - var(--big-padding) * 1.5);
       background-color: var(--color-text);
-      border-radius: 12px;
+      border-radius: var(--radius-media);
       overflow: hidden;
       padding: 0;
       margin-right: 0;
@@ -3121,12 +3121,12 @@ onUnmounted(() => {
 
       &__image {
         width: 100%;
-        border-radius: 5px 5px 0 0 !important;
+        border-radius: var(--radius-media) var(--radius-media) 0 0 !important;
 
         img {
           aspect-ratio: 3 / 1.5 !important;
           width: 100%;
-          border-radius: 5px 5px 0 0 !important;
+          border-radius: var(--radius-media) var(--radius-media) 0 0 !important;
         }
       }
 
@@ -3220,7 +3220,7 @@ onUnmounted(() => {
       -webkit-overflow-scrolling: touch;
       border: 1px solid var(--color-bg);
       border-bottom: 0;
-      border-radius: 1.56125rem 1.56125rem 0 0;
+      border-radius: var(--radius-media);
       background-color: var(--color-bg-transparent);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
@@ -3250,7 +3250,7 @@ onUnmounted(() => {
       &::-webkit-scrollbar-thumb {
         background: var(--color-pink);
         border: 2px solid transparent;
-        border-radius: 100px;
+        border-radius: var(--radius-circle);
         background-clip: padding-box;
       }
 
@@ -3295,7 +3295,7 @@ onUnmounted(() => {
       padding: 8px 16px;
       transform: translateX(-50%);
       border: 1px solid var(--color-text);
-      border-radius: 100px;
+      border-radius: var(--pill-radius);
       background-color: var(--color-bg-transparent);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
@@ -3320,10 +3320,10 @@ onUnmounted(() => {
         min-width: 16px;
         height: 16px;
         padding: 0 4px;
-        border-radius: 100px;
+        border-radius: var(--pill-radius);
         background-color: var(--color-pink);
         color: var(--color-black);
-        font-size: 9px;
+        font-size: var(--small-font-size);
         line-height: 1;
       }
 
@@ -3356,7 +3356,7 @@ onUnmounted(() => {
       left: 50%;
       width: 44px;
       height: 5px;
-      border-radius: 100px;
+      border-radius: var(--pill-radius);
       background-color: var(--color-dark-grey);
       transform: translateX(-50%);
     }
@@ -3406,7 +3406,7 @@ onUnmounted(() => {
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid var(--color-bg);
-        border-radius: 1.56125rem;
+        border-radius: var(--radius-media);
         padding: var(--mid-padding);
         overflow: hidden;
 
@@ -3452,7 +3452,7 @@ onUnmounted(() => {
           background-color: var(--color-dark-grey);
           color: var(--color-text);
           padding: var(--small-padding) var(--mid-padding);
-          border-radius: 100px;
+          border-radius: var(--pill-radius);
           border: 1px solid transparent;
           font-size: var(--small-font-size);
           text-transform: uppercase;
@@ -3505,7 +3505,7 @@ onUnmounted(() => {
         background-color: var(--theme-color);
         color: var(--color-bg);
         border: 1px solid var(--theme-color);
-        border-radius: 100px;
+        border-radius: var(--pill-radius);
         font-size: var(--small-font-size);
         letter-spacing: var(--button-letter-spacing);
         font-family: var(--font-text);
@@ -3542,7 +3542,7 @@ onUnmounted(() => {
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--color-bg);
-      border-radius: 100px;
+      border-radius: var(--pill-radius);
 
       @media (prefers-color-scheme: dark) {
         background-color: rgba(0, 0, 0, 0.35);
@@ -3692,7 +3692,7 @@ onUnmounted(() => {
           transform: none;
           opacity: 1;
           padding: var(--mid-padding);
-          border-radius: 0 0 1.56125rem 1.56125rem;
+          border-radius: 0 0 var(--radius-media) var(--radius-media);
           border: none;
           border-top: 1px solid var(--color-grey);
           background-color: var(--color-bg-transparent);
@@ -3772,7 +3772,7 @@ onUnmounted(() => {
   .content-grid {
     &__mobile-filter-cities {
       &__tags .filter-tag--city {
-        font-size: 11px;
+        font-size: var(--small-font-size);
         padding: 6px 12px;
       }
     }
@@ -3781,7 +3781,7 @@ onUnmounted(() => {
       gap: var(--mid-padding);
 
       .sort-button {
-        font-size: 11px;
+        font-size: var(--small-font-size);
 
         .dot {
           width: 8px;
@@ -3948,7 +3948,7 @@ onUnmounted(() => {
     &::-webkit-scrollbar-thumb {
       background: var(--color-pink);
       border: 2px solid transparent;
-      border-radius: 100px;
+      border-radius: var(--radius-circle);
       background-clip: padding-box;
     }
 
@@ -3998,7 +3998,7 @@ onUnmounted(() => {
     margin: 0 auto;
     padding: 8px 14px;
     border: 1px solid var(--color-text);
-    border-radius: 100px;
+    border-radius: var(--pill-radius);
     background: transparent;
     backdrop-filter: blur(18px);
   }

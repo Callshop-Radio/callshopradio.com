@@ -161,7 +161,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 	display: grid;
 	grid-template-columns: 15rem minmax(0, 1fr);
 	border: 1px solid var(--chat-line);
-	border-radius: 5px;
+	border-radius: var(--radius-media);
 	overflow: hidden;
 	background-color: var(--color-bg);
 }

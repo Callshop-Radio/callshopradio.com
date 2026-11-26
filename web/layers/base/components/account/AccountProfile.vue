@@ -109,7 +109,7 @@ onMounted(load);
 
 <template>
 	<div class="profile">
-		<p v-if="state === 'loading'" class="profile__state">…</p>
+		<p v-if="state === 'loading'" class="profile__state">ï¿½</p>
 		<p v-else-if="state === 'error'" class="profile__state">
 			{{ copy.unavailable }}
 		</p>
@@ -231,7 +231,7 @@ onMounted(load);
 	width: 100%;
 	padding: 0.85rem 1.1rem;
 	border: 0;
-	border-radius: 12px;
+	border-radius: var(--radius-surface);
 	background-color: color-mix(in srgb, var(--color-text) 6%, transparent);
 	color: var(--color-text);
 	font: inherit;
@@ -274,7 +274,7 @@ onMounted(load);
 
 	&:hover {
 		background-color: var(--color-pink);
-		color: #111;
+		color: var(--color-black);
 	}
 }
 
