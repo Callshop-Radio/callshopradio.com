@@ -1139,16 +1139,16 @@ onUnmounted(() => {
 }
 
 .advanced-other {
-  --row-accent: var(--color-pink);
+  --accent: var(--color-pink);
   padding: 0.25rem 0 0.55rem;
   border-bottom: 1px solid var(--as-line, var(--color-grey));
 
   &--pool {
-    --row-accent: var(--color-blue);
+    --accent: var(--color-blue);
   }
 
   &--words {
-    --row-accent: var(--color-green);
+    --accent: var(--color-green);
   }
 
   &__heading {
@@ -1187,7 +1187,7 @@ onUnmounted(() => {
 
     &:hover,
     &:focus-visible {
-      background: color-mix(in srgb, var(--row-accent) 14%, transparent);
+      background: color-mix(in srgb, var(--accent, var(--color-text)) 14%, transparent);
       outline: none;
     }
   }

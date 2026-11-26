@@ -554,15 +554,15 @@ onMounted(() => {
   &.shows,
   &.episodes,
   &.sets {
-    --load-more-accent: var(--color-pink);
+    --accent: var(--color-pink);
   }
 
   &.words {
-    --load-more-accent: var(--color-green);
+    --accent: var(--color-green);
   }
 
   &.pool {
-    --load-more-accent: var(--color-blue);
+    --accent: var(--color-blue);
   }
 
   &__load-more {

@@ -54,13 +54,13 @@ const emit = defineEmits<{
 
   &:hover {
     transform: translateY(-2px);
-    border-color: var(--index-accent, var(--color-purple));
+    border-color: var(--accent, var(--color-purple));
     box-shadow: 0 0.8rem 2rem
-      color-mix(in srgb, var(--index-accent, var(--color-purple)) 18%, transparent);
+      color-mix(in srgb, var(--accent, var(--color-purple)) 18%, transparent);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--index-accent, var(--color-purple));
+    outline: 2px solid var(--accent, var(--color-purple));
     outline-offset: 3px;
   }
 

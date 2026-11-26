@@ -261,12 +261,12 @@ function orDash(value: string) {
     border-color var(--transition-fast);
 
   &:hover {
-    border-color: var(--index-accent, var(--color-purple));
-    color: var(--index-accent, var(--color-purple));
+    border-color: var(--accent, var(--color-purple));
+    color: var(--accent, var(--color-purple));
   }
 
   &:focus-visible {
-    outline: 2px solid var(--index-accent, var(--color-purple));
+    outline: 2px solid var(--accent, var(--color-purple));
     outline-offset: 2px;
   }
 }
@@ -351,12 +351,12 @@ function orDash(value: string) {
       border-color var(--transition-fast);
 
     &:hover {
-      border-color: var(--index-accent, var(--color-purple));
-      color: var(--index-accent, var(--color-purple));
+      border-color: var(--accent, var(--color-purple));
+      color: var(--accent, var(--color-purple));
     }
 
     &:focus-visible {
-      outline: 2px solid var(--index-accent, var(--color-purple));
+      outline: 2px solid var(--accent, var(--color-purple));
       outline-offset: 2px;
     }
   }

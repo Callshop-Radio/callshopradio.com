@@ -104,12 +104,12 @@ const fill = computed(() => {
     }
 
     &:hover:not(:disabled) {
-      color: var(--lab-accent);
-      border-color: var(--lab-accent);
+      color: var(--accent, var(--color-text));
+      border-color: var(--accent, var(--color-text));
     }
 
     &:focus-visible {
-      outline: 2px solid var(--lab-accent);
+      outline: 2px solid var(--accent, var(--color-text));
       outline-offset: 2px;
     }
 
@@ -138,7 +138,7 @@ const fill = computed(() => {
   &__fill {
     position: absolute;
     inset: 0;
-    background-color: var(--lab-accent);
+    background-color: var(--accent, var(--color-text));
     transform-origin: left center;
   }
 

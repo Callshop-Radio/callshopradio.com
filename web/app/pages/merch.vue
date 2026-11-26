@@ -248,7 +248,7 @@ function onDialogClose() {
 
 <style lang="postcss" scoped>
 .merch {
-  --merch-accent: var(--color-merch);
+  --accent: var(--color-merch);
 
   width: 100%;
   max-width: var(--page-max-width);
@@ -345,7 +345,7 @@ function onDialogClose() {
   right: 0.7rem;
   padding: 0.18rem 0.5rem;
   border-radius: var(--radius-pill-sm);
-  background-color: var(--merch-accent);
+  background-color: var(--accent, var(--color-text));
   color: var(--color-black);
   font-family: var(--font-text-semibold);
   font-size: var(--small-font-size);
@@ -451,7 +451,7 @@ function onDialogClose() {
   gap: 0.4rem;
   padding: 0.45rem 0.9rem;
   border-radius: var(--radius-pill);
-  background-color: var(--merch-accent);
+  background-color: var(--accent, var(--color-text));
   color: var(--color-black);
   font-family: var(--font-text-semibold);
   font-size: var(--small-font-size);
@@ -649,7 +649,7 @@ function onDialogClose() {
 .merch-dialog__state {
   padding: 0.1rem 0.45rem;
   border-radius: var(--radius-pill-sm);
-  background-color: var(--merch-accent);
+  background-color: var(--accent, var(--color-text));
   color: var(--color-black);
   font-family: var(--font-text-semibold);
   letter-spacing: var(--button-letter-spacing);

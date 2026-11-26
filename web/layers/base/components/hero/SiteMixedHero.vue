@@ -295,7 +295,7 @@ onUnmounted(() => {
 		v-if="activeItem"
 		class="site-hero mixed-hero"
 		:class="{ 'is-ready': ready, 'is-dragging': isDragging }"
-		:style="{ '--lab-accent': activeAccent }"
+		:style="{ '--accent': activeAccent }"
 	>
 		<LabAtmosphere
 			variant="form"
@@ -536,8 +536,8 @@ onUnmounted(() => {
 }
 
 .mixed-item[data-active="true"] .mixed-item__badge {
-  border-color: var(--lab-accent);
-  color: var(--lab-accent);
+  border-color: var(--accent, var(--color-text));
+  color: var(--accent, var(--color-text));
 }
 
 /* ---------------------------------------------------------------- viewport */
@@ -580,7 +580,7 @@ onUnmounted(() => {
   }
 
   &:focus-visible {
-    outline: 2px solid var(--lab-accent);
+    outline: 2px solid var(--accent, var(--color-text));
     outline-offset: 6px;
     border-radius: var(--radius-media);
   }
@@ -625,7 +625,7 @@ onUnmounted(() => {
   margin: clamp(1.25rem, 2.5vw, 2rem) auto 0;
   padding-top: var(--mid-padding);
   border-top: 1px solid
-    color-mix(in srgb, var(--lab-accent) 45%, transparent);
+    color-mix(in srgb, var(--accent, var(--color-text)) 45%, transparent);
   animation: mixed-caption-in 340ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -642,7 +642,7 @@ onUnmounted(() => {
 }
 
 .mixed-caption__type {
-  color: var(--lab-accent);
+  color: var(--accent, var(--color-text));
   font-family: var(--font-text-semibold);
 }
 
@@ -672,7 +672,7 @@ onUnmounted(() => {
     text-decoration: none;
 
     &:hover {
-      color: var(--lab-accent);
+      color: var(--accent, var(--color-text));
     }
   }
 }
@@ -701,10 +701,10 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.55rem 0.9rem;
-  border: 1px solid var(--lab-accent);
+  border: 1px solid var(--accent, var(--color-text));
   border-radius: var(--radius-media);
   background: transparent;
-  color: var(--lab-accent);
+  color: var(--accent, var(--color-text));
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
   letter-spacing: var(--button-letter-spacing);
@@ -715,7 +715,7 @@ onUnmounted(() => {
     color var(--transition-fast);
 
   &:hover {
-    background: var(--lab-accent);
+    background: var(--accent, var(--color-text));
     color: var(--color-bg);
   }
 }
@@ -740,12 +740,12 @@ onUnmounted(() => {
   text-transform: uppercase;
 
   span {
-    color: var(--lab-accent);
+    color: var(--accent, var(--color-text));
     transition: transform var(--transition-fast);
   }
 
   &:hover {
-    color: var(--lab-accent);
+    color: var(--accent, var(--color-text));
 
     span {
       transform: translateX(3px);

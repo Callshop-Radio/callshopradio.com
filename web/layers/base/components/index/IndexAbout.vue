@@ -69,18 +69,18 @@ const excerpt = computed(() => {
   cursor: pointer;
 
   &:hover {
-    color: var(--index-accent, var(--color-purple));
+    color: var(--accent, var(--color-purple));
   }
 
   &:focus-visible {
-    outline: 2px solid var(--index-accent, var(--color-purple));
+    outline: 2px solid var(--accent, var(--color-purple));
     outline-offset: 3px;
   }
 }
 
 .index-about__sign {
   font-size: var(--base-font-size);
-  color: var(--index-accent, var(--color-purple));
+  color: var(--accent, var(--color-purple));
 }
 
 .index-about__excerpt {

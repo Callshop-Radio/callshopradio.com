@@ -940,7 +940,7 @@ onMounted(() => {
   &.shows,
   &.sets,
   &.episodes {
-    --load-more-accent: var(--color-pink);
+    --accent: var(--color-pink);
 
     .sort-options {
       button {
@@ -962,7 +962,7 @@ onMounted(() => {
   }
 
   &.words {
-    --load-more-accent: var(--color-green);
+    --accent: var(--color-green);
 
     .sort-options {
       button {
@@ -984,7 +984,7 @@ onMounted(() => {
   }
 
   &.pool {
-    --load-more-accent: var(--color-blue);
+    --accent: var(--color-blue);
 
     .sort-options {
       button {

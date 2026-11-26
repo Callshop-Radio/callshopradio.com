@@ -290,7 +290,7 @@ onUnmounted(() => {
 		]"
 		:data-page="page"
 		:style="{
-			'--lab-accent': accent,
+			'--accent': accent,
 			'--lab-shift-x': `${shiftX}px`,
 			'--lab-shift-y': `${shiftY}px`,
 			'--lab-px': `${px}px`,
@@ -375,7 +375,7 @@ onUnmounted(() => {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  color: var(--lab-accent);
+  color: var(--accent, var(--color-text));
   -webkit-mask-image: linear-gradient(
     to bottom,
     #000 0,
@@ -416,8 +416,8 @@ onUnmounted(() => {
     inset: 0;
     background: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--lab-accent) 16%, transparent) 0%,
-      color-mix(in srgb, var(--lab-accent) 7%, transparent) 42%,
+      color-mix(in srgb, var(--accent, var(--color-text)) 16%, transparent) 0%,
+      color-mix(in srgb, var(--accent, var(--color-text)) 7%, transparent) 42%,
       transparent 78%
     );
   }
@@ -428,9 +428,9 @@ onUnmounted(() => {
     left: 50%;
     width: min(76vw, 78rem);
     aspect-ratio: 1;
-    border: 1px solid color-mix(in srgb, var(--lab-accent) 38%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent, var(--color-text)) 38%, transparent);
     border-radius: 50%;
-    background: color-mix(in srgb, var(--lab-accent) 22%, transparent);
+    background: color-mix(in srgb, var(--accent, var(--color-text)) 22%, transparent);
     transform: translateX(-50%);
     animation: horizon-breathe 38s ease-in-out infinite alternate;
   }
@@ -439,7 +439,7 @@ onUnmounted(() => {
     position: absolute;
     inset: 9%;
     border: 1px solid
-      color-mix(in srgb, var(--lab-accent) 24%, transparent);
+      color-mix(in srgb, var(--accent, var(--color-text)) 24%, transparent);
     border-radius: 50%;
   }
 
@@ -451,8 +451,8 @@ onUnmounted(() => {
     background: linear-gradient(
       90deg,
       transparent 0%,
-      color-mix(in srgb, var(--lab-accent) 48%, transparent) 18%,
-      color-mix(in srgb, var(--lab-accent) 48%, transparent) 82%,
+      color-mix(in srgb, var(--accent, var(--color-text)) 48%, transparent) 18%,
+      color-mix(in srgb, var(--accent, var(--color-text)) 48%, transparent) 82%,
       transparent 100%
     );
     opacity: 0.62;
@@ -473,8 +473,8 @@ onUnmounted(() => {
     .horizon-field {
       background: linear-gradient(
         to right,
-        color-mix(in srgb, var(--lab-accent) 17%, transparent) 0%,
-        color-mix(in srgb, var(--lab-accent) 6%, transparent) 48%,
+        color-mix(in srgb, var(--accent, var(--color-text)) 17%, transparent) 0%,
+        color-mix(in srgb, var(--accent, var(--color-text)) 6%, transparent) 48%,
         transparent 86%
       );
     }
@@ -502,8 +502,8 @@ onUnmounted(() => {
       background: linear-gradient(
         180deg,
         transparent 0%,
-        color-mix(in srgb, var(--lab-accent) 44%, transparent) 18%,
-        color-mix(in srgb, var(--lab-accent) 44%, transparent) 82%,
+        color-mix(in srgb, var(--accent, var(--color-text)) 44%, transparent) 18%,
+        color-mix(in srgb, var(--accent, var(--color-text)) 44%, transparent) 82%,
         transparent 100%
       );
 
@@ -526,8 +526,8 @@ onUnmounted(() => {
       background: linear-gradient(
         to bottom,
         transparent 8%,
-        color-mix(in srgb, var(--lab-accent) 14%, transparent) 30%,
-        color-mix(in srgb, var(--lab-accent) 7%, transparent) 58%,
+        color-mix(in srgb, var(--accent, var(--color-text)) 14%, transparent) 30%,
+        color-mix(in srgb, var(--accent, var(--color-text)) 7%, transparent) 58%,
         transparent 88%
       );
     }
@@ -561,9 +561,9 @@ onUnmounted(() => {
 .lab-atmosphere--strata {
   .strata-plane {
     position: absolute;
-    border: 1px solid color-mix(in srgb, var(--lab-accent) 16%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent, var(--color-text)) 16%, transparent);
     border-radius: var(--radius-media);
-    background: color-mix(in srgb, var(--lab-accent) 6%, transparent);
+    background: color-mix(in srgb, var(--accent, var(--color-text)) 6%, transparent);
     transform-origin: center center;
     will-change: transform;
   }
@@ -581,8 +581,8 @@ onUnmounted(() => {
     left: 8vw;
     width: 90vw;
     height: 68vh;
-    border-color: color-mix(in srgb, var(--lab-accent) 20%, transparent);
-    background: color-mix(in srgb, var(--lab-accent) 9%, transparent);
+    border-color: color-mix(in srgb, var(--accent, var(--color-text)) 20%, transparent);
+    background: color-mix(in srgb, var(--accent, var(--color-text)) 9%, transparent);
     animation: strata-b 46s 1s ease-in-out infinite alternate;
   }
 
@@ -591,8 +591,8 @@ onUnmounted(() => {
     left: 22vw;
     width: 72vw;
     height: 54vh;
-    border-color: color-mix(in srgb, var(--lab-accent) 24%, transparent);
-    background: color-mix(in srgb, var(--lab-accent) 12%, transparent);
+    border-color: color-mix(in srgb, var(--accent, var(--color-text)) 24%, transparent);
+    background: color-mix(in srgb, var(--accent, var(--color-text)) 12%, transparent);
     animation: strata-c 50s 2s ease-in-out infinite alternate;
   }
 
@@ -602,7 +602,7 @@ onUnmounted(() => {
     right: 0;
     left: 0;
     height: 1px;
-    background: color-mix(in srgb, var(--lab-accent) 34%, transparent);
+    background: color-mix(in srgb, var(--accent, var(--color-text)) 34%, transparent);
     opacity: 0.55;
   }
 
@@ -671,7 +671,7 @@ onUnmounted(() => {
     width: min(86vh, 86vw);
     height: min(86vh, 86vw);
     overflow: visible;
-    color: var(--lab-accent);
+    color: var(--accent, var(--color-text));
     opacity: 1;
     transform: translate(-50%, -50%) translate(14vw, 1vh);
   }
@@ -749,27 +749,27 @@ onUnmounted(() => {
   }
 
   .horizon-disc {
-    background: color-mix(in srgb, var(--lab-accent) 30%, transparent);
-    border-color: color-mix(in srgb, var(--lab-accent) 48%, transparent);
+    background: color-mix(in srgb, var(--accent, var(--color-text)) 30%, transparent);
+    border-color: color-mix(in srgb, var(--accent, var(--color-text)) 48%, transparent);
   }
 
   .horizon-disc__ring {
-    border-color: color-mix(in srgb, var(--lab-accent) 32%, transparent);
+    border-color: color-mix(in srgb, var(--accent, var(--color-text)) 32%, transparent);
   }
 
   .strata-plane {
-    border-color: color-mix(in srgb, var(--lab-accent) 28%, transparent);
-    background: color-mix(in srgb, var(--lab-accent) 10%, transparent);
+    border-color: color-mix(in srgb, var(--accent, var(--color-text)) 28%, transparent);
+    background: color-mix(in srgb, var(--accent, var(--color-text)) 10%, transparent);
   }
 
   .strata-plane--b {
-    border-color: color-mix(in srgb, var(--lab-accent) 34%, transparent);
-    background: color-mix(in srgb, var(--lab-accent) 14%, transparent);
+    border-color: color-mix(in srgb, var(--accent, var(--color-text)) 34%, transparent);
+    background: color-mix(in srgb, var(--accent, var(--color-text)) 14%, transparent);
   }
 
   .strata-plane--c {
-    border-color: color-mix(in srgb, var(--lab-accent) 40%, transparent);
-    background: color-mix(in srgb, var(--lab-accent) 18%, transparent);
+    border-color: color-mix(in srgb, var(--accent, var(--color-text)) 40%, transparent);
+    background: color-mix(in srgb, var(--accent, var(--color-text)) 18%, transparent);
   }
 
   .form-line {

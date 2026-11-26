@@ -148,8 +148,8 @@ function onArtworkError() {
     background:
       linear-gradient(
         135deg,
-        color-mix(in srgb, var(--lab-accent) 70%, var(--color-bg)) 0%,
-        color-mix(in srgb, var(--lab-accent) 28%, var(--color-bg)) 100%
+        color-mix(in srgb, var(--accent, var(--color-text)) 70%, var(--color-bg)) 0%,
+        color-mix(in srgb, var(--accent, var(--color-text)) 28%, var(--color-bg)) 100%
       );
   }
 

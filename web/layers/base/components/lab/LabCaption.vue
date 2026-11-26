@@ -199,7 +199,7 @@ const teaserBlocks = computed(() => {
 
   &__index {
     font-variant-numeric: tabular-nums;
-    color: var(--lab-accent, var(--color-text));
+    color: var(--accent, var(--color-text));
   }
 
   &__title {
@@ -278,17 +278,17 @@ const teaserBlocks = computed(() => {
       background-color var(--transition-fast);
 
     &:hover {
-      border-color: var(--lab-accent);
-      color: var(--lab-accent);
+      border-color: var(--accent, var(--color-text));
+      color: var(--accent, var(--color-text));
     }
 
     &:focus-visible {
-      outline: 2px solid var(--lab-accent);
+      outline: 2px solid var(--accent, var(--color-text));
       outline-offset: 2px;
     }
 
     &--play {
-      border-color: var(--lab-accent);
+      border-color: var(--accent, var(--color-text));
     }
   }
 
@@ -302,7 +302,7 @@ const teaserBlocks = computed(() => {
 
   &--stack {
     padding-top: 0.7rem;
-    border-top: 2px solid var(--lab-accent);
+    border-top: 2px solid var(--accent, var(--color-text));
   }
 
   &--column {

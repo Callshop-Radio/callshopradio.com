@@ -15,7 +15,7 @@ withDefaults(
 <template>
 	<section
 		class="archive-masthead"
-		:style="{ '--archive-accent': accent }"
+		:style="{ '--accent': accent }"
 	>
 		<div class="archive-masthead__glow" aria-hidden="true" />
 
@@ -52,7 +52,7 @@ withDefaults(
   pointer-events: none;
   background: radial-gradient(
     circle at center,
-    var(--archive-accent) 0%,
+    var(--accent, var(--color-text)) 0%,
     transparent 68%
   );
   opacity: 0.16;
@@ -104,7 +104,7 @@ withDefaults(
 .archive-masthead__rule {
   height: 2px;
   margin-top: 1.5rem;
-  background: var(--archive-accent);
+  background: var(--accent, var(--color-text));
 }
 
 @media screen and (max-width: 900px) {

@@ -153,7 +153,7 @@ watch(
 
 <style lang="postcss" scoped>
 .index-page {
-  --index-accent: var(--color-purple);
+  --accent: var(--color-purple);
 
   width: 100%;
   max-width: var(--page-max-width);
@@ -178,7 +178,7 @@ watch(
 }
 
 .index-intro__eyebrow {
-  color: var(--index-accent, var(--color-purple));
+  color: var(--accent, var(--color-purple));
 }
 
 .index-intro__title {

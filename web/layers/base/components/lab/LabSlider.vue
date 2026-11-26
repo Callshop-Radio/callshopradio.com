@@ -308,7 +308,7 @@ function itemLabel(item: LabItem) {
 			`lab-slider--${page}`,
 			{ 'is-dragging': isDragging, 'is-front-worm': frontWorm },
 		]"
-		:style="{ '--lab-accent': accent }"
+		:style="{ '--accent': accent }"
 	>
 		<!-- Shows: the active artwork owns the stage; the label sits under it. -->
 		<div v-if="page === 'shows'" class="lab-stage lab-stage--shows">
@@ -672,7 +672,7 @@ function itemLabel(item: LabItem) {
   }
 
   &:focus-visible {
-    outline: 2px solid var(--lab-accent);
+    outline: 2px solid var(--accent, var(--color-text));
     outline-offset: 6px;
     border-radius: var(--radius-media);
   }
@@ -743,7 +743,7 @@ function itemLabel(item: LabItem) {
   &[data-active="true"] .lab-media-wrap:hover {
     box-shadow:
       0 1.4rem 3.6rem rgba(0, 0, 0, 0.24),
-      0 0 0 1px color-mix(in srgb, var(--lab-accent) 55%, transparent);
+      0 0 0 1px color-mix(in srgb, var(--accent, var(--color-text)) 55%, transparent);
   }
 }
 
@@ -792,11 +792,11 @@ function itemLabel(item: LabItem) {
 
   &:hover {
     box-shadow: inset 0 0 0 1px
-      color-mix(in srgb, var(--lab-accent) 62%, transparent);
+      color-mix(in srgb, var(--accent, var(--color-text)) 62%, transparent);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--lab-accent);
+    outline: 2px solid var(--accent, var(--color-text));
     outline-offset: -2px;
   }
 }
@@ -864,7 +864,7 @@ function itemLabel(item: LabItem) {
   margin-top: 0.5rem;
   padding: 0.9rem var(--mid-padding) var(--mid-padding);
   border-top-width: 1px;
-  border-top-color: color-mix(in srgb, var(--lab-accent) 42%, transparent);
+  border-top-color: color-mix(in srgb, var(--accent, var(--color-text)) 42%, transparent);
   border-radius: var(--radius-media);
   background-color: var(--color-bg);
 }
@@ -873,7 +873,7 @@ function itemLabel(item: LabItem) {
   margin-top: 0.5rem;
   padding-top: var(--mid-padding);
   border-top-width: 2px;
-  border-top-color: color-mix(in srgb, var(--lab-accent) 70%, transparent);
+  border-top-color: color-mix(in srgb, var(--accent, var(--color-text)) 70%, transparent);
 }
 
 /* ---------------------------------------------------------------- layouts */
@@ -963,7 +963,7 @@ function itemLabel(item: LabItem) {
   margin-top: 0.5rem;
   padding-top: var(--mid-padding);
   border-top: 2px solid
-    color-mix(in srgb, var(--lab-accent) 70%, transparent);
+    color-mix(in srgb, var(--accent, var(--color-text)) 70%, transparent);
   min-height: 8.5rem;
   max-height: 10rem;
   overflow: hidden;
@@ -996,7 +996,7 @@ function itemLabel(item: LabItem) {
   padding: var(--mid-padding) var(--mid-padding)
     calc(var(--mid-padding) + 0.25rem);
   border-top-width: 1px;
-  border-top-color: color-mix(in srgb, var(--lab-accent) 40%, transparent);
+  border-top-color: color-mix(in srgb, var(--accent, var(--color-text)) 40%, transparent);
   border-radius: var(--radius-media);
   background-color: var(--color-bg);
   --lab-band-min-height: 9.5rem;

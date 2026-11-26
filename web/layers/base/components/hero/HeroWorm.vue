@@ -70,7 +70,7 @@ onUnmounted(() => unregisterFormWormTarget(wormEl.value));
   z-index: 5;
   overflow: visible;
   pointer-events: none;
-  color: var(--lab-accent);
+  color: var(--accent, var(--color-text));
 
   &__parallax {
     position: absolute;
@@ -87,7 +87,7 @@ onUnmounted(() => unregisterFormWormTarget(wormEl.value));
     width: min(86vh, 86vw);
     height: min(86vh, 86vw);
     overflow: visible;
-    color: var(--lab-accent);
+    color: var(--accent, var(--color-text));
     opacity: 1;
     transform: translate(-50%, -50%) translate(14vw, 1vh);
   }

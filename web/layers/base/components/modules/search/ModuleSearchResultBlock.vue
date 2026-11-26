@@ -505,7 +505,7 @@ watch(
 
   /* Content-type based styling for sets/shows */
   &--sets {
-    --load-more-accent: var(--color-pink);
+    --accent: var(--color-pink);
 
     .teaser-item__tags.city-tags .tag.city {
       background-color: var(--color-pink);
@@ -520,7 +520,7 @@ watch(
 
   /* Content-type based styling for words */
   &--words {
-    --load-more-accent: var(--color-green);
+    --accent: var(--color-green);
 
     .teaser-item__tags.city-tags .tag.city {
       background-color: var(--color-green);
@@ -530,7 +530,7 @@ watch(
 
   /* Content-type based styling for pool */
   &--pool {
-    --load-more-accent: var(--color-blue);
+    --accent: var(--color-blue);
 
     .teaser-item__tags.city-tags .tag.city {
       background-color: var(--color-blue);

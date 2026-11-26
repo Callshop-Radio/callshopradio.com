@@ -39,7 +39,7 @@
     .module-carousel {
       &.pool {
         .module-carousel__header__type__pill {
-          --pill-accent: var(--color-blue);
+          --accent: var(--color-blue);
         }
         .city-tags {
           .tag {
@@ -66,7 +66,7 @@
 
       &.words {
         .module-carousel__header__type__pill {
-          --pill-accent: var(--color-green);
+          --accent: var(--color-green);
         }
         .city-tags {
           .tag {
@@ -104,7 +104,7 @@
       &.sets {
         .module-carousel__header__type__pill,
         .module-teaser__header__type__pill {
-          --pill-accent: var(--color-pink);
+          --accent: var(--color-pink);
         }
         .city-tags {
           .tag {
@@ -153,15 +153,15 @@
             min-width: 8.5rem;
             max-width: max-content;
             text-align: center;
-            color: var(--pill-accent, var(--color-text));
+            color: var(--accent, var(--color-text));
             background-color: transparent;
-            border: 0.09325rem solid var(--pill-accent, var(--color-text));
+            border: 0.09325rem solid var(--accent, var(--color-text));
             transition:
               background-color 0.2s ease,
               color 0.2s ease;
 
             &:hover {
-              background-color: var(--pill-accent, var(--color-text));
+              background-color: var(--accent, var(--color-text));
               color: var(--color-white);
             }
           }
@@ -176,10 +176,10 @@
     }
     .module-teaser {
       &.words {
-        --load-more-accent: var(--color-green);
+        --accent: var(--color-green);
 
         .module-teaser__header__type__pill {
-          --pill-accent: var(--color-green);
+          --accent: var(--color-green);
         }
         .city-tags {
           .tag {
@@ -204,10 +204,10 @@
         }
       }
       &.pool {
-        --load-more-accent: var(--color-blue);
+        --accent: var(--color-blue);
 
         .module-teaser__header__type__pill {
-          --pill-accent: var(--color-blue);
+          --accent: var(--color-blue);
         }
         .city-tags {
           .tag {
@@ -234,10 +234,10 @@
       &.shows,
       &.episodes,
       &.sets {
-        --load-more-accent: var(--color-pink);
+        --accent: var(--color-pink);
 
         .module-teaser__header__type__pill {
-          --pill-accent: var(--color-pink);
+          --accent: var(--color-pink);
         }
         .city-tags {
           .tag {
@@ -272,15 +272,15 @@
             padding: var(--small-padding) var(--big-padding);
             max-width: max-content;
             text-align: center;
-            color: var(--pill-accent, var(--color-text));
+            color: var(--accent, var(--color-text));
             background-color: transparent;
-            border: 0.09325rem solid var(--pill-accent, var(--color-text));
+            border: 0.09325rem solid var(--accent, var(--color-text));
             transition:
               background-color 0.2s ease,
               color 0.2s ease;
 
             &:hover {
-              background-color: var(--pill-accent, var(--color-text));
+              background-color: var(--accent, var(--color-text));
               color: var(--color-white);
               text-decoration: none;
             }
@@ -330,10 +330,10 @@
   width: 2.75rem;
   height: 2.75rem;
   padding: 0;
-  border: 0.09325rem solid var(--load-more-accent, var(--color-pink));
+  border: 0.09325rem solid var(--accent, var(--color-pink));
   border-radius: 50%;
   background-color: transparent;
-  color: var(--load-more-accent, var(--color-pink));
+  color: var(--accent, var(--color-pink));
   box-shadow: none;
   cursor: pointer;
   font-family: var(--font-text-semibold);
@@ -357,7 +357,7 @@
   }
 
   &:hover {
-    background-color: var(--load-more-accent, var(--color-pink));
+    background-color: var(--accent, var(--color-pink));
     color: var(--color-white);
 
     svg {
@@ -366,7 +366,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--load-more-accent, var(--color-pink));
+    outline: 2px solid var(--accent, var(--color-pink));
     outline-offset: 3px;
   }
 }
@@ -441,7 +441,7 @@
 .pool-archive {
   .related-content .load-more-button,
   .content-grid .load-more-button {
-    --load-more-accent: var(--color-blue);
+    --accent: var(--color-blue);
   }
 }
 
@@ -449,7 +449,7 @@
 .shows-archive {
   .related-content .load-more-button,
   .content-grid .load-more-button {
-    --load-more-accent: var(--color-pink);
+    --accent: var(--color-pink);
   }
 }
 

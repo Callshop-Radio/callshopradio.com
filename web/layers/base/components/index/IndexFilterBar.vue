@@ -128,8 +128,8 @@ function setSort(value: SortMode) {
     }
 
     &:focus-visible {
-      border-color: var(--index-accent, var(--color-purple));
-      outline: 2px solid var(--index-accent, var(--color-purple));
+      border-color: var(--accent, var(--color-purple));
+      outline: 2px solid var(--accent, var(--color-purple));
       outline-offset: 2px;
     }
   }
@@ -165,18 +165,18 @@ function setSort(value: SortMode) {
       color var(--transition-fast);
 
     &:hover {
-      border-color: var(--index-accent, var(--color-purple));
-      color: var(--index-accent, var(--color-purple));
+      border-color: var(--accent, var(--color-purple));
+      color: var(--accent, var(--color-purple));
     }
 
     &[aria-pressed="true"] {
-      border-color: var(--index-accent, var(--color-purple));
-      background-color: var(--index-accent, var(--color-purple));
+      border-color: var(--accent, var(--color-purple));
+      background-color: var(--accent, var(--color-purple));
       color: var(--color-bg);
     }
 
     &:focus-visible {
-      outline: 2px solid var(--index-accent, var(--color-purple));
+      outline: 2px solid var(--accent, var(--color-purple));
       outline-offset: 2px;
     }
   }
@@ -184,7 +184,7 @@ function setSort(value: SortMode) {
 
 .index-filter__count {
   margin: 0 0 0 auto;
-  color: var(--index-accent, var(--color-purple));
+  color: var(--accent, var(--color-purple));
   font-size: var(--small-font-size);
   font-variant-numeric: tabular-nums;
   letter-spacing: var(--button-letter-spacing);
