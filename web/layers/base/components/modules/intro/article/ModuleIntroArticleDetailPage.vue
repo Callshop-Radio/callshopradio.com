@@ -9,6 +9,12 @@ const mainStore = useMainStore();
 interface Image {
 	asset?: {
 		url?: string;
+		metadata?: {
+			dimensions?: {
+				width?: number;
+				height?: number;
+			};
+		};
 	};
 }
 
@@ -50,9 +56,17 @@ const useImageManagement = () => {
 	function getItemImage(item?: Article): Image | null {
 		if (!item) return null;
 
-		// Image from the item itself
-		if (item.image || item.mainImage) {
-			return item.image || item.mainImage || null;
+		// The detail hero is full-bleed; prefer whichever image is larger.
+		// `image` is often the teaser/thumbnail, `mainImage` the original.
+		const candidates = [item.image, item.mainImage].filter(
+			(image): image is Image => Boolean(image?.asset?.url),
+		);
+		if (candidates.length) {
+			return candidates.reduce((best, current) => {
+				const bestWidth = best.asset?.metadata?.dimensions?.width ?? 0;
+				const currentWidth = current.asset?.metadata?.dimensions?.width ?? 0;
+				return currentWidth > bestWidth ? current : best;
+			});
 		}
 
 		// Fallback for articles
@@ -85,7 +99,8 @@ const useArticle = () => {
 		// Use the image from the article
 		const itemImage = getItemImage(item);
 		if (itemImage?.asset?.url) {
-			return itemImage.asset.url;
+			// Full-bleed hero: 750px would be a 2.5x upscale on a desktop.
+			return sanityImageUrl(itemImage.asset.url, 2400) ?? "";
 		}
 
 		// Fall back to store fallback
@@ -93,7 +108,7 @@ const useArticle = () => {
 			mainStore?.siteFallbacks?.fallbackArticle?.image?.asset?.url;
 
 		if (storeFallbackUrl) {
-			return storeFallbackUrl;
+			return sanityImageUrl(storeFallbackUrl, 2400) ?? "";
 		}
 
 		return "";
@@ -168,6 +183,16 @@ const availableLocales = computed(() => {
 	return [];
 });
 
+// The EN/DE toggle only makes sense when the article really exists in both
+// languages; most articles are single-language and used to show one disabled
+// button next to the active one.
+const hasBothLocales = computed(() => {
+	const locales = availableLocales.value
+		.filter((value): value is string => typeof value === "string")
+		.map((value) => value.toLowerCase());
+	return locales.includes("en") && locales.includes("de");
+});
+
 const currentArticleText = computed(() =>
 	parseI18nObj(props.article?.text, articleLocale.value),
 );
@@ -187,7 +212,7 @@ const currentArticleText = computed(() =>
 			<button
 				v-for="(tag, index) in cityTags"
 				:key="tag._id || index"
-				class="tag"
+				class="tag city"
 				type="button"
 			>
 					{{ getI18nLabel(tag?.title) }}
@@ -254,7 +279,10 @@ const currentArticleText = computed(() =>
 					</div>
 					<div v-if="article?.text" class="article-text-container">
 						<RichText class="article-text" :blocks="currentArticleText" />
-						<div class="article-language-switcher">
+						<div
+							v-if="hasBothLocales"
+							class="article-language-switcher"
+						>
 							<button
 								v-for="loc in ['en', 'de']"
 								:key="loc"
@@ -319,14 +347,17 @@ const currentArticleText = computed(() =>
     padding: 0 var(--mid-padding);
     box-sizing: border-box;
     .tag {
-      background-color: var(--color-green);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 1.25rem;
+      padding: 0 var(--base-padding);
       border: none;
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
-      border-top-right-radius: 8px;
-      border-top-left-radius: 8px;
-      padding: calc(var(--small-padding) / 1.5) calc(var(--base-padding) * 1.5);
-      font-size: var(--base-font-size);
+      /* A city flag: rounded on top, square where it meets the edge. */
+      border-radius: 8px 8px 0 0;
+      background-color: var(--color-green);
+      font-size: var(--small-font-size);
+      line-height: 1;
     }
   }
   .article-tags {

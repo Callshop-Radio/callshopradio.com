@@ -18,22 +18,25 @@ const props = defineProps({
 	type: {
 		type: String,
 		required: true,
-		validator: (value) => {
-			return [
-				"sets",
-				"shows",
-				"words",
-				"persons",
-				"venues",
-				"pool",
-				"article",
-				"primary",
-				"secondary",
-				"accent",
-				"blue",
-				"green",
-				"yellow",
-			].includes(value);
+		validator: (value: unknown) => {
+			return (
+				typeof value === "string" &&
+				[
+					"sets",
+					"shows",
+					"words",
+					"persons",
+					"venues",
+					"pool",
+					"article",
+					"primary",
+					"secondary",
+					"accent",
+					"blue",
+					"green",
+					"yellow",
+				].includes(value)
+			);
 		},
 	},
 	// Optional title
@@ -135,6 +138,16 @@ function formatDate(dateString) {
 		month: "2-digit",
 		year: "numeric",
 	});
+}
+
+const RELATED_IMAGE_SIZES =
+	"(min-width: 1101px) 30vw, (min-width: 721px) 45vw, 90vw";
+
+function sanitySrcset(url?: string | null) {
+	if (!url) return undefined;
+	return [400, 750, 1200]
+		.map((width) => `${sanityImageUrl(url, width)} ${width}w`)
+		.join(", ");
 }
 
 // Functions for image handling
@@ -246,18 +259,25 @@ onMounted(() => {
 		<div class="related-content__grid">
 			<!-- Grid items -->
 			<div
-				v-for="item in visibleItems"
+				v-for="(item, index) in visibleItems"
 				:key="item?._id"
 				:class="`related-item related-item--${style} ${typeClass}`"
 			>
 				<!-- Image -->
-				<ElementsContentLink :item="item" class="related-item__link">
+				<ElementsContentLink
+					:item="item"
+					:prefetch-on-proximity="index < 3"
+					class="related-item__link"
+				>
 					<div v-if="type === 'sets'" class="related-item__image">
 						<img
 							v-if="item?.image && item?.image.asset && item?.image.asset.url"
-							:src="item?.image.asset.url"
+							:src="sanityImageUrl(item?.image?.asset?.url)"
+							:srcset="sanitySrcset(item?.image?.asset?.url)"
+							:sizes="RELATED_IMAGE_SIZES"
 							:alt="item?.title || ''"
 							loading="lazy"
+							decoding="async"
 						>
 						<div v-else-if="item?.soundcloud" class="track-artwork">
 							<img
@@ -265,6 +285,8 @@ onMounted(() => {
 								:src="artworkUrls.get(item?._id)"
 								alt="Track Artwork"
 								class="track-image"
+								loading="lazy"
+								decoding="async"
 							>
 							<div v-else class="track-artwork-placeholder"/>
 						</div>
@@ -272,9 +294,13 @@ onMounted(() => {
 						<div v-else class="image-placeholder">
 							<img
 								v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
-								:src="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
+								:src="sanityImageUrl(mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url)"
+								:srcset="sanitySrcset(mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url)"
+								:sizes="RELATED_IMAGE_SIZES"
 								alt="Fallback Image"
 								class="fallback-image"
+								loading="lazy"
+								decoding="async"
 							>
 						</div>
 					</div>
@@ -285,15 +311,23 @@ onMounted(() => {
 									getItemImage(item).asset &&
 									getItemImage(item).asset.url
 							"
-							:src="getItemImage(item).asset.url"
+							:src="sanityImageUrl(getItemImage(item).asset.url)"
+							:srcset="sanitySrcset(getItemImage(item).asset.url)"
+							:sizes="RELATED_IMAGE_SIZES"
 							:alt="item?.title || ''"
+							loading="lazy"
+							decoding="async"
 						>
 						<div v-else class="image-placeholder">
 							<img
 								v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
-								:src="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
+								:src="sanityImageUrl(mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url)"
+								:srcset="sanitySrcset(mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url)"
+								:sizes="RELATED_IMAGE_SIZES"
 								alt="Fallback Image"
 								class="fallback-image"
+								loading="lazy"
+								decoding="async"
 							>
 						</div>
 					</div>
@@ -329,19 +363,11 @@ onMounted(() => {
 						<!-- Play button for sets -->
 						<button
 							v-if="type === 'sets' && item?.soundcloud"
-							class="play-button"
+							class="play-button" type="button"
 							@click.prevent="playTrack(item)"
 						>
 							<span class="sr-only">Play</span>
-							<svg
-								width="9"
-								height="12"
-								viewBox="0 0 9 12"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path d="M9 6L0 11.1962L0 0.803847L9 6Z" fill="currentColor" />
-							</svg>
+							<img src="/icons/play-button.svg" alt="" aria-hidden="true" width="65" height="65" />
 						</button>
 					</section>
 
@@ -368,7 +394,7 @@ onMounted(() => {
 							class="show-artists"
 						>
 							<h3
-								v-for="(artist, index) in item?.persons"
+								v-for="artist in item?.persons"
 								:key="artist._id"
 								class="related-item__artist"
 							>
@@ -377,13 +403,9 @@ onMounted(() => {
 									:pool="artist"
 									class="related-item__link"
 								>
-									{{ artist?.title
-									}}{{ index < item?.persons?.length - 1 ? "," : "" }}&nbsp;
+									{{ artist?.title }}
 								</ElementsContentLink>
-								<span v-else>
-									{{ artist.title
-									}}{{ index < item?.persons?.length - 1 ? "," : "" }}&nbsp;
-								</span>
+								<span v-else>{{ artist.title }}</span>
 							</h3>
 						</div>
 					</div>
@@ -509,38 +531,24 @@ onMounted(() => {
     gap: calc(var(--big-margin) / 2) calc(var(--big-margin) * 1.9875);
   }
 
+  &.shows,
+  &.episodes,
+  &.sets {
+    --load-more-accent: var(--color-pink);
+  }
+
+  &.words {
+    --load-more-accent: var(--color-green);
+  }
+
+  &.pool {
+    --load-more-accent: var(--color-blue);
+  }
+
   &__load-more {
     display: flex;
     justify-content: flex-end;
     margin-top: var(--mid-margin);
-
-    .load-more-button {
-      display: flex;
-      align-items: center;
-      gap: var(--small-padding);
-      padding: var(--small-padding) var(--big-padding);
-      background-color: transparent;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: var(--font-text-semibold);
-      background-color: var(--color-bg);
-      border-radius: 100px;
-
-      &:hover {
-        @media (min-width: 1024px) {
-          color: var(--color-bg);
-        }
-      }
-
-      svg {
-        width: var(--base-font-size);
-        height: var(--base-font-size);
-      }
-
-      .plus-icon {
-        font-size: 1.2rem;
-      }
-    }
   }
 
   .related-item__content__show {
@@ -728,7 +736,6 @@ onMounted(() => {
       max-width: calc(50% - var(--big-padding) * 1.5);
       background-color: var(--color-text);
       border-radius: 12px;
-      border: 1px solid var(--color-text);
       overflow: hidden;
       padding: 0;
       margin-right: 0;
@@ -744,10 +751,12 @@ onMounted(() => {
 
       &__image {
         width: 100%;
+        border-radius: 5px 5px 0 0 !important;
 
         img {
           aspect-ratio: 3 / 1.5 !important;
           width: 100%;
+          border-radius: 5px 5px 0 0 !important;
         }
       }
 
@@ -876,5 +885,9 @@ onMounted(() => {
       }
     }
   }
+}
+.related-content.sets .related-item .related-item__title {
+  font-size: 1.25rem;
+  line-height: 1.05;
 }
 </style>

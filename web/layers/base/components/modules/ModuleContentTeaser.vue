@@ -172,7 +172,6 @@ async function loadMoreSelfContent() {
 // State for visible items
 const itemsPerPage = computed(() => (props.module.type === "words" ? 2 : 3));
 const visibleItemCount = ref(itemsPerPage.value);
-const loadMoreClickCount = ref(0); // Counter for Load More clicks
 
 // Sort state
 const sortMode = ref("new"); // Defaults to "new" (chronological)
@@ -187,7 +186,6 @@ function changeSortMode(mode: string) {
 	sortMode.value = mode;
 	// Reset items after sorting
 	visibleItemCount.value = itemsPerPage.value;
-	loadMoreClickCount.value = 0; // Reset the counter on sorting
 }
 
 // Helper function for formatting date/time
@@ -209,7 +207,6 @@ const artworkUrls = ref(new Map());
 async function loadMoreItems() {
 	// Simple pagination
 	visibleItemCount.value += itemsPerPage.value;
-	loadMoreClickCount.value++;
 
 	// Check if we need to load more from server
 	const currentItems = selfLoadedItems.value || [];
@@ -249,11 +246,6 @@ function _navigateToOverview() {
 // Determine whether more items are available to load
 const hasMoreItems = computed(() => {
 	return sortedItems.value && sortedItems.value.length > visibleItemCount.value;
-});
-
-// Determine whether "Show More" should be displayed
-const shouldShowMoreButton = computed(() => {
-	return loadMoreClickCount.value >= 2 && hasMoreItems.value;
 });
 
 // All available items based on module type
@@ -581,7 +573,7 @@ onMounted(() => {
 					<div v-if="props.module.type === 'sets'" class="teaser-item__image">
 						<img
 							v-if="item?.image && item?.image.asset && item?.image.asset.url"
-							:src="item?.image.asset.url"
+							:src="sanityImageUrl(item?.image?.asset?.url)"
 							:alt="item?.title || ''"
 							loading="lazy"
 						>
@@ -598,7 +590,7 @@ onMounted(() => {
 						<div v-else class="image-placeholder">
 							<img
 								v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
-								:src="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
+								:src="sanityImageUrl(mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url)"
 								alt="Fallback Image"
 								class="fallback-image"
 							>
@@ -612,12 +604,13 @@ onMounted(() => {
 									getItemImage(item).asset.url
 							"
 							:image="getItemImage(item)"
+							sizes="(min-width: 1101px) 30vw, (min-width: 721px) 45vw, 90vw"
 							:class="`media-${props.module.style || 'default'}`"
 						/>
 						<div v-else class="image-placeholder">
 							<img
 								v-if="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
-								:src="mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url"
+								:src="sanityImageUrl(mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url)"
 								alt="Fallback Image"
 								class="fallback-image"
 							>
@@ -655,19 +648,11 @@ onMounted(() => {
 						<!-- Play button for sets -->
 						<button
 							v-if="props.module.type === 'sets' && item?.soundcloud"
-							class="play-button"
+							class="play-button" type="button"
 							@click.prevent="playTrack(item)"
 						>
 							<span class="sr-only">Play</span>
-							<svg
-								width="9"
-								height="12"
-								viewBox="0 0 9 12"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path d="M9 6L0 11.1962L0 0.803847L9 6Z" fill="currentColor" />
-							</svg>
+							<img src="/icons/play-button.svg" alt="" aria-hidden="true" width="65" height="65" />
 						</button>
 					</section>
 
@@ -702,7 +687,7 @@ onMounted(() => {
 							class="show-artists"
 						>
 							<h3
-								v-for="(artist, index) in item?.persons"
+								v-for="artist in item?.persons"
 								:key="artist._id"
 								class="teaser-item__artist"
 							>
@@ -711,13 +696,9 @@ onMounted(() => {
 									:pool="artist"
 									class="teaser-item__link"
 								>
-									{{ artist?.title
-									}}{{ index < item?.persons?.length - 1 ? "," : "" }}&nbsp;
+									{{ artist?.title }}
 								</ElementsContentLink>
-								<span v-else>
-									{{ artist.title
-									}}{{ index < item?.persons?.length - 1 ? "," : "" }}&nbsp;
-								</span>
+								<span v-else>{{ artist.title }}</span>
 							</h3>
 						</div>
 					</div>
@@ -855,22 +836,19 @@ onMounted(() => {
 		<div v-if="hasMoreItems" class="content-teaser__load-more">
 			<button
 				class="load-more-button"
-				:class="{ more: shouldShowMoreButton }"
+				aria-label="Show more"
 				@click="loadMoreItems"
 			>
-				<template v-if="!shouldShowMoreButton">
-					<svg
-						width="15"
-						height="15"
-						viewBox="0 0 15 15"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path d="M7.67578 0.541016V14.8113" stroke-width="5" />
-						<path d="M14.8105 7.67578L0.540276 7.67578" stroke-width="5" />
-					</svg>
-				</template>
-				<template v-else> More </template>
+				<svg
+					width="15"
+					height="15"
+					viewBox="0 0 15 15"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path d="M7.67578 0.541016V14.8113" stroke-width="5" />
+					<path d="M14.8105 7.67578L0.540276 7.67578" stroke-width="5" />
+				</svg>
 			</button>
 		</div>
 	</div>
@@ -962,6 +940,8 @@ onMounted(() => {
   &.shows,
   &.sets,
   &.episodes {
+    --load-more-accent: var(--color-pink);
+
     .sort-options {
       button {
         &:hover {
@@ -982,6 +962,8 @@ onMounted(() => {
   }
 
   &.words {
+    --load-more-accent: var(--color-green);
+
     .sort-options {
       button {
         &:hover {
@@ -1002,6 +984,8 @@ onMounted(() => {
   }
 
   &.pool {
+    --load-more-accent: var(--color-blue);
+
     .sort-options {
       button {
         &:hover {
@@ -1036,39 +1020,6 @@ onMounted(() => {
     display: flex;
     justify-content: flex-end;
     margin-top: var(--mid-margin);
-
-    .load-more-button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--small-padding);
-      padding: var(--small-padding) var(--big-padding);
-      background-color: transparent;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: var(--font-text-semibold);
-      background-color: var(--color-bg);
-      border-radius: 100px;
-      border: 0.09325rem solid var(--color-text);
-      box-shadow: 0 0 0.5rem 0.09325rem var(--color-text);
-      text-transform: uppercase;
-      font-size: var(--small-font-size);
-
-      &:hover {
-        @media (min-width: 1024px) {
-          background-color: var(--color-text);
-          color: var(--color-bg);
-        }
-      }
-
-      svg {
-        width: var(--base-font-size);
-        height: var(--base-font-size);
-        path {
-          stroke: var(--color-text);
-        }
-      }
-    }
   }
 
   .teaser-item__content__show {
@@ -1078,6 +1029,7 @@ onMounted(() => {
   }
 
   .teaser-item {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -1237,19 +1189,8 @@ onMounted(() => {
 
     &__tags {
       &.city-tags {
-        position: absolute;
-        top: var(--small-margin);
-        left: var(--small-margin);
+        position: relative;
         z-index: 2;
-
-        .tag.city {
-          background-color: var(--color-text);
-          color: var(--color-bg);
-          padding: var(--small-padding) var(--mid-padding);
-          border-radius: 100px;
-          font-size: var(--small-font-size);
-          text-transform: uppercase;
-        }
       }
     }
   }
@@ -1338,7 +1279,6 @@ onMounted(() => {
       max-width: calc(50% - var(--big-padding) * 1.5);
       background-color: var(--color-text);
       border-radius: 12px;
-      border: 1px solid var(--color-text);
       overflow: hidden;
       padding: 0;
       margin-right: 0;
@@ -1354,9 +1294,11 @@ onMounted(() => {
 
       &__image {
         width: 100%;
+        border-radius: 5px 5px 0 0 !important;
         img {
           aspect-ratio: 3 / 1.5 !important;
           width: 100%;
+          border-radius: 5px 5px 0 0 !important;
         }
       }
 
@@ -1517,5 +1459,9 @@ button.genre {
     gap: var(--card-content-gap);
     padding: var(--card-content-padding-y) var(--card-content-padding-x);
   }
+}
+.module-teaser.sets .teaser-item .teaser-item__title {
+  font-size: 1.25rem;
+  line-height: 1.05;
 }
 </style>

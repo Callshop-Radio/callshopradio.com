@@ -46,10 +46,13 @@ const props = withDefaults(
 		poolItem: PoolItem;
 		layout?: "default" | "cover-flow";
 		mediaActive?: boolean;
+		/** Vertical orientation switches the cover-flow card to a wide index card. */
+		orientation?: "horizontal" | "vertical";
 	}>(),
 	{
 		layout: "default",
 		mediaActive: true,
+		orientation: "horizontal",
 	},
 );
 
@@ -177,6 +180,7 @@ const coverFlowDescriptionBlocks = computed(() => {
 	<div
 		v-if="poolItem && props.layout === 'cover-flow'"
 		class="pool-content pool-content--cover-flow"
+		:class="{ 'pool-content--deck': orientation === 'vertical' }"
 	>
 		<div class="pool-main">
 			<div class="set-info pool-info">
@@ -628,6 +632,90 @@ const coverFlowDescriptionBlocks = computed(() => {
       max-height: none;
       object-fit: cover;
       aspect-ratio: 1 / 1;
+    }
+  }
+}
+
+/* Vertical card file: a wide index card, info on the left, image cropped in
+   on the right. */
+.pool-content--deck {
+  .pool-main {
+    flex-flow: row nowrap;
+    min-height: 22rem;
+  }
+
+  .pool-info {
+    order: 1;
+    width: 38%;
+    margin: 0;
+    padding: var(--mid-margin);
+    justify-content: center;
+    border-radius: 0;
+  }
+
+  .pool-info-container,
+  .pool-info .pool-header {
+    gap: var(--small-padding);
+  }
+
+  .pool-info .pool-header .pool-title {
+    font-size: clamp(1.25rem, 1.5vw, 1.6rem);
+    line-height: 1.1;
+  }
+
+  .pool-teaser {
+    font-size: var(--small-font-size);
+    max-width: 34ch;
+  }
+
+  .pool-media {
+    order: 2;
+    width: 62%;
+    min-height: 22rem;
+    height: auto;
+    aspect-ratio: auto;
+    border-radius: 0;
+
+    .pool-image,
+    :deep(img) {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      max-height: none;
+      aspect-ratio: auto;
+      object-fit: cover;
+    }
+  }
+
+  @media screen and (max-width: 900px) {
+    .pool-main {
+      flex-flow: column nowrap;
+      min-height: 0;
+    }
+
+    .pool-info {
+      width: 100%;
+      margin: 0 0 -1.25rem;
+      padding: var(--card-content-padding-y) var(--card-content-padding-x)
+        calc(var(--card-content-padding-y) + 1.25rem);
+    }
+
+    .pool-info .pool-header .pool-title {
+      font-size: var(--base-font-size);
+    }
+
+    .pool-media {
+      width: 100%;
+      min-height: 0;
+      aspect-ratio: 1 / 1;
+
+      .pool-image,
+      :deep(img) {
+        position: static;
+        aspect-ratio: 1 / 1;
+      }
     }
   }
 }

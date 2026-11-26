@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useMainStore } from "~/stores/mainStore";
-import type { Image } from "~/types/sanity";
+import type { Image, Tag } from "~~/types/sanity";
 
-const { locale: _locale, setLocale: _setLocale } = useI18n();
-// Template references; height sync keeps the media column level with content.
-const poolContentRef = ref<HTMLElement | null>(null);
-const { mainRef: poolMainRef, computedHeight: computedPoolMainHeight } =
-	useDetailHeightSync();
-
-// Type definitions
-interface Tag {
+interface ProfileLink {
 	_id?: string;
 	_type?: string;
-	title?: string | unknown;
-	short?: string;
+	title?: string;
+	slug?: { current?: string };
+	path?: string;
+}
+
+interface ProfileShow {
+	_id?: string;
+	_type?: string;
+	title?: string;
+	slug?: { current?: string };
+	path?: string;
 }
 
 interface PoolItem {
@@ -22,556 +24,527 @@ interface PoolItem {
 	_type?: string;
 	title?: string;
 	name?: string;
-	description?: object;
+	description?: unknown[];
 	slug?: { current?: string };
 	image?: Image;
 	mainImage?: Image;
 	location?: string;
 	tags?: Tag[];
-	otherTags?: Tag[];
 	cityTags?: Tag[];
-	bio?: unknown[];
+	otherTags?: Tag[];
 	contact?: string;
 	socials?: Record<string, string>;
-	shows?: Array<{
-		_id?: string;
-		title?: string;
-		slug?: { current?: string };
-		_type?: string;
-	}>;
-	persons?: Array<{
-		_id?: string;
-		title?: string;
-		image?: Image;
-		slug?: { current?: string };
-	}>;
-	venues?: Array<{ _id?: string; title?: string; slug?: { current?: string } }>;
+	shows?: ProfileShow[];
+	persons?: ProfileLink[];
+	venues?: ProfileLink[];
 }
 
-// Props
 const props = defineProps<{
 	poolItem: PoolItem;
 }>();
 
-// Store
 const mainStore = useMainStore();
+const { navigateToTagSearch } = useTagNavigation();
 
-// Composable for image management
-const useImageManagement = () => {
-	function getItemImage(item?: PoolItem): Image | null {
-		if (!item) return null;
-		if (item.image || item.mainImage) {
-			return item.image || item.mainImage;
-		}
-		if (item._type === "person") {
-			return mainStore?.siteFallbacks?.fallbackPerson?.image;
-		}
-		if (item._type === "venue") {
-			return mainStore?.siteFallbacks?.fallbackVenue?.image;
-		}
-		return mainStore?.siteFallbacks?.fallbackPerson?.image;
-	}
+const fallbacks = computed(
+	() =>
+		mainStore?.siteFallbacks as
+			| {
+					fallbackPerson?: { image?: Image };
+					fallbackVenue?: { image?: Image };
+			  }
+			| undefined,
+);
 
-	const itemImage = computed(() => getItemImage(props.poolItem));
-	return { itemImage };
-};
-
-const { itemImage } = useImageManagement();
-
-const itemTitle = computed(() => {
-	return props.poolItem?.title || props.poolItem?.name || "";
+const itemImage = computed<Record<string, unknown> | undefined>(() => {
+	const image =
+		props.poolItem?.image ||
+		props.poolItem?.mainImage ||
+		(props.poolItem?._type === "venue"
+			? fallbacks.value?.fallbackVenue?.image
+			: fallbacks.value?.fallbackPerson?.image);
+	return (image as Record<string, unknown> | undefined) ?? undefined;
 });
 
-const displayTags = computed(() => {
-	return props.poolItem?.otherTags ?? props.poolItem?.tags ?? [];
+const itemTitle = computed(
+	() => props.poolItem?.title || props.poolItem?.name || "",
+);
+
+const typeLabel = computed(() =>
+	props.poolItem?._type === "venue" ? "Venue" : "Person",
+);
+
+const cityTags = computed(() => props.poolItem?.cityTags ?? []);
+const otherTags = computed(() => props.poolItem?.otherTags ?? []);
+const shows = computed(() => props.poolItem?.shows ?? []);
+const persons = computed(() => props.poolItem?.persons ?? []);
+const venues = computed(() => props.poolItem?.venues ?? []);
+
+const descriptionBlocks = computed<unknown[] | undefined>(() => {
+	const parsed = parseI18nObj(props.poolItem?.description);
+	return Array.isArray(parsed) ? parsed : undefined;
 });
 
 const contactLink = computed(() => {
 	const contact = props.poolItem?.contact;
 	if (!contact) return "#";
 	if (contact.includes("@")) return `mailto:${contact}`;
-	if (/^\+?[0-9\s()-]+$/.test(contact)) {
+	if (/^\+?[0-9\s()-]+$/.test(contact))
 		return `tel:${contact.replace(/\s/g, "")}`;
-	}
 	return contact;
 });
 
-// Right column height matches the left content column (see useDetailHeightSync).
-const poolDetailsStyle = computed(() => {
-	const h = computedPoolMainHeight.value;
-	if (typeof h === "string") return `max-height: ${h}; height: ${h}`;
-	return `max-height: ${h}px; height: ${h}px`;
-});
+function tagLabel(tag: Tag): string {
+	return getI18nLabel(tag.title);
+}
+
+function openTag(tag: Tag) {
+	navigateToTagSearch(
+		tag,
+		props.poolItem as Parameters<typeof navigateToTagSearch>[1],
+	);
+}
 </script>
 
 <template>
-  <div v-if="poolItem" ref="poolContentRef" class="pool-intro">
-    <div ref="poolMainRef" class="pool-intro-content">
-      <div class="pool-container">
-        <div class="pool-details-inner">
-          <div class="pool-header">
-            <div class="pool-title">
-              <ElementsContentLink
-                :item="poolItem"
-                class="pool__link pool-title"
-                :aria-label="itemTitle"
-              >
-                <h2 class="pool-title">
-                  {{ itemTitle }}
-                </h2>
-              </ElementsContentLink>
-            </div>
-            <div v-if="poolItem?.cityTags?.length || displayTags.length > 0" class="pool-tags tags">
-              <button
-                v-for="(tag, index) in poolItem?.cityTags"
-                :key="tag._id || index"
-                class="tag"
-                type="button"
-              >
-                {{ getI18nLabel(tag?.title) }}
-              </button>
-			  <button
-                v-for="(tag, index) in poolItem?.otherTags"
-                :key="tag._id || index"
-                class="tag"
-                type="button"
-              >
-                {{ getI18nLabel(tag?.title) }}
-              </button>
-            </div>
-          </div>
+	<article v-if="poolItem" class="pool-profile">
+		<header class="pool-profile__top">
+			<span class="pool-profile__tab">
+				<span class="pool-profile__tab-dot" aria-hidden="true" />
+				Pool / {{ typeLabel }}
+			</span>
+			<span class="pool-profile__index">Profile</span>
+		</header>
 
-          <div class="pool-meta-bottom">
-            <section
-              v-if="poolItem.shows && poolItem.shows.length > 0"
-              class="pool-references-section"
-            >
-              <div class="pool-refs-list tags">
-                <div
-                  v-for="show in poolItem.shows"
-                  :key="show._id"
-                  class="pool-ref-item"
-                >
-                  <ElementsContentLink :item="show" class="pool-ref-link">
-                    <div class="pool-ref-info">
-                      <svg
-                        viewBox="0 0 22 22"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                        class="detail-ref-icon detail-ref-icon--show"
-                      >
-                        <circle cx="11" cy="11" r="11" fill="#F794B3" />
-                        <path
-                          d="M16.7617 11.0002L8.11886 15.9901L8.11886 6.01023L16.7617 11.0002Z"
-                          fill="white"
-                        />
-                      </svg>
-                      <h4 class="tag">{{ show.title }}</h4>
-                    </div>
-                  </ElementsContentLink>
-                </div>
-              </div>
-            </section>
+		<div class="pool-profile__grid">
+			<div class="pool-profile__content">
+				<h1 class="pool-profile__name">{{ itemTitle }}</h1>
 
-            <section
-              v-if="
-                poolItem._type === 'venue' ||
-                  (poolItem._type === 'person' &&
-                    poolItem.persons &&
-                    poolItem.persons.length > 0)
-              "
-              class="pool-references-section"
-            >
-              <div class="pool-refs-list">
-                <svg
-                  viewBox="0 0 22 22"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                  class="detail-ref-icon detail-ref-icon--pool"
-                >
-                  <circle cx="11" cy="11" r="11" fill="#557FB9" />
-                  <path
-                    d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
-                    fill="white"
-                  />
-                </svg>
-                <div
-                  v-for="person in poolItem.persons"
-                  :key="person._id"
-                  class="pool-ref-item tags"
-                >
-                  <ElementsContentLink :item="person" class="pool-ref-link">
-                    <h4 class="tag">{{ person.title }}</h4>
-                  </ElementsContentLink>
-                </div>
-              </div>
-            </section>
+				<div
+					v-if="cityTags.length || otherTags.length"
+					class="tags pool-profile__tags"
+				>
+					<button
+						v-for="tag in cityTags"
+						:key="tag._id || String(tag.title)"
+						type="button"
+						class="tag pool-profile__tag pool-profile__tag--city"
+						@click="openTag(tag)"
+					>
+						{{ tagLabel(tag) }}
+					</button>
+					<button
+						v-for="tag in otherTags"
+						:key="tag._id || String(tag.title)"
+						type="button"
+						class="tag pool-profile__tag"
+						@click="openTag(tag)"
+					>
+						{{ tagLabel(tag) }}
+					</button>
+				</div>
 
-            <section
-              v-if="
-                poolItem._type === 'person' &&
-                  poolItem.venues &&
-                  poolItem.venues.length > 0
-              "
-              class="pool-references-section"
-            >
-              <div class="pool-refs-list">
-                <svg
-                  viewBox="0 0 22 22"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                  class="detail-ref-icon detail-ref-icon--pool"
-                >
-                  <circle cx="11" cy="11" r="11" fill="#557FB9" />
-                  <path
-                    d="M11 4.39844C7.96263 4.39844 5.5 6.7995 5.5 9.76094C5.5 10.9271 5.8921 11.9971 6.54385 12.8734C6.55554 12.8944 6.55737 12.9179 6.57067 12.938L10.2373 18.3005C10.4074 18.5492 10.6938 18.6984 11 18.6984C11.3062 18.6984 11.5926 18.5492 11.7627 18.3005L15.4293 12.938C15.4429 12.9179 15.4445 12.8944 15.4561 12.8734C16.1079 11.9971 16.5 10.9271 16.5 9.76094C16.5 6.7995 14.0374 4.39844 11 4.39844ZM11 11.5484C9.98754 11.5484 9.16667 10.7481 9.16667 9.76094C9.16667 8.77379 9.98754 7.97344 11 7.97344C12.0125 7.97344 12.8333 8.77379 12.8333 9.76094C12.8333 10.7481 12.0125 11.5484 11 11.5484Z"
-                    fill="white"
-                  />
-                </svg>
-                <div
-                  v-for="venue in poolItem.venues"
-                  :key="venue._id"
-                  class="pool-ref-item tags"
-                >
-                  <ElementsContentLink :item="venue" class="pool-ref-link">
-                    <h4 class="tag">{{ venue.title }}</h4>
-                  </ElementsContentLink>
-                </div>
-              </div>
-            </section>
+				<dl class="pool-profile__fields">
+					<div v-if="shows.length" class="pool-profile__field">
+						<dt>Shows</dt>
+						<dd class="pool-profile__shows">
+							<ElementsContentLink
+								v-for="show in shows"
+								:key="show._id || show.title"
+								:item="show"
+								class="pool-profile__show"
+							>
+								<span class="pool-profile__play" aria-hidden="true" />
+								{{ show.title }}
+							</ElementsContentLink>
+						</dd>
+					</div>
 
-            <IntroSocialLinks
-              :socials="poolItem.socials"
-              :contact="poolItem.contact"
-              :contact-href="contactLink"
-            />
-          </div>
+					<div
+						v-if="descriptionBlocks"
+						class="pool-profile__field"
+					>
+						<dt>About</dt>
+						<dd class="pool-profile__bio">
+							<RichText :blocks="descriptionBlocks" />
+						</dd>
+					</div>
 
-          <section v-if="parseI18nObj(poolItem?.description)" class="pool-description">
-            <RichText :blocks="parseI18nObj(poolItem?.description)" />
-          </section>
-        </div>
-      </div>
-    </div>
+					<div v-if="persons.length" class="pool-profile__field">
+						<dt>People</dt>
+						<dd class="pool-profile__refs">
+							<template
+								v-for="person in persons"
+								:key="person._id || person.title"
+							>
+								<ElementsContentLink
+									v-if="person.path"
+									:pool="person"
+									class="pool-profile__ref"
+								>
+									{{ person.title }}
+								</ElementsContentLink>
+								<span v-else class="pool-profile__ref is-muted">
+									{{ person.title }}
+								</span>
+							</template>
+						</dd>
+					</div>
 
-    <!-- Right side: image only -->
-    <div class="pool-media-wrap" :style="poolDetailsStyle">
-      <div class="pool-media">
-          <MediaImage :image="itemImage" :alt="itemTitle" class="pool-image" :eager="true" />
-      </div>
-    </div>
-  </div>
+					<div v-if="venues.length" class="pool-profile__field">
+						<dt>Venues</dt>
+						<dd class="pool-profile__refs">
+							<ElementsContentLink
+								v-for="venue in venues"
+								:key="venue._id || venue.title"
+								:item="venue"
+								class="pool-profile__ref"
+							>
+								{{ venue.title }}
+							</ElementsContentLink>
+						</dd>
+					</div>
+
+					<div
+						v-if="poolItem.socials || poolItem.contact"
+						class="pool-profile__field"
+					>
+						<dt>Contact</dt>
+						<dd>
+							<IntroSocialLinks
+								class="pool-profile__socials"
+								:socials="poolItem.socials"
+								:contact="poolItem.contact"
+								:contact-href="contactLink"
+							/>
+						</dd>
+					</div>
+				</dl>
+			</div>
+
+			<figure class="pool-profile__photo">
+				<MediaImage
+					:image="itemImage"
+					:alt="itemTitle"
+					class="pool-profile__image"
+					:eager="true"
+				/>
+			</figure>
+		</div>
+	</article>
 </template>
 
 <style lang="postcss" scoped>
-.pool-intro {
-  --detail-chip-size: calc(
-    var(--small-font-size) + var(--small-padding) * 2 + 0.2rem
-  );
-
+.pool-profile {
   width: var(--page-max-width);
+  max-width: 100%;
   margin: var(--big-margin) auto 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-text) 16%, transparent);
+  border-radius: 5px;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.pool-profile__top {
   display: flex;
-  flex-flow: row wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mid-padding);
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--color-text) 12%, transparent);
+}
+
+.pool-profile__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 5px;
+  background: var(--color-blue);
+  color: var(--color-white);
+  font-family: var(--font-text-semibold);
+  font-size: var(--mini-font-size);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pool-profile__tab-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--color-white);
+  flex: none;
+}
+
+.pool-profile__index {
+  font-family: var(--font-text-semibold);
+  font-size: var(--mini-font-size);
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--color-text) 40%, transparent);
+  text-transform: uppercase;
+}
+
+.pool-profile__grid {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.65fr) minmax(0, 1.35fr);
+  gap: var(--big-margin);
+  align-items: start;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.pool-profile__content {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.pool-profile__name {
+  margin: 0;
+  font-family: var(--font-text-semibold);
+  font-size: clamp(2rem, 3.4vw, 3rem);
+  font-weight: 500;
+  line-height: 0.94;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+}
+
+.pool-profile__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 1rem;
+}
+
+.pool-profile__tag {
+  padding: calc(var(--small-padding) / 2) var(--small-padding);
+  border: 1px solid
+    color-mix(in srgb, var(--color-blue) 45%, transparent);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-text);
+  font-size: var(--mini-font-size);
+  line-height: 1.1;
+  letter-spacing: var(--button-letter-spacing);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+
+  &:hover {
+    border-color: var(--color-blue);
+    color: var(--color-blue);
+  }
+}
+
+.pool-profile__tag--city {
+  border-color: var(--color-blue);
+  background: var(--color-blue);
+  color: var(--color-white);
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--color-blue) 82%, #000);
+    background: color-mix(in srgb, var(--color-blue) 82%, #000);
+    color: var(--color-white);
+  }
+}
+
+.pool-profile__fields {
+  margin: 1.35rem 0 0;
+}
+
+.pool-profile__field {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-text) 12%, transparent);
+
+  dt {
+    margin: 0;
+    color: var(--color-blue);
+    font-family: var(--font-text-semibold);
+    font-size: var(--mini-font-size);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    min-width: 0;
+    margin: 0;
+  }
+}
+
+.pool-profile__shows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.pool-profile__show {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid
+    color-mix(in srgb, var(--color-text) 18%, transparent);
+  border-radius: 5px;
+  color: var(--color-text);
+  font-family: var(--font-text-semibold);
+  font-size: var(--mini-font-size);
+  line-height: 1.1;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+
+  &:hover {
+    border-color: var(--color-blue);
+    color: var(--color-blue);
+  }
+}
+
+.pool-profile__play {
   position: relative;
-  border: 0.0625rem solid var(--color-text);
-  border-radius: 1.5625rem;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 50%;
+  background: var(--color-pink);
+  flex: none;
 
-  @media screen and (max-width: 900px) {
-    flex-flow: column wrap;
-    overflow: hidden;
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-40%, -50%);
+    border-top: 0.2rem solid transparent;
+    border-bottom: 0.2rem solid transparent;
+    border-left: 0.28rem solid #1a1013;
+  }
+}
+
+.pool-profile__bio {
+  max-width: 52ch;
+  font-size: calc(var(--base-font-size) * 1.08);
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--color-text) 72%, transparent);
+
+  :deep(p) {
+    margin: 0 0 var(--small-padding);
   }
 
-  .pool-intro-content {
-    max-width: calc(var(--page-max-width) / 2.5);
-    display: flex;
-    flex-flow: column wrap;
-    justify-content: flex-start;
-    align-items: stretch;
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border-right: 0.0625rem solid var(--color-text);
-    overflow: hidden;
+  :deep(p:last-child) {
+    margin-bottom: 0;
+  }
+}
 
-    @media screen and (min-width: 901px) {
-      flex: 0 0 calc(var(--page-max-width) / 2.5);
-      width: calc(var(--page-max-width) / 2.5);
-      max-width: calc(var(--page-max-width) / 2.5);
-      aspect-ratio: 4 / 5;
-      min-height: calc((var(--page-max-width) / 2.5) * 5 / 4);
-    }
+.pool-profile__refs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
 
-    @media screen and (max-width: 900px) {
-      max-width: 100%;
-      border-right: none;
-    }
+.pool-profile__ref {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid
+    color-mix(in srgb, var(--color-text) 18%, transparent);
+  border-radius: 5px;
+  color: var(--color-text);
+  font-family: var(--font-text-semibold);
+  font-size: var(--mini-font-size);
+  line-height: 1.1;
+  text-decoration: none;
+  text-transform: uppercase;
 
-    .pool-container {
-      display: flex;
-      flex-flow: column wrap;
-      justify-content: flex-start;
-      align-items: stretch;
-      width: 100%;
-      height: 100%;
-      min-height: 0;
-      flex: 1;
-    }
+  &::before {
+    content: "";
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--color-blue);
+    flex: none;
+  }
 
-    .pool-info {
-      left: 0;
-      margin: 0;
-      width: 100%;
-      background-color: var(--color-bg);
-      display: flex;
-      flex-flow: row wrap;
-      justify-content: flex-start;
-      align-items: center;
-      flex-grow: 0;
-      flex-shrink: 0;
-      gap: var(--mid-margin);
-      padding: var(--mid-padding);
-      border-bottom: 0.0625rem solid var(--color-text);
-      shape-rendering: crispEdges;
-      z-index: 10;
-      border-top-left-radius: 1.5625rem;
-      border-top-right-radius: 1.5625rem;
+  &.is-muted {
+    opacity: 0.55;
 
-      &-container {
-        display: flex;
-        flex-flow: column wrap;
-        justify-content: center;
-        gap: var(--mid-padding);
-        width: 100%;
-      }
-    }
-
-    .pool-details-inner {
-      position: relative;
-      display: flex;
-      flex-flow: column;
-      justify-content: flex-start;
-      align-items: flex-start;
-      overflow: scroll;
-	  max-height:66vh;
-      flex: 1;
-      min-height: 0;
-      width: 100%;
-      padding: var(--base-margin) var(--big-margin) var(--big-margin);
-      gap: var(--base-padding) 0;
-      border-right: none;
-
-      @media screen and (max-width: 900px) {
-        padding: var(--base-margin) var(--base-margin) var(--big-margin);
-      }
-
-      section {
-        width: 100%;
-
-        h2,
-        h3,
-        h4 {
-          margin: 0 0 var(--base-padding) 0;
-          text-transform: uppercase;
-          font-family: var(--font-text-semibold);
-          font-size: var(--base-font-size);
-          font-weight: 500;
-        }
-      }
-
-      .pool-header {
-        width: 100%;
-        display: flex;
-        flex-flow: column;
-        gap: var(--small-margin);
-
-        .pool-title {
-          width: 100%;
-          font-size: var(--h1-size);
-          text-transform: uppercase;
-
-          a {
-            width: max-content;
-            cursor: pointer;
-          }
-
-          div {
-            width: 100%;
-            display: flex;
-            flex-flow: row wrap;
-            justify-content: flex-start;
-          }
-        }
-
-        .pool__artist {
-          font-size: var(--base-font-size);
-          font-family: var(--font-text-semibold);
-          font-weight: 500;
-          text-transform: uppercase;
-
-          a,
-          &a {
-            cursor: pointer;
-          }
-        }
-
-        .pool-tags {
-          width: 100%;
-          display: flex;
-          flex-flow: row wrap;
-          justify-content: flex-start;
-          gap: var(--base-padding);
-          margin-bottom: var(--big-margin);
-
-		  .tag {
-			background-color: var(--color-blue);
-			border-color: var(--color-blue);
-		  }
-        }
-      }
-
-      .pool-meta-bottom {
-        display: flex;
-        flex-flow: column;
-        align-items: flex-start;
-        gap: var(--big-padding);
-        width: 100%;
-      }
-
-      .pool-references-section {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        width: 100%;
-        margin: 0;
-      }
-
-      .pool-refs-list {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        gap: var(--base-padding);
-        width: 100%;
-
-        .detail-ref-icon {
-          width: var(--detail-chip-size);
-          height: var(--detail-chip-size);
-          flex-shrink: 0;
-        }
-
-        .pool-ref-item {
-          display: flex;
-          align-items: center;
-        }
-
-        .pool-ref-link {
-          display: block;
-          text-decoration: none;
-          color: inherit;
-        }
-
-        .pool-ref-info {
-          display: flex;
-          flex-flow: row wrap;
-          align-items: center;
-          gap: var(--base-padding);
-        }
-
-        h4.tag {
-          margin: 0;
-          font-size: var(--small-font-size);
-          background-color: var(--color-grey);
-          color: var(--color-black);
-          border-color: var(--color-grey);
-
-          &:hover {
-            @media (min-width: 1024px) {
-              background-color: var(--color-blue);
-              border-color: var(--color-blue);
-              color: var(--color-white);
-            }
-          }
-        }
-      }
-
-      .pool-description {
-        :deep(p),
-        :deep(.rich-text p) {
-          line-height: 1.5;
-        }
-      }
+    &::before {
+      background: var(--color-dark-grey);
     }
   }
 
-  .pool-media-wrap {
-    position: relative;
-    display: flex;
-    flex-flow: column;
-    justify-content: flex-start;
-    align-items: stretch;
-    overflow: hidden;
-    width: calc(100% - calc(var(--page-max-width) / 2.5));
-	overflow: hidden;
+  &:hover {
+    border-color: var(--color-blue);
+    color: var(--color-blue);
+  }
+}
 
-    @media screen and (max-width: 900px) {
-      max-width: 100%;
-      width: 100%;
-      border-bottom-left-radius: 1.5625rem;
-      border-bottom-right-radius: 1.5625rem;
-      overflow: hidden;
-    }
+.pool-profile__socials {
+  margin-top: 0.1rem;
+}
 
-    .pool-media {
-      order: 2;
-      width: 100%;
-      height: 100%;
-      max-width: 100%;
-      object-fit: cover;
-      overflow: hidden;
-      border-bottom-right-radius: 1.5625rem;
+.pool-profile__photo {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--color-grey);
+}
 
-      @media screen and (max-width: 900px) {
-        max-width: 100%;
-        max-height: 100%;
-        border-bottom-right-radius: 1.5625rem;
-        border-bottom-left-radius: 1.5625rem;
-      }
+.pool-profile__image,
+.pool-profile__photo :deep(img) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 5px !important;
+}
 
-      @media screen and (min-width: 900px) {
-        min-width: calc(var(--page-max-width) / 2.5);
-      }
+@media screen and (max-width: 900px) {
+  .pool-profile {
+    margin-top: var(--base-margin);
+  }
 
-      .grid-item__link {
-        display: block;
-        width: 100%;
-        height: 100%;
-      }
+  .pool-profile__grid {
+    grid-template-columns: 1fr;
+    gap: var(--mid-padding);
+  }
 
-      .pool-image,
-      :deep(img) {
-        width: 100%;
-        aspect-ratio: 1 / 1;
-        object-fit: cover;
-        background-color: var(--color-grey);
-        min-height: 100%;
-		min-width: 100%;
-		border-top-right-radius: 1.5625rem;
+  .pool-profile__photo {
+    order: -1;
+    grid-column: auto;
+    grid-row: auto;
+    width: min(100%, 24rem);
+    margin-inline: auto;
+  }
 
-        @media screen and (max-width: 900px) {
-          max-width: 100%;
-          max-height: 100%;
-          border-top-right-radius: 0;
-          border-top-left-radius: 0;
-          border-bottom-left-radius: 1.5625rem;
-          border-bottom-right-radius: 1.5625rem;
-        }
-      }
-    }
+  .pool-profile__content {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .pool-profile__name {
+    font-size: clamp(1.7rem, 9vw, 2.5rem);
+  }
+}
+
+@media screen and (max-width: 560px) {
+  .pool-profile__field {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
   }
 }
 </style>
