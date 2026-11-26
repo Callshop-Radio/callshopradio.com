@@ -23,6 +23,7 @@ type SetCard = {
 	title: string | null;
 	additionalTitle: string | null;
 	slug: { current: string } | null;
+	path?: string | null;
 	datetime: string | null;
 	image?: { asset?: { url?: string } | null } | null;
 	artists?: Array<{ _id: string; name: string | null }>;
@@ -80,8 +81,7 @@ function dateOf(card: SetCard | undefined): string {
 }
 
 function linkOf(card: SetCard | undefined): string {
-	const slug = card?.slug?.current;
-	return slug ? localePath(`/set/${slug}`) : localePath("/");
+	return localePath(card?.path || "/");
 }
 
 async function hydrate(ids: string[]) {

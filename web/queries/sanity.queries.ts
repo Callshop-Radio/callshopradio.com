@@ -368,6 +368,7 @@ export const SETS_BY_IDS_QUERY = defineQuery(`
     slug,
     datetime,
     image ${IMAGE_QUERY},
+    ${SITE_PATH_FRAGMENT},
     "artists": artists[]->{
       _id,
       name,

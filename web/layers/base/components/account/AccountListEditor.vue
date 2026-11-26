@@ -29,6 +29,7 @@ type SetCard = {
 	title: string | null;
 	additionalTitle: string | null;
 	slug: { current: string } | null;
+	path?: string | null;
 	datetime: string | null;
 	image?: { asset?: { url?: string } | null } | null;
 	artists?: Array<{ _id: string; name: string | null }>;
@@ -70,8 +71,7 @@ function artistsOf(setId: string): string {
 }
 
 function linkOf(setId: string): string {
-	const slug = cards.value[setId]?.slug?.current;
-	return slug ? localePath(`/set/${slug}`) : localePath("/");
+	return localePath(cards.value[setId]?.path || "/");
 }
 
 async function hydrate(ids: string[]) {
