@@ -92,14 +92,14 @@ onMounted(load);
 	padding: 0.4rem 0.9rem;
 	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
 	border-radius: var(--radius-pill);
-	font-size: var(--text-md);
+	font-size: var(--text-m);
 }
 
 .account-role__label {
 	opacity: 0.6;
 	text-transform: uppercase;
 	letter-spacing: var(--kicker-letter-spacing);
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 }
 
 .account-role__value {

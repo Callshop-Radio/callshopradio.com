@@ -185,7 +185,9 @@ onMounted(() => {
   }
 
   &__title {
-    @apply text-2xl font-bold mb-4;
+    font-size: var(--text-l);
+  font-family: var(--font-text-semibold);
+  margin-bottom: 1rem;
   }
 
   &__header {

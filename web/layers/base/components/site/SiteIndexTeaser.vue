@@ -110,7 +110,7 @@ const copy = computed(() => {
 .index-teaser__eyebrow {
   margin: 0;
   color: var(--color-purple);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   letter-spacing: var(--menu-letter-spacing);
   text-transform: uppercase;
 }
@@ -118,7 +118,7 @@ const copy = computed(() => {
 .index-teaser__title {
   margin: 0;
   font-family: var(--font-text-medium);
-  font-size: var(--text-xl);
+  font-size: var(--text-l);
   line-height: 1.1;
   text-transform: uppercase;
 }
@@ -126,7 +126,7 @@ const copy = computed(() => {
 .index-teaser__text {
   max-width: 46ch;
   margin: 0;
-  font-size: var(--text-md);
+  font-size: var(--text-m);
   line-height: 1.5;
 }
 
@@ -141,7 +141,7 @@ const copy = computed(() => {
   border-radius: var(--radius-pill);
   color: var(--color-text);
   font-family: var(--font-text-medium);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   letter-spacing: var(--button-letter-spacing);
   text-decoration: none;
   text-transform: uppercase;

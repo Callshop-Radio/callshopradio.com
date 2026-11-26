@@ -536,7 +536,7 @@ onMounted(() => {
   margin: var(--mid-margin) 0;
 
   &__title {
-    font-size: var(--text-xl);
+    font-size: var(--text-l);
     margin-bottom: var(--mid-margin);
   }
 
@@ -573,7 +573,7 @@ onMounted(() => {
 
   .related-item__content__show {
     min-height: calc(
-      var(--text-md) * 1.15 + var(--text-md) + var(--mid-padding)
+      var(--text-m) * 1.15 + var(--text-m) + var(--mid-padding)
     );
   }
 
@@ -653,7 +653,7 @@ onMounted(() => {
         align-items: center;
 
         .related-item__date {
-          font-size: var(--text-sm);
+          font-size: var(--text-s);
           text-transform: uppercase;
         }
 
@@ -666,11 +666,11 @@ onMounted(() => {
           border-radius: var(--radius-circle);
           border: none;
           padding: 4px;
-          width: calc(var(--text-md) + 4px);
-          height: calc(var(--text-md) + 4px);
+          width: calc(var(--text-m) + 4px);
+          height: calc(var(--text-m) + 4px);
 
           svg {
-            height: var(--text-md);
+            height: var(--text-m);
             transform: translate(1px, 0);
             path {
               fill: var(--color-bg);
@@ -680,14 +680,14 @@ onMounted(() => {
       }
 
       .related-item__title {
-        font-size: var(--text-md);
+        font-size: var(--text-m);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
       }
 
       .related-item__artist {
-        font-size: var(--text-md);
+        font-size: var(--text-m);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
@@ -907,7 +907,7 @@ onMounted(() => {
   }
 }
 .related-content.sets .related-item .related-item__title {
-  font-size: var(--text-xl);
+  font-size: var(--text-l);
   line-height: 1.05;
 }
 </style>

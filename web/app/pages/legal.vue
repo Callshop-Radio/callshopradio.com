@@ -124,13 +124,13 @@ usePageSeo(legalDoc.value?.seo ?? privacyDoc.value?.seo);
   scroll-margin-top: calc(var(--nav-height) + var(--mid-padding));
 
   :deep(.rich-text) {
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     line-height: 1.65;
   }
 
   :deep(h2) {
     margin-top: var(--base-margin);
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     text-transform: uppercase;
   }
 

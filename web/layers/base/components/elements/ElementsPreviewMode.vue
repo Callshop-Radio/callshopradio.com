@@ -19,7 +19,8 @@ const { enabled: previewEnabled, inFrame } =
 
 <style lang="postcss" scoped>
 .preview-toggle {
-  @apply fixed bottom-4 right-4 border-rounded-2 text-xs text-center z-999 bg-yellow-400 p-2 no-underline shadow-sm color-black;
+  @apply fixed bottom-4 right-4 border-rounded-2 text-center z-999 bg-yellow-400 p-2 no-underline shadow-sm color-black;
+  font-size: var(--text-s);
 
   span {
     @apply first:(block) last:(hidden);

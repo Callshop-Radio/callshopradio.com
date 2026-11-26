@@ -266,7 +266,7 @@ function onDialogClose() {
 .merch-intro__eyebrow {
   margin: 0;
   color: var(--color-merch-ink);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   letter-spacing: var(--menu-letter-spacing);
   text-transform: uppercase;
 }
@@ -333,7 +333,7 @@ function onDialogClose() {
   backdrop-filter: blur(6px);
   color: var(--color-text);
   font-family: var(--font-text-semibold);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   font-variant-numeric: tabular-nums;
   letter-spacing: var(--label-letter-spacing);
 }
@@ -347,7 +347,7 @@ function onDialogClose() {
   background-color: var(--accent, var(--color-text));
   color: var(--color-black);
   font-family: var(--font-text-semibold);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
 }
@@ -364,7 +364,7 @@ function onDialogClose() {
   max-width: 34ch;
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-size: var(--text-lg);
+  font-size: var(--text-m);
   letter-spacing: 0.015em;
   line-height: 1.25;
   text-transform: uppercase;
@@ -452,7 +452,7 @@ function onDialogClose() {
   background-color: var(--accent, var(--color-text));
   color: var(--color-black);
   font-family: var(--font-text-semibold);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   letter-spacing: var(--button-letter-spacing);
   text-decoration: none;
   text-transform: uppercase;
@@ -486,7 +486,7 @@ function onDialogClose() {
   padding-top: 0.5rem;
   color: var(--color-dark-grey);
   font-family: var(--font-text-medium);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
 }
@@ -548,7 +548,7 @@ function onDialogClose() {
   background-color: color-mix(in srgb, var(--color-bg) 82%, transparent);
   backdrop-filter: blur(6px);
   color: var(--color-text);
-  font-size: var(--text-lg);
+  font-size: var(--text-m);
   line-height: 1;
   cursor: pointer;
 
@@ -638,7 +638,7 @@ function onDialogClose() {
   gap: 0.6rem;
   margin: 0;
   color: var(--color-dark-grey);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   font-variant-numeric: tabular-nums;
   letter-spacing: var(--menu-letter-spacing);
   text-transform: uppercase;
@@ -666,7 +666,7 @@ function onDialogClose() {
 .merch-dialog__meta {
   margin: 0;
   color: var(--color-dark-grey);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
 }
@@ -674,7 +674,7 @@ function onDialogClose() {
 .merch-dialog__text {
   max-width: 56ch;
   margin: 0;
-  font-size: var(--text-md);
+  font-size: var(--text-m);
   line-height: 1.55;
 }
 

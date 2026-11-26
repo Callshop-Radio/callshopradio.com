@@ -285,7 +285,7 @@ onMounted(load);
 
 .saves__meta {
 	margin: 0;
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	color: color-mix(in srgb, var(--color-text) 45%, transparent);
@@ -299,7 +299,7 @@ onMounted(load);
 .saves__error {
 	margin: 0;
 	color: var(--color-pink);
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 }
 
 .new-list {
@@ -338,7 +338,7 @@ onMounted(load);
 	background-color: var(--color-text);
 	color: var(--color-bg);
 	font: inherit;
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	cursor: pointer;
@@ -357,7 +357,7 @@ onMounted(load);
 }
 
 .new-list__plus {
-	font-size: var(--text-lg);
+	font-size: var(--text-m);
 	line-height: 1;
 }
 
@@ -425,14 +425,14 @@ onMounted(load);
 
 .list-card__name {
 	font-family: var(--font-text-medium);
-	font-size: var(--text-md);
+	font-size: var(--text-m);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
 .list-card__meta {
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 48%, transparent);
 }
 
@@ -442,7 +442,7 @@ onMounted(load);
 	border-radius: var(--radius-pill);
 	background-color: color-mix(in srgb, var(--color-pink) 18%, transparent);
 	color: var(--color-pink);
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	letter-spacing: var(--label-letter-spacing);
 	text-transform: uppercase;
 }
@@ -464,7 +464,7 @@ onMounted(load);
 .saved__title {
 	margin: 0;
 	font-family: var(--font-text-medium);
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	color: color-mix(in srgb, var(--color-text) 55%, transparent);
@@ -527,7 +527,7 @@ onMounted(load);
 
 .saved__name {
 	font-family: var(--font-text-medium);
-	font-size: var(--text-md);
+	font-size: var(--text-m);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -535,7 +535,7 @@ onMounted(load);
 }
 
 .saved__sub {
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 50%, transparent);
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -548,7 +548,7 @@ onMounted(load);
 	background: none;
 	color: color-mix(in srgb, var(--color-text) 45%, transparent);
 	font: inherit;
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	cursor: pointer;
 
 	&:hover {

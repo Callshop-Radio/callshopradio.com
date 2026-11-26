@@ -121,7 +121,7 @@ const fill = computed(() => {
 
   &__index {
     flex-shrink: 0;
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
     font-variant-numeric: tabular-nums;
     letter-spacing: var(--button-letter-spacing);
     color: var(--color-text);
@@ -144,7 +144,7 @@ const fill = computed(() => {
 
   &__hint {
     flex-shrink: 0;
-    font-size: var(--text-xs);
+    font-size: var(--text-s);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     color: var(--color-dark-grey);

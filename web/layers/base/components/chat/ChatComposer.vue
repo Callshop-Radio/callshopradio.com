@@ -117,7 +117,7 @@ button {
 .composer__input {
 	flex: 1 1 auto;
 	min-width: 0;
-	font-size: var(--text-md);
+	font-size: var(--text-m);
 	padding: 0.375rem 0;
 	border: 0;
 	border-bottom: 1px solid var(--color-line);
@@ -136,7 +136,7 @@ button {
 }
 
 .composer__count {
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 45%, transparent);
 	font-variant-numeric: tabular-nums;
 }
@@ -159,7 +159,7 @@ button {
 }
 
 .composer__send {
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	font-family: var(--font-text-medium);
 	padding: 0.3125rem 0.75rem;
 	border-radius: var(--radius-pill);
@@ -181,7 +181,7 @@ button {
 	min-height: 2rem;
 
 	p {
-		font-size: var(--text-sm);
+		font-size: var(--text-s);
 		line-height: 1.35;
 		color: color-mix(in srgb, var(--color-text) 62%, transparent);
 	}
@@ -194,7 +194,7 @@ button {
 }
 
 .composer__signin-btn {
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	font-family: var(--font-text-medium);
 	padding: 0.3125rem 0.75rem;
 	border-radius: var(--radius-pill);

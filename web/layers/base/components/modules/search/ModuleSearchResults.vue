@@ -942,10 +942,10 @@ watch(
       top: 0;
       left: 0;
       width: 100%;
-      height: calc(var(--first-content-distance) + (var(--small-padding) * 2 + var(--text-sm) / 2));
+      height: calc(var(--first-content-distance) + (var(--small-padding) * 2 + var(--text-s) / 2));
       background-color: var(--color-bg);
       z-index: -1;
-      transform: translateY(calc(-100% + (var(--small-padding) * 2 + var(--text-sm) / 2)));
+      transform: translateY(calc(-100% + (var(--small-padding) * 2 + var(--text-s) / 2)));
     }
   }
 
@@ -980,16 +980,16 @@ watch(
         flex-flow: row wrap;
         align-items: center;
         justify-content: center;
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
-        height: var(--text-sm);
+        height: var(--text-s);
         cursor: pointer;
 
         .toggle-arrow {
           position: absolute;
-          font-size: var(--text-sm);
+          font-size: var(--text-s);
           transform: translate(0, -1px);
         }
 
@@ -1026,7 +1026,7 @@ watch(
       .active-filter {
         background-color: var(--color-grey);
         color: var(--color-dark-grey);
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         position: relative;
         min-width: max-content;
 
@@ -1039,7 +1039,7 @@ watch(
         &__name {
           min-width: max-content;
           cursor: pointer;
-          font-size: var(--text-sm);
+          font-size: var(--text-s);
           padding: 0 8px 0 0;
         }
       }
@@ -1055,7 +1055,7 @@ watch(
       padding: 0 calc(var(--mid-margin) / 2);
 
       &__title {
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
@@ -1094,7 +1094,7 @@ watch(
         flex-flow: row wrap;
         align-items: center;
         justify-content: center;
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
@@ -1108,7 +1108,7 @@ watch(
         align-items: center;
         gap: var(--small-padding);
         background-color: transparent;
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         color: var(--color-dark-grey);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
@@ -1225,7 +1225,7 @@ watch(
     .filter-category {
       &__label {
         display: block;
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-text);
@@ -1236,7 +1236,7 @@ watch(
     }
 
     .filter-tag {
-      font-size: var(--text-sm);
+      font-size: var(--text-s);
       cursor: pointer;
       transition: all 0.2s ease;
       background-color: var(--color-bg);
@@ -1255,7 +1255,7 @@ watch(
       }
 
       &--subgenre {
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
       }
       
       /* Color-specific styles */
@@ -1416,7 +1416,7 @@ watch(
         align-items: center;
 
         .grid-item__date {
-          font-size: var(--text-sm);
+          font-size: var(--text-s);
           text-transform: uppercase;
         }
 
@@ -1430,11 +1430,11 @@ watch(
           border-radius: var(--radius-circle);
           border: none;
           padding: 4px;
-          width: calc(var(--text-md) + 4px);
-          height: calc(var(--text-md) + 4px);
+          width: calc(var(--text-m) + 4px);
+          height: calc(var(--text-m) + 4px);
 
           svg {
-            height: var(--text-md);
+            height: var(--text-m);
             transform: translate(1px, 0);
             path {
               fill: var(--color-bg);
@@ -1445,7 +1445,7 @@ watch(
 
       .grid-item__title,
       .grid-item__artist {
-        font-size: var(--text-md);
+        font-size: var(--text-m);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
@@ -1462,7 +1462,9 @@ watch(
   }
 
   &__title {
-    @apply text-2xl font-bold mb-4;
+    font-size: var(--text-l);
+  font-family: var(--font-text-semibold);
+  margin-bottom: 1rem;
   }
   &__header {
     display: flex;
@@ -1485,7 +1487,7 @@ watch(
   }
 
   h3 {
-    font-size: var(--text-xl);
+    font-size: var(--text-l);
     font-family: var(--font-text-semibold);
     margin-bottom: var(--small-padding);
   }
@@ -1565,7 +1567,7 @@ watch(
       }
 
       .grid-item__title {
-        font-size: var(--text-xl);
+        font-size: var(--text-l);
         font-weight: 400;
         font-family: var(--font-text);
         color: var(--color-bg);

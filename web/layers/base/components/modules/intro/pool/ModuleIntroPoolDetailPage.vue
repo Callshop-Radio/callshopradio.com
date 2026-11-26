@@ -265,7 +265,7 @@ function openTag(tag: Tag) {
   background: var(--color-blue);
   color: var(--color-white);
   font-family: var(--font-text-semibold);
-  font-size: var(--text-xs);
+  font-size: var(--text-s);
   letter-spacing: var(--label-letter-spacing);
   text-transform: uppercase;
 }
@@ -280,7 +280,7 @@ function openTag(tag: Tag) {
 
 .pool-profile__index {
   font-family: var(--font-text-semibold);
-  font-size: var(--text-xs);
+  font-size: var(--text-s);
   letter-spacing: var(--kicker-letter-spacing);
   color: color-mix(in srgb, var(--color-text) 40%, transparent);
   text-transform: uppercase;
@@ -324,7 +324,7 @@ function openTag(tag: Tag) {
   background: transparent;
   color: var(--color-text);
   font-family: var(--font-text);
-  font-size: var(--text-xs);
+  font-size: var(--text-s);
   line-height: 1.1;
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
@@ -368,7 +368,7 @@ function openTag(tag: Tag) {
     margin: 0;
     color: var(--color-blue);
     font-family: var(--font-text-semibold);
-    font-size: var(--text-xs);
+    font-size: var(--text-s);
     letter-spacing: var(--label-letter-spacing);
     text-transform: uppercase;
   }
@@ -395,7 +395,7 @@ function openTag(tag: Tag) {
   border-radius: var(--radius-media);
   color: var(--color-text);
   font-family: var(--font-text-semibold);
-  font-size: var(--text-xs);
+  font-size: var(--text-s);
   line-height: 1.1;
   text-decoration: none;
   text-transform: uppercase;
@@ -431,7 +431,7 @@ function openTag(tag: Tag) {
 
 .pool-profile__bio {
   max-width: 52ch;
-  font-size: var(--text-lg);
+  font-size: var(--text-m);
   line-height: 1.55;
   color: color-mix(in srgb, var(--color-text) 72%, transparent);
 
@@ -460,7 +460,7 @@ function openTag(tag: Tag) {
   border-radius: var(--radius-media);
   color: var(--color-text);
   font-family: var(--font-text-semibold);
-  font-size: var(--text-xs);
+  font-size: var(--text-s);
   line-height: 1.1;
   text-decoration: none;
   text-transform: uppercase;

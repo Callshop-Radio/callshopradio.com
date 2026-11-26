@@ -175,14 +175,14 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 }
 
 .chat-rail__title {
-	font-size: var(--text-xl);
+	font-size: var(--text-l);
 	line-height: 1.25;
 	font-family: var(--font-text-semibold);
 	margin-bottom: 0.5rem;
 }
 
 .chat-rail__intro {
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	line-height: 1.45;
 	color: color-mix(in srgb, var(--color-text) 62%, transparent);
 	max-width: 22ch;
@@ -198,7 +198,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 	display: flex;
 	align-items: center;
 	gap: 0.375rem;
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	font-variant-numeric: tabular-nums;
 }
 
@@ -211,7 +211,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 }
 
 .chat-rail__people {
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	line-height: 1.4;
 	color: color-mix(in srgb, var(--color-text) 58%, transparent);
 }
@@ -220,7 +220,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 	display: flex;
 	flex-direction: column;
 	gap: 0.0625rem;
-	font-size: var(--text-md);
+	font-size: var(--text-m);
 	line-height: 1.3;
 
 	strong {
@@ -234,17 +234,17 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 }
 
 .chat-rail__label {
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 45%, transparent);
 }
 
 .chat-rail__show {
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 62%, transparent);
 }
 
 .chat-rail__me {
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 45%, transparent);
 	padding-top: 0.75rem;
 	margin-top: auto;
@@ -264,7 +264,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 	gap: 0.4375rem;
 	padding: 0.5625rem 1.25rem;
 	border-bottom: 1px solid var(--color-line);
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 50%, transparent);
 	flex: none;
 
@@ -347,7 +347,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 	}
 
 	.chat-rail__title {
-		font-size: var(--text-xl);
+		font-size: var(--text-l);
 		margin-bottom: 0.125rem;
 	}
 

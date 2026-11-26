@@ -815,7 +815,7 @@ function itemLabel(item: LabItem) {
   border-radius: var(--radius-media);
   background-color: var(--color-bg);
   color: var(--color-text);
-  font-size: var(--text-xs);
+  font-size: var(--text-s);
   font-variant-numeric: tabular-nums;
   line-height: 1;
   pointer-events: none;
@@ -999,7 +999,7 @@ function itemLabel(item: LabItem) {
   border-radius: var(--radius-media);
   background-color: var(--color-bg);
   --lab-band-min-height: 9.5rem;
-  --lab-caption-title-size: var(--text-xl);
+  --lab-caption-title-size: var(--text-l);
 }
 
 /* --------------------------------------------------------------- animation */

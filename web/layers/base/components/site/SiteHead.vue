@@ -313,7 +313,7 @@ const chatEnabled = computed(
     background-color: var(--color-text);
     color: var(--color-bg);
     font-family: var(--font-text);
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
     line-height: 1.2;
     white-space: nowrap;
     pointer-events: none;

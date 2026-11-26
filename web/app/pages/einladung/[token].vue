@@ -201,13 +201,13 @@ onMounted(check);
 
 .invite__title {
 	margin: 0;
-	font-size: var(--text-xl);
+	font-size: var(--text-l);
 }
 
 .invite__field {
 	display: grid;
 	gap: 0.45rem;
-	font-size: var(--text-md);
+	font-size: var(--text-m);
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
 }
@@ -220,7 +220,7 @@ onMounted(check);
 	background: transparent;
 	color: inherit;
 	font: inherit;
-	font-size: var(--text-lg);
+	font-size: var(--text-m);
 	letter-spacing: normal;
 	text-transform: none;
 }
@@ -253,7 +253,7 @@ onMounted(check);
 .invite-hint {
 	margin: 0;
 	max-width: 38ch;
-	font-size: var(--text-lg);
+	font-size: var(--text-m);
 	opacity: 0.72;
 }
 
@@ -272,7 +272,7 @@ onMounted(check);
 
 .invite-secret code,
 .invite-codes code {
-	font-size: var(--text-lg);
+	font-size: var(--text-m);
 	word-break: break-all;
 }
 
@@ -285,6 +285,6 @@ onMounted(check);
 .invite-error {
 	margin: 0;
 	color: var(--color-pink);
-	font-size: var(--text-lg);
+	font-size: var(--text-m);
 }
 </style>

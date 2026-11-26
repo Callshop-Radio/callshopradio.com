@@ -148,11 +148,11 @@ const hasLinks = computed(() =>
   &--text {
     min-height: var(
       --detail-chip-size,
-      calc(var(--text-sm) + var(--small-padding) * 2 + 0.2rem)
+      calc(var(--text-s) + var(--small-padding) * 2 + 0.2rem)
     );
     padding: var(--small-padding) var(--base-padding);
     border-radius: var(--radius-circle);
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
     font-family: var(--font-text);
     letter-spacing: var(--button-letter-spacing);
     color: var(--color-white);
@@ -171,11 +171,11 @@ const hasLinks = computed(() =>
   &--icon {
     width: var(
       --detail-chip-size,
-      calc(var(--text-sm) + var(--small-padding) * 2 + 0.2rem)
+      calc(var(--text-s) + var(--small-padding) * 2 + 0.2rem)
     );
     height: var(
       --detail-chip-size,
-      calc(var(--text-sm) + var(--small-padding) * 2 + 0.2rem)
+      calc(var(--text-s) + var(--small-padding) * 2 + 0.2rem)
     );
     padding: 0;
     line-height: 0;

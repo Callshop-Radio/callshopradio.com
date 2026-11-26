@@ -36,8 +36,8 @@ const scheduleLink = computed(
 <style lang="postcss" scoped>
 svg {
   overflow: visible;
-  width: calc(var(--text-md) + var(--small-padding) * 2);
-  height: calc(var(--text-md) + var(--small-padding) * 2);
+  width: calc(var(--text-m) + var(--small-padding) * 2);
+  height: calc(var(--text-m) + var(--small-padding) * 2);
   cursor: pointer;
 
   circle,

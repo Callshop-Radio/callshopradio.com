@@ -72,7 +72,7 @@ const portableTextComponents = {
 .rich-text {
 	:deep(ul),
 	:deep(ol) {
-		@apply text-base;
+		font-size: var(--text-m);
 	}
 }
 </style>

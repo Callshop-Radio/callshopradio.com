@@ -64,7 +64,7 @@ withDefaults(
   justify-content: flex-end;
   align-items: center;
   gap: var(--mid-padding);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   line-height: 1.1;
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
@@ -94,7 +94,7 @@ withDefaults(
 .archive-masthead__lede {
   max-width: 32ch;
   margin: 0 0 0.35rem;
-  font-size: var(--text-md);
+  font-size: var(--text-m);
   line-height: 1.45;
   color: color-mix(in srgb, var(--color-text) 68%, transparent);
   text-wrap: balance;

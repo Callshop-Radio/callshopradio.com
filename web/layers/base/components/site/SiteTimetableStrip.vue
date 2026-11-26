@@ -201,7 +201,7 @@ function isCurrent(entry: TimetableEntry): boolean {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   letter-spacing: var(--kicker-letter-spacing);
   text-transform: uppercase;
   color: color-mix(in srgb, var(--color-text) 62%, transparent);
@@ -241,7 +241,7 @@ function isCurrent(entry: TimetableEntry): boolean {
   background: transparent;
   color: var(--color-text);
   font: inherit;
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   opacity: 0.6;
   cursor: pointer;
   padding: 0;
@@ -334,7 +334,7 @@ function isCurrent(entry: TimetableEntry): boolean {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: var(--text-xs);
+  font-size: var(--text-s);
   opacity: 0.7;
   font-variant-numeric: tabular-nums;
 }
@@ -345,7 +345,7 @@ function isCurrent(entry: TimetableEntry): boolean {
 }
 
 .timetable-strip__name {
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   font-family: var(--font-text-semibold);
   white-space: nowrap;
   overflow: hidden;
@@ -353,7 +353,7 @@ function isCurrent(entry: TimetableEntry): boolean {
 }
 
 .timetable-strip__sub {
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   opacity: 0.6;
   white-space: nowrap;
   overflow: hidden;

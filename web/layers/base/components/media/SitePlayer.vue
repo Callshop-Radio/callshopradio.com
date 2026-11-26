@@ -652,7 +652,7 @@ onBeforeUnmount(() => {
   place-items: center;
   background: var(--color-black);
   color: rgba(255, 255, 255, 0.72);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   font-family: var(--font-text-semibold);
   letter-spacing: var(--label-letter-spacing);
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -723,7 +723,7 @@ onBeforeUnmount(() => {
 .site-player__title {
   overflow: hidden;
   font-family: var(--font-text-semibold);
-  font-size: var(--text-md);
+  font-size: var(--text-m);
   line-height: 1.2;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -745,7 +745,7 @@ onBeforeUnmount(() => {
   gap: 0.25rem;
   overflow: hidden;
   color: var(--color-dark-grey);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   line-height: 1.2;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -778,7 +778,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.25rem;
   color: var(--color-dark-grey);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -811,7 +811,7 @@ onBeforeUnmount(() => {
 
 .site-player__live-label {
   color: var(--color-dark-grey);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   letter-spacing: var(--label-letter-spacing);
   line-height: 1.2;
   text-transform: uppercase;
@@ -821,7 +821,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
   color: inherit;
   font-family: var(--font-text-semibold);
-  font-size: var(--text-md);
+  font-size: var(--text-m);
   line-height: 1.2;
   text-decoration: none;
   white-space: nowrap;
@@ -837,7 +837,7 @@ onBeforeUnmount(() => {
   flex: none;
   margin-left: auto;
   color: var(--color-dark-grey);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -856,7 +856,7 @@ onBeforeUnmount(() => {
 .site-player__time {
   flex: none;
   color: var(--color-dark-grey);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   font-variant-numeric: tabular-nums;
   text-align: right;
   white-space: nowrap;
@@ -874,7 +874,7 @@ onBeforeUnmount(() => {
 .site-player__until {
   flex: none;
   color: var(--color-dark-grey);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -938,7 +938,7 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   background: transparent;
   color: var(--color-text);
-  font-size: var(--text-lg);
+  font-size: var(--text-m);
   cursor: pointer;
 
   &:hover {
@@ -986,7 +986,7 @@ onBeforeUnmount(() => {
 
 .site-player__source {
   color: var(--color-dark-grey);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   text-decoration: none;
 
   &:hover,
@@ -1004,7 +1004,7 @@ onBeforeUnmount(() => {
   gap: 0.5rem;
   margin: 0;
   color: var(--color-dark-grey);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
 
   button {
     padding: 0.125rem 0.5rem;

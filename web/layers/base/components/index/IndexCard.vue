@@ -87,7 +87,7 @@ const emit = defineEmits<{
     justify-content: center;
     column-gap: 0.3rem;
     padding: 0.65rem 0.5rem 0.7rem;
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
     line-height: 1.25;
   }
 

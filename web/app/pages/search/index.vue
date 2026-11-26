@@ -793,7 +793,7 @@ onUnmounted(() => {
   }
 
   .hero-subtitle {
-    font-size: var(--text-xl);
+    font-size: var(--text-l);
     color: var(--color-text-light);
     font-family: var(--font-text);
   }
@@ -819,14 +819,14 @@ onUnmounted(() => {
   border: 1px solid var(--color-text);
   border-radius: var(--radius-pill);
   transition: all 0.2s ease;
-  height: calc(var(--text-md) + var(--base-padding) * 2 + 2px);
+  height: calc(var(--text-m) + var(--base-padding) * 2 + 2px);
 
   .search-icon {
     display: flex;
     align-items: center;
     svg {
-      width: var(--text-md);
-      height: var(--text-md);
+      width: var(--text-m);
+      height: var(--text-m);
       path {
         fill: var(--color-text);
       }
@@ -840,8 +840,8 @@ onUnmounted(() => {
     flex: 1;
     border: none;
     background: transparent;
-    font-size: var(--text-md);
-    height: calc(var(--text-md) + var(--base-padding) * 2);
+    font-size: var(--text-m);
+    height: calc(var(--text-m) + var(--base-padding) * 2);
     color: var(--color-text);
     outline: none;
     font-family: var(--font-text-semibold);
@@ -893,7 +893,7 @@ onUnmounted(() => {
 
 .type-filter-btn {
   color: var(--color-text);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   font-family: var(--font-text-semibold);
   font-weight: 400;
   text-transform: uppercase;
@@ -954,7 +954,7 @@ onUnmounted(() => {
   }
 
   .type-icon {
-    font-size: var(--text-lg);
+    font-size: var(--text-m);
   }
 }
 
@@ -987,7 +987,7 @@ onUnmounted(() => {
   background: color-mix(in srgb, var(--color-text) 5%, transparent);
   border: none;
   border-bottom: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.1));
-  font-size: var(--text-md);
+  font-size: var(--text-m);
   font-family: var(--font-text);
   color: var(--color-text-light);
   cursor: pointer;
@@ -1017,18 +1017,18 @@ onUnmounted(() => {
   }
 
   .autocomplete-icon {
-    font-size: var(--text-xl);
+    font-size: var(--text-l);
   }
 
   .autocomplete-title {
     flex: 1;
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     font-family: var(--font-text-semibold);
     color: var(--color-text);
   }
 
   .autocomplete-type {
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
     font-family: var(--font-text-semibold);
     color: var(--color-text-light);
     text-transform: uppercase;
@@ -1100,7 +1100,7 @@ onUnmounted(() => {
   background: transparent;
   border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.15));
   border-radius: var(--radius-pill-sm);
-  font-size: var(--text-lg);
+  font-size: var(--text-m);
   font-family: var(--font-text);
   color: var(--color-text);
   cursor: pointer;
@@ -1116,7 +1116,7 @@ onUnmounted(() => {
   }
 
   .category-icon {
-    font-size: var(--text-lg);
+    font-size: var(--text-m);
   }
 
   .category-label {
@@ -1126,11 +1126,11 @@ onUnmounted(() => {
 
   .category-count {
     color: var(--color-text-light);
-    font-size: var(--text-md);
+    font-size: var(--text-m);
   }
 
   .expand-icon {
-    font-size: var(--text-xl);
+    font-size: var(--text-l);
     font-weight: 300;
   }
 }
@@ -1150,7 +1150,7 @@ onUnmounted(() => {
   background: var(--color-bg);
   border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.2));
   border-radius: var(--radius-pill);
-  font-size: var(--text-md);
+  font-size: var(--text-m);
   font-family: var(--font-text);
   color: var(--color-text);
   cursor: pointer;
@@ -1176,7 +1176,7 @@ onUnmounted(() => {
   margin-top: var(--small-padding);
 
   .active-label {
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     color: var(--color-text-light);
   }
 
@@ -1185,7 +1185,7 @@ onUnmounted(() => {
     background: transparent;
     border: 1px solid var(--color-pink);
     border-radius: var(--radius-pill);
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     font-family: var(--font-text);
     color: var(--color-pink);
     cursor: pointer;
@@ -1215,7 +1215,7 @@ onUnmounted(() => {
 
 .empty-state-text {
   color: var(--color-text-light);
-  font-size: var(--text-md);
+  font-size: var(--text-m);
   font-family: var(--font-text);
   margin-bottom: var(--big-padding);
 }
@@ -1279,14 +1279,14 @@ onUnmounted(() => {
   }
 
   .card-title {
-    font-size: var(--text-xl);
+    font-size: var(--text-l);
     font-family: var(--font-text-semibold);
     color: var(--color-text);
     margin-bottom: 4px;
   }
 
   .card-desc {
-    font-size: var(--text-lg);
+    font-size: var(--text-m);
     color: var(--color-text-light);
   }
 }

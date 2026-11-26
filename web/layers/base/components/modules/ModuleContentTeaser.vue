@@ -860,7 +860,7 @@ onMounted(() => {
   max-width: var(--page-max-width);
 
   &__title {
-    font-size: var(--text-xl);
+    font-size: var(--text-l);
     margin: 0;
   }
 
@@ -882,7 +882,7 @@ onMounted(() => {
         flex-flow: row wrap;
         align-items: center;
         justify-content: center;
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
@@ -897,7 +897,7 @@ onMounted(() => {
         gap: var(--small-padding);
         background-color: transparent;
         border: none;
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         color: var(--color-dark-grey);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
@@ -1024,7 +1024,7 @@ onMounted(() => {
 
   .teaser-item__content__show {
     min-height: calc(
-      var(--text-md) * 1.15 + var(--text-md) + var(--mid-padding)
+      var(--text-m) * 1.15 + var(--text-m) + var(--mid-padding)
     );
   }
 
@@ -1116,7 +1116,7 @@ onMounted(() => {
         align-items: center;
 
         .teaser-item__date {
-          font-size: var(--text-sm);
+          font-size: var(--text-s);
           text-transform: uppercase;
         }
 
@@ -1129,11 +1129,11 @@ onMounted(() => {
           border-radius: var(--radius-circle);
           border: none;
           padding: 4px;
-          width: calc(var(--text-md) + 4px);
-          height: calc(var(--text-md) + 4px);
+          width: calc(var(--text-m) + 4px);
+          height: calc(var(--text-m) + 4px);
 
           svg {
-            height: var(--text-md);
+            height: var(--text-m);
             transform: translate(1px, 0);
             path {
               fill: var(--color-bg);
@@ -1143,14 +1143,14 @@ onMounted(() => {
       }
 
       .teaser-item__title {
-        font-size: var(--text-md);
+        font-size: var(--text-m);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
       }
 
       .teaser-item__artist {
-        font-size: var(--text-md);
+        font-size: var(--text-m);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
@@ -1186,7 +1186,7 @@ onMounted(() => {
           color: var(--color-text);
           padding: var(--small-padding) var(--mid-padding);
           border-radius: var(--radius-pill);
-          font-size: var(--text-sm);
+          font-size: var(--text-s);
           text-transform: uppercase;
         }
       }
@@ -1466,7 +1466,7 @@ button.genre {
   }
 }
 .module-teaser.sets .teaser-item .teaser-item__title {
-  font-size: var(--text-xl);
+  font-size: var(--text-l);
   line-height: 1.05;
 }
 </style>

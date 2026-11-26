@@ -90,7 +90,7 @@ button {
 	background-color: rgba(17, 17, 17, 0.92);
 	color: #fff;
 	font-family: system-ui, sans-serif;
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	line-height: 1;
 	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.28);
 	backdrop-filter: blur(6px);

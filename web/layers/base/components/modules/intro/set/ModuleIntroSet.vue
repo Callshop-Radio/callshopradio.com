@@ -362,13 +362,13 @@ onMounted(() => loadArtworkUrl());
         }
       }
       .set__artist-container { 
-        min-height: calc(var(--text-md) * 2);
+        min-height: calc(var(--text-m) * 2);
       }
 
       .set-title,
       .set-artist,
       .set__artist {
-        font-size: var(--text-md);
+        font-size: var(--text-m);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         a,
@@ -387,7 +387,7 @@ onMounted(() => loadArtworkUrl());
         align-items: center;
 
         .set-date {
-          font-size: var(--text-sm);
+          font-size: var(--text-s);
           text-transform: uppercase;
         }
       }

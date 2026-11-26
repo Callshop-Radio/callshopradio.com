@@ -96,7 +96,7 @@ onUnmounted(() => {
 }
 
 .grid-density__label {
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	font-family: var(--font-text-semibold);
 	text-transform: uppercase;
 	color: var(--color-text);
@@ -131,7 +131,7 @@ onUnmounted(() => {
 	background: transparent;
 	color: var(--color-text);
 	font-family: var(--font-text-semibold);
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	line-height: 1;
 	font-variant-numeric: tabular-nums;
 	text-align: center;

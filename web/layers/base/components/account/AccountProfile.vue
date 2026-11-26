@@ -206,7 +206,7 @@ onMounted(load);
 }
 
 .profile__hint {
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 42%, transparent);
 }
 
@@ -220,7 +220,7 @@ onMounted(load);
 .profile__field {
 	display: grid;
 	gap: 0.4rem;
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	color: color-mix(in srgb, var(--color-text) 55%, transparent);
@@ -235,7 +235,7 @@ onMounted(load);
 	background-color: color-mix(in srgb, var(--color-text) 6%, transparent);
 	color: var(--color-text);
 	font: inherit;
-	font-size: var(--text-md);
+	font-size: var(--text-m);
 	letter-spacing: normal;
 	text-transform: none;
 
@@ -255,7 +255,7 @@ onMounted(load);
 	background-color: color-mix(in srgb, var(--color-text) 8%, transparent);
 	color: inherit;
 	font: inherit;
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	cursor: pointer;
@@ -280,7 +280,7 @@ onMounted(load);
 
 .profile__saved {
 	margin: 0;
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	color: var(--color-pink);
 }
 
@@ -298,7 +298,7 @@ onMounted(load);
 	background: none;
 	color: color-mix(in srgb, var(--color-text) 55%, transparent);
 	font: inherit;
-	font-size: var(--text-sm);
+	font-size: var(--text-s);
 	cursor: pointer;
 
 	&:hover {

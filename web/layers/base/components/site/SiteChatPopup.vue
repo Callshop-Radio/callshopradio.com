@@ -242,7 +242,7 @@ onBeforeUnmount(() => {
 
 .chat-popup__title {
   font-family: var(--font-text-semibold);
-  font-size: var(--text-xl);
+  font-size: var(--text-l);
   line-height: 1.2;
 }
 
@@ -251,7 +251,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.3125rem;
   margin-left: auto;
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   color: color-mix(in srgb, var(--color-text) 58%, transparent);
   font-variant-numeric: tabular-nums;
 }
@@ -307,7 +307,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   color: color-mix(in srgb, var(--color-text) 70%, transparent);
 }
 
@@ -318,7 +318,7 @@ onBeforeUnmount(() => {
   padding: 0.5rem 1rem;
   border-top: 1px solid var(--color-line);
   border-bottom: 1px solid var(--color-line);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   color: color-mix(in srgb, var(--color-text) 50%, transparent);
   flex: none;
 
@@ -348,7 +348,7 @@ onBeforeUnmount(() => {
 
 .chat-popup__people {
   padding: 0.375rem 1rem 0.5rem;
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   line-height: 1.4;
   color: color-mix(in srgb, var(--color-text) 58%, transparent);
   flex: none;

@@ -2435,7 +2435,7 @@ onUnmounted(() => {
       background: transparent;
       cursor: pointer;
       font-family: var(--font-text);
-      font-size: var(--text-sm);
+      font-size: var(--text-s);
       text-transform: uppercase;
       transition: all 0.2s ease;
 
@@ -2464,12 +2464,12 @@ onUnmounted(() => {
       width: 100%;
       height: calc(
         var(--first-content-distance) +
-          (var(--small-padding) * 2 + var(--text-sm) / 2)
+          (var(--small-padding) * 2 + var(--text-s) / 2)
       );
       background-color: var(--color-bg);
       z-index: -1;
       transform: translateY(
-        calc(-100% + (var(--small-padding) * 2 + var(--text-sm) / 2))
+        calc(-100% + (var(--small-padding) * 2 + var(--text-s) / 2))
       );
     }
   }
@@ -2505,16 +2505,16 @@ onUnmounted(() => {
         flex-flow: row wrap;
         align-items: center;
         justify-content: center;
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
-        height: var(--text-sm);
+        height: var(--text-s);
         cursor: pointer;
 
         .toggle-arrow {
           position: absolute;
-          font-size: var(--text-sm);
+          font-size: var(--text-s);
           transform: translate(0, -1px);
         }
 
@@ -2551,7 +2551,7 @@ onUnmounted(() => {
       .active-filter {
         background-color: var(--theme-color);
         color: white;
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         letter-spacing: var(--button-letter-spacing);
         font-family: var(--font-text);
         position: relative;
@@ -2566,7 +2566,7 @@ onUnmounted(() => {
         &__name {
           min-width: max-content;
           cursor: pointer;
-          font-size: var(--text-sm);
+          font-size: var(--text-s);
           letter-spacing: var(--button-letter-spacing);
           font-family: var(--font-text);
           padding: 0 8px 0 0;
@@ -2584,7 +2584,7 @@ onUnmounted(() => {
       padding: 0 calc(var(--mid-margin) / 2);
 
       &__title {
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
@@ -2623,7 +2623,7 @@ onUnmounted(() => {
         flex-flow: row wrap;
         align-items: center;
         justify-content: center;
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
@@ -2637,7 +2637,7 @@ onUnmounted(() => {
         align-items: center;
         gap: var(--small-padding);
         background-color: transparent;
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         color: var(--color-dark-grey);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
@@ -2757,7 +2757,7 @@ onUnmounted(() => {
     }
 
     .filter-tag {
-      font-size: var(--text-sm);
+      font-size: var(--text-s);
       cursor: pointer;
       transition: all 0.2s ease;
       background-color: var(--color-bg);
@@ -2889,7 +2889,7 @@ onUnmounted(() => {
           padding: calc(var(--small-padding) * 0.4)
             calc(var(--base-padding) * 0.45);
           border-width: 1px;
-          font-size: var(--text-xs);
+          font-size: var(--text-s);
           line-height: 1.05;
         }
       }
@@ -2902,7 +2902,7 @@ onUnmounted(() => {
         .tag {
           padding: calc(var(--small-padding) * 0.32)
             calc(var(--base-padding) * 0.36);
-          font-size: var(--text-xs);
+          font-size: var(--text-s);
         }
       }
     }
@@ -2914,7 +2914,7 @@ onUnmounted(() => {
     margin: 0;
     padding: var(--mid-padding) 0 0;
     text-align: center;
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     color: var(--color-text);
@@ -3037,7 +3037,7 @@ onUnmounted(() => {
         align-items: center;
 
         .grid-item__date {
-          font-size: var(--text-sm);
+          font-size: var(--text-s);
           text-transform: uppercase;
         }
 
@@ -3051,11 +3051,11 @@ onUnmounted(() => {
           border-radius: var(--radius-circle);
           border: none;
           padding: 4px;
-          width: calc(var(--text-md) + 4px);
-          height: calc(var(--text-md) + 4px);
+          width: calc(var(--text-m) + 4px);
+          height: calc(var(--text-m) + 4px);
 
           svg {
-            height: var(--text-md);
+            height: var(--text-m);
             transform: translate(1px, 0);
             path {
               fill: var(--color-bg);
@@ -3066,7 +3066,7 @@ onUnmounted(() => {
 
       .grid-item__title,
       .grid-item__artist {
-        font-size: var(--text-md);
+        font-size: var(--text-m);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
@@ -3084,7 +3084,7 @@ onUnmounted(() => {
 
   /* Content type specific styles */
   &.sets .grid-item__content .grid-item__title {
-    font-size: var(--text-xl);
+    font-size: var(--text-l);
     line-height: 1.05;
   }
 
@@ -3184,7 +3184,9 @@ onUnmounted(() => {
   }
 
   &__title {
-    @apply text-2xl font-bold mb-4;
+    font-size: var(--text-l);
+  font-family: var(--font-text-semibold);
+  margin-bottom: 1rem;
   }
   &__header {
     display: flex;
@@ -3305,7 +3307,7 @@ onUnmounted(() => {
       -webkit-backdrop-filter: blur(18px);
       color: var(--color-text);
       font-family: var(--font-text-semibold);
-      font-size: var(--text-sm);
+      font-size: var(--text-s);
       text-transform: uppercase;
       letter-spacing: var(--button-letter-spacing);
       box-shadow: 0 4px 24px rgba(0, 0, 0, 0.16);
@@ -3327,7 +3329,7 @@ onUnmounted(() => {
         border-radius: var(--radius-pill);
         background-color: var(--color-pink);
         color: var(--color-black);
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         line-height: 1;
       }
 
@@ -3367,7 +3369,7 @@ onUnmounted(() => {
 
     &__sheet-title {
       font-family: var(--font-text-semibold);
-      font-size: var(--text-sm);
+      font-size: var(--text-s);
       text-transform: uppercase;
       letter-spacing: var(--button-letter-spacing);
     }
@@ -3397,7 +3399,7 @@ onUnmounted(() => {
       gap: var(--small-padding);
 
       &__title {
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-text);
@@ -3458,7 +3460,7 @@ onUnmounted(() => {
           padding: var(--small-padding) var(--mid-padding);
           border-radius: var(--radius-pill);
           border: 1px solid transparent;
-          font-size: var(--text-sm);
+          font-size: var(--text-s);
           text-transform: uppercase;
           font-family: var(--font-text);
           cursor: pointer;
@@ -3510,7 +3512,7 @@ onUnmounted(() => {
         color: var(--color-bg);
         border: 1px solid var(--theme-color);
         border-radius: var(--radius-pill);
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         letter-spacing: var(--button-letter-spacing);
         font-family: var(--font-text);
         text-transform: uppercase;
@@ -3528,7 +3530,7 @@ onUnmounted(() => {
         &__name {
           min-width: max-content;
           cursor: pointer;
-          font-size: var(--text-sm);
+          font-size: var(--text-s);
           letter-spacing: var(--button-letter-spacing);
           font-family: var(--font-text);
           padding: 0;
@@ -3565,7 +3567,7 @@ onUnmounted(() => {
           gap: var(--small-padding);
           background-color: transparent;
           border: none;
-          font-size: var(--text-sm);
+          font-size: var(--text-s);
           color: var(--color-text);
           text-transform: uppercase;
           font-family: var(--font-text-semibold);
@@ -3776,7 +3778,7 @@ onUnmounted(() => {
   .content-grid {
     &__mobile-filter-cities {
       &__tags .filter-tag--city {
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
         padding: 6px 12px;
       }
     }
@@ -3785,7 +3787,7 @@ onUnmounted(() => {
       gap: var(--mid-padding);
 
       .sort-button {
-        font-size: var(--text-sm);
+        font-size: var(--text-s);
 
         .dot {
           width: 8px;

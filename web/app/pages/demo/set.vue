@@ -463,7 +463,7 @@ const tagPath = (tag: string) =>
   }
 
   &__label {
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     opacity: 0.6;
@@ -485,7 +485,7 @@ const tagPath = (tag: string) =>
     background: transparent;
     color: var(--color-text);
     font-family: var(--font-text);
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     cursor: pointer;
@@ -499,14 +499,14 @@ const tagPath = (tag: string) =>
 
   &__tab-index {
     opacity: 0.55;
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
   }
 
   &__toggle {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     cursor: pointer;
@@ -514,7 +514,7 @@ const tagPath = (tag: string) =>
 
   &__hint {
     margin: 0.4rem 0 0;
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
     opacity: 0.55;
   }
 }
@@ -525,7 +525,7 @@ const tagPath = (tag: string) =>
 
 .eyebrow {
   margin: 0;
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
 
@@ -571,7 +571,7 @@ const tagPath = (tag: string) =>
   background-color: var(--color-text);
   color: var(--color-bg);
   font-family: var(--font-text);
-  font-size: var(--text-sm);
+  font-size: var(--text-s);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
   cursor: pointer;
@@ -613,7 +613,7 @@ const tagPath = (tag: string) =>
 
   h2 {
     margin: 0 0 var(--mid-padding);
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
     font-family: var(--font-text-semibold);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
@@ -621,14 +621,14 @@ const tagPath = (tag: string) =>
 
   p {
     margin: 0 0 var(--mid-padding);
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     line-height: 1.6;
   }
 
   blockquote {
     margin: var(--mid-margin) 0 0;
     font-family: var(--font-text-italic);
-    font-size: var(--text-xl);
+    font-size: var(--text-l);
     line-height: 1.5;
     font-style: normal;
 
@@ -640,7 +640,7 @@ const tagPath = (tag: string) =>
       display: block;
       margin-top: var(--small-padding);
       font-family: var(--font-text);
-      font-size: var(--text-sm);
+      font-size: var(--text-s);
       font-style: normal;
       text-transform: uppercase;
       opacity: 0.55;
@@ -666,7 +666,7 @@ const tagPath = (tag: string) =>
 
   &__title {
     margin: 0;
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
     font-family: var(--font-text-semibold);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
@@ -674,7 +674,7 @@ const tagPath = (tag: string) =>
 
   &__show {
     font-family: var(--font-text-semibold);
-    font-size: var(--text-xl);
+    font-size: var(--text-l);
     text-transform: uppercase;
     color: var(--color-text);
     text-decoration: none;
@@ -686,7 +686,7 @@ const tagPath = (tag: string) =>
 
   &__meta {
     margin: 0;
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     line-height: 1.55;
     opacity: 0.75;
   }
@@ -706,7 +706,7 @@ const tagPath = (tag: string) =>
     gap: 0.5rem;
     padding: 0.6rem 0;
     border-top: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     line-height: 1.4;
 
     &:last-child {
@@ -715,7 +715,7 @@ const tagPath = (tag: string) =>
   }
 
   &__index {
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
     opacity: 0.45;
     font-variant-numeric: tabular-nums;
     padding-top: 0.1rem;
@@ -747,7 +747,7 @@ const tagPath = (tag: string) =>
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
   }
@@ -815,7 +815,7 @@ const tagPath = (tag: string) =>
     align-items: center;
     gap: 0.45rem;
     margin: 0;
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
   }
@@ -836,7 +836,7 @@ const tagPath = (tag: string) =>
   &__lead {
     margin: 0;
     max-width: 46ch;
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     line-height: 1.6;
     opacity: 0.85;
   }
@@ -920,7 +920,7 @@ const tagPath = (tag: string) =>
     align-items: center;
     gap: 0.45rem;
     margin: 0;
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
 
@@ -965,7 +965,7 @@ const tagPath = (tag: string) =>
     align-items: center;
     gap: 0.45rem;
     margin: 0;
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
 
@@ -1072,7 +1072,7 @@ const tagPath = (tag: string) =>
     align-items: center;
     gap: 0.45rem;
     margin: 0;
-    font-size: var(--text-sm);
+    font-size: var(--text-s);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
 
@@ -1159,7 +1159,7 @@ const tagPath = (tag: string) =>
     align-items: center;
     gap: 0.45rem;
     margin: 0;
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
 
@@ -1176,7 +1176,7 @@ const tagPath = (tag: string) =>
   &__lead {
     margin: 0;
     max-width: 42ch;
-    font-size: var(--text-md);
+    font-size: var(--text-m);
     line-height: 1.6;
     opacity: 0.85;
   }

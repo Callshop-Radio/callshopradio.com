@@ -116,7 +116,7 @@ section {
       padding: 0 var(--big-margin);
     } */
     h3 {
-      font-size: var(--text-xl);
+      font-size: var(--text-l);
       text-transform: uppercase;
       @media screen and (max-width: 900px) {
         padding: 0 0 var(--mid-margin) 0;
