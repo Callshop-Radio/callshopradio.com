@@ -161,14 +161,6 @@ const onClick = (func) => {
 </template>
 
 <style lang="postcss" scoped>
-/* The parent-active class is used for parent routes */
-.parent-active {
-}
-
-/* Keep normal router-link-active and router-link-exact-active styles */
-.router-link-exact-active {
-}
-
 /* Navigation-specific styles */
 :where(nav) {
   .router-link-exact-active,

@@ -822,9 +822,6 @@ onUnmounted(() => {
   transition: all 0.2s ease;
   height: calc(var(--base-font-size) + var(--base-padding) * 2 + 2px);
 
-  &:focus-within {
-  }
-
   .search-icon {
     display: flex;
     align-items: center;
