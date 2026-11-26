@@ -5,31 +5,23 @@
   --font-text-semibold: "Icona-Sans-Semibold", system-ui, sans-serif;
   --font-text-italic: "Icona-Sans-Italic", system-ui, sans-serif;
   --font-text-medium-italic: "Icona-Sans-Medium-Italic", system-ui, sans-serif;
-  --font-text-semibold-italic: "Icona-Sans-Semibold-Italic", system-ui, sans-serif;
-  /* There is one family. Display titles are told apart by size and tracking,
-     not by a second face, so both aliases resolve to the text face. */
-  --font-display: var(--font-text);
-  --font-headline: var(--font-text);
 
   /* Font Options
      One scale, one place. Every size on the site is one of these steps;
-     see DESIGN.md. The desktop column is the base, the two mobile blocks
-     below only shrink it. Display sizes (hero headlines, marquee) are a
+     see DESIGN.md. The desktop column is the base, the mobile block below
+     only shrinks it. Display sizes (hero headlines, marquee) are a
      separate fluid tier and are not part of this scale. */
-  --huge-font-size: 2.5rem; /* 40px */
   --h1-size: 1.5625rem; /* 25px */
   --h2-size: 1.25rem; /* 20px */
   --h3-size: 1.125rem; /* 18px */
   --h4-size: 1rem; /* 16px */
   --body-large-font-size: 0.875rem; /* 14px, forms and secondary body */
-  --large-font-size: 1.25rem; /* 20px, alias of h2 for lead text */
   --base-font-size: 0.8125rem; /* 13px */
   --small-font-size: 0.625rem; /* 10px */
   --mini-font-size: 0.5rem; /* 8px */
   --menu-text-size: 0.8125rem; /* 13px */
 
   --base-line-height: calc(var(--base-font-size) * 1.25);
-  --h1-line-height: calc(var(--h1-size) * 1.25);
   --h2-line-height: calc(var(--h2-size) * 1.25);
   --h3-line-height: calc(var(--h3-size) * 1.25);
   --h4-line-height: calc(var(--h4-size) * 1.25);
@@ -43,12 +35,10 @@
   @media (--phone-only) {
     --menu-text-size: 0.75rem;
 
-    --huge-font-size: 2rem; /* 32px */
     --h1-size: 1.375rem; /* 22px */
     --h2-size: 1.125rem; /* 18px */
     --h3-size: 1rem; /* 16px */
     --h4-size: 0.875rem; /* 14px */
-    --large-font-size: 1rem;
     --base-font-size: 0.75rem; /* 12px */
     --small-font-size: 0.625rem; /* 10px */
     --mini-font-size: 0.625rem; /* 10px: micro text does not shrink further */
@@ -323,7 +313,7 @@ strong {
     max-width: 80ch;
     white-space: pre-wrap;
     font-family: var(--font-text-italic);
-    font-size: var(--large-font-size);
+    font-size: var(--h2-size);
     line-height: 1.5;
   }
 

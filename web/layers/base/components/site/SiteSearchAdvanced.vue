@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import {
 	ARCHIVE_DURATIONS,
 	ARCHIVE_FILTER_OPTIONS_QUERY,
@@ -883,7 +883,7 @@ onUnmounted(() => {
 
   &__title {
     margin: 0;
-    font-family: var(--font-headline);
+    font-family: var(--font-text);
     font-size: clamp(1.25rem, 2.2vw, 1.75rem);
     line-height: 1.1;
   }

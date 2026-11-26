@@ -790,7 +790,7 @@ onUnmounted(() => {
     font-weight: 700;
     letter-spacing: -0.02em;
     margin-bottom: var(--small-padding);
-    font-family: var(--font-headline);
+    font-family: var(--font-text);
   }
 
   .hero-subtitle {

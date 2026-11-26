@@ -346,7 +346,7 @@ const coverFlowTeaserBlocks = computed(() => {
       }
 
       .article-title {
-        font-size: var(--large-font-size);
+        font-size: var(--h2-size);
         font-weight: 400;
         text-transform: uppercase;
         font-family: var(--font-text);

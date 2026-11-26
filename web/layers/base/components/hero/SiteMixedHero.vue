@@ -651,7 +651,7 @@ onUnmounted(() => {
   margin: 0;
   max-width: none;
   overflow: hidden;
-  font-family: var(--font-display);
+  font-family: var(--font-text);
   font-size: clamp(1.5rem, 2.6vw, 2.4rem);
   line-height: 1.02;
   letter-spacing: -0.01em;

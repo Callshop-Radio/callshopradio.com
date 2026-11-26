@@ -1565,7 +1565,7 @@ watch(
       }
 
       .grid-item__title {
-        font-size: var(--large-font-size);
+        font-size: var(--h2-size);
         font-weight: 400;
         font-family: var(--font-text);
         color: var(--color-bg);

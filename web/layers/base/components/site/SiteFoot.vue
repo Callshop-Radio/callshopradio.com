@@ -590,7 +590,7 @@ function scrollToTop() {
 .site-footer__tagline {
   margin: 1.5rem 0 0;
   color: var(--color-text);
-  font-size: var(--large-font-size);
+  font-size: var(--h2-size);
   line-height: 1.5;
 }
 

@@ -629,7 +629,7 @@ const tagPath = (tag: string) =>
   blockquote {
     margin: var(--mid-margin) 0 0;
     font-family: var(--font-text-italic);
-    font-size: var(--large-font-size);
+    font-size: var(--h2-size);
     line-height: 1.5;
     font-style: normal;
 
@@ -676,7 +676,7 @@ const tagPath = (tag: string) =>
 
   &__show {
     font-family: var(--font-text-semibold);
-    font-size: var(--large-font-size);
+    font-size: var(--h2-size);
     text-transform: uppercase;
     color: var(--color-text);
     text-decoration: none;

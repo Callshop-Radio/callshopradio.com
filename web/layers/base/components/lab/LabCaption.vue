@@ -372,7 +372,7 @@ const teaserBlocks = computed(() => {
     padding-left: var(--base-margin);
     border-left: 1px solid
       color-mix(in srgb, var(--color-text) 18%, transparent);
-    --lab-caption-title-size: var(--large-font-size);
+    --lab-caption-title-size: var(--h2-size);
   }
 
   &--overlay {

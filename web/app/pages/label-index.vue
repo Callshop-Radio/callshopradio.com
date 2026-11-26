@@ -194,7 +194,7 @@ watch(
 .index-intro__lede {
   max-width: 58ch;
   margin: 0.6rem 0 0;
-  font-size: var(--large-font-size);
+  font-size: var(--h2-size);
   line-height: 1.4;
 }
 
