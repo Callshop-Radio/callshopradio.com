@@ -2464,7 +2464,7 @@ onUnmounted(() => {
       width: 100%;
       height: calc(
         var(--first-content-distance) +
-          (var(--small-padding) * 2 + --text-sm / 2)
+          (var(--small-padding) * 2 + var(--text-sm) / 2)
       );
       background-color: var(--color-bg);
       z-index: -1;

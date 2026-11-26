@@ -573,7 +573,7 @@ onMounted(() => {
 
   .related-item__content__show {
     min-height: calc(
-      --text-md * 1.15 + --text-md + var(--mid-padding)
+      var(--text-md) * 1.15 + var(--text-md) + var(--mid-padding)
     );
   }
 

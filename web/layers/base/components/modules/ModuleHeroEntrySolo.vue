@@ -404,7 +404,7 @@ onMounted(() => {
       right: calc(var(--big-margin) * 2);
       top: calc(
         35.3125rem - var(--big-margin) * 2 + var(--mid-margin) +
-          --text-md / 2
+          var(--text-md) / 2
       );
       transform: translate(33%, -100%);
       z-index: 0;

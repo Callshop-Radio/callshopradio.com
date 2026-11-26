@@ -645,7 +645,7 @@ watch(
 
     &__show {
       min-height: calc(
-        --text-md * 1.15 + --text-md +
+        var(--text-md) * 1.15 + var(--text-md) +
           var(--mid-padding)
       );
     }
