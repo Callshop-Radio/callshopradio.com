@@ -444,15 +444,15 @@ onUnmounted(() => {
   margin-inline: calc(50% - 50vw);
 }
 
-/* Quiet section marker above the cards, on the page's right content edge. */
+/* Quiet section marker above the cards, on the page's left content edge. */
 .mixed-hero__eyebrow {
   position: absolute;
-  top: 0.3rem;
-  right: var(--mixed-inset);
+  top: 0.25rem;
+  left: var(--mixed-inset);
   z-index: 12;
   color: color-mix(in srgb, var(--color-text) 62%, transparent);
   font-family: var(--font-text);
-  font-size: var(--mini-font-size);
+  font-size: var(--small-font-size);
   letter-spacing: var(--button-letter-spacing);
   line-height: 1;
   pointer-events: none;
