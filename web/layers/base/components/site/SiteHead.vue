@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { useMainStore } from "~/stores/mainStore";
 
 const { locale: _locale, locales: _locales } = useI18n();
@@ -11,14 +11,16 @@ const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 <template>
 	<div class="header">
 		<section class="header__title-section">
-			<NuxtLink :to="localePath('/')" class="header__title-section__logo">
-				<div class="header__title-section__logo">
-					<ElementsCallshopLogo class="logo" />
-					<ElementsCallshopTextLogo class="text-logo" />
-				</div>
-			</NuxtLink>
+			<div class="header__left">
+				<NuxtLink :to="localePath('/')" class="header__title-section__logo">
+					<div class="header__title-section__logo">
+						<ElementsCallshopLogo class="logo" />
+						<ElementsCallshopTextLogo class="text-logo" />
+					</div>
+				</NuxtLink>
+				<SiteSectionLinks />
+			</div>
 			<div class="header__toggle-section">
-				<SiteDarkMode />
 				<nav class="menu-main tags">
 					<ul>
 						<NuxtLink :to="localePath('/shows')" :class="`tag shows`">
@@ -33,12 +35,8 @@ const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 					</ul>
 				</nav>
 				<SiteSearchButton />
-				<SiteDiscordButton v-if="mainStore?.siteNav?.discordLink" />
-				<SiteScheduleButton v-if="mainStore?.siteNav?.schedulePage" />
-				<SiteMenuButton />
 			</div>
 		</section>
-		<SiteMenu />
 		<section class="header__audio-player-section">
 			<SitePlayer />
 		</section>
@@ -70,14 +68,32 @@ const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
   height: auto;
   min-height: max-content;
   z-index: 999999;
+  /* The player row is fixed under the navigation; reserve its height here so
+     page content starts below it instead of underneath it. */
+  padding-bottom: var(--player-bar-height);
+
+  /* Full-bleed rule under the navigation; the fixed player has its own. */
+  &::after {
+    content: "";
+    position: absolute;
+    top: var(--nav-bar-height);
+    right: 0;
+    left: 0;
+    border-bottom: 1px solid var(--color-text);
+    pointer-events: none;
+  }
+
   &__title-section {
     width: 100%;
     max-width: var(--page-max-width);
+    /* 20 % taller than the player row. */
+    height: var(--nav-bar-height);
+    box-sizing: border-box;
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
     align-items: center;
-    padding: var(--base-padding) 0;
+    padding: 0;
     @media screen and (max-width: 1100px) {
       padding: var(--base-padding);
     }
@@ -90,12 +106,11 @@ const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
       h1 {
         font-family: var(--font-text);
       }
-      /* Logo inversion in dark mode */
+      /* Logo inversion follows the global theme token, so the theme
+         switch and the OS setting stay in sync. */
       .logo,
       .text-logo {
-        @media (prefers-color-scheme: dark) {
-          filter: invert(1);
-        }
+        filter: invert(var(--logo-invert));
       }
       .text-logo {
         @media screen and (max-width: 900px) {
@@ -104,15 +119,32 @@ const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
       }
     }
   }
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: var(--small-padding);
+    min-width: 0;
+  }
+
   &__toggle-section {
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
     align-items: center;
-    gap: var(--base-padding);
+    gap: var(--mid-margin);
   }
   &__audio-player-section {
+    /* The player sits right under the navigation and stays there while the
+       page scrolls; the header reserves its height in the flow. */
+    position: fixed;
+    top: var(--nav-bar-height);
+    right: 0;
+    left: 0;
+    z-index: 999999;
     width: 100%;
+    height: var(--player-bar-height);
+    box-sizing: border-box;
+    background: var(--color-bg);
     border-top: 1px solid var(--color-text);
     border-bottom: 1px solid var(--color-text);
   }
@@ -134,7 +166,7 @@ const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
     flex-flow: row wrap;
     align-items: center;
     justify-content: flex-end;
-    gap: var(--base-padding);
+    gap: var(--mid-margin);
     list-style: none;
     margin: 0;
     padding: 0;
@@ -147,6 +179,8 @@ const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
       text-decoration-color: transparent;
       text-decoration: none;
     }
+
+    /* Non-tag menu links keep the surface hover. */
     &.router-link-active,
     &.parent-active,
     &:hover {
@@ -154,54 +188,55 @@ const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
         background-color: var(--color-bg);
         color: var(--color-text);
       }
-
-      &.tag {
-        background-color: var(--color-bg);
-        color: var(--color-text);
-        border: 0.09325rem solid var(--color-bg);
-        padding: calc(var(--small-padding)) var(--base-padding);
-        font-family: var(--font-text-semibold);
-
-        &.pool {
-          color: var(--color-bg);
-          border: 0.09325rem solid var(--color-blue);
-          background-color: var(--color-blue);
-        }
-
-        &.shows {
-          color: var(--color-bg);
-          border: 0.09325rem solid var(--color-pink);
-          background-color: var(--color-pink);
-        }
-
-        &.words {
-          color: var(--color-bg);
-          border: 0.09325rem solid var(--color-green);
-          background-color: var(--color-green);
-        }
-      }
     }
 
+    /* Tags are outlined by default; hover and the active page fill them in
+       the section accent. */
     &.tag {
-      background-color: var(--color-bg);
-      color: var(--color-bg);
-      border: 0.09325rem solid var(--color-bg);
       padding: calc(var(--small-padding)) var(--base-padding);
+      border: 0.09325rem solid var(--color-text);
+      background-color: transparent;
+      color: var(--color-text);
       font-family: var(--font-text-semibold);
 
       &.pool {
+        border-color: var(--color-blue);
         color: var(--color-blue);
-        border: 0.09325rem solid var(--color-blue);
       }
 
       &.shows {
+        border-color: var(--color-pink);
         color: var(--color-pink);
-        border: 0.09325rem solid var(--color-pink);
       }
 
       &.words {
+        border-color: var(--color-green);
         color: var(--color-green);
-        border: 0.09325rem solid var(--color-green);
+      }
+
+      @media (min-width: 1024px) {
+        &.router-link-active,
+        &.parent-active,
+        &:hover {
+          background-color: var(--color-text);
+          border-color: var(--color-text);
+          color: var(--color-white);
+
+          &.pool {
+            background-color: var(--color-blue);
+            border-color: var(--color-blue);
+          }
+
+          &.shows {
+            background-color: var(--color-pink);
+            border-color: var(--color-pink);
+          }
+
+          &.words {
+            background-color: var(--color-green);
+            border-color: var(--color-green);
+          }
+        }
       }
     }
   }
