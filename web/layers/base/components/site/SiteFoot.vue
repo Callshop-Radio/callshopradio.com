@@ -17,29 +17,52 @@ const discordUrl = computed(
 );
 
 // Contact details mirror the Sanity contact and legal-notice pages.
-const stations = [
+// The footer contact is edited in the manager (Site → Footer contact). The
+// built-in values stay as the fallback while Sanity has no contact block.
+const FALLBACK_STATIONS = [
 	{
 		code: "DUS",
-		city: { en: "Düsseldorf", de: "Düsseldorf" },
+		city: "Düsseldorf",
+		cityDe: "Düsseldorf",
 		address: "Erkrather Straße 6, 40233 Düsseldorf",
 		email: "duesseldorf@callshopradio.com",
-		mapQuery: "Erkrather Straße 6, 40233 Düsseldorf",
 	},
 	{
 		code: "LPZ",
-		city: { en: "Leipzig", de: "Leipzig" },
+		city: "Leipzig",
+		cityDe: "Leipzig",
 		address: "Crottendorferstraße 10, 04317 Leipzig",
 		email: "leipzig@callshopradio.com",
-		mapQuery: "Crottendorferstraße 10, 04317 Leipzig",
 	},
 	{
 		code: "VIE",
-		city: { en: "Vienna", de: "Wien" },
+		city: "Vienna",
+		cityDe: "Wien",
 		address: "Praterstern 5, 1020 Wien",
 		email: "vienna@callshopradio.com",
-		mapQuery: "Praterstern 5, 1020 Wien",
 	},
 ];
+
+const stations = computed(() => {
+	const list = mainStore?.siteSettings?.contact?.stations;
+	if (!Array.isArray(list) || list.length === 0) return FALLBACK_STATIONS;
+	const rows = list
+		.filter((station) => station?.code && station?.address)
+		.map((station) => ({
+			code: String(station.code),
+			city: String(station.city || ""),
+			cityDe: String(station.cityDe || station.city || ""),
+			address: String(station.address),
+			email: String(station.email || ""),
+		}));
+	return rows.length > 0 ? rows : FALLBACK_STATIONS;
+});
+
+const contactEmail = computed(
+	() =>
+		String(mainStore?.siteSettings?.contact?.email || "") ||
+		"info@callshopradio.com",
+);
 
 const copy = computed(() => {
 	const de = locale.value === "de";
@@ -128,7 +151,7 @@ function mapsUrl(query) {
 }
 
 function stationCity(station) {
-	return station.city[locale.value] || station.city.en;
+	return locale.value === "de" ? station.cityDe || station.city : station.city;
 }
 
 function openChat() {
@@ -170,9 +193,9 @@ function scrollToTop() {
 
 					<a
 						class="site-footer__mail"
-						href="mailto:info@callshopradio.com"
+						:href="`mailto:${contactEmail}`"
 					>
-						info@callshopradio.com
+						{{ contactEmail }}
 					</a>
 
 					<p class="site-footer__address">
@@ -206,7 +229,7 @@ function scrollToTop() {
 							</a>
 							<a
 								class="station__map"
-								:href="mapsUrl(station.mapQuery)"
+								:href="mapsUrl(station.address)"
 								target="_blank"
 								rel="noopener noreferrer"
 								:aria-label="`${stationCity(station)} – ${copy.maps}`"
