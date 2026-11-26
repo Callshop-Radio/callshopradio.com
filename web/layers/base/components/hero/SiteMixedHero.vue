@@ -300,12 +300,15 @@ onUnmounted(() => {
 		<LabAtmosphere
 			variant="form"
 			contained
+			foreground-worm
 			:page="activeKind"
 			:accent="activeAccent"
 			:shift="realIndex"
 			:form-seed="formSeed"
 			:dark="Boolean(mainStore?.isDarkMode)"
 		/>
+
+		<HeroWorm :page="activeKind" :shift="realIndex" />
 
 		<div class="site-hero__inner">
 			<div
@@ -445,12 +448,6 @@ onUnmounted(() => {
 .mixed-hero {
   --mixed-h: min(52svh, 34rem);
   --mixed-inset: calc(var(--lab-inset) + var(--base-margin));
-
-  /* The thick form segment is calibrated for the archive layouts; here it
-     lands on the caption band. Keep the glow and the thin contour only. */
-  :deep(.form-worm) {
-    display: none;
-  }
 }
 
 .mixed-item {
