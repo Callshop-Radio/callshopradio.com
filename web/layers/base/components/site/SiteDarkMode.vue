@@ -1,90 +1,99 @@
-
 <script setup>
 import { computed } from "vue";
 import { useMainStore } from "@/stores/mainStore";
 
 const mainStore = useMainStore();
-const _isDarkMode = computed(() => mainStore?.isDarkMode);
-
-const detectSystemDarkMode = () => {
-	mainStore.detectSystemDarkMode();
-};
-
-const toggleDarkMode = () => {
-	mainStore.toggleDarkMode();
-};
+const isDark = computed(() => Boolean(mainStore?.isDarkMode));
 
 onMounted(() => {
-	detectSystemDarkMode();
+	mainStore.detectSystemDarkMode();
 });
-</script>
-          
-<template>
-	<div class="darkmodeswitch" @click="toggleDarkMode">
-		<svg
-			width="24"
-			height="15"
-			viewBox="0 0 18 11"
-			fill="none"
-			xmlns="http://www.w3.org/2000/svg"
-		>
-			<circle
-				class="left"
-				cx="5.5"
-				cy="5.5"
-				r="5.5"
-				fill="var(--color-text)" />
-			<circle
-				class="right"
-				cx="12.5"
-				cy="5.5"
-				r="5"
-				fill="var(--color-bg)"
-				stroke="var(--color-text)"
-			/>
-		</svg>
-	</div>
-</template>
-          
-<style scoped lang="postcss">
-.darkmodeswitch {
-  display: inline-flex;
-  flex-flow: column wrap;
-  justify-content: center;
-  align-items: flex-start;
-  cursor: pointer;
 
-  svg,
-  path {
-    fill: var(--color-text);
+function toggleDarkMode() {
+	mainStore.toggleDarkMode();
+}
+</script>
+
+<template>
+	<button
+		type="button"
+		class="theme-switch"
+		role="switch"
+		:aria-checked="isDark"
+		aria-label="Light and dark mode"
+		@click="toggleDarkMode"
+	>
+		<span class="theme-switch__thumb" />
+	</button>
+</template>
+
+<style scoped lang="postcss">
+.theme-switch {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  width: 2.75rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 1px solid var(--color-text);
+  border-radius: 999px;
+  background-color: var(--color-bg);
+  cursor: pointer;
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease;
+
+  &__thumb {
+    position: absolute;
+    top: 50%;
+    left: 0.125rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    background-color: var(--color-text);
+    transform: translate(0, -50%);
+    transition:
+      transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 220ms ease;
   }
-  svg {
-    &.active {
-      transform: rotate(180deg);
+
+  &[aria-checked="true"] {
+    background-color: var(--color-text);
+
+    .theme-switch__thumb {
+      background-color: var(--color-bg);
+      transform: translate(1.25rem, -50%);
     }
   }
+
   &:hover {
     @media (min-width: 1024px) {
-      fill: var(--color-pink);
-    }
-    circle {
-      &.left {
-        @media (min-width: 1024px) {
-          fill: var(--color-pink);
+      border-color: var(--color-pink);
+
+      .theme-switch__thumb {
+        background-color: var(--color-pink);
+      }
+
+      &[aria-checked="true"] {
+        background-color: var(--color-pink);
+
+        .theme-switch__thumb {
+          background-color: var(--color-bg);
         }
       }
-      &.right {
-        @media (min-width: 1024px) {
-          stroke: var(--color-pink);
-        }
-      }
     }
-    path {
-      @media (min-width: 1024px) {
-        fill: var(--color-bg);
-      }
-    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-pink);
+    outline-offset: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-switch,
+  .theme-switch__thumb {
+    transition: none;
   }
 }
 </style>
-          

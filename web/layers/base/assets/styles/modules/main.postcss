@@ -39,7 +39,7 @@
     .module-carousel {
       &.pool {
         .module-carousel__header__type__pill {
-          background-color: var(--color-blue);
+          --pill-accent: var(--color-blue);
         }
         .city-tags {
           .tag {
@@ -66,7 +66,7 @@
 
       &.words {
         .module-carousel__header__type__pill {
-          background-color: var(--color-green);
+          --pill-accent: var(--color-green);
         }
         .city-tags {
           .tag {
@@ -102,8 +102,9 @@
       &.shows,
       &.episodes,
       &.sets {
+        .module-carousel__header__type__pill,
         .module-teaser__header__type__pill {
-          background-color: var(--color-pink);
+          --pill-accent: var(--color-pink);
         }
         .city-tags {
           .tag {
@@ -152,7 +153,17 @@
             min-width: 8.5rem;
             max-width: max-content;
             text-align: center;
-            color: var(--color-white);
+            color: var(--pill-accent, var(--color-text));
+            background-color: transparent;
+            border: 0.09325rem solid var(--pill-accent, var(--color-text));
+            transition:
+              background-color 0.2s ease,
+              color 0.2s ease;
+
+            &:hover {
+              background-color: var(--pill-accent, var(--color-text));
+              color: var(--color-white);
+            }
           }
         }
       }
@@ -165,88 +176,10 @@
     }
     .module-teaser {
       &.words {
-        .load-more-button {
-          border: 0.09325rem solid var(--color-green);
-          box-shadow: 0 0 0.5rem 0.09325rem var(--color-green);
-          &:hover {
-            background-color: var(--color-green);
-            svg {
-              path {
-                @media (min-width: 1024px) {
-                  stroke: var(--color-bg);
-                }
-              }
-            }
-          }
-          svg {
-            path {
-              stroke: var(--color-green);
-            }
-          }
-        }
-        .module-teaser__header__type__pill {
-          background-color: var(--color-green);
-        }
-        .city-tags {
-          .tag {
-            background-color: var(--color-green);
-          }
-        }
-        .embla__nav__dots {
-          .embla__dot {
-            &.is-selected {
-              background-color: var(--color-green);
-            }
+        --load-more-accent: var(--color-green);
 
-            &:hover {
-              @media (min-width: 1024px) {
-                background-color: var(--color-green);
-              }
-            }
-          }
-        }
-        .slide-date {
-          display: none;
-        }
-      }
-      &.words {
-        .load-more-button {
-          border: 0.09325rem solid var(--color-green);
-          box-shadow: 0 0 0.5rem 0.09325rem var(--color-green);
-          color: var(--color-bg);
-          font-size: var(--base-font-size);
-          &.more {
-            background-color: var(--color-green);
-            box-shadow: 0 0 0 0;
-          }
-
-          &:hover {
-            background-color: var(--color-green);
-            &.more {
-              background-color: var(--color-bg);
-              color: var(--color-green);
-            }
-            svg {
-              path {
-                @media (min-width: 1024px) {
-                  stroke: var(--color-bg);
-                }
-              }
-            }
-          }
-          svg {
-            path {
-              stroke: var(--color-green);
-            }
-          }
-        }
         .module-teaser__header__type__pill {
-          background-color: var(--color-green);
-          border: 0.09325rem solid var(--color-green);
-          &:hover {
-            background-color: var(--color-bg);
-            color: var(--color-green);
-          }
+          --pill-accent: var(--color-green);
         }
         .city-tags {
           .tag {
@@ -271,43 +204,10 @@
         }
       }
       &.pool {
-        .load-more-button {
-          border: 0.09325rem solid var(--color-blue);
-          box-shadow: 0 0 0.5rem 0.09325rem var(--color-blue);
-          color: var(--color-bg);
-          font-size: var(--base-font-size);
-          &.more {
-            background-color: var(--color-blue);
-            box-shadow: 0 0 0 0;
-          }
+        --load-more-accent: var(--color-blue);
 
-          &:hover {
-            background-color: var(--color-blue);
-            &.more {
-              background-color: var(--color-bg);
-              color: var(--color-blue);
-            }
-            svg {
-              path {
-                @media (min-width: 1024px) {
-                  stroke: var(--color-bg);
-                }
-              }
-            }
-          }
-          svg {
-            path {
-              stroke: var(--color-blue);
-            }
-          }
-        }
         .module-teaser__header__type__pill {
-          background-color: var(--color-blue);
-          border: 0.09325rem solid var(--color-blue);
-          &:hover {
-            background-color: var(--color-bg);
-            color: var(--color-blue);
-          }
+          --pill-accent: var(--color-blue);
         }
         .city-tags {
           .tag {
@@ -334,44 +234,10 @@
       &.shows,
       &.episodes,
       &.sets {
-        .load-more-button {
-          border: 0.09325rem solid var(--color-pink);
-          box-shadow: 0 0 0.5rem 0.09325rem var(--color-pink);
-          color: var(--color-bg);
-          font-size: var(--base-font-size);
+        --load-more-accent: var(--color-pink);
 
-          &.more {
-            background-color: var(--color-pink);
-            box-shadow: 0 0 0 0;
-          }
-
-          &:hover {
-            background-color: var(--color-pink);
-            &.more {
-              background-color: var(--color-bg);
-              color: var(--color-pink);
-            }
-            svg {
-              path {
-                @media (min-width: 1024px) {
-                  stroke: var(--color-bg);
-                }
-              }
-            }
-          }
-          svg {
-            path {
-              stroke: var(--color-pink);
-            }
-          }
-        }
         .module-teaser__header__type__pill {
-          background-color: var(--color-pink);
-          border: 0.09325rem solid var(--color-pink);
-          &:hover {
-            background-color: var(--color-bg);
-            color: var(--color-pink);
-          }
+          --pill-accent: var(--color-pink);
         }
         .city-tags {
           .tag {
@@ -406,16 +272,17 @@
             padding: var(--small-padding) var(--big-padding);
             max-width: max-content;
             text-align: center;
-            color: var(--color-white);
+            color: var(--pill-accent, var(--color-text));
+            background-color: transparent;
+            border: 0.09325rem solid var(--pill-accent, var(--color-text));
             transition:
               background-color 0.2s ease,
               color 0.2s ease;
 
-            h2 {
-              &:hover {
-                background-color: var(--color-bg);
-                text-decoration: none;
-              }
+            &:hover {
+              background-color: var(--pill-accent, var(--color-text));
+              color: var(--color-white);
+              text-decoration: none;
             }
           }
         }
@@ -453,6 +320,57 @@
   }
 }
 
+/* Load-more: a quiet outlined circle in the section accent. It fills on hover
+   and the plus turns 90°. */
+.load-more-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--small-padding);
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0.09325rem solid var(--load-more-accent, var(--color-pink));
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--load-more-accent, var(--color-pink));
+  box-shadow: none;
+  cursor: pointer;
+  font-family: var(--font-text-semibold);
+  font-size: var(--small-font-size);
+  text-transform: uppercase;
+  letter-spacing: var(--button-letter-spacing);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+
+  svg {
+    flex: none;
+    width: 0.8rem;
+    height: 0.8rem;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+
+    path {
+      stroke: currentColor;
+    }
+  }
+
+  &:hover {
+    background-color: var(--load-more-accent, var(--color-pink));
+    color: var(--color-white);
+
+    svg {
+      transform: rotate(90deg);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--load-more-accent, var(--color-pink));
+    outline-offset: 3px;
+  }
+}
+
 .tags {
   &.slide__tags {
     display: flex;
@@ -469,7 +387,7 @@
     font-weight: 400;
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
-    padding: var(--small-padding) var(--base-padding);
+    padding: calc(var(--small-padding) / 2) var(--base-padding);
     background-color: var(--color-text);
     border-radius: 100px;
     border: 0.09325rem solid var(--color-text);
@@ -518,60 +436,72 @@
   }
 }
 
-/* Korrekte Struktur für pool-detail */
+/* Page-level accents for the shared load-more pill */
 .pool-detail,
 .pool-archive {
-  .related-content,
-  .content-grid {
-    &__load-more {
-      .load-more-button {
-        border: 0.09325rem solid var(--color-blue);
-        box-shadow: 0 0 0.5rem 0.09325rem var(--color-blue);
-        &:hover {
-          background-color: var(--color-blue);
-          svg {
-            path {
-              @media (min-width: 1024px) {
-                stroke: var(--color-bg);
-              }
-            }
-          }
-        }
-        svg {
-          path {
-            stroke: var(--color-blue);
-          }
-        }
-      }
-    }
+  .related-content .load-more-button,
+  .content-grid .load-more-button {
+    --load-more-accent: var(--color-blue);
   }
 }
 
-/* Korrekte Struktur für set-detail */
 .set-detail,
 .shows-archive {
-  .related-content,
-  .content-grid {
-    &__load-more {
-      .load-more-button {
-        border: 0.09325rem solid var(--color-pink);
-        box-shadow: 0 0 0.5rem 0.2rem var(--color-pink);
-        &:hover {
-          background-color: var(--color-pink);
-          svg {
-            path {
-              @media (min-width: 1024px) {
-                stroke: var(--color-bg);
-              }
-            }
-          }
-        }
-        svg {
-          path {
-            stroke: var(--color-pink);
-          }
-        }
-      }
-    }
+  .related-content .load-more-button,
+  .content-grid .load-more-button {
+    --load-more-accent: var(--color-pink);
+  }
+}
+
+
+/* Branded play button (public/icons/play-button.svg) */
+.play-button {
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+.play-button:hover {
+  background-color: transparent !important;
+}
+
+.play-button > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.play-button:hover > img {
+  transform: scale(1.05);
+}
+
+.plyr__control--overlaid {
+  width: 4rem !important;
+  height: 4rem !important;
+  padding: 0 !important;
+  border-radius: 100px !important;
+  box-shadow: none !important;
+  background: transparent url("/icons/play-button.svg") center / contain no-repeat !important;
+}
+
+.plyr__control--overlaid svg {
+  display: none !important;
+}
+
+@media screen and (max-width: 900px) {
+  .plyr__control--overlaid {
+    width: 3rem !important;
+    height: 3rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-button > img {
+    transition: none;
+  }
+
+  .play-button:hover > img {
+    transform: none;
   }
 }
