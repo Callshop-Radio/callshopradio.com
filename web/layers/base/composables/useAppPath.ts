@@ -1,3 +1,5 @@
+import { tagSlug } from "~/utils/tagSlug";
+
 const ARCHIVE_PATHS: Record<string, string> = {
 	shows: "/shows",
 	sets: "/shows",
@@ -28,6 +30,17 @@ export function useAppPath() {
 		return localePath(`/search?q=${encodeURIComponent(title)}`);
 	}
 
+	/**
+	 * Genre and subgenre tags always open the archive filter, never the search.
+	 * Tags have no Sanity slug yet, so the readable slug comes from the title.
+	 */
+	function tagFilter(type: string, title: string) {
+		const slug = tagSlug(title);
+		if (!slug) return searchTag(title);
+		const key = type === "tag.genre" ? "genre" : "subgenre";
+		return localePath(`/shows?${key}=${encodeURIComponent(slug)}`);
+	}
+
 	async function navigateToPath(path?: string | null) {
 		const target = to(path);
 		if (target) await navigateTo(target);
@@ -37,6 +50,7 @@ export function useAppPath() {
 		to,
 		archive,
 		searchTag,
+		tagFilter,
 		navigateToPath,
 	};
 }

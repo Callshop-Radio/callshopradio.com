@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { computed } from "vue";
 import { SHOWSARCHIVE_QUERY } from "~~/queries/sanity.queries.ts";
 
@@ -23,17 +23,23 @@ usePageSeo(data?.value?.seo);
 
 <template>
 	<div class="shows-archive">
+		<SiteArchiveMasthead
+			title="Shows"
+			lede="Live sessions, radio shows and every set in the archive."
+			accent="var(--color-pink)"
+		/>
 		<section v-if="featuredSets.length > 0" class="intro-section">
-			<ModuleIntroCoverFlow :items="featuredSets" nav-label="Set" area="show">
-				<template #default="{ item, mediaActive }">
-					<ModuleIntroSet layout="cover-flow" :set="item" :media-active="mediaActive" />
-				</template>
-			</ModuleIntroCoverFlow>
+			<SiteHeroSlider
+				:items="featuredSets"
+				page="shows"
+				accent="var(--color-pink)"
+			/>
 		</section>
 		<section
 			v-if="data?.modules && data?.modules?.length > 0"
 			class="module-section"
 		>
+			<h2 class="archive-sr-only">All sets</h2>
 			<ModuleRenderer :modules="data?.modules" />
 		</section>
 	</div>
@@ -46,5 +52,37 @@ usePageSeo(data?.value?.seo);
   flex-flow: column wrap;
   justify-content: flex-start;
   align-items: center;
+  overflow-x: clip;
+
+  .intro-section {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 0.75rem;
+  }
+
+  .module-section {
+    width: 100%;
+  }
+
+  .archive-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* The filter console keeps its dark surface; only the shape follows the
+     5px card language. The tag cloud itself stays transparent so it reads as
+     part of the glass dock instead of a black plate (same as Words). */
+  :deep(.content-grid__filter-section),
+  :deep(.content-grid__filter-bar) {
+    border-radius: 5px !important;
+  }
+
 }
 </style>

@@ -16,7 +16,8 @@ useHead({
 });
 
 const localePath = useLocalePath();
-const { to, searchTag } = useAppPath();
+const { to, searchTag, tagFilter } = useAppPath();
+const { track } = useAnalytics();
 
 // ==================== STATE ====================
 const searchQuery = ref("");
@@ -41,6 +42,8 @@ const inputRef = ref(null);
 let autocompleteTimeout = null;
 let searchTimeout = null;
 let hideTimeout = null;
+let searchTrackTimeout = null;
+let lastTrackedSearch = "";
 
 // Content type options
 const contentTypeOptions = [
@@ -248,7 +251,27 @@ const FULL_SEARCH_QUERY = `
 }`;
 
 // ==================== METHODS ====================
-const performSearch = async (query) => {
+// A debounced query is only reported once the visitor has stopped typing for a
+// moment; explicit submissions (Enter, autocomplete, ?q=) are tracked at once.
+const trackSearch = (query) => {
+	const term = String(query || "").trim();
+	if (!term || term === lastTrackedSearch) return;
+
+	lastTrackedSearch = term;
+	track("search", {
+		search_term: term.slice(0, 100),
+		results_count: results.value.length,
+		content_type: activeContentType.value,
+		source: "search-page",
+	});
+};
+
+const scheduleSearchTracking = (query) => {
+	if (searchTrackTimeout) clearTimeout(searchTrackTimeout);
+	searchTrackTimeout = setTimeout(() => trackSearch(query), 1200);
+};
+
+const performSearch = async (query, trackNow = false) => {
 	if (!isValidSearchQuery(query)) {
 		results.value = [];
 		return;
@@ -264,6 +287,13 @@ const performSearch = async (query) => {
 		});
 
 		results.value = searchResults || [];
+
+		if (trackNow) {
+			if (searchTrackTimeout) clearTimeout(searchTrackTimeout);
+			trackSearch(query);
+		} else {
+			scheduleSearchTracking(query);
+		}
 	} catch (err) {
 		console.error("Search error:", err);
 		error.value = "Failed to perform search";
@@ -308,6 +338,7 @@ watch(searchQuery, (newQuery) => {
 	// Clear previous timeouts
 	if (autocompleteTimeout) clearTimeout(autocompleteTimeout);
 	if (searchTimeout) clearTimeout(searchTimeout);
+	if (searchTrackTimeout) clearTimeout(searchTrackTimeout);
 
 	// Check if we should skip resetting the hidden state (e.g. on initial load from URL)
 	if (skipAutocompleteReset.value) {
@@ -340,16 +371,34 @@ watch(searchQuery, (newQuery) => {
 });
 
 const clearSearch = () => {
+	track("filter_reset", {
+		page: "search",
+		active_filters: activeContentTypes.value.size,
+	});
 	searchQuery.value = "";
 	results.value = [];
 	autocompleteResults.value = [];
 	showAutocomplete.value = false;
 	error.value = null;
 	activeTagFilters.value.clear();
+	lastTrackedSearch = "";
+	if (searchTrackTimeout) clearTimeout(searchTrackTimeout);
 };
+
+onBeforeUnmount(() => {
+	if (autocompleteTimeout) clearTimeout(autocompleteTimeout);
+	if (searchTimeout) clearTimeout(searchTimeout);
+	if (hideTimeout) clearTimeout(hideTimeout);
+	if (searchTrackTimeout) clearTimeout(searchTrackTimeout);
+});
 
 // Content type filter toggle
 const toggleContentType = (type) => {
+	const wasActive =
+		type === "all"
+			? activeContentTypes.value.size === 0
+			: activeContentTypes.value.has(type);
+
 	if (type === "all") {
 		activeContentTypes.value.clear();
 	} else {
@@ -359,6 +408,13 @@ const toggleContentType = (type) => {
 			activeContentTypes.value.add(type);
 		}
 	}
+
+	track("filter_apply", {
+		filter_type: "content_type",
+		filter_value: type,
+		action: type === "all" ? "show_all" : wasActive ? "remove" : "add",
+		page: "search",
+	});
 };
 
 const isContentTypeActive = (type) => {
@@ -431,7 +487,7 @@ const handleKeydown = (event) => {
 				);
 			} else {
 				showAutocomplete.value = false;
-				performSearch(searchQuery.value);
+				performSearch(searchQuery.value, true);
 			}
 			break;
 		case "Escape":
@@ -443,6 +499,9 @@ const handleKeydown = (event) => {
 // Get the localized URL path for a search result
 const getResultPath = (item) => {
 	if (item._type.startsWith("tag.")) {
+		if (item._type === "tag.genre" || item._type === "tag.subGenre") {
+			return tagFilter(item._type, item.title);
+		}
 		return searchTag(item.title);
 	}
 
@@ -452,9 +511,15 @@ const getResultPath = (item) => {
 const selectAutocompleteItem = (item) => {
 	showAutocomplete.value = false;
 
+	if (item._type === "tag.genre" || item._type === "tag.subGenre") {
+		const path = getResultPath(item);
+		if (path) navigateTo(path);
+		return;
+	}
+
 	if (item._type.startsWith("tag.")) {
 		searchQuery.value = item.title;
-		performSearch(item.title);
+		performSearch(item.title, true);
 		return;
 	}
 
@@ -482,7 +547,8 @@ const _getTypeIcon = (type) => {
 
 const getCategoryLabel = (type) => {
 	if (type.startsWith("tag.")) return "Tag";
-	if (["show", "set"].includes(type)) return "Shows";
+	if (type === "show") return "Show";
+	if (type === "set") return "Set";
 	if (["person", "venue"].includes(type)) return "Pool";
 	if (type === "article") return "Words";
 	return type;
@@ -522,7 +588,7 @@ onMounted(() => {
 		skipAutocompleteReset.value = true;
 		searchQuery.value = queryParam;
 		// Trigger search immediately for URL query
-		performSearch(queryParam);
+		performSearch(queryParam, true);
 	}
 
 	nextTick(() => {
