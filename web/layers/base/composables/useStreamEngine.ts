@@ -6,6 +6,24 @@ let audio: HTMLAudioElement | null = null;
 let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
 let usingFallback = false;
 let fallbackUrl = "";
+/** A paused player must never resume on its own — not on a dropped connection,
+ *  not through the fallback switch. */
+let pausedByUser = false;
+
+/**
+ * The stream may die while the listener has paused. Switching to the fallback
+ * and calling play() there is what made a paused player start again on its own,
+ * so the switch only happens for a player the user actually wants running.
+ */
+export function shouldAutoFallback({
+	paused,
+	usingFallback: alreadyOnFallback,
+}: {
+	paused: boolean;
+	usingFallback: boolean;
+}): boolean {
+	return !paused && !alreadyOnFallback;
+}
 
 function emit(event: StreamEvent) {
 	for (const listener of listeners.get(event) || []) listener();
@@ -43,14 +61,22 @@ function ensureAudio() {
 		});
 		element.addEventListener("error", () => {
 			clearTimer();
-			if (!usingFallback && fallbackUrl) {
+			// A paused player stays paused: the connection may drop after a long
+			// pause, and resuming here is exactly the bug we are fixing.
+			if (
+				fallbackUrl &&
+				shouldAutoFallback({
+					paused: pausedByUser,
+					usingFallback,
+				})
+			) {
 				usingFallback = true;
 				element.src = fallbackUrl;
 				element.load();
 				void element.play().catch(() => emit("error"));
 				return;
 			}
-			emit("error");
+			if (!pausedByUser) emit("error");
 		});
 	}
 	return audio;
@@ -70,12 +96,14 @@ export function useStreamEngine() {
 		if (!import.meta.client) return;
 		const el = ensureAudio();
 		if (!el) return;
+		pausedByUser = false;
 		usingFallback = false;
 		fallbackUrl = fallback;
 		clearTimer();
 		el.src = primary;
 		el.load();
 		fallbackTimer = setTimeout(() => {
+			if (pausedByUser) return;
 			if (usingFallback || el.currentTime > 0.1) return;
 			if (!fallback) {
 				emit("error");
@@ -94,6 +122,7 @@ export function useStreamEngine() {
 	}
 
 	function pause() {
+		pausedByUser = true;
 		clearTimer();
 		audio?.pause();
 	}

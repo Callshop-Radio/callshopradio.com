@@ -128,12 +128,18 @@ async function enterFullscreen() {
 	track("video_fullscreen", { since: video.value?.since });
 }
 
+let resumeAfterHidden = false;
+
 function onVisibilityChange() {
 	const element = videoEl.value;
 	if (!element) return;
 	if (document.hidden) {
+		// Remember whether the listener actually wanted it running. Coming back
+		// to the tab must not undo a pause the user chose.
+		resumeAfterHidden = !element.paused;
 		if (muted.value) element.pause();
-	} else if (open.value) {
+	} else if (open.value && resumeAfterHidden) {
+		resumeAfterHidden = false;
 		void element.play().catch(() => {});
 	}
 }
