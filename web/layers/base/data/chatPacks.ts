@@ -5,6 +5,7 @@
 // Manager will own this list once the chat is wired to its API.
 
 export interface ChatSticker {
+	id?: number;
 	slug: string;
 	alt: string;
 	src: string;

@@ -1,10 +1,11 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
 
 const copy = useAccountCopy();
 const request = useAccountRequest();
 const account = useAccountStore();
 const localePath = useLocalePath();
+const emit = defineEmits<{ updated: [] }>();
 
 type Profile = {
 	id: number;
@@ -24,10 +25,10 @@ const avatarVersion = ref(0);
 
 async function load() {
 	try {
-		const response = await request<{ user: Profile }>("me");
-		profile.value = response.user;
-		form.displayName = response.user.displayName ?? "";
-		form.locale = response.user.locale;
+		const response = await request<{ listener: Profile }>("me");
+		profile.value = response.listener;
+		form.displayName = response.listener.displayName ?? "";
+		form.locale = response.listener.locale;
 		state.value = "ready";
 	} catch {
 		state.value = "error";
@@ -37,12 +38,13 @@ async function load() {
 async function save() {
 	savedMessage.value = "";
 	try {
-		const response = await request<{ user: Profile }>("me", {
+		const response = await request<{ listener: Profile }>("me", {
 			method: "PATCH",
 			body: { displayName: form.displayName || null, locale: form.locale },
 		});
-		profile.value = response.user;
+		profile.value = response.listener;
 		savedMessage.value = copy.value.saved;
+		emit("updated");
 	} catch {
 		savedMessage.value = copy.value.codeFailed;
 	}
@@ -66,6 +68,7 @@ async function upload(event: Event) {
 	});
 	avatarVersion.value += 1;
 	await load();
+	emit("updated");
 	input.value = "";
 }
 
@@ -73,6 +76,7 @@ async function removeAvatar() {
 	await request("me/avatar", { method: "DELETE" });
 	avatarVersion.value += 1;
 	await load();
+	emit("updated");
 }
 
 async function exportData() {
@@ -105,7 +109,7 @@ onMounted(load);
 
 <template>
 	<div class="account-profile">
-		<p v-if="state === 'loading'">â€¦</p>
+		<p v-if="state === 'loading'">…</p>
 		<p v-else-if="state === 'error'">{{ copy.unavailable }}</p>
 
 		<template v-else>

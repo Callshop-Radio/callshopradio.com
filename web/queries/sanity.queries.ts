@@ -360,6 +360,22 @@ export const SHOW_QUERY = defineQuery(`
   ${SEO_QUERY}
 }`);
 
+export const SETS_BY_IDS_QUERY = defineQuery(`
+  *[_type == 'set' && _id in $ids] {
+    _id,
+    title,
+    additionalTitle,
+    slug,
+    datetime,
+    image ${IMAGE_QUERY},
+    "artists": artists[]->{
+      _id,
+      name,
+      slug
+    }
+  }
+`);
+
 export const SET_QUERY = defineQuery(`
 *[_type == 'set' && slug.current == $slug] | order(_updatedAt desc)[0] {
   ...,

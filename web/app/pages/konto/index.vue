@@ -9,6 +9,8 @@ const account = useAccountStore();
 const route = useRoute();
 const router = useRouter();
 const localePath = useLocalePath();
+const { locale } = useI18n();
+const de = computed(() => locale.value === "de");
 
 type Tab = "saves" | "profile";
 
@@ -22,16 +24,26 @@ function selectTab(tab: Tab) {
 	});
 }
 
-const displayName = ref("");
+type Listener = {
+	id: string;
+	email: string | null;
+	displayName: string | null;
+};
+
+const listener = ref<Listener | null>(null);
+
+const identity = computed(() => {
+	const value = listener.value;
+	if (!value) return "";
+	return value.displayName || value.email || "";
+});
 
 async function loadName() {
 	try {
-		const response = await request<{
-			user: { displayName: string | null; email: string | null };
-		}>("me");
-		displayName.value = response.user.displayName || response.user.email || "";
+		const response = await request<{ listener: Listener }>("me");
+		listener.value = response.listener;
 	} catch {
-		// The tabs already render their own error state.
+		// The tabs render their own error state.
 	}
 }
 
@@ -49,8 +61,16 @@ onMounted(loadName);
 </script>
 
 <template>
-	<AccountShell :title="copy.account" :subtitle="displayName">
-		<div class="account-tabs" role="tablist" aria-label="Konto">
+	<AccountShell
+		:title="copy.account"
+		:subtitle="identity"
+		:eyebrow="de ? 'Konto' : 'Account'"
+	>
+		<template #actions>
+			<button type="button" @click="logout">{{ copy.logout }}</button>
+		</template>
+
+		<nav class="account-tabs" role="tablist" aria-label="Account">
 			<button
 				type="button"
 				role="tab"
@@ -71,72 +91,50 @@ onMounted(loadName);
 			>
 				{{ copy.profile }}
 			</button>
-		</div>
+		</nav>
 
-		<section v-if="activeTab === 'saves'" class="account-tab-panel">
+		<section v-if="activeTab === 'saves'" class="account-panel">
 			<AccountSaves />
 		</section>
-		<section v-else class="account-tab-panel">
-			<AccountProfile />
+		<section v-else class="account-panel">
+			<AccountProfile @updated="loadName" />
 		</section>
-
-		<button type="button" class="account-signout" @click="logout">
-			{{ copy.logout }}
-		</button>
 	</AccountShell>
 </template>
 
 <style scoped>
 .account-tabs {
 	display: flex;
-	flex-flow: row wrap;
+	flex-wrap: wrap;
 	gap: 0.4rem;
-	max-width: 46rem;
-	padding-bottom: var(--mid-padding);
-	border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
 }
 
 .account-tab {
-	padding: 0.45rem 0.9rem;
-	border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+	padding: 0.45rem 0.95rem;
+	border: 0;
 	border-radius: var(--pill-radius);
-	background: transparent;
+	background-color: color-mix(in srgb, var(--color-text) 7%, transparent);
 	color: inherit;
 	font: inherit;
-	font-size: 0.8rem;
+	font-size: var(--small-font-size);
+	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
-	letter-spacing: 0.08em;
 	cursor: pointer;
 	transition:
 		background-color var(--transition-fast),
-		color var(--transition-fast),
-		border-color var(--transition-fast);
+		color var(--transition-fast);
 
 	&:hover {
-		border-color: currentColor;
+		background-color: color-mix(in srgb, var(--color-text) 12%, transparent);
 	}
 
 	&.is-active {
-		background: var(--color-text);
-		border-color: var(--color-text);
+		background-color: var(--color-text);
 		color: var(--color-bg);
 	}
 }
 
-.account-tab-panel {
-	max-width: 46rem;
-	padding-top: var(--small-padding);
-}
-
-.account-signout {
-	justify-self: start;
-	margin-top: var(--base-margin);
-	border: 0;
-	background: none;
-	color: inherit;
-	opacity: 0.7;
-	text-decoration: underline;
-	cursor: pointer;
-	font: inherit;
+.account-panel {
+	width: 100%;
 }
 </style>

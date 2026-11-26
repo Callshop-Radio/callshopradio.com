@@ -89,7 +89,17 @@ onMounted(() => scrollToBottom());
 				</template>
 
 				<template v-else>
-					<span class="message__avatar" aria-hidden="true">
+					<img
+						v-if="message.author?.avatar"
+						class="message__avatar message__avatar--image"
+						:src="message.author.avatar"
+						alt=""
+						width="28"
+						height="28"
+						loading="lazy"
+						decoding="async"
+					>
+					<span v-else class="message__avatar" aria-hidden="true">
 						{{ message.author?.initials }}
 					</span>
 
@@ -186,6 +196,12 @@ onMounted(() => scrollToBottom());
 	font-family: var(--font-text-medium);
 	letter-spacing: 0.02em;
 	user-select: none;
+	flex: none;
+}
+
+.message__avatar--image {
+	object-fit: cover;
+	background-color: transparent;
 }
 
 .message__body {

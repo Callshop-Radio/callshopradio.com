@@ -25,8 +25,8 @@ const badge = computed(() => roleLabel(profile.value?.role, locale.value));
 
 async function load() {
 	try {
-		const response = await request<{ user: typeof profile.value }>("me");
-		profile.value = response.user;
+		const response = await request<{ listener: typeof profile.value }>("me");
+		profile.value = response.listener;
 		state.value = "ready";
 	} catch {
 		state.value = "error";

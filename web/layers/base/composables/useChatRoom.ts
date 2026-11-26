@@ -16,6 +16,7 @@ export interface ChatAuthor {
 	name: string;
 	initials: string;
 	role: ChatRole;
+	avatar?: string | null;
 }
 
 export interface ChatTrack {
@@ -37,7 +38,7 @@ export interface ChatMessage {
 
 export interface ChatHost {
 	name: string;
-	showTitle: string;
+	showTitle: string | null;
 }
 
 interface ServerMessage {
@@ -45,6 +46,7 @@ interface ServerMessage {
 	kind: "text" | "sticker" | "event" | "track";
 	role: ChatRole | null;
 	name: string | null;
+	avatar?: string | null;
 	body: string | null;
 	sticker: {
 		slug: string;
@@ -128,6 +130,7 @@ const toMessage = (dto: ServerMessage): ChatMessage => {
 			name,
 			initials: name.slice(0, 2).toUpperCase(),
 			role: dto.role || "listener",
+			avatar: dto.avatar ?? null,
 		},
 		body: dto.body || "",
 		sticker: dto.sticker
@@ -148,6 +151,7 @@ const toPack = (pack: {
 	slug: string;
 	title: string;
 	stickers: Array<{
+		id?: number;
 		slug: string;
 		alt: string;
 		w: number;
@@ -158,6 +162,7 @@ const toPack = (pack: {
 	slug: pack.slug,
 	title: pack.title,
 	stickers: pack.stickers.map((entry) => ({
+		id: entry.id,
 		slug: entry.slug,
 		alt: entry.alt,
 		src: entry.url,
@@ -217,6 +222,29 @@ export const useChatRoom = () => {
 		messages.value = [...messages.value, { ...message, id: nextId() }];
 	};
 
+	const postToRoom = async (payload: Record<string, unknown>) => {
+		const data = await $fetch<{ message?: ServerMessage }>(
+			"/api/chat/messages",
+			{
+				method: "POST",
+				body: {
+					...payload,
+					clientId: crypto.randomUUID().replace(/-/g, ""),
+				},
+			},
+		);
+		if (!data?.message) return;
+		const incoming = toMessage(data.message);
+		messages.value = [
+			...messages.value.filter((message) => message.id !== incoming.id),
+			incoming,
+		].sort((a, b) => a.id - b.id);
+		cursor.value = {
+			after: incoming.id,
+			since: new Date().toISOString(),
+		};
+	};
+
 	const sendText = async (body: string) => {
 		const text = body.trim().slice(0, 500);
 		if (!text) return;
@@ -235,43 +263,42 @@ export const useChatRoom = () => {
 
 		if (!signedIn.value) return;
 		try {
-			const data = await $fetch<{ message?: ServerMessage }>(
-				"/api/chat/messages",
-				{
-					method: "POST",
-					body: {
-						body: text,
-						clientId: crypto.randomUUID().replace(/-/g, ""),
-					},
-				},
-			);
-			if (data?.message) {
-				const incoming = toMessage(data.message);
-				messages.value = [
-					...messages.value.filter((message) => message.id !== incoming.id),
-					incoming,
-				].sort((a, b) => a.id - b.id);
-				cursor.value = {
-					after: incoming.id,
-					since: new Date().toISOString(),
-				};
-			}
+			await postToRoom({ body: text });
 		} catch {
 			// Keep the draft out of the room until the next successful poll.
 		}
 	};
 
-	const sendSticker = (stickerSlug: string) => {
-		if (real) return;
-		const chosen = sticker(stickerSlug);
-		if (!chosen || !me.value) return;
-		push({
-			kind: "sticker",
-			author: me.value,
-			body: "",
-			sticker: chosen,
-			time: clock(),
-		});
+	const findSticker = (slug: string): ChatSticker | null => {
+		for (const pack of packs.value) {
+			const found = pack.stickers.find((entry) => entry.slug === slug);
+			if (found) return found;
+		}
+		return sticker(slug);
+	};
+
+	const sendSticker = async (stickerSlug: string) => {
+		const chosen = findSticker(stickerSlug);
+		if (!chosen) return;
+
+		if (!real) {
+			if (!me.value) return;
+			push({
+				kind: "sticker",
+				author: me.value,
+				body: "",
+				sticker: chosen,
+				time: clock(),
+			});
+			return;
+		}
+
+		if (!signedIn.value || !chosen.id) return;
+		try {
+			await postToRoom({ stickerId: chosen.id });
+		} catch {
+			// The picker stays open so a second tap can retry.
+		}
 	};
 
 	const signIn = () => {

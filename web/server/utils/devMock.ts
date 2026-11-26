@@ -118,7 +118,7 @@ export async function mockAccount(
 
 	requireAccount(event);
 
-	if (path === "me" && verb === "GET") return { user: user() };
+	if (path === "me" && verb === "GET") return { listener: user() };
 
 	if (path === "me" && verb === "PATCH") {
 		const body = (await readBody(event).catch(() => ({}))) as {
@@ -127,7 +127,7 @@ export async function mockAccount(
 		};
 		account.displayName = body?.displayName ?? account.displayName;
 		account.locale = body?.locale ?? account.locale;
-		return { user: user() };
+		return { listener: user() };
 	}
 
 	if (path === "me" && verb === "DELETE") {
@@ -149,6 +149,10 @@ export async function mockAccount(
 
 	if (path === "me/saved-ids") {
 		return { saved: {}, defaultListId: lists[0]?.id ?? null };
+	}
+
+	if (path === "me/saved") {
+		return { items: [], nextCursor: null };
 	}
 
 	if (/^me\/saved\/[^/]+$/.test(path)) {
@@ -173,7 +177,7 @@ export async function mockAccount(
 
 	const listMatch = /^lists\/([^/]+)$/.exec(path);
 	if (listMatch) {
-		const list = listOf(listMatch[1]);
+		const list = listOf(String(listMatch[1]));
 		if (verb === "GET") return { list, items: [], nextCursor: null };
 		if (verb === "PATCH") {
 			const body = (await readBody(event).catch(() => ({}))) as {
