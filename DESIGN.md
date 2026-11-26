@@ -41,9 +41,17 @@ this document covers markup, styles and the few strings baked into components.
 
 ## 3. Colour
 
-All colours are tokens (`.postcss`: `abstracts/variables.postcss`). Light values live in
-`:root`, dark values in `@media (--dark)`, and the theme toggle writes the same values
-inline from `web/app/stores/mainStore.ts`. Both paths must stay in sync.
+All colours are tokens in `abstracts/variables.postcss`. Every colour token is one
+`light-dark()` pair — light value first, dark value second:
+
+```css
+--color-bg: light-dark(#fff, #090909);
+```
+
+`:root` declares `color-scheme: light dark`, so the OS decides by default. The theme
+toggle only sets `data-theme="light"` or `"dark"` on `<html>`; it never writes a colour.
+That makes this file the single source for both themes. Accents are identical in both
+and stay plain values.
 
 | Token | Light | Dark | Use |
 | --- | --- | --- | --- |
@@ -76,6 +84,16 @@ inline from `web/app/stores/mainStore.ts`. Both paths must stay in sync.
 Accents are used for the nav pill border and label, tag outlines, play affordances and
 the pool-link dot. They are never used as a text colour on the page surface.
 
+**One accent variable.** A scope sets `--accent`, everything inside reads it:
+
+```css
+.section--shows { --accent: var(--color-pink); }   /* who sets it     */
+.play { color: var(--accent, var(--color-text)); } /* who reads it    */
+```
+
+There is no `--pill-accent`, `--row-accent` or per-page accent name. If an element needs
+the section colour, it reads `--accent` with `--color-text` as the fallback.
+
 `--color-merch-ink` is `color-mix(in srgb, var(--color-merch) 62%, var(--color-text))`
 and exists so merch text keeps contrast in both themes.
 
@@ -84,10 +102,11 @@ and exists so merch text keeps contrast in both themes.
 `#000` and `#fff` may appear **only** in shadows, gradient stops and overlays that sit
 on top of imagery. They are not theme colours; use a token for anything that must flip.
 
-### RGB triplets
+### Tints
 
-`--color-bg-rgb`, `--color-text-rgb`, `--color-pink-rgb` hold channel triplets for
-`rgba(var(--…-rgb), α)` borders and glows. They flip with the theme.
+There are no `--color-*-rgb` channel triplets. A tinted border or glow is
+`color-mix(in srgb, var(--color-x) 10%, transparent)`, which needs no second token per
+colour and follows the theme automatically.
 
 ---
 
@@ -102,8 +121,11 @@ One family, Icona Sans, in three weights. Everything else is size, tracking and 
 | `--font-text` | Icona-Sans-Regular | body, most UI |
 | `--font-text-medium` | Icona-Sans-Medium | emphasis, rich-text headings |
 | `--font-text-semibold` | Icona-Sans-Semibold | card titles, labels, buttons |
-| `--font-text-italic` / `-medium-italic` / `-semibold-italic` | italic cuts | rich text only |
-| `--font-display`, `--font-headline` | alias of `--font-text` | display titles are told apart by size, not by a second face |
+| `--font-text-italic` / `-medium-italic` | italic cuts | rich text only |
+
+There is no display family: display titles are told apart by size and tracking, not by a
+second face. The semibold italic cut exists as a file but no CSS reaches it, so it is
+not declared.
 
 Each face is declared with a weight descriptor (300 / 400 / 550) so the browser never
 synthesises a bold. **Pick the weight with the family token, not with `font-weight`.**
@@ -125,13 +147,12 @@ override. There is no separate tablet or desktop block — they were identical.
 | `--h3-size` | 18 px | 16 px | rich-text headings, dialog titles |
 | `--h2-size` | 20 px | 18 px | card titles, section heads |
 | `--h1-size` | 25 px | 22 px | page titles |
-| `--huge-font-size` | 40 px | 32 px | print-style page display |
-| `--large-font-size` | 20 px | 16 px | lead paragraph, quote (alias of h2) |
 
-**No other size exists.** Nine steps is the whole scale. If a component needs a tenth,
-the layout is wrong.
+**No other size exists.** Eight steps is the whole scale. If a component needs a ninth,
+the layout is wrong. There is no `--huge-font-size`: the largest type on the site is the
+fluid display tier below, not a token.
 
-Line height is `1.25 ×` the size (`--base-line-height`, `--h1-line-height`, …).
+Line height is `1.25 ×` the size (`--base-line-height`, `--h2-line-height`, …).
 Navigation uses `--menu-line-height: 1.2`. Display headlines set their own tight
 leading (`1.02`–`1.1`) in the component.
 
@@ -171,8 +192,8 @@ One value per role, defined in `abstracts/variables.postcss`.
 | `--radius-xs` | 4 px | kbd, thumbnails, focus rings |
 | `--radius-media` | 5 px | every image, card, media frame, skeleton |
 | `--radius-surface` | 12 px | dialogs, dropdowns, popovers, menus, panels |
-| `--pill-radius` | 12 px | every text-bearing pill: nav, buttons, filters, inputs |
-| `--pill-radius-sm` | 6.4 px | compact content tags inside cards (20 px tall) |
+| `--radius-pill` | 12 px | every text-bearing pill: nav, buttons, filters, inputs |
+| `--radius-pill-sm` | 6.4 px | compact content tags inside cards (20 px tall) |
 | `--radius-circle` | 999 px | square icon buttons, play buttons, dots, avatars in a box |
 | `--radius-flag` | `4px 4px 0 0` | city flags sitting on a card's top edge |
 
@@ -180,18 +201,19 @@ Rules:
 
 - Image + card + panel share `--radius-media`; a card with a city flag loses its
   **top-left** corner only.
-- Pills are chosen by role, not by height: a 20 px tag uses `--pill-radius-sm`, a 28 px
-  nav pill uses `--pill-radius`.
+- Pills are chosen by role, not by height: a 20 px tag uses `--radius-pill-sm`, a 28 px
+  nav pill uses `--radius-pill`.
 - Round avatars use `50%`; icon buttons use `--radius-circle`. Both are a circle for a
   square box.
 - Split detail cards (pool, show, set, cover-flow) own the outer radius; the inner seam
   and inner media stay square.
 - `50%` is the only other accepted value, and only for square boxes.
 
-The guard layer at the end of `assets/styles/main.postcss` pins the cross-cutting cases
-(every `img`, the card classes, the pill roles) with `!important`. It exists for
-third-party widgets (plyr, embla, cookieconsent) and stragglers. **New components use
-the tokens directly and must not rely on the guard.**
+The rules that remain in `assets/styles/main.postcss` are not a guard layer. They are
+the split-card seams that no single component can express: a card with a city flag
+loses its top-left corner, a detail card clips its inner media to a square, a cover-flow
+card carries the radius while its panels stay square. Every card sets
+`--radius-media` itself; nothing is forced onto components with `!important` any more.
 
 ---
 
@@ -231,12 +253,12 @@ that is not valid CSS and the block is silently dropped.
 ## 7. Components
 
 ### Navigation pill
-`.menu-main .tag` — 28 px tall, `--pill-radius`, 1 px accent border, `--small-font-size`
+`.menu-main .tag` — 28 px tall, `--radius-pill`, 1 px accent border, `--small-font-size`
 uppercase, `--menu-letter-spacing`. One pill per section, accent = section colour.
 Active pill is filled with the accent.
 
 ### Content tag
-`.tag:not(.city)`, `.filter-tag`, `.genre` — 20 px tall, `--pill-radius-sm`,
+`.tag:not(.city)`, `.filter-tag`, `.genre` — 20 px tall, `--radius-pill-sm`,
 `--small-font-size`, uppercase, `padding: 0 var(--base-padding)`, no rule unless the
 variant is outlined. Filled = black surface, white text.
 
@@ -256,7 +278,7 @@ line, then tags. No shadow, no border.
 
 ### Buttons
 `.action-btn`, `.type-filter-btn`, `.sort-options`, `.account-action`, `.login__primary`,
-`.save-to-list__button` — `--pill-radius`, `--small-font-size`, uppercase for filters,
+`.save-to-list__button` — `--radius-pill`, `--small-font-size`, uppercase for filters,
 `--button-letter-spacing`. Primary = black fill, secondary = outline, both 1 px.
 
 ### Play button
@@ -268,8 +290,8 @@ corner or under the title; it never carries a label.
 and status in `--small-font-size`, controls as icon buttons at `--radius-circle`.
 
 ### Search
-Input 35 px tall, `--pill-radius`, `--base-font-size`; type filter pills at
-`--pill-radius`; suggestion rows at `--pill-radius-sm` on hover; hints in
+Input 35 px tall, `--radius-pill`, `--base-font-size`; type filter pills at
+`--radius-pill`; suggestion rows at `--radius-pill-sm` on hover; hints in
 `--color-text-light`.
 
 ### Surfaces
@@ -283,7 +305,7 @@ current row only.
 
 ### Forms
 Labels `--base-font-size` in the medium face; fields `--body-large-font-size`,
-`--radius-surface` or `--pill-radius` when the field is a single line; error text
+`--radius-surface` or `--radius-pill` when the field is a single line; error text
 `--body-large-font-size` in the section accent; helper text in `--color-text-light`.
 
 ---
@@ -337,8 +359,8 @@ inside running text, so touch devices do not keep a hover state.
 
 ```css
 /* DO — role decides the pill */
-.filter-tag { border-radius: var(--pill-radius); }      /* control */
-.card .tag  { border-radius: var(--pill-radius-sm); }   /* content label */
+.filter-tag { border-radius: var(--radius-pill); }      /* control */
+.card .tag  { border-radius: var(--radius-pill-sm); }   /* content label */
 
 /* DON'T — height decides the pill, or both values live in one list */
 .tag { border-radius: 100px; }
@@ -372,7 +394,11 @@ Measured over every `<style>` block in `web/layers` + `web/app` (excluding the
 | distinct `font-size` values | 92 in 486 declarations | 50, of which 8 tokens cover the scale; the rest is the display tier |
 | distinct `border-radius` values | 39 in 348 declarations | 24, of which 7 tokens + `50%` + `0`; the rest is the design-lab |
 | hardcoded hex colours | 10 distinct outside tokens, 48 occurrences | 4 (`#000`, `#fff` in shadows/gradients, plus two lab values) |
-| undefined tokens in use | 33 (82 uses of `--color-text-light` alone) | 3, all set at runtime by JS (`--grid-index`, `--lab-motion`, `--filter-dock-global`) |
+| undefined tokens in use | 33 (82 uses of `--color-text-light` alone) | 6, each either set by JS (`--grid-index`, `--filter-dock-global`) or read with a fallback (`--lab-motion`, `--mid-gap`, `--max-width`, `--lab-media-radius-mobile`) |
+| defined but unused tokens | 9 | 0 |
+| accent variables | 9 names for one idea | 1 (`--accent`) |
+| cross-component `!important` guard | 20 declarations over 60+ selectors | 0 - the card radius lives in the cards |
+| theme value sources | CSS tokens + 8 inline `setProperty` calls | CSS only (`light-dark()` + one attribute) |
 | rendered font sizes on the home page | 14 | 7 |
 | rendered radii on the home page | 11 | 6 |
 | `letter-spacing: 1.5%` (invalid) | 2 | 0 |
@@ -402,26 +428,30 @@ rhythm was intended, set it deliberately in a media query and update this file.
    but it is the one token that does not flip. Consider `--color-dark-grey` in dark.
 4. **`--color-lines` is `currentcolor`**, so rich-text link underlines inherit the text
    colour rather than a rule colour. Changing it is a visual decision, not a fix.
-5. **The guard layer** in `main.postcss` is still needed for `plyr`, `embla` and
-   `cookieconsent`. It should shrink as those widgets get their own overrides.
-6. **`50%` vs `--radius-circle`** are both circles. Unify once the non-square cases are
+5. **`50%` vs `--radius-circle`** are both circles. Unify once the non-square cases are
    known.
-7. **`design-lab.vue`** contains its own scale and two raw values. It is a prototype and
-   out of scope; do not copy from it.
-8. **Theme toggle writes tokens inline.** A class-based theme (`.is-dark` on `<html>`)
-   would remove the duplication between `mainStore.ts` and the `@media (--dark)` block.
+6. **`design-lab.vue`** contains its own scale, its own accent and two raw values. It is a
+   prototype and out of scope; do not copy from it.
+7. **40 `!important` remain inside component styles** (`ModuleContentTeaser` 8,
+   `modules/main.postcss` 14, …). They are local overrides, not the old global guard, but
+   each one is a rule that lost a specificity argument. Worth a pass of its own.
+8. **Component-local tokens** (`--lab-*`, `--cover-flow-*`, `--chat-line`, `--as-surface`)
+   are real configuration but they live next to design tokens without a marker. A prefix
+   convention (`--cfg-*`) would separate the two vocabularies.
 
 ---
 
 ## 13. Checklist for a new component
 
 - [ ] Every colour is a token; nothing hardcoded except raw black/white in overlays.
-- [ ] Every size is one of the nine scale tokens.
+- [ ] Every size is one of the eight scale tokens.
 - [ ] Radius comes from § 5 by role, not by eye.
 - [ ] Weight comes from the family token.
 - [ ] Spacing uses `--base/big/mid/small-padding` and `-margin`.
 - [ ] Uppercase only for labels, tags and nav.
 - [ ] Light and dark checked at 1440 px and 390 px.
 - [ ] Hover changes colour only; focus-visible keeps a visible outline.
-- [ ] No new `!important` — if one is needed, the guard layer is missing a case.
+- [ ] No new `!important`; the only ones left are the split-card seams in `main.postcss`.
+- [ ] A new colour is a `light-dark()` pair, not two blocks.
+- [ ] A new accent scope sets `--accent`, it does not invent a variable.
 - [ ] Text comes from Sanity, not from the component.
