@@ -289,6 +289,7 @@ onMounted(load);
 	flex-wrap: wrap;
 	gap: 1.25rem;
 	padding-top: 0.5rem;
+	border-top: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
 }
 
 .link {

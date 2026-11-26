@@ -906,6 +906,7 @@ onUnmounted(() => {
     flex-direction: column;
     gap: var(--base-padding);
     padding: var(--base-padding) var(--big-padding) var(--mid-padding);
+    border-top: 1px solid var(--color-line);
   }
 
   &__label {
@@ -1100,6 +1101,7 @@ onUnmounted(() => {
     min-height: 6rem;
     overflow-y: auto;
     padding: var(--small-padding) var(--big-padding) var(--big-padding);
+    border-top: 1px solid var(--color-line);
   }
 
   &__empty {

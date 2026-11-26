@@ -692,16 +692,8 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   height: 0;
+  border-top: 1px solid var(--color-pink);
   z-index: 1;
-}
-
-/* Current-time marker. A line, not a border: the design has no top rules. */
-.tt-day__now::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 1px;
-  background: var(--color-pink);
 }
 
 .tt-day__now span {

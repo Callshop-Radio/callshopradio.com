@@ -361,6 +361,8 @@ function openTag(tag: Tag) {
   grid-template-columns: 5rem minmax(0, 1fr);
   gap: 1rem;
   padding: 0.85rem 0;
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-text) 12%, transparent);
 
   dt {
     margin: 0;

@@ -705,6 +705,7 @@ const tagPath = (tag: string) =>
     grid-template-columns: 2.25rem minmax(0, 1fr);
     gap: 0.5rem;
     padding: 0.6rem 0;
+    border-top: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
     font-size: var(--text-m);
     line-height: 1.4;
 

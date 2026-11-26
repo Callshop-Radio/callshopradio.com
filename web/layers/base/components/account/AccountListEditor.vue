@@ -281,7 +281,12 @@ onMounted(load);
 	display: flex;
 	align-items: center;
 	gap: 0.75rem;
-	padding: 0.5rem 0
+	padding: 0.5rem 0;
+	border-top: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+
+	&:first-child {
+		border-top: 0;
+	}
 }
 
 .row__main {

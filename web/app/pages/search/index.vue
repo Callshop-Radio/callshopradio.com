@@ -1084,6 +1084,7 @@ onUnmounted(() => {
 .tag-filters-section {
   margin-top: var(--big-padding);
   padding-top: var(--base-padding);
+  border-top: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.1));
 }
 
 .tag-filter-row {

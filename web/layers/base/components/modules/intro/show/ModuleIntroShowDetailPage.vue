@@ -264,7 +264,7 @@ function tagLabel(tag: Tag): string {
   line-height: 0.92;
   letter-spacing: -0.01em;
   text-transform: uppercase;
-  text-wrap: balance
+  text-wrap: balance;
 }
 
 .show-project__tags {

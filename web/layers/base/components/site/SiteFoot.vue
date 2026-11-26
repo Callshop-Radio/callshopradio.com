@@ -522,6 +522,7 @@ function scrollToTop() {
      comes from the global palette so the footer follows the site theme. */
 
   padding: 0 var(--page-gutter) var(--filter-dock-global, 0px);
+  border-top: 1px solid var(--color-text);
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-text);
@@ -651,10 +652,12 @@ function scrollToTop() {
   align-items: center;
   gap: 0.6rem;
   padding: 0.8rem 0;
+  border-top: 1px solid var(--color-line);
 }
 
 .station:first-child {
   padding-top: 0;
+  border-top: 0;
 }
 
 .station__code {
@@ -714,6 +717,7 @@ function scrollToTop() {
 .site-footer__apply {
   margin-top: 2.25rem;
   padding-top: 1.25rem;
+  border-top: 1px solid var(--color-line);
 }
 
 .apply-chips {
@@ -806,6 +810,7 @@ function scrollToTop() {
   justify-content: space-between;
   gap: 1.25rem;
   padding: 1.1rem 0 0;
+  border-top: 1px solid var(--color-line);
 }
 
 .site-footer__theme {

@@ -453,6 +453,7 @@ watch(results, () => {
   justify-content: center;
   gap: var(--big-padding);
   padding: var(--base-padding);
+  border-top: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.1));
   background: rgba(0, 0, 0, 0.02);
 
   .hint {

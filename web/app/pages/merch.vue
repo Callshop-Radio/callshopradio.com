@@ -290,8 +290,14 @@ function onDialogClose() {
 }
 
 .merch-card {
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-text) 16%, transparent);
   padding-top: 0.85rem;
-  transition: border-color var(--transition-fast)
+  transition: border-color var(--transition-fast);
+
+  &:hover {
+    border-top-color: var(--color-merch-ink);
+  }
 }
 
 .merch-card__media {

@@ -181,6 +181,10 @@ onMounted(() => scrollToBottom());
 	padding: 0.625rem 0;
 }
 
+.message + .message {
+	border-top: 1px solid color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+
 .message__avatar {
 	display: grid;	place-items: center;
 	width: 1.75rem;

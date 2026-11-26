@@ -380,6 +380,7 @@ onBeforeUnmount(() => {
   right: 4px;
   width: 12px;
   height: 12px;
+  border-top: 2px solid rgba(255, 255, 255, 0.8);
   border-right: 2px solid rgba(255, 255, 255, 0.8);
   cursor: nesw-resize;
 

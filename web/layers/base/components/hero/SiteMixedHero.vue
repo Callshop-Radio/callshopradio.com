@@ -646,7 +646,7 @@ onUnmounted(() => {
   letter-spacing: -0.01em;
   text-transform: uppercase;
   white-space: nowrap;
-  text-overflow: ellipsis;
+  text-overflow: ellipsis;
 
   a {
     color: inherit;

@@ -379,6 +379,8 @@ const sampleSocials = {
   grid-template-columns: 4.5rem minmax(0, 1fr);
   gap: 1rem;
   padding: 0.85rem 0;
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-text) 12%, transparent);
 
   dt {
     margin: 0;
@@ -559,6 +561,8 @@ const sampleSocials = {
   gap: 0.35rem;
   min-width: 0;
   padding: 0.8rem 0;
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-text) 12%, transparent);
 
   > span {
     color: var(--color-blue);
@@ -627,6 +631,8 @@ const sampleSocials = {
 
 .pool-sheet__about {
   padding: 1.2rem 1.5rem 1.5rem;
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-text) 12%, transparent);
 
   p {
     max-width: 78ch;

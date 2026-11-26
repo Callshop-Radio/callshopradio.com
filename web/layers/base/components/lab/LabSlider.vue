@@ -1095,6 +1095,8 @@ function itemLabel(item: LabItem) {
       padding-top: 0;
       padding-inline: 2rem;
       background: none;
+      border-top: 1px solid
+        color-mix(in srgb, var(--color-text) 14%, transparent);
     }
   }
 
@@ -1114,6 +1116,8 @@ function itemLabel(item: LabItem) {
 
   .lab-words-layout__aside {
     padding-top: 0;
+    border-top: 1px solid
+      color-mix(in srgb, var(--color-text) 14%, transparent);
   }
 
   .lab-slider--aperture .lab-item--shows .lab-caption--stack {

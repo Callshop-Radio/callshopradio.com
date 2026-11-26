@@ -316,6 +316,7 @@ onBeforeUnmount(() => {
   align-items: baseline;
   gap: 0.4375rem;
   padding: 0.5rem 1rem;
+  border-top: 1px solid var(--color-line);
   border-bottom: 1px solid var(--color-line);
   font-size: var(--text-s);
   color: color-mix(in srgb, var(--color-text) 50%, transparent);

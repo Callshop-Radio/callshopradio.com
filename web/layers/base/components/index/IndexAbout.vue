@@ -47,6 +47,8 @@ const excerpt = computed(() => {
 .index-about {
   margin-top: 2rem;
   padding-top: 1rem;
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-text) 16%, transparent);
 }
 
 .index-about__toggle {

@@ -506,7 +506,7 @@ onUnmounted(() => {
   letter-spacing: -0.01em;
   max-width: 100%;
   overflow-wrap: anywhere;
-  text-wrap: balance;
+  text-wrap: balance;
 
   &__link {
     color: var(--color-text);
@@ -697,6 +697,7 @@ onUnmounted(() => {
   margin-top: var(--big-margin);
   margin-left: calc(50% - 50svw);
   padding: var(--base-margin) 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
   border-bottom: 1px solid
     color-mix(in srgb, var(--color-text) 14%, transparent);
   overflow: hidden;
