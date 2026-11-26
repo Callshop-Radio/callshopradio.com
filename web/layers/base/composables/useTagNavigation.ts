@@ -36,6 +36,25 @@ export const useTagNavigation = () => {
 		else if (["person", "venue"].includes(itemType ?? "")) category = "pool";
 		else if (["article"].includes(itemType ?? "")) category = "article";
 
+		// A tag opens its own archive with the tag preselected. Search stays the
+		// fallback for content that has no archive page.
+		const archive =
+			category === "shows"
+				? "shows"
+				: category === "pool"
+					? "pool"
+					: category === "article"
+						? "words"
+						: "";
+		const slug = tagSlug(tagName);
+		if (slug && archive) {
+			router.push({
+				path: localePath(`/${archive}`),
+				query: { tag: slug },
+			});
+			return;
+		}
+
 		router.push({
 			path: localePath("/search"),
 			query: {

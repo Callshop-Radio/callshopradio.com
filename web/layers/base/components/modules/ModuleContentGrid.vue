@@ -209,6 +209,46 @@ if (initialSubgenres.length) {
 	]);
 }
 
+// Tag pills on detail pages link with ?tag=<slug>. Genres keep their own
+// ?genre/?subgenre parameters; everything else (city, venue, craft, article)
+// lands here and becomes a normal filter chip.
+const initialTagSlugs = querySlugList(route.query.tag);
+
+const availablePlainTags = Object.values(props.module?.availableTags ?? {})
+	.flat()
+	.filter((tag): tag is Tag => Boolean(tag && (tag as Tag)._id))
+	.filter((tag) => !["tag.genre", "tag.subGenre"].includes(String(tag._type)))
+	.map((tag) => ({
+		tag,
+		slug: tagSlug(
+			getI18nLabel(tag.title) || (tag as { name?: string }).name || "",
+		),
+	}));
+
+const initialPlainTags = availablePlainTags.filter((entry) =>
+	initialTagSlugs.includes(entry.slug),
+);
+
+if (initialPlainTags.length) {
+	const groupFor = (type: string) =>
+		type === "tag.city"
+			? "cities"
+			: type === "tag.musician"
+				? "musicians"
+				: type === "tag.venue"
+					? "venues"
+					: type === "tag.crafts"
+						? "crafts"
+						: type === "tag.article"
+							? "articles"
+							: "";
+	for (const entry of initialPlainTags) {
+		activeFilters.value.add(entry.tag._id);
+		const group = groupFor(String(entry.tag._type));
+		if (group) expandedTagTypes.value.add(group);
+	}
+}
+
 function querySlugList(raw: unknown): string[] {
 	return (Array.isArray(raw) ? raw : raw ? [raw] : [])
 		.map((value) => String(value))
@@ -218,7 +258,7 @@ function querySlugList(raw: unknown): string[] {
 // Keep the URL in sync with the selection, so a filtered view can be linked
 // and several genres/subgenres survive a reload.
 watch(
-	[activeGenres, activeSubGenres],
+	[activeGenres, activeSubGenres, activeFilters],
 	([genres, subgenres]) => {
 		const subgenreSlugs = [...subgenres]
 			.map(
@@ -236,9 +276,17 @@ watch(
 		const currentSubgenres = querySlugList(route.query.subgenre);
 		const currentGenres = querySlugList(route.query.genre);
 
+		const tagSlugs = [...activeFilters.value]
+			.map(
+				(id) => availablePlainTags.find((entry) => entry.tag._id === id)?.slug,
+			)
+			.filter((slug): slug is string => Boolean(slug));
+		const currentTags = querySlugList(route.query.tag);
+
 		if (
 			currentSubgenres.join("\u0000") === subgenreSlugs.join("\u0000") &&
-			currentGenres.join("\u0000") === genreSlugs.join("\u0000")
+			currentGenres.join("\u0000") === genreSlugs.join("\u0000") &&
+			currentTags.join("\u0000") === tagSlugs.join("\u0000")
 		)
 			return;
 
@@ -247,11 +295,30 @@ watch(
 				...route.query,
 				genre: genreSlugs.length ? genreSlugs : undefined,
 				subgenre: subgenreSlugs.length ? subgenreSlugs : undefined,
+				tag: tagSlugs.length ? tagSlugs : undefined,
 			},
 		});
 	},
 	{ deep: true },
 );
+
+// A tag pill jumps into the archive; the reader wants the filtered list, not
+// the masthead again, so the filter area lands right under the fixed header.
+onMounted(() => {
+	if (!initialTagSlugs.length) return;
+	window.setTimeout(() => {
+		const target =
+			filterSection.value ??
+			(document.querySelector(".module-section") as HTMLElement | null);
+		if (!target) return;
+		const rect = target.getBoundingClientRect();
+		const headerOffset = 67.2 + 58 + 12;
+		window.scrollTo({
+			top: window.scrollY + rect.top - headerOffset,
+			behavior: "smooth",
+		});
+	}, 250);
+});
 
 const needsSelfLoad = computed(() => {
 	if (forceSelfLoad.value) return true;
@@ -730,6 +797,7 @@ const poolTags = computed(() => {
 	const tags = availableTags.value;
 	const byType = (type: string) => tags.filter((t: Tag) => t._type === type);
 	return {
+		cities: byType("tag.city"),
 		musicians: byType("tag.musician"),
 		venues: byType("tag.venue"),
 		crafts: byType("tag.crafts"),
@@ -745,6 +813,7 @@ const poolTags = computed(() => {
  */
 const poolTagGroups = computed(() => {
 	const groups = [
+		{ key: "cities", title: "Cities", tags: poolTags.value.cities },
 		{ key: "musicians", title: "Musicians", tags: poolTags.value.musicians },
 		{ key: "venues", title: "Venues", tags: poolTags.value.venues },
 		{ key: "crafts", title: "Crafts", tags: poolTags.value.crafts },
@@ -791,7 +860,9 @@ function poolCloudItemKey(item: PoolTagCloudItem) {
 }
 
 function poolCloudItemTitle(item: PoolTagCloudItem) {
-	return item.kind === "group" ? item.title : item.tag.title;
+	if (item.kind === "group") return item.title;
+	const tag = item.tag as Tag & { name?: string };
+	return getTagTitle(tag.title) || tag.name || "";
 }
 
 function poolCloudItemExpanded(item: PoolTagCloudItem) {
