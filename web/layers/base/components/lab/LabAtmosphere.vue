@@ -710,7 +710,12 @@ onUnmounted(() => {
   }
 
   &[data-page="words"] .form-shape {
-    transform: translate(-50%, -50%) translate(12vw, 2vh);
+    /* Words puts a tall caption under a 40svh image. A smaller contour,
+       centred on the image band, keeps the worm on the artwork instead of
+       running through the caption. */
+    width: min(50vh, 86vw);
+    height: min(50vh, 86vw);
+    transform: translate(-50%, -50%) translate(12vw, -13vh);
   }
 }
 

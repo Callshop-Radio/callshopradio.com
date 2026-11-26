@@ -101,7 +101,11 @@ onUnmounted(() => unregisterFormWormTarget(wormEl.value));
   }
 
   &--words &__shape {
-    transform: translate(-50%, -50%) translate(12vw, 2vh);
+    /* Matches the atmosphere: a contour sized to the story image, centred on
+       it, so the worm runs across the artwork. */
+    width: min(50vh, 86vw);
+    height: min(50vh, 86vw);
+    transform: translate(-50%, -50%) translate(12vw, -13vh);
   }
 }
 

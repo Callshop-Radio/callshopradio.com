@@ -79,6 +79,13 @@ usePageSeo(data?.value?.seo);
     scroll-padding-left: var(--lab-start-offset);
   }
 
+  /* The worm belongs on the story image, not behind it: the active card sits
+     at z-index 20 inside the slider, so the foreground worm needs to clear
+     that. The caption band keeps its own z-index above it. */
+  :deep(.hero-worm) {
+    z-index: 25;
+  }
+
   @media (min-width: 901px) {
     /* The cover story runs edge to edge; the next one only arrives after a
        wide breath of space instead of a peeking neighbour card. */
