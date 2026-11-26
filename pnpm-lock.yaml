@@ -135,8 +135,8 @@ importers:
         specifier: 8.6.0
         version: 8.6.0(vue@3.5.38(typescript@6.0.3))
       groq:
-        specifier: 5.31.1
-        version: 5.31.1
+        specifier: 6.7.0
+        version: 6.7.0
       hls.js:
         specifier: ^1.6.16
         version: 1.6.16
@@ -6892,12 +6892,12 @@ packages:
     resolution: {integrity: sha512-Gr/0LosgbleFl98iv3eaY7jkfEIc+fubAqg8Bhg2InK1ZRttExNk6OACKVacB3pEaOoOAs2if+gLt9TWX0SmAQ==}
     engines: {node: '>=20.19 <22 || >=22.12'}
 
-  groq@6.1.0:
-    resolution: {integrity: sha512-r4Bpy/onjT+Bdrn2zfN5C/iwXxhYe8xRoF8bOXUldTCxut1vNwXDCOxORsEDB9ws2btHU6dfhWuzu9rr6+NIbw==}
-    engines: {node: '>=22.12'}
-
   groq@6.25.0:
     resolution: {integrity: sha512-omyg6t6oUcqfuitJiYBQ77N5ZyPACKIfweAnnpbHOLuTqgFIF6kSdI4UDLE41jMOms+3gkemFgSYrjkqZb1pYQ==}
+    engines: {node: '>=22.12'}
+
+  groq@6.7.0:
+    resolution: {integrity: sha512-fULuD9IAY93RU50F9FEzGojvG1nfK3AZv6soBn8mtOjD7m9gZ/31XKpvGdwwzPqtl6cpq8NE2T2CoCFWOrlLcQ==}
     engines: {node: '>=22.12'}
 
   gunzip-maybe@1.4.2:
@@ -12418,7 +12418,7 @@ snapshots:
 
   '@floating-ui/react-dom@2.0.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
-      '@floating-ui/dom': 1.7.6
+      '@floating-ui/dom': 1.8.0
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
 
@@ -15000,7 +15000,7 @@ snapshots:
       chokidar: 3.6.0
       debug: 4.4.3(supports-color@8.1.1)
       globby: 11.1.0
-      groq: 6.1.0
+      groq: 6.7.0
       groq-js: 1.30.2
       json5: 2.2.3
       lodash-es: 4.18.1
@@ -15425,7 +15425,7 @@ snapshots:
       '@floating-ui/react-dom': 2.0.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@sanity/color': 2.2.5
       '@sanity/icons': 2.11.8(react@19.2.7)
-      csstype: 3.2.3
+      csstype: 3.2.4
       framer-motion: 10.18.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
@@ -18350,9 +18350,9 @@ snapshots:
 
   groq@5.31.1: {}
 
-  groq@6.1.0: {}
-
   groq@6.25.0: {}
+
+  groq@6.7.0: {}
 
   gunzip-maybe@1.4.2:
     dependencies:
