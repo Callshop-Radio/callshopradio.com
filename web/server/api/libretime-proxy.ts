@@ -23,10 +23,15 @@ export default defineEventHandler(async (event) => {
 	}
 
 	try {
-		return await $fetch(`${LIBRETIME_BASE_URL}${path}`, {
-			headers,
-			ignoreResponseError: true,
-		});
+		// Explicit response type: without it Nitro matches the URL against every
+		// internal route type and tsc gives up (TS2321 since Nuxt 4.5).
+		return await $fetch<Record<string, unknown> | unknown[]>(
+			`${LIBRETIME_BASE_URL}${path}`,
+			{
+				headers,
+				ignoreResponseError: true,
+			},
+		);
 	} catch (error) {
 		console.error("[LibreTime Proxy] Error fetching:", error);
 		throw createError({
