@@ -35,6 +35,11 @@ const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
 					</ul>
 				</nav>
 				<SiteSearchButton />
+				<div class="header__icons">
+					<span class="icon-tooltip" data-tooltip="Konto">
+						<SiteAccountButton />
+					</span>
+				</div>
 			</div>
 		</section>
 		<section class="header__audio-player-section">
@@ -132,6 +137,12 @@ const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
     justify-content: space-between;
     align-items: center;
     gap: var(--mid-margin);
+  }
+  &__icons {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: var(--small-padding);
   }
   &__audio-player-section {
     /* The player sits right under the navigation and stays there while the
@@ -251,6 +262,46 @@ const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
   }
   100% {
     opacity: 1;
+  }
+}
+</style>
+<style lang="postcss" scoped>
+.icon-tooltip {
+  position: relative;
+  display: inline-flex;
+
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    z-index: 1000000;
+    padding: 0.3125rem 0.5rem;
+    border-radius: 6px;
+    background-color: var(--color-text);
+    color: var(--color-bg);
+    font-family: var(--font-text);
+    font-size: var(--small-font-size);
+    line-height: 1.2;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -0.25rem);
+    transition:
+      opacity var(--transition-fast),
+      transform var(--transition-fast);
+  }
+
+  &:hover::after,
+  &:focus-within::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (hover: none) {
+  .icon-tooltip::after {
+    display: none;
   }
 }
 </style>

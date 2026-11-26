@@ -51,6 +51,7 @@ await usePlayerFeed();
     <SiteTimetableStrip />
     <SiteFoot class="footer" />
     <SiteTimetablePopup />
+    <SiteLoginPopup />
     <SiteVideoPlayer />
     <ElementsPreviewMode />
   </div>
