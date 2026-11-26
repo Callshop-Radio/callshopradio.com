@@ -2,10 +2,10 @@
 
 The design system for the public website. It describes what the site already is, not a
 wish. Every value below comes from `web/layers/base/assets/styles/` and the components;
-if code and this file disagree, the file is wrong and should be fixed in the same PR.
+if code and this file disagree, the file is wrong and should be fixed in the same change.
 
 **Authority:** new components and edits follow these rules. Deviations need a reason in
-the PR description and a line in *Open points* below.
+the commit message and a line in *Open points* below.
 
 ---
 
@@ -369,7 +369,7 @@ Measured over every `<style>` block in `web/layers` + `web/app` (excluding the
 
 | Metric | Before | After |
 | --- | --- | --- |
-| distinct `font-size` values | 92 in 486 declarations | 50 declarations values, of which 8 tokens cover the scale; the rest is the display tier |
+| distinct `font-size` values | 92 in 486 declarations | 50, of which 8 tokens cover the scale; the rest is the display tier |
 | distinct `border-radius` values | 39 in 348 declarations | 24, of which 7 tokens + `50%` + `0`; the rest is the design-lab |
 | hardcoded hex colours | 10 distinct outside tokens, 48 occurrences | 4 (`#000`, `#fff` in shadows/gradients, plus two lab values) |
 | undefined tokens in use | 33 (82 uses of `--color-text-light` alone) | 3, all set at runtime by JS (`--grid-index`, `--lab-motion`, `--filter-dock-global`) |
