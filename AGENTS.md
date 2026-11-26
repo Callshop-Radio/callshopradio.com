@@ -4,8 +4,8 @@
 
 - **Live is `origin/develop`.** `callshopradio.live` is built by Netlify from
   that branch. `origin/main` is not the live branch.
-- Deploy = commit on the local `main` (which tracks develop) and push
-  `main:develop`. There is no separate deploy step.
+- Deploy = branch, PR into `develop`, merge. The `develop` ruleset rejects
+  direct pushes (PR + required checks), so a local commit alone is not live.
 - After the push, verify the live page by a DOM marker or computed style;
   Netlify needs a minute or two.
 - Stage only the files that belong to the change. Other sessions keep
