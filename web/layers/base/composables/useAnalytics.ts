@@ -8,35 +8,15 @@ type UmamiTracker = {
 };
 
 /**
- * One call site for product analytics.
- *
- * Components call `track()` once; the event is sent to GA4 (via nuxt-gtag)
- * and to the self-hosted Umami instance (if its runtime config is set). Both
- * providers are gated by the "analytics" cookie-consent category, and the
- * function is a no-op during SSR.
+ * One call site for product analytics: every event goes to the self-hosted
+ * Umami instance (when its runtime config is set). The "analytics" cookie
+ * category gates it, and the function is a no-op during SSR.
  */
 export function useAnalytics() {
-	const { gtag } = useGtag();
-
 	function track(eventName: string, params: AnalyticsParams = {}) {
 		if (import.meta.server || !hasAnalyticsConsent()) return;
 
-		// Drop empty values so GA4/Umami don't receive `null` or `undefined`.
-		const data = Object.fromEntries(
-			Object.entries(params).filter(
-				([, value]) => value !== undefined && value !== null,
-			),
-		);
-
-		gtag("event", eventName, data);
-
-		const umami = (window as Window & { umami?: UmamiTracker }).umami;
-		umami?.track(eventName, data);
-	}
-
-	function trackUmami(eventName: string, params: AnalyticsParams = {}) {
-		if (import.meta.server || !hasAnalyticsConsent()) return;
-
+		// Drop empty values so Umami does not receive `null` or `undefined`.
 		const data = Object.fromEntries(
 			Object.entries(params).filter(
 				([, value]) => value !== undefined && value !== null,
@@ -47,5 +27,6 @@ export function useAnalytics() {
 		umami?.track(eventName, data);
 	}
 
-	return { track, trackUmami };
+	// Older call sites used a separate Umami-only helper; both names still work.
+	return { track, trackUmami: track };
 }

@@ -81,21 +81,9 @@ export default defineNuxtConfig({
 		"@nuxtjs/sanity",
 		"@pinia/nuxt",
 		"@vueuse/nuxt",
-		"nuxt-gtag",
 		"@nuxtjs/i18n",
 		"@nuxtjs/sitemap",
 	],
-
-	gtag: {
-		id: process.env.NUXT_GTAG_ID,
-		// Load gtag.js only after the "analytics" consent category is granted.
-		// The cookie plugin queues the denied Consent Mode default before loading it.
-		initMode: "manual",
-		config: {
-			// Page views are sent explicitly after consent (see cookieconsent plugin).
-			send_page_view: false,
-		},
-	},
 
 	sanity: {
 		projectId: process.env.NUXT_SANITY_PROJECT_ID,

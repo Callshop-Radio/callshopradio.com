@@ -1,7 +1,8 @@
 /**
- * Privacy page copy that is not (yet) in Sanity: the consent-gated Google
- * Analytics paragraph and the Umami note. Kept here so the privacy page and the
- * combined legal page render exactly the same Portable Text.
+ * Privacy page copy that is not in Sanity: the Umami note, and the cleanup of
+ * the legacy Google Analytics section the CMS text still carries. Kept here so
+ * the privacy page and the combined legal page render exactly the same
+ * Portable Text.
  */
 
 type TextChild = { text?: string };
@@ -13,12 +14,6 @@ function blockText(block: TextBlock | undefined): string {
 	return (block?.children ?? []).map((child) => child?.text ?? "").join("");
 }
 
-function privacyGaBody(lang: string): string {
-	return lang === "de"
-		? "Google Analytics 4 wird ausschließlich nach deiner Einwilligung geladen. Erst dann werden Nutzungsdaten wie aufgerufene Seiten, Interaktionen, Geräte- und Browserinformationen sowie die ungefähre Region an Google Ireland Limited (Gordon House, Barrow Street, Dublin 4, Irland) übermittelt. Ohne deine Einwilligung findet keine Übertragung an Google statt. Wir haben mit Google einen Vertrag zur Auftragsverarbeitung geschlossen. Die Einwilligung ist freiwillig und kann jederzeit über die Cookie-Einstellungen mit Wirkung für die Zukunft widerrufen werden; die Rechtmäßigkeit der bis dahin erfolgten Verarbeitung bleibt unberührt. Die Aufbewahrungsdauer richtet sich nach den Einstellungen in Google Analytics 4 (standardmäßig zwei Monate für nutzerbezogene Daten, maximal 14 Monate). Rechtsgrundlage ist Art. 6 Abs. 1 lit. a DSGVO sowie § 25 Abs. 1 TDDDG."
-		: "Google Analytics 4 is loaded only after you give your consent. Only then are usage data such as pages visited, interactions, device and browser information and the approximate region transmitted to Google Ireland Limited (Gordon House, Barrow Street, Dublin 4, Ireland). Without your consent, no data is transmitted to Google. We have concluded a data processing agreement with Google. Consent is voluntary and can be withdrawn at any time via the cookie settings with effect for the future; the lawfulness of processing carried out until then remains unaffected. The retention period depends on the settings in Google Analytics 4 (two months for user-level data by default, up to 14 months). The legal basis is Art. 6(1)(a) GDPR and § 25(1) TDDDG.";
-}
-
 function paragraph(key: string, text: string, style = "normal"): TextBlock {
 	return {
 		_type: "block",
@@ -27,6 +22,46 @@ function paragraph(key: string, text: string, style = "normal"): TextBlock {
 		markDefs: [],
 		children: [{ _type: "span", _key: `${key}-span`, marks: [], text }],
 	};
+}
+
+function isHeading(block: TextBlock): boolean {
+	return block?.style === "h2" || block?.style === "h3";
+}
+
+/**
+ * Google Analytics is gone from the site. The Sanity text still has a "Google
+ * Analytics:" section (and the odd inline mention), so the renderer drops it:
+ * the heading, the paragraphs that belong to it, and any standalone paragraph
+ * that still names the service.
+ */
+function stripGoogleAnalytics(blocks: TextBlock[]): TextBlock[] {
+	const kept: TextBlock[] = [];
+	let insideGaSection = false;
+
+	for (const block of blocks) {
+		const text = blockText(block).trim();
+		const namesGa = /google\s+analytics/i.test(text);
+
+		if (isHeading(block)) {
+			insideGaSection = namesGa;
+			if (insideGaSection) continue;
+			kept.push(block);
+			continue;
+		}
+
+		if (insideGaSection) {
+			if (!text) continue;
+			if (namesGa) continue;
+			// The first paragraph after the heading belongs to that section.
+			insideGaSection = false;
+			continue;
+		}
+
+		if (namesGa) continue;
+		kept.push(block);
+	}
+
+	return kept;
 }
 
 function umamiPrivacyBlocks(lang: string): TextBlock[] {
@@ -42,67 +77,10 @@ function umamiPrivacyBlocks(lang: string): TextBlock[] {
 	];
 }
 
-// The Sanity privacy text still says Google Analytics runs on legitimate
-// interest. That is not compatible with the consent-gated setup, so replace the
-// body of the existing "Google Analytics:" section at render time. Once the CMS
-// text is updated, this function simply rewrites it with the same wording.
-function replaceLegacyGaText(blocks: TextBlock[], lang: string): TextBlock[] {
-	const body = privacyGaBody(lang);
-	let replaced = false;
-
-	const headingIndex = blocks.findIndex(
-		(block) => blockText(block).trim() === "Google Analytics:",
-	);
-
-	let bodyIndex = -1;
-	if (headingIndex >= 0) {
-		for (let index = headingIndex + 1; index < blocks.length; index += 1) {
-			if (blockText(blocks[index]).trim()) {
-				bodyIndex = index;
-				break;
-			}
-		}
-	}
-
-	const rewritten = blocks.map((block, index) => {
-		const isLegacyBody =
-			bodyIndex >= 0
-				? index === bodyIndex
-				: blockText(block)
-						.trim()
-						.startsWith("We use Google Analytics based on legitimate interest");
-
-		if (!replaced && isLegacyBody) {
-			replaced = true;
-			return {
-				...block,
-				children: [
-					{
-						_type: "span",
-						_key: `${block._key ?? "ga"}-consent`,
-						marks: [],
-						text: body,
-					},
-				],
-			};
-		}
-
-		return block;
-	});
-
-	if (replaced) return rewritten;
-
-	return [
-		...rewritten,
-		paragraph("ga-consent-heading", "Google Analytics 4", "h2"),
-		paragraph("ga-consent-body", body),
-	];
-}
-
-/** Privacy blocks including the analytics notes, ready for RichText. */
+/** Privacy blocks without Google Analytics, with the Umami note appended. */
 export function privacyContentBlocks(
 	blocks: TextBlock[],
 	lang: string,
 ): TextBlock[] {
-	return [...replaceLegacyGaText(blocks, lang), ...umamiPrivacyBlocks(lang)];
+	return [...stripGoogleAnalytics(blocks), ...umamiPrivacyBlocks(lang)];
 }

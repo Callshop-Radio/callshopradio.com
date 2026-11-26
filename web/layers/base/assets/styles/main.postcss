@@ -270,3 +270,9 @@ img:not(.avatar) {
 .hero-entry-tags .tag:not(.city) {
   border: 0;
 }
+
+/* Cookie banner: its buttons ship with a 0.4rem radius and read as rectangles
+   next to every other button. Use the site's pill radius. */
+#cc-main {
+  --cc-btn-border-radius: var(--pill-radius);
+}

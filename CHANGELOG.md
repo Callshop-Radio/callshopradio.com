@@ -10,6 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Local clone / development-environment fixes. Nothing here has been committed or
 deployed yet.
 
+### Removed
+
+#### Google Analytics
+
+- **GA4 is gone.** `nuxt-gtag` is no longer registered as a Nuxt module and no
+  longer a dependency; no `gtag.js`, `dataLayer` or Google Analytics request
+  reaches the browser. `useAnalytics()` now sends product events to Umami only.
+- **Cookie banner:** the Google Consent Mode handling, the page-view sender and
+  the GA cookie cleanup on consent were removed. The modal copy and the
+  preference sections describe Umami only; the CMS description/preference
+  strings, which still named GA, are ignored.
+- **Privacy page:** the renderer drops the legacy "Google Analytics:" section
+  from the Sanity text and keeps the Umami note. The Sanity document itself
+  should still be edited to delete that section.
+- **Buttons:** the cookie banner buttons use the site's pill radius
+  (`--pill-radius`) instead of the library's 0.4rem.
+
 ### Transition: LibreTime outage
 
 > **Temporary workaround.** The LibreTime server is offline. Stream 1 uses
