@@ -66,6 +66,12 @@ export default defineEventHandler(async (event) => {
 				changefreq: "weekly",
 				priority: 0.8,
 			},
+			{
+				loc: "/merch",
+				modifiedAt: new Date().toISOString(),
+				changefreq: "weekly",
+				priority: 0.8,
+			},
 		];
 
 		const allRoutes = [...validRoutes, ...staticRoutes];

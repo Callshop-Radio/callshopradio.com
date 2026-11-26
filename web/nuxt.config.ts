@@ -385,6 +385,14 @@ export default defineNuxtConfig({
 			},
 		},
 
+		// Contact is gone; its content lives in the footer.
+		"/contact": { redirect: { to: "/", statusCode: 301 } },
+		"/de/contact": { redirect: { to: "/de", statusCode: 301 } },
+
+		// Shop was renamed to Merch; old links keep working.
+		"/shop": { redirect: { to: "/merch", statusCode: 301 } },
+		"/de/shop": { redirect: { to: "/de/merch", statusCode: 301 } },
+
 		// === Sitemap (generated at build time) ===
 		"/sitemap.xml": { prerender: true },
 
@@ -424,7 +432,15 @@ export default defineNuxtConfig({
 					slug.startsWith("de/konto") ||
 					slug === "einladung" ||
 					slug.startsWith("einladung/") ||
-					slug.startsWith("de/einladung")
+					slug.startsWith("de/einladung") ||
+					// Contact is gone; the redirect rule below must not be
+					// overwritten by the CMS page ISR rule.
+					slug === "contact" ||
+					slug === "de/contact" ||
+					// Shop was renamed to Merch; same reason: the redirect
+					// from routeRules has to win over a CMS ISR rule.
+					slug === "shop" ||
+					slug === "de/shop"
 				)
 					continue;
 				nitroConfig.routeRules[`/${slug}`] = {

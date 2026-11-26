@@ -37,6 +37,12 @@ const chatEnabled = computed(
 						<NuxtLink :to="localePath('/words')" :class="`tag words`">
 							Words
 						</NuxtLink>
+						<NuxtLink :to="localePath('/index')" :class="`tag index`">
+							Index
+						</NuxtLink>
+						<NuxtLink :to="localePath('/merch')" :class="`tag merch`">
+							Merch
+						</NuxtLink>
 					</ul>
 				</nav>
 				<SiteSearchButton />
@@ -230,6 +236,16 @@ const chatEnabled = computed(
         color: var(--color-green);
       }
 
+      &.index {
+        border-color: var(--color-purple);
+        color: var(--color-purple);
+      }
+
+      &.merch {
+        border-color: var(--color-merch-ink);
+        color: var(--color-merch-ink);
+      }
+
       @media (min-width: 1024px) {
         &.router-link-active,
         &.parent-active,
@@ -251,6 +267,17 @@ const chatEnabled = computed(
           &.words {
             background-color: var(--color-green);
             border-color: var(--color-green);
+          }
+
+          &.index {
+            background-color: var(--color-purple);
+            border-color: var(--color-purple);
+          }
+
+          &.merch {
+            background-color: var(--color-merch);
+            border-color: var(--color-merch);
+            color: var(--color-black);
           }
         }
       }
