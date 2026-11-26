@@ -13,6 +13,22 @@ import { useMainStore } from "~/stores/mainStore";
 // biome-ignore lint/suspicious/noExplicitAny: items are loosely typed Sanity docs
 type ImageItem = any;
 
+/**
+ * Sanity serves the untouched original from `asset.url`. For a 1254x1254 PNG
+ * that is ~2.9 MB, while the same image resized to 750px and negotiated as
+ * WebP is ~27 KB. Always route <img> src values through this helper.
+ */
+export const sanityImageUrl = (
+	url: string | undefined,
+	width = 750,
+): string | undefined => {
+	if (!url) return undefined;
+	// Leave non-Sanity URLs (SoundCloud artwork, placeholders) untouched.
+	if (!url.startsWith("https://cdn.sanity.io/")) return url;
+	if (url.includes("?")) return url;
+	return `${url}?w=${width}&fit=max&auto=format`;
+};
+
 export const useContentImage = () => {
 	const mainStore = useMainStore();
 

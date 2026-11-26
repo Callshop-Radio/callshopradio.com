@@ -23,6 +23,10 @@ const props = defineProps({
 		type: String,
 		default: "",
 	},
+	alt: {
+		type: String,
+		default: "",
+	},
 });
 </script>
 
@@ -33,6 +37,7 @@ const props = defineProps({
 			<MediaImage
 				v-if="props.type === 'image' && props.image"
 				:image="props.image"
+				:alt="props.alt"
 			/>
 			<!-- Video -->
 			<MediaVideo

@@ -74,6 +74,13 @@ export const moduleMedia = defineType({
       title: "Caption",
       type: "string",
     },
+    {
+      name: "alt",
+      title: "Alt Text",
+      type: "string",
+      description: "Kurze Beschreibung für Screenreader.",
+      validation: (Rule) => Rule.max(300),
+    },
   ],
   components: {
     preview: MediaPreview,

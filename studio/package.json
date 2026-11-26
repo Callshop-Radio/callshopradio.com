@@ -18,6 +18,7 @@
     "sanity"
   ],
   "dependencies": {
+    "@callshop/words-typography": "workspace:*",
     "@damianrosellen/sanity-plugin-soundcloud-input": "^1.0.1",
     "@sanity/cli": "^7.2.3",
     "@sanity/code-input": "^7.1.3",
