@@ -40,8 +40,18 @@
   /* Muted meta text (hints, counts, placeholders). One value in both
      themes: it sits on the page background, not on a surface. */
   --color-text-light: #888;
-  /* Decorative rules and link underlines follow the text colour. */
-  --color-lines: currentcolor;
+  /* Rules, borders and separators: a tint of the text colour, so they follow
+     the theme without a second palette. */
+  --color-line: color-mix(in srgb, var(--color-text) 14%, transparent);
+  /* Raised surface inside a panel (search rows, hint blocks). */
+  --color-surface: color-mix(in srgb, var(--color-text) 7%, var(--color-bg));
+  --color-surface-hover: color-mix(
+    in srgb,
+    var(--color-text) 12%,
+    var(--color-bg)
+  );
+  /* Link underline inside running text. */
+  --color-underline: currentcolor;
   /* Inline code chip. */
   --color-code-bg: var(--color-grey);
   /* Loading skeleton fill. */

@@ -98,7 +98,7 @@ button {
 }
 
 .picker {
-	border-top: 1px solid var(--chat-line);
+	border-top: 1px solid var(--color-line);
 	padding: 0.625rem 0.75rem 0.75rem;
 	background-color: color-mix(in srgb, var(--color-text) 2.5%, transparent);
 }
@@ -120,7 +120,7 @@ button {
 	font-size: var(--text-sm);
 	padding: 0.125rem 0.5rem;
 	border-radius: var(--radius-pill);
-	border: 1px solid var(--chat-line);
+	border: 1px solid var(--color-line);
 	color: color-mix(in srgb, var(--color-text) 65%, transparent);
 	cursor: pointer;
 

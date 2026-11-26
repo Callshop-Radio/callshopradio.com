@@ -104,7 +104,7 @@ button {
 }
 
 .composer {
-	border-top: 1px solid var(--chat-line);
+	border-top: 1px solid var(--color-line);
 	padding: 0.625rem 0.75rem;
 }
 
@@ -120,7 +120,7 @@ button {
 	font-size: var(--text-md);
 	padding: 0.375rem 0;
 	border: 0;
-	border-bottom: 1px solid var(--chat-line);
+	border-bottom: 1px solid var(--color-line);
 	background: transparent;
 	color: var(--color-text);
 	border-radius: 0;

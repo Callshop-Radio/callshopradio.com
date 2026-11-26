@@ -146,7 +146,6 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 
 <style lang="postcss" scoped>
 .chat-section {
-	--chat-line: color-mix(in srgb, var(--color-text) 14%, transparent);
 
 	width: 100%;
 	max-width: var(--page-max-width);
@@ -160,7 +159,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 .chat-shell {
 	display: grid;
 	grid-template-columns: 15rem minmax(0, 1fr);
-	border: 1px solid var(--chat-line);
+	border: 1px solid var(--color-line);
 	border-radius: var(--radius-media);
 	overflow: hidden;
 	background-color: var(--color-bg);
@@ -172,7 +171,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 	justify-content: flex-start;
 	gap: 1.5rem;
 	padding: 1.25rem;
-	border-right: 1px solid var(--chat-line);
+	border-right: 1px solid var(--color-line);
 }
 
 .chat-rail__title {
@@ -249,7 +248,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 	color: color-mix(in srgb, var(--color-text) 45%, transparent);
 	padding-top: 0.75rem;
 	margin-top: auto;
-	border-top: 1px solid var(--chat-line);
+	border-top: 1px solid var(--color-line);
 }
 
 .chat-room {
@@ -264,7 +263,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 	align-items: baseline;
 	gap: 0.4375rem;
 	padding: 0.5625rem 1.25rem;
-	border-bottom: 1px solid var(--chat-line);
+	border-bottom: 1px solid var(--color-line);
 	font-size: var(--text-sm);
 	color: color-mix(in srgb, var(--color-text) 50%, transparent);
 	flex: none;
@@ -344,7 +343,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 		gap: 1rem;
 		padding: 0.875rem;
 		border-right: 0;
-		border-bottom: 1px solid var(--chat-line);
+		border-bottom: 1px solid var(--color-line);
 	}
 
 	.chat-rail__title {

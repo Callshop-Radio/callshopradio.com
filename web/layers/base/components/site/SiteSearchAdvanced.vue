@@ -839,13 +839,6 @@ onUnmounted(() => {
 .advanced-search {
   /* One filled-surface scale for the whole dialog: inputs, reset, close and the
      quiet row hovers share it, so almost nothing needs an outline. */
-  --as-surface: color-mix(in srgb, var(--color-text) 7%, var(--color-bg));
-  --as-surface-hover: color-mix(
-    in srgb,
-    var(--color-text) 11%,
-    var(--color-bg)
-  );
-  --as-line: color-mix(in srgb, var(--color-text) 12%, transparent);
 
   display: flex;
   flex-direction: column;
@@ -897,7 +890,7 @@ onUnmounted(() => {
     padding: 0;
     border: 0;
     border-radius: 50%;
-    background: var(--as-surface);
+    background: var(--color-surface);
     color: var(--color-text);
     cursor: pointer;
     transition: background var(--transition-fast), color var(--transition-fast);
@@ -913,7 +906,7 @@ onUnmounted(() => {
     flex-direction: column;
     gap: var(--base-padding);
     padding: var(--base-padding) var(--big-padding) var(--mid-padding);
-    border-top: 1px solid var(--as-line);
+    border-top: 1px solid var(--color-line);
   }
 
   &__label {
@@ -937,7 +930,7 @@ onUnmounted(() => {
       padding: 0 0.875rem;
       border: 0;
       border-radius: var(--radius-pill);
-      background: var(--as-surface);
+      background: var(--color-surface);
       color: var(--color-text);
       font-family: var(--font-text-semibold);
       font-size: var(--text-sm);
@@ -945,11 +938,11 @@ onUnmounted(() => {
       transition: background var(--transition-fast);
 
       &:hover {
-        background: var(--as-surface-hover);
+        background: var(--color-surface-hover);
       }
 
       &:focus-visible {
-        background: var(--as-surface-hover);
+        background: var(--color-surface-hover);
         box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-pink) 40%, transparent);
       }
     }
@@ -982,16 +975,16 @@ onUnmounted(() => {
     padding: 0 1rem;
     border: 0;
     border-radius: var(--radius-pill);
-    background: var(--as-surface);
+    background: var(--color-surface);
     color: var(--color-text);
     transition: background var(--transition-fast);
 
     &:hover {
-      background: var(--as-surface-hover);
+      background: var(--color-surface-hover);
     }
 
     &:focus-within {
-      background: var(--as-surface-hover);
+      background: var(--color-surface-hover);
       box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-pink) 40%, transparent);
     }
 
@@ -1087,7 +1080,7 @@ onUnmounted(() => {
 
   &__reset {
     border: 0;
-    background: var(--as-surface);
+    background: var(--color-surface);
     color: var(--color-text);
 
     &:hover {
@@ -1108,7 +1101,7 @@ onUnmounted(() => {
     min-height: 6rem;
     overflow-y: auto;
     padding: var(--small-padding) var(--big-padding) var(--big-padding);
-    border-top: 1px solid var(--as-line);
+    border-top: 1px solid var(--color-line);
   }
 
   &__empty {
@@ -1141,7 +1134,7 @@ onUnmounted(() => {
 .advanced-other {
   --accent: var(--color-pink);
   padding: 0.25rem 0 0.55rem;
-  border-bottom: 1px solid var(--as-line, var(--color-grey));
+  border-bottom: 1px solid var(--color-line);
 
   &--pool {
     --accent: var(--color-blue);
@@ -1255,7 +1248,7 @@ onUnmounted(() => {
   padding: 0.0625rem 0.375rem;
   border: 0;
   border-radius: var(--radius-pill);
-  background: var(--as-surface, color-mix(in srgb, var(--color-text) 7%, var(--color-bg)));
+  background: var(--color-surface);
   font-family: var(--font-text-semibold);
   font-size: var(--text-xs);
   line-height: 1.2;
@@ -1264,7 +1257,7 @@ onUnmounted(() => {
 }
 
 .advanced-group {
-  border-bottom: 1px solid var(--as-line, var(--color-grey));
+  border-bottom: 1px solid var(--color-line);
 
   &:last-child {
     border-bottom: 0;
@@ -1375,7 +1368,7 @@ onUnmounted(() => {
     padding: 0;
     border: 0;
     border-radius: 50%;
-    background: var(--as-surface, color-mix(in srgb, var(--color-text) 7%, var(--color-bg)));
+    background: var(--color-surface);
     color: var(--color-text);
     cursor: pointer;
     transition:

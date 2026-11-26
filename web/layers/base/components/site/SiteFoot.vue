@@ -520,7 +520,6 @@ function scrollToTop() {
 .site-footer {
   /* Only the rule colour is footer-specific; every text and surface colour
      comes from the global palette so the footer follows the site theme. */
-  --footer-line: color-mix(in srgb, var(--color-text) 16%, transparent);
 
   padding: 0 var(--page-gutter) var(--filter-dock-global, 0px);
   border-top: 1px solid var(--color-text);
@@ -543,7 +542,7 @@ function scrollToTop() {
   grid-template-columns: minmax(0, 0.9fr) minmax(32rem, 1.1fr);
   gap: clamp(2rem, 4vw, 4rem);
   padding-bottom: clamp(2.5rem, 5vw, 4rem);
-  border-bottom: 1px solid var(--footer-line);
+  border-bottom: 1px solid var(--color-line);
 }
 
 .site-footer__logo {
@@ -653,7 +652,7 @@ function scrollToTop() {
   align-items: center;
   gap: 0.6rem;
   padding: 0.8rem 0;
-  border-top: 1px solid var(--footer-line);
+  border-top: 1px solid var(--color-line);
 }
 
 .station:first-child {
@@ -718,7 +717,7 @@ function scrollToTop() {
 .site-footer__apply {
   margin-top: 2.25rem;
   padding-top: 1.25rem;
-  border-top: 1px solid var(--footer-line);
+  border-top: 1px solid var(--color-line);
 }
 
 .apply-chips {
@@ -811,7 +810,7 @@ function scrollToTop() {
   justify-content: space-between;
   gap: 1.25rem;
   padding: 1.1rem 0 0;
-  border-top: 1px solid var(--footer-line);
+  border-top: 1px solid var(--color-line);
 }
 
 .site-footer__theme {

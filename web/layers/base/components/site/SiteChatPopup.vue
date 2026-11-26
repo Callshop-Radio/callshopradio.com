@@ -207,7 +207,6 @@ onBeforeUnmount(() => {
 
 <style lang="postcss" scoped>
 .chat-popup {
-  --chat-line: color-mix(in srgb, var(--color-text) 14%, transparent);
 
   position: fixed;
   right: 1.5rem;
@@ -223,7 +222,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
   background-color: var(--color-bg);
   color: var(--color-text);
-  border: 1px solid var(--chat-line);
+  border: 1px solid var(--color-line);
   border-radius: var(--radius-media);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
 }
@@ -317,8 +316,8 @@ onBeforeUnmount(() => {
   align-items: baseline;
   gap: 0.4375rem;
   padding: 0.5rem 1rem;
-  border-top: 1px solid var(--chat-line);
-  border-bottom: 1px solid var(--chat-line);
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
   font-size: var(--text-sm);
   color: color-mix(in srgb, var(--color-text) 50%, transparent);
   flex: none;
