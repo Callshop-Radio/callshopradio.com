@@ -10,13 +10,6 @@ export interface AddToReproPayload {
 	active: boolean;
 }
 
-/** Minimal current track shape for SoundCloud / repro */
-export interface CurrentTrack {
-	link?: string;
-	name?: string;
-	[key: string]: unknown;
-}
-
 export const useMainStore = defineStore("mainStore", () => {
 	// state as refs
 	const siteCookieBanner = ref<Record<string, unknown>>({});
@@ -25,12 +18,8 @@ export const useMainStore = defineStore("mainStore", () => {
 	const siteFallbacks = ref<SiteFallbacks | Record<string, unknown>>({});
 	const link = ref("");
 	const titel = ref("");
-	const currentTrack = ref<CurrentTrack | null>(null);
 	const active = ref(false);
-	const isPlayerPlaying = ref(false);
-	const isPlayerVisible = ref(true);
 	const activeScheduleLocation = ref("channelOne");
-	const activeStreamingChannel = ref("channelOne");
 	const currentHeroContentType = ref("");
 	const isDarkMode = ref<boolean | undefined>(undefined);
 	const menuOpen = ref(false);
@@ -53,28 +42,12 @@ export const useMainStore = defineStore("mainStore", () => {
 		active.value = payload.active;
 	}
 
-	function setPlayerStatus(isPlaying: boolean) {
-		isPlayerPlaying.value = isPlaying;
-	}
-
-	function togglePlayerVisibility() {
-		isPlayerVisible.value = !isPlayerVisible.value;
-	}
-
-	function resetSoundCloudPlayer() {
-		currentTrack.value = null;
-	}
-
 	function setActiveScheduleLocation(location: string) {
 		activeScheduleLocation.value = location;
 	}
 
 	function toggleMenu() {
 		menuOpen.value = !menuOpen.value;
-	}
-
-	function setActiveStreamingChannel(channel: string) {
-		activeStreamingChannel.value = channel;
 	}
 
 	function setCurrentHeroContentType(type: string) {
@@ -149,14 +122,10 @@ export const useMainStore = defineStore("mainStore", () => {
 		detectSystemDarkMode,
 		nuxtServerInit,
 		addToRepro,
-		setPlayerStatus,
-		togglePlayerVisibility,
-		resetSoundCloudPlayer,
 		setActiveScheduleLocation,
 		setCurrentHeroContentType, // Export new function
 		updateColors,
 		toggleDarkMode,
 		toggleMenu,
-		setActiveStreamingChannel,
 	};
 });

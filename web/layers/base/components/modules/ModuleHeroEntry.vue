@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useMainStore } from "~/stores/mainStore";
 
@@ -108,15 +108,8 @@ const useSoundCloud = () => {
 	}
 
 	function playTrack(): void {
-		const track = props.module?.contentReference?.soundcloud?.tracks?.[0];
-		if (!track) return;
-
-		// Make sure permalink_url is set
-		if (!track.permalink_url && track.id) {
-			track.permalink_url = `https://api.soundcloud.com/tracks/${track.id}`;
-		}
-
-		mainStore.currentTrack = track;
+		const item = props.module?.contentReference;
+		if (item) void playShared(item);
 	}
 
 	return {
@@ -128,6 +121,7 @@ const useSoundCloud = () => {
 
 // Initialize Composables
 const { getItemImage } = useContentImage();
+const { playTrack: playShared } = useSoundcloudArtwork();
 const { artworkUrl, loadArtworkUrl, playTrack } = useSoundCloud();
 
 // Computed Properties
@@ -201,19 +195,7 @@ onMounted(() => {
 					type="button"
 					@click="playTrack"
 				>
-					<svg
-						width="16"
-						height="18"
-						viewBox="0 0 9 12"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-						aria-hidden="true"
-					>
-						<path
-							d="M9 6L-4.89399e-07 11.1962L-3.51373e-08 0.803847L9 6Z"
-							fill="currentColor"
-						/>
-					</svg>
+					<img src="/icons/play-button.svg" alt="" aria-hidden="true" width="65" height="65" />
 				</button>
 
 				<div class="hero-entry-content-container">
@@ -441,9 +423,9 @@ onMounted(() => {
     align-items: center;
     gap: var(--mid-margin);
     order: 1;
-    padding: var(--mid-padding);
-    border-radius: 1.25rem;
-    border: 0.0625rem solid var(--color-text);
+    padding: 1rem 2.25rem;
+    border-radius: 999px;
+    border: none;
     shape-rendering: crispEdges;
     width: clamp(300px, max-content, 397px);
     min-width: 390px;
@@ -459,6 +441,13 @@ onMounted(() => {
       width: 100%;
       transform: translate(calc(var(--big-margin) / 4), -25%);
     }
+
+    /* With a play icon the circular icon forms the left end of the pill, so the
+       card only needs the vertical padding there. Without it the text starts
+       inside the curved cap. */
+    &:has(.play-button) {
+      padding-left: 1rem;
+    }
     .play-button {
       display: flex;
       flex-flow: column wrap;
@@ -466,21 +455,13 @@ onMounted(() => {
       align-items: center;
       border-radius: 100px;
       aspect-ratio: 1/1;
-      width: max-content;
-      width: 4rem;
-      height: 4rem;
-      @media screen and (max-width: 900px) {
-        width: 2rem;
-        height: 2rem;
-      }
+      flex: none;
+      width: 5.5rem;
+      height: 5.5rem;
       svg {
-        width: calc(4rem - var(--base-padding) * 2);
-        height: calc(4rem - var(--base-padding) * 2);
+        width: 100%;
+        height: 100%;
         transform: translate(8%, 0);
-        @media screen and (max-width: 900px) {
-          width: calc(2.5rem - var(--base-padding) * 2);
-          height: calc(2.5rem - var(--base-padding) * 2);
-        }
         path {
           fill: var(--color-black);
         }
@@ -491,6 +472,8 @@ onMounted(() => {
       flex-flow: column wrap;
       justify-content: center;
       gap: var(--mid-padding);
+      flex: 1 1 auto;
+      min-width: 0;
     }
     .hero-entry-header {
       display: flex;
@@ -511,6 +494,7 @@ onMounted(() => {
         font-weight: 500;
         text-transform: uppercase;
         width: max-content;
+        max-width: 100%;
       }
 
       .hero-entry-meta {
@@ -589,3 +573,4 @@ onMounted(() => {
   }
 }
 </style>
+
