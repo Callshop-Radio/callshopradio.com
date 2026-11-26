@@ -230,9 +230,22 @@ const initialPlainTags = availablePlainTags.filter((entry) =>
 );
 
 if (initialPlainTags.length) {
+	const groupFor = (type: string) =>
+		type === "tag.city"
+			? "cities"
+			: type === "tag.musician"
+				? "musicians"
+				: type === "tag.venue"
+					? "venues"
+					: type === "tag.crafts"
+						? "crafts"
+						: type === "tag.article"
+							? "articles"
+							: "";
 	for (const entry of initialPlainTags) {
 		activeFilters.value.add(entry.tag._id);
-		expandedTagTypes.value.add(String(entry.tag._type));
+		const group = groupFor(String(entry.tag._type));
+		if (group) expandedTagTypes.value.add(group);
 	}
 }
 
@@ -781,6 +794,7 @@ const poolTags = computed(() => {
 	const tags = availableTags.value;
 	const byType = (type: string) => tags.filter((t: Tag) => t._type === type);
 	return {
+		cities: byType("tag.city"),
 		musicians: byType("tag.musician"),
 		venues: byType("tag.venue"),
 		crafts: byType("tag.crafts"),
@@ -796,6 +810,7 @@ const poolTags = computed(() => {
  */
 const poolTagGroups = computed(() => {
 	const groups = [
+		{ key: "cities", title: "Cities", tags: poolTags.value.cities },
 		{ key: "musicians", title: "Musicians", tags: poolTags.value.musicians },
 		{ key: "venues", title: "Venues", tags: poolTags.value.venues },
 		{ key: "crafts", title: "Crafts", tags: poolTags.value.crafts },
