@@ -450,9 +450,10 @@ rhythm was intended, set it deliberately in a media query and update this file.
 
 ## 12. Open points
 
-1. **Body copy is 13 px** (12 px on phones). It is deliberate and unchanged, but it is
-   below common accessibility guidance for long text; long-form articles sit at 16 px.
-   The root font-size stays 16 px, so anything without a size of its own inherits that.
+1. **The root font-size is still 16 px.** Body copy uses `--text-m` (16 px, 14 px on
+   phones); anything without a size of its own inherits the browser default. Setting
+   `html { font-size: var(--text-m) }` would make that explicit, but it would also
+   shrink any element that currently relies on inheritance.
 2. **`--color-text-light` is the same `#888` in both themes.** It reads well on black,
    but it is the one token that does not flip. Consider `--color-dark-grey` in dark.
 3. **`--color-underline` is `currentcolor`**, so rich-text link underlines inherit the
@@ -461,7 +462,7 @@ rhythm was intended, set it deliberately in a media query and update this file.
    known.
 5. **`design-lab.vue`** contains its own scale, its own accent and two raw values. It is a
    prototype and out of scope; do not copy from it.
-6. **58 `!important` remain.** They are load-bearing, not leftovers:
+6. **55 `!important` remain.** They are load-bearing, not leftovers:
    - 10 third-party (`plyr`) in `modules/main.postcss`
    - ~12 split-card seams in `main.postcss` (flag corner, set/cover-flow inner square)
    - ~17 `:deep(img)` radius and `aspect-ratio` guards, because the child rule from

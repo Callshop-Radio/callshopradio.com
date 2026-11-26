@@ -376,10 +376,25 @@ onUnmounted(() => {
 						v-if="activeItem.kind === 'shows' && activeItem.playable"
 						type="button"
 						class="mixed-caption__primary"
+						aria-label="Play set"
 						@click="playActive"
 					>
-						<span class="mixed-caption__play" aria-hidden="true" />
-						Play set
+						<svg
+							class="mixed-caption__play-icon"
+							viewBox="0 0 65 65"
+							aria-hidden="true"
+						>
+							<circle
+								class="mixed-caption__play-disc"
+								cx="32.17"
+								cy="32.17"
+								r="32.17"
+							/>
+							<path
+								class="mixed-caption__play-triangle"
+								d="M50.56 32.17L22.98 48.09V16.25L50.56 32.17Z"
+							/>
+						</svg>
 					</button>
 					<NuxtLink
 						v-if="activeItem.href"
@@ -680,33 +695,34 @@ onUnmounted(() => {
 .mixed-caption__primary {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.55rem 0.9rem;
-  border: 1px solid var(--accent, var(--color-text));
-  border-radius: var(--radius-media);
+  justify-content: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
   background: transparent;
-  color: var(--accent, var(--color-text));
-  font-family: var(--font-text-semibold);
-  font-size: var(--text-s);
-  letter-spacing: var(--button-letter-spacing);
-  text-transform: uppercase;
   cursor: pointer;
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast);
+  transition: transform var(--transition-fast);
 
   &:hover {
-    background: var(--accent, var(--color-text));
-    color: var(--color-bg);
+    background: transparent;
+    transform: scale(1.06);
   }
 }
 
-.mixed-caption__play {
-  width: 0;
-  height: 0;
-  border-top: 0.3rem solid transparent;
-  border-bottom: 0.3rem solid transparent;
-  border-left: 0.5rem solid currentColor;
+.mixed-caption__play-icon {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.mixed-caption__play-disc {
+  fill: var(--color-grey);
+}
+
+.mixed-caption__play-triangle {
+  fill: var(--color-bg);
 }
 
 .mixed-caption__link {

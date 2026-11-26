@@ -134,10 +134,25 @@ const teaserBlocks = computed(() => {
 				v-if="page === 'shows'"
 				type="button"
 				class="lab-caption__action lab-caption__action--play"
+				aria-label="Play set"
 				@click="$emit('play')"
 			>
-				<span class="lab-caption__play-icon" aria-hidden="true" />
-				Play set
+				<svg
+					class="lab-caption__play-icon"
+					viewBox="0 0 65 65"
+					aria-hidden="true"
+				>
+					<circle
+						class="lab-caption__play-disc"
+						cx="32.17"
+						cy="32.17"
+						r="32.17"
+					/>
+					<path
+						class="lab-caption__play-triangle"
+						d="M50.56 32.17L22.98 48.09V16.25L50.56 32.17Z"
+					/>
+				</svg>
 			</button>
 			<button
 				v-if="page === 'shows'"
@@ -290,11 +305,32 @@ const teaserBlocks = computed(() => {
   }
 
   &__play-icon {
-    width: 0;
-    height: 0;
-    border-top: 0.26rem solid transparent;
-    border-bottom: 0.26rem solid transparent;
-    border-left: 0.42rem solid currentColor;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  &__play-disc {
+    fill: var(--color-grey);
+  }
+
+  &__play-triangle {
+    fill: var(--color-bg);
+  }
+
+  &__action--play {
+    justify-content: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+
+    &:hover {
+      border: 0;
+      background: transparent;
+      transform: scale(1.06);
+    }
   }
 
   &--stack {
