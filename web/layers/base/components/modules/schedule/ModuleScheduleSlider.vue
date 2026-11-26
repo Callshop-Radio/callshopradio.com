@@ -783,7 +783,7 @@ watch(
   top: var(--base-margin);
   @apply flex items-center justify-start flex-row flex-wrap items-stretch;
   gap: 0 var(--mid-padding);
-  height: calc(var(--base-font-size) + var(--small-padding) * 2);
+  height: calc(var(--text-m) + var(--small-padding) * 2);
   z-index: 999;
   margin: var(--base-margin) var(--schedule-edge-inset);
 }
@@ -793,12 +793,12 @@ watch(
   display: flex;
   align-items: center;
   width: 70px;
-  height: calc(var(--base-font-size) + var(--small-padding));
+  height: calc(var(--text-m) + var(--small-padding));
   padding: 4px;
   background: rgba(225, 225, 225, 0.25);
   backdrop-filter: blur(5px);
-  border-radius: 30px;
-  max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
+  border-radius: var(--radius-pill);
+  max-height: calc(var(--text-m) + var(--small-padding) * 2);
   height: 100%;
 
   &__btn {
@@ -807,11 +807,11 @@ watch(
     z-index: 2;
     height: 100%;
     border: none;
-    border-radius: 24px;
+    border-radius: var(--radius-pill);
     background: transparent;
     color: #555;
     font-weight: 400;
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     cursor: pointer;
     transition: color 0.2s ease;
     user-select: none;
@@ -832,10 +832,10 @@ watch(
     position: absolute;
     top: 2px;
     width: calc(50% - 4px);
-    max-height: calc(var(--base-font-size) - var(--small-padding) * 2);
+    max-height: calc(var(--text-m) - var(--small-padding) * 2);
     height: 100%;
     background-color: var(--color-pink);
-    border-radius: 24px;
+    border-radius: var(--radius-circle);
     transition: transform 0.2s ease;
     z-index: 1;
   }
@@ -852,9 +852,9 @@ watch(
   @apply flex items-center;
   gap: 0 var(--small-padding);
   padding: var(--small-padding) var(--base-padding);
-  border-radius: 25px;
+  border-radius: var(--radius-circle);
   background-color: rgba(225, 225, 225, 0.25);
-  max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
+  max-height: calc(var(--text-m) + var(--small-padding) * 2);
   backdrop-filter: blur(3px);
 
   .dot {
@@ -878,9 +878,9 @@ watch(
 .arrow-navigation {
   @apply flex items-center;
   gap: 0 var(--mid-margin);
-  height: calc(var(--base-font-size) + var(--small-padding) * 2);
+  height: calc(var(--text-m) + var(--small-padding) * 2);
   padding: 0 var(--small-padding);
-  border-radius: 25px;
+  border-radius: var(--radius-circle);
   background-color: rgba(225, 225, 225, 0.25);
   backdrop-filter: blur(3px);
 
@@ -905,12 +905,12 @@ watch(
   flex-grow: 1;
 
   & > * {
-    font-weight: 550;
+    font-family: var(--font-text-semibold);
     text-transform: uppercase;
   }
 
   &__heading {
-    font-size: var(--h4-size);
+    font-size: var(--text-m);
     color: var(--color-text);
     margin: 0 0 var(--small-padding) var(--small-padding);
     .today-badge {
@@ -971,7 +971,7 @@ watch(
     background-color: var(--color-grey-transparent);
     padding: var(--small-padding);
     height: 100%;
-    border: 1px solid rgba(var(--color-text-rgb), 0.1);
+    border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
     box-sizing: border-box; /* Ensure padding doesn't affect total height */
 
     &.live {
@@ -990,7 +990,7 @@ watch(
 
   &--show {
     .event-item__content {
-      background-color: rgba(var(--color-pink-rgb), 0.1);
+      background-color: color-mix(in srgb, var(--color-pink) 10%, transparent);
       border: 2px solid var(--color-pink);
       position: relative;
       margin: 0 0 0 0;
@@ -998,13 +998,13 @@ watch(
       &.live {
         background-color: var(--color-pink);
         border-color: var(--color-pink);
-        box-shadow: 0 0 8px rgba(var(--color-pink-rgb), 0.4);
+        box-shadow: 0 0 8px color-mix(in srgb, var(--color-pink) 40%, transparent);
       }
     }
   }
 
   .live-indicator {
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     font-weight: 400;
     color: var(--color-grey);
     margin-right: 4px;
@@ -1018,14 +1018,14 @@ watch(
   }
 
   &__time {
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     margin: 0 0 calc(var(--small-padding) / 2) 0;
     opacity: 75%;
     line-height: 1.2;
   }
 
   &__title {
-    font-size: var(--h4-size);
+    font-size: var(--text-m);
     font-weight: 400;
     overflow: hidden;
     display: -webkit-box;
@@ -1035,7 +1035,7 @@ watch(
   }
 
   &__artist {
-    font-size: var(--h4-size);
+    font-size: var(--text-m);
     font-weight: 400;
     margin-top: calc(var(--small-padding) / 4);
     overflow: hidden;
@@ -1085,17 +1085,17 @@ watch(
   }
 
   &__time {
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     color: var(--color-pink);
-    font-weight: 600;
+    font-family: var(--font-text-semibold);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     background-color: var(--color-bg);
     padding: 3px 8px;
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
     border: 1px solid var(--color-pink);
     white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(var(--color-pink-rgb), 0.2);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-pink) 20%, transparent);
   }
 }
 
@@ -1135,14 +1135,14 @@ watch(
     align-items: center;
     justify-content: flex-start;
     gap: 0 var(--mid-padding);
-    height: calc(var(--base-font-size) + var(--small-padding) * 2);
+    height: calc(var(--text-m) + var(--small-padding) * 2);
   }
 
   .location-switch,
   .dot-navigation,
   .arrow-navigation {
     flex-shrink: 0;
-    height: calc(var(--base-font-size) + var(--small-padding) * 2);
+    height: calc(var(--text-m) + var(--small-padding) * 2);
   }
 
   .schedule__content {

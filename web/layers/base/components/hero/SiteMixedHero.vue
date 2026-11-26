@@ -202,15 +202,6 @@ const activeAccent = computed(
 	() => activeItem.value?.accent ?? "var(--color-pink)",
 );
 
-// Hero titles must stay on one line. Long set titles step down in size instead
-// of wrapping; the ellipsis is only the last resort on narrow screens.
-const titleClass = computed(() => {
-	const length = activeItem.value?.title.length ?? 0;
-	if (length > 64) return "is-xlong";
-	if (length > 46) return "is-long";
-	return "";
-});
-
 const ready = ref(false);
 const formSeed = ref<number | null>(null);
 
@@ -295,7 +286,7 @@ onUnmounted(() => {
 		v-if="activeItem"
 		class="site-hero mixed-hero"
 		:class="{ 'is-ready': ready, 'is-dragging': isDragging }"
-		:style="{ '--lab-accent': activeAccent }"
+		:style="{ '--accent': activeAccent }"
 	>
 		<LabAtmosphere
 			variant="form"
@@ -369,7 +360,7 @@ onUnmounted(() => {
 					</template>
 				</div>
 
-				<h2 class="mixed-caption__title" :class="titleClass">
+				<h2 class="mixed-caption__title">
 					<NuxtLink v-if="activeItem.href" :to="localePath(activeItem.href)">
 						{{ activeItem.title }}
 					</NuxtLink>
@@ -452,7 +443,7 @@ onUnmounted(() => {
   z-index: 12;
   color: color-mix(in srgb, var(--color-text) 62%, transparent);
   font-family: var(--font-text);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   letter-spacing: var(--button-letter-spacing);
   line-height: 1;
   pointer-events: none;
@@ -501,7 +492,7 @@ onUnmounted(() => {
 .mixed-item__media {
   position: relative;
   width: 100%;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   overflow: hidden;
   background: var(--color-grey);
 }
@@ -522,13 +513,13 @@ onUnmounted(() => {
   z-index: 2;
   padding: 0.22rem 0.5rem;
   border: 1px solid color-mix(in srgb, var(--color-text) 28%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   /* Solid enough to stay readable on bright cover artwork. */
   background: color-mix(in srgb, var(--color-bg) 82%, transparent);
   backdrop-filter: blur(6px);
   color: var(--color-text);
   font-family: var(--font-text);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-s);
   line-height: 1.1;
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
@@ -536,8 +527,8 @@ onUnmounted(() => {
 }
 
 .mixed-item[data-active="true"] .mixed-item__badge {
-  border-color: var(--lab-accent);
-  color: var(--lab-accent);
+  border-color: var(--accent, var(--color-text));
+  color: var(--accent, var(--color-text));
 }
 
 /* ---------------------------------------------------------------- viewport */
@@ -580,9 +571,9 @@ onUnmounted(() => {
   }
 
   &:focus-visible {
-    outline: 2px solid var(--lab-accent);
+    outline: 2px solid var(--accent, var(--color-text));
     outline-offset: 6px;
-    border-radius: 5px;
+    border-radius: var(--radius-media);
   }
 }
 
@@ -624,8 +615,6 @@ onUnmounted(() => {
   width: min(calc(100% - 2 * var(--mixed-inset)), var(--page-max-width));
   margin: clamp(1.25rem, 2.5vw, 2rem) auto 0;
   padding-top: var(--mid-padding);
-  border-top: 1px solid
-    color-mix(in srgb, var(--lab-accent) 45%, transparent);
   animation: mixed-caption-in 340ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -636,13 +625,13 @@ onUnmounted(() => {
   gap: 0.4rem;
   color: color-mix(in srgb, var(--color-text) 65%, transparent);
   font-family: var(--font-text);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-s);
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
 }
 
 .mixed-caption__type {
-  color: var(--lab-accent);
+  color: var(--accent, var(--color-text));
   font-family: var(--font-text-semibold);
 }
 
@@ -651,28 +640,20 @@ onUnmounted(() => {
   margin: 0;
   max-width: none;
   overflow: hidden;
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 2.6vw, 2.4rem);
+  font-family: var(--font-text);
+  font-size: var(--text-xxl);
   line-height: 1.02;
   letter-spacing: -0.01em;
   text-transform: uppercase;
   white-space: nowrap;
-  text-overflow: ellipsis;
-
-  &.is-long {
-    font-size: clamp(1.25rem, 2.1vw, 1.95rem);
-  }
-
-  &.is-xlong {
-    font-size: clamp(1.1rem, 1.7vw, 1.6rem);
-  }
+  text-overflow: ellipsis;
 
   a {
     color: inherit;
     text-decoration: none;
 
     &:hover {
-      color: var(--lab-accent);
+      color: var(--accent, var(--color-text));
     }
   }
 }
@@ -682,7 +663,7 @@ onUnmounted(() => {
   margin: 0;
   max-width: 52ch;
   color: color-mix(in srgb, var(--color-text) 68%, transparent);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   line-height: 1.35;
 }
 
@@ -701,12 +682,12 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.55rem 0.9rem;
-  border: 1px solid var(--lab-accent);
-  border-radius: 5px;
+  border: 1px solid var(--accent, var(--color-text));
+  border-radius: var(--radius-media);
   background: transparent;
-  color: var(--lab-accent);
+  color: var(--accent, var(--color-text));
   font-family: var(--font-text-semibold);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-s);
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
   cursor: pointer;
@@ -715,7 +696,7 @@ onUnmounted(() => {
     color var(--transition-fast);
 
   &:hover {
-    background: var(--lab-accent);
+    background: var(--accent, var(--color-text));
     color: var(--color-bg);
   }
 }
@@ -734,18 +715,18 @@ onUnmounted(() => {
   gap: 0.4rem;
   color: var(--color-text);
   font-family: var(--font-text-semibold);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-s);
   letter-spacing: var(--button-letter-spacing);
   text-decoration: none;
   text-transform: uppercase;
 
   span {
-    color: var(--lab-accent);
+    color: var(--accent, var(--color-text));
     transition: transform var(--transition-fast);
   }
 
   &:hover {
-    color: var(--lab-accent);
+    color: var(--accent, var(--color-text));
 
     span {
       transform: translateX(3px);
@@ -816,7 +797,7 @@ onUnmounted(() => {
   }
 
   .mixed-caption__title {
-    font-size: clamp(1.35rem, 6vw, 1.9rem);
+    font-size: var(--text-xl);
   }
 
   .mixed-caption__actions {

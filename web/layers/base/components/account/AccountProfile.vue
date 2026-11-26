@@ -109,7 +109,7 @@ onMounted(load);
 
 <template>
 	<div class="profile">
-		<p v-if="state === 'loading'" class="profile__state">…</p>
+		<p v-if="state === 'loading'" class="profile__state">ï¿½</p>
 		<p v-else-if="state === 'error'" class="profile__state">
 			{{ copy.unavailable }}
 		</p>
@@ -193,7 +193,7 @@ onMounted(load);
 	display: grid;
 	place-items: center;
 	font-family: var(--font-text-semibold);
-	font-size: 2rem;
+	font-size: var(--text-xl);
 	text-transform: uppercase;
 	color: color-mix(in srgb, var(--color-text) 55%, transparent);
 }
@@ -206,7 +206,7 @@ onMounted(load);
 }
 
 .profile__hint {
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 42%, transparent);
 }
 
@@ -220,7 +220,7 @@ onMounted(load);
 .profile__field {
 	display: grid;
 	gap: 0.4rem;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	color: color-mix(in srgb, var(--color-text) 55%, transparent);
@@ -231,11 +231,11 @@ onMounted(load);
 	width: 100%;
 	padding: 0.85rem 1.1rem;
 	border: 0;
-	border-radius: 12px;
+	border-radius: var(--radius-surface);
 	background-color: color-mix(in srgb, var(--color-text) 6%, transparent);
 	color: var(--color-text);
 	font: inherit;
-	font-size: var(--base-font-size);
+	font-size: var(--text-m);
 	letter-spacing: normal;
 	text-transform: none;
 
@@ -251,11 +251,11 @@ onMounted(load);
 	justify-content: center;
 	padding: 0.6rem 1.1rem;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background-color: color-mix(in srgb, var(--color-text) 8%, transparent);
 	color: inherit;
 	font: inherit;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	cursor: pointer;
@@ -274,13 +274,13 @@ onMounted(load);
 
 	&:hover {
 		background-color: var(--color-pink);
-		color: #111;
+		color: var(--color-black);
 	}
 }
 
 .profile__saved {
 	margin: 0;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	color: var(--color-pink);
 }
 
@@ -298,7 +298,7 @@ onMounted(load);
 	background: none;
 	color: color-mix(in srgb, var(--color-text) 55%, transparent);
 	font: inherit;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	cursor: pointer;
 
 	&:hover {

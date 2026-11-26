@@ -860,7 +860,7 @@ onMounted(() => {
   max-width: var(--page-max-width);
 
   &__title {
-    font-size: var(--heading-font-size);
+    font-size: var(--text-l);
     margin: 0;
   }
 
@@ -875,14 +875,14 @@ onMounted(() => {
       justify-content: flex-start;
       align-items: center;
       gap: var(--mid-margin);
-      border-radius: 100px;
+      border-radius: var(--radius-pill);
 
       &__title {
         display: flex;
         flex-flow: row wrap;
         align-items: center;
         justify-content: center;
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
@@ -897,7 +897,7 @@ onMounted(() => {
         gap: var(--small-padding);
         background-color: transparent;
         border: none;
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         color: var(--color-dark-grey);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
@@ -940,7 +940,7 @@ onMounted(() => {
   &.shows,
   &.sets,
   &.episodes {
-    --load-more-accent: var(--color-pink);
+    --accent: var(--color-pink);
 
     .sort-options {
       button {
@@ -962,7 +962,7 @@ onMounted(() => {
   }
 
   &.words {
-    --load-more-accent: var(--color-green);
+    --accent: var(--color-green);
 
     .sort-options {
       button {
@@ -984,7 +984,7 @@ onMounted(() => {
   }
 
   &.pool {
-    --load-more-accent: var(--color-blue);
+    --accent: var(--color-blue);
 
     .sort-options {
       button {
@@ -1024,7 +1024,7 @@ onMounted(() => {
 
   .teaser-item__content__show {
     min-height: calc(
-      var(--base-font-size) * 1.15 + var(--base-font-size) + var(--mid-padding)
+      var(--text-m) * 1.15 + var(--text-m) + var(--mid-padding)
     );
   }
 
@@ -1037,6 +1037,9 @@ onMounted(() => {
     max-width: calc(100% / 3 - var(--big-margin) * 1.325);
     width: 100%;
     padding: 0 0 calc(var(--big-margin) / 2) 0;
+    /* Every variant is a card: the radius belongs to the base rule, not to
+       one modifier or a global override. */
+    border-radius: var(--radius-media);
 
     &:last-of-type {
       justify-self: flex-start;
@@ -1063,6 +1066,7 @@ onMounted(() => {
       position: relative;
       overflow: hidden;
       width: 100%;
+      border-radius: var(--radius-media);
 
       img {
         width: 100%;
@@ -1093,6 +1097,7 @@ onMounted(() => {
       flex-grow: 1;
       margin: var(--mid-padding) 0 0 0;
       gap: var(--mid-padding);
+      border-radius: var(--radius-media);
 
       .read-more {
         position: absolute;
@@ -1111,7 +1116,7 @@ onMounted(() => {
         align-items: center;
 
         .teaser-item__date {
-          font-size: var(--small-font-size);
+          font-size: var(--text-s);
           text-transform: uppercase;
         }
 
@@ -1121,14 +1126,14 @@ onMounted(() => {
           align-items: center;
           margin-left: auto;
           background-color: var(--color-text);
-          border-radius: 100px;
+          border-radius: var(--radius-circle);
           border: none;
           padding: 4px;
-          width: calc(var(--base-font-size) + 4px);
-          height: calc(var(--base-font-size) + 4px);
+          width: calc(var(--text-m) + 4px);
+          height: calc(var(--text-m) + 4px);
 
           svg {
-            height: var(--base-font-size);
+            height: var(--text-m);
             transform: translate(1px, 0);
             path {
               fill: var(--color-bg);
@@ -1138,14 +1143,14 @@ onMounted(() => {
       }
 
       .teaser-item__title {
-        font-size: var(--base-font-size);
+        font-size: var(--text-m);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
       }
 
       .teaser-item__artist {
-        font-size: var(--base-font-size);
+        font-size: var(--text-m);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
@@ -1180,8 +1185,8 @@ onMounted(() => {
           background-color: var(--color-grey);
           color: var(--color-text);
           padding: var(--small-padding) var(--mid-padding);
-          border-radius: 100px;
-          font-size: var(--small-font-size);
+          border-radius: var(--radius-pill);
+          font-size: var(--text-s);
           text-transform: uppercase;
         }
       }
@@ -1278,7 +1283,7 @@ onMounted(() => {
       flex: 1 1 50%;
       max-width: calc(50% - var(--big-padding) * 1.5);
       background-color: var(--color-text);
-      border-radius: 12px;
+      border-radius: var(--radius-media);
       overflow: hidden;
       padding: 0;
       margin-right: 0;
@@ -1294,11 +1299,11 @@ onMounted(() => {
 
       &__image {
         width: 100%;
-        border-radius: 5px 5px 0 0 !important;
+        border-radius: var(--radius-media) var(--radius-media) 0 0;
         img {
           aspect-ratio: 3 / 1.5 !important;
           width: 100%;
-          border-radius: 5px 5px 0 0 !important;
+          border-radius: var(--radius-media) var(--radius-media) 0 0;
         }
       }
 
@@ -1461,7 +1466,7 @@ button.genre {
   }
 }
 .module-teaser.sets .teaser-item .teaser-item__title {
-  font-size: 1.25rem;
+  font-size: var(--text-l);
   line-height: 1.05;
 }
 </style>

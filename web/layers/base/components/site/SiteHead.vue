@@ -309,11 +309,11 @@ const chatEnabled = computed(
     left: 50%;
     z-index: 1000000;
     padding: 0.3125rem 0.5rem;
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
     background-color: var(--color-text);
     color: var(--color-bg);
     font-family: var(--font-text);
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     line-height: 1.2;
     white-space: nowrap;
     pointer-events: none;

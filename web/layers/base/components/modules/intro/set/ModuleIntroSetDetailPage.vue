@@ -27,16 +27,6 @@ const displayTitle = computed(() =>
 		: (props.set?.title ?? ""),
 );
 
-// Long show names must not break the magazine headline: the size steps down
-// with the character count instead of overflowing the column.
-const titleClass = computed(() => {
-	const length = displayTitle.value.length;
-	return {
-		"is-long": length > 20 && length <= 32,
-		"is-very-long": length > 32,
-	};
-});
-
 const formattedDate = computed(() => {
 	const value = props.set?.datetime ?? props.set?._updatedAt;
 	return value ? formatDate(value) : "";
@@ -229,7 +219,7 @@ onUnmounted(() => {
 					</template>
 				</p>
 
-				<h1 class="set-title" :class="titleClass">
+				<h1 class="set-title">
 					<ElementsContentLink
 						v-if="hasShow"
 						class="set-title__link"
@@ -497,7 +487,7 @@ onUnmounted(() => {
 
 .eyebrow {
   margin: 0;
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
 
@@ -510,22 +500,13 @@ onUnmounted(() => {
 .set-title {
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-weight: 500;
-  font-size: clamp(2.4rem, 5.6vw, 5rem);
+  font-size: var(--text-display);
   line-height: 0.92;
   text-transform: uppercase;
   letter-spacing: -0.01em;
   max-width: 100%;
   overflow-wrap: anywhere;
-  text-wrap: balance;
-
-  &.is-long {
-    font-size: clamp(2rem, 4.2vw, 3.6rem);
-  }
-
-  &.is-very-long {
-    font-size: clamp(1.7rem, 3.2vw, 2.7rem);
-  }
+  text-wrap: balance;
 
   &__link {
     color: var(--color-text);
@@ -544,7 +525,7 @@ onUnmounted(() => {
   gap: 0.45rem;
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-size: var(--base-font-size);
+  font-size: var(--text-m);
   text-transform: uppercase;
 
   &__link {
@@ -592,11 +573,11 @@ onUnmounted(() => {
   gap: 0.5rem;
   padding: 0.45rem 1rem 0.45rem 0.45rem;
   border: 0;
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   background-color: var(--color-text);
   color: var(--color-bg);
   font-family: var(--font-text);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
   cursor: pointer;
@@ -632,7 +613,7 @@ onUnmounted(() => {
   aspect-ratio: 1 / 1;
   padding: 0;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   overflow: hidden;
   background-color: var(--color-grey);
   cursor: pointer;
@@ -773,7 +754,7 @@ onUnmounted(() => {
     &:focus-visible {
       outline: 2px solid var(--color-blue);
       outline-offset: 4px;
-      border-radius: 4px;
+      border-radius: var(--radius-xs);
     }
   }
 
@@ -783,12 +764,12 @@ onUnmounted(() => {
     bottom: calc(100% + 0.45rem);
     transform: translateX(-50%) translateY(0.25rem);
     padding: 0.15rem 0.45rem;
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     background-color: var(--color-blue);
     color: #fff;
     font-family: var(--font-text);
-    font-size: 0.625rem;
-    letter-spacing: 0.06em;
+    font-size: var(--text-s);
+    letter-spacing: var(--label-letter-spacing);
     text-transform: uppercase;
     opacity: 0;
     pointer-events: none;
@@ -823,14 +804,14 @@ onUnmounted(() => {
     background-color: var(--color-text);
     color: var(--color-bg);
     font-family: var(--font-text-semibold);
-    font-size: 0.625rem;
+    font-size: var(--text-s);
     letter-spacing: 0.02em;
     flex: none;
   }
 
   &__text {
     font-family: var(--font-text-semibold);
-    font-size: clamp(1rem, 1.5vw, 1.35rem);
+    font-size: var(--text-l);
     text-transform: uppercase;
     letter-spacing: 0.01em;
   }
@@ -865,8 +846,7 @@ onUnmounted(() => {
 .label {
   margin: 0 0 var(--mid-padding);
   font-family: var(--font-text-semibold);
-  font-weight: 500;
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
   opacity: 0.6;
@@ -874,7 +854,7 @@ onUnmounted(() => {
 
 .set-about {
   :deep(.rich-text) {
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     line-height: 1.6;
   }
 

@@ -536,7 +536,7 @@ onMounted(() => {
   margin: var(--mid-margin) 0;
 
   &__title {
-    font-size: var(--heading-font-size);
+    font-size: var(--text-l);
     margin-bottom: var(--mid-margin);
   }
 
@@ -554,15 +554,15 @@ onMounted(() => {
   &.shows,
   &.episodes,
   &.sets {
-    --load-more-accent: var(--color-pink);
+    --accent: var(--color-pink);
   }
 
   &.words {
-    --load-more-accent: var(--color-green);
+    --accent: var(--color-green);
   }
 
   &.pool {
-    --load-more-accent: var(--color-blue);
+    --accent: var(--color-blue);
   }
 
   &__load-more {
@@ -573,7 +573,7 @@ onMounted(() => {
 
   .related-item__content__show {
     min-height: calc(
-      var(--base-font-size) * 1.15 + var(--base-font-size) + var(--mid-padding)
+      var(--text-m) * 1.15 + var(--text-m) + var(--mid-padding)
     );
   }
 
@@ -653,7 +653,7 @@ onMounted(() => {
         align-items: center;
 
         .related-item__date {
-          font-size: var(--small-font-size);
+          font-size: var(--text-s);
           text-transform: uppercase;
         }
 
@@ -663,14 +663,14 @@ onMounted(() => {
           align-items: center;
           margin-left: auto;
           background-color: var(--color-text);
-          border-radius: 100px;
+          border-radius: var(--radius-circle);
           border: none;
           padding: 4px;
-          width: calc(var(--base-font-size) + 4px);
-          height: calc(var(--base-font-size) + 4px);
+          width: calc(var(--text-m) + 4px);
+          height: calc(var(--text-m) + 4px);
 
           svg {
-            height: var(--base-font-size);
+            height: var(--text-m);
             transform: translate(1px, 0);
             path {
               fill: var(--color-bg);
@@ -680,14 +680,14 @@ onMounted(() => {
       }
 
       .related-item__title {
-        font-size: var(--base-font-size);
+        font-size: var(--text-m);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
       }
 
       .related-item__artist {
-        font-size: var(--base-font-size);
+        font-size: var(--text-m);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
@@ -755,7 +755,7 @@ onMounted(() => {
       flex: 1 1 50%;
       max-width: calc(50% - var(--big-padding) * 1.5);
       background-color: var(--color-text);
-      border-radius: 12px;
+      border-radius: var(--radius-media);
       overflow: hidden;
       padding: 0;
       margin-right: 0;
@@ -771,12 +771,12 @@ onMounted(() => {
 
       &__image {
         width: 100%;
-        border-radius: 5px 5px 0 0 !important;
+        border-radius: var(--radius-media) var(--radius-media) 0 0;
 
         img {
           aspect-ratio: 3 / 1.5 !important;
           width: 100%;
-          border-radius: 5px 5px 0 0 !important;
+          border-radius: var(--radius-media) var(--radius-media) 0 0;
         }
       }
 
@@ -907,7 +907,7 @@ onMounted(() => {
   }
 }
 .related-content.sets .related-item .related-item__title {
-  font-size: 1.25rem;
+  font-size: var(--text-l);
   line-height: 1.05;
 }
 </style>

@@ -153,7 +153,7 @@ watch(
 
 <style lang="postcss" scoped>
 .index-page {
-  --index-accent: var(--color-purple);
+  --accent: var(--color-purple);
 
   width: 100%;
   max-width: var(--page-max-width);
@@ -172,20 +172,19 @@ watch(
 .index-intro__count {
   margin: 0;
   color: var(--color-dark-grey);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   letter-spacing: var(--menu-letter-spacing);
   text-transform: uppercase;
 }
 
 .index-intro__eyebrow {
-  color: var(--index-accent, var(--color-purple));
+  color: var(--accent, var(--color-purple));
 }
 
 .index-intro__title {
   margin: 0;
   font-family: var(--font-text-medium);
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 500;
+  font-size: var(--text-display);
   letter-spacing: -0.045em;
   line-height: 0.9;
   text-transform: uppercase;
@@ -194,7 +193,7 @@ watch(
 .index-intro__lede {
   max-width: 58ch;
   margin: 0.6rem 0 0;
-  font-size: var(--large-font-size);
+  font-size: var(--text-l);
   line-height: 1.4;
 }
 
@@ -214,7 +213,7 @@ watch(
 .index-empty {
   margin: 3rem 0;
   color: var(--color-dark-grey);
-  font-size: var(--base-font-size);
+  font-size: var(--text-m);
 }
 
 @media screen and (max-width: 1100px) {

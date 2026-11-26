@@ -20,7 +20,7 @@
   margin: 0;
   /* The card components set their own artist size, so this sits above them:
      13px base → ~10px keeps the title hierarchy without shrinking to microtype. */
-  font-size: calc(var(--base-font-size) * 0.78) !important;
+  font-size: var(--text-s) !important;
   letter-spacing: 0.03em;
   text-transform: uppercase;
 
@@ -38,27 +38,6 @@
   }
 }
 
-/* 2026-11: one corner radius for every image and every card. Existing
-   component radii (pills, avatars, round buttons) are excluded. */
-img:not(.avatar) {
-  border-radius: 5px !important;
-}
-
-.grid-item,
-.teaser-item,
-.teaser-item__image,
-.teaser-item__content,
-.grid-item__image,
-.hero-entry-media,
-.pool-intro,
-.pool-media,
-.pool-media-wrap,
-.module-carousel .embla__slide,
-.chat-popup,
-.card {
-  border-radius: 5px !important;
-}
-
 /* Cards with a city flag keep a square top-left corner so the flag sits
    flush against the image. */
 .teaser-item:has(.city-tags),
@@ -70,47 +49,10 @@ img:not(.avatar) {
   border-top-left-radius: 0 !important;
 }
 
-/* Split detail cards: the card owns the outer radius, the inner seam stays
-   square. */
-.pool-intro {
-  overflow: hidden;
-}
-
-.pool-intro :is(
-  .pool-intro-content,
-  .pool-media-wrap,
-  .pool-media,
-  .pool-media img,
-  .pool-image
-) {
-  border-radius: 0 !important;
-}
-
-/* Show detail card: outer radius on the card, square inner seam, flag flush
-   with the card's top-left corner. */
-.show-intro-container {
-  border-radius: 5px !important;
-  overflow: hidden;
-}
-
-.show-intro-container :is(
-  .show-intro-info,
-  .show-intro-media,
-  .show-intro-image,
-  .show-intro-media img
-) {
-  border-radius: 0 !important;
-}
-
-.show-intro-content .city-tags {
-  left: 0 !important;
-  transform: translate(0, -100%) !important;
-}
-
-/* Set detail card: same split rule - card owns the radius, inner media and
-   seams stay square. */
+/* Set detail card: the card owns the outer radius, the inner media and seams
+   stay square. */
 .set-content {
-  border-radius: 5px !important;
+  border-radius: var(--radius-media) !important;
   overflow: hidden;
 }
 
@@ -126,13 +68,12 @@ img:not(.avatar) {
   border-radius: 0 !important;
 }
 
-/* Below 900px the card reserves a padding block for the flag; place the flag
-   inside that block so it sits flush on the card instead of above the page
-   container (where the header covered it). */
-@media screen and (max-width: 900px) {
-  .show-intro-content .city-tags {
-    top: calc(var(--city-tag-height) + var(--base-margin)) !important;
-  }
+/* Coverflow sliders: the card carries the uniform radius, the inner panels,
+   media and seams stay square. */
+.pool-content--cover-flow .pool-main,
+.set-content--cover-flow .set-main,
+.article-content--cover-flow {
+  border-radius: var(--radius-media) !important;
 }
 
 /* Coverflow sliders: the card carries the uniform radius, the inner panels,
@@ -140,7 +81,7 @@ img:not(.avatar) {
 .pool-content--cover-flow .pool-main,
 .set-content--cover-flow .set-main,
 .article-content--cover-flow {
-  border-radius: 5px !important;
+  border-radius: var(--radius-media) !important;
 }
 
 .pool-content--cover-flow :is(
@@ -166,9 +107,9 @@ img:not(.avatar) {
   border-radius: 0 !important;
 }
 
-/* 2026-11: two pill sizes, assigned by role rather than font size.
-   Compact tags stay flatter; navigation, search and larger buttons get the
-   full radius so their ends read as a pill. */
+/* Pill roles: compact content tags stay flatter (--radius-pill-sm);
+   navigation, filters, search and buttons use --radius-pill. Role decides,
+   not font size — a 20 px tag and a 28 px nav pill are different things. */
 .tag:not(.city),
 .genre,
 .filter-tag,
@@ -178,9 +119,8 @@ img:not(.avatar) {
 .autocomplete-type,
 .active-filter,
 .search-result-block__pill,
-.message__role,
-.track-card__label {
-  border-radius: var(--pill-radius-sm) !important;
+.message__role {
+  border-radius: var(--radius-pill-sm) !important;
 }
 
 .menu-main .tag,
@@ -188,7 +128,6 @@ img:not(.avatar) {
 .action-btn,
 .type-filter-btn,
 .sort-options,
-.account-action,
 .account-role,
 .login__primary,
 .save-to-list__button,
@@ -200,16 +139,13 @@ img:not(.avatar) {
 .grid-density__control,
 .grid-density__option,
 .module-teaser__header__type__pill,
-.module-carousel__header__type__pill,
 .search-pill,
 .video-panel__pill,
-.social-links--text,
 .search-input-wrapper,
 .content-grid__filter-bar,
 .content-grid__mobile-filter-bar,
-.content-grid__mobile-filter-tab,
-.player-nav button {
-  border-radius: var(--pill-radius) !important;
+.content-grid__mobile-filter-tab {
+  border-radius: var(--radius-pill) !important;
 }
 
 /* Content tags share one box across cards, heroes, search and detail pages.
@@ -226,12 +162,7 @@ img:not(.avatar) {
   .article-content-tags,
   .article-tags,
   .pool-tags,
-  .set-tags,
-  .show-tags,
-  .show-intro-refs-list,
-  .show-intro-ref-item,
-  .pool-refs-list,
-  .pool-ref-item
+  .set-tags
 ) .tag:not(.city),
 :is(
   .teaser-item__tags,
@@ -244,12 +175,7 @@ img:not(.avatar) {
   .article-content-tags,
   .article-tags,
   .pool-tags,
-  .set-tags,
-  .show-tags,
-  .show-intro-refs-list,
-  .show-intro-ref-item,
-  .pool-refs-list,
-  .pool-ref-item
+  .set-tags
 ) .genre {
   box-sizing: border-box;
   display: inline-flex;
@@ -257,8 +183,8 @@ img:not(.avatar) {
   justify-content: center;
   height: 1.25rem;
   padding: 0 var(--base-padding) !important;
-  border-radius: var(--pill-radius-sm) !important;
-  font-size: var(--small-font-size) !important;
+  border-radius: var(--radius-pill-sm) !important;
+  font-size: var(--text-s) !important;
   line-height: 1 !important;
   text-align: center;
   text-transform: uppercase;
@@ -274,5 +200,5 @@ img:not(.avatar) {
 /* Cookie banner: its buttons ship with a 0.4rem radius and read as rectangles
    next to every other button. Use the site's pill radius. */
 #cc-main {
-  --cc-btn-border-radius: var(--pill-radius);
+  --cc-btn-border-radius: var(--radius-pill);
 }

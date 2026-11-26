@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
 definePageMeta({ middleware: "account" });
@@ -112,11 +112,11 @@ onMounted(loadName);
 .account-tab {
 	padding: 0.45rem 0.95rem;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background-color: color-mix(in srgb, var(--color-text) 7%, transparent);
 	color: inherit;
 	font: inherit;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	cursor: pointer;

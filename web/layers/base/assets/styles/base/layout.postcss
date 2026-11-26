@@ -19,7 +19,7 @@ body {
   &::-webkit-scrollbar-thumb {
     background: var(--color-dark-grey);
     border: 2px solid transparent;
-    border-radius: 100px;
+    border-radius: var(--radius-circle);
     background-clip: padding-box;
   }
 
@@ -59,7 +59,7 @@ img {
   -moz-user-drag: none;
   -o-user-drag: none;
   user-drag: none;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
 }
 
 .intro-section {
@@ -72,7 +72,7 @@ img {
 
 button {
   &:hover {
-      text-decoration: none !important;
+      text-decoration: none;
       & > * {
         text-decoration: none !important;
       }

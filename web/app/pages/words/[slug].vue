@@ -77,7 +77,7 @@ section {
   &__related-content,
   &__more-content {
     h3 {
-      font-size: var(--h3-size);
+      font-size: var(--text-l);
       text-transform: uppercase;
       @media screen and (max-width: 900px) {
         padding: 0 0 var(--mid-margin) 0;

@@ -101,13 +101,13 @@ usePageSeo(data?.value?.seo);
 
   :deep(.content-grid__filter-section),
   :deep(.content-grid__filter-bar) {
-    border-radius: 5px !important;
+    border-radius: var(--radius-media) !important;
   }
 
   /* The pool filter cloud uses blue instead of the set-pink defaults. */
   :deep(.filter-tag--genre) {
     border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent);
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     background: transparent;
     color: var(--color-text);
   }

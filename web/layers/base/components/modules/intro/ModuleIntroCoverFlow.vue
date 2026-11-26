@@ -239,18 +239,18 @@ onUnmounted(() => {
   --cover-flow-card-width: 27rem;
   --cover-flow-arrow-gutter: 2.5rem;
   --cover-flow-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --cover-flow-accent: var(--color-pink);
+  --accent: var(--color-pink);
 
   &--pool {
-    --cover-flow-accent: var(--color-blue);
+    --accent: var(--color-blue);
   }
 
   &--words {
-    --cover-flow-accent: var(--color-green);
+    --accent: var(--color-green);
   }
 
   &--show {
-    --cover-flow-accent: var(--color-pink);
+    --accent: var(--color-pink);
   }
 
   width: 100%;
@@ -309,7 +309,7 @@ onUnmounted(() => {
       display: grid;
       place-items: center;
       border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
-      border-radius: 999px;
+      border-radius: var(--radius-circle);
       background-color: var(--color-bg);
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
     }
@@ -346,9 +346,9 @@ onUnmounted(() => {
   justify-content: center;
 
   &:focus-visible {
-    outline: 2px solid var(--cover-flow-accent);
+    outline: 2px solid var(--accent, var(--color-text));
     outline-offset: 4px;
-    border-radius: 1.5rem;
+    border-radius: var(--radius-media);
   }
 }
 
@@ -402,7 +402,7 @@ onUnmounted(() => {
 
   &:hover {
     @media (min-width: 1024px) {
-      color: var(--cover-flow-accent);
+      color: var(--accent, var(--color-text));
     }
   }
 
@@ -433,17 +433,17 @@ onUnmounted(() => {
 .cover-flow__dot {
   width: 7px;
   height: 7px;
-  border-radius: 999px;
+  border-radius: var(--radius-circle);
   background-color: var(--color-grey);
   transition: background-color var(--transition-fast);
 
   &.is-selected {
-    background-color: var(--cover-flow-accent);
+    background-color: var(--accent, var(--color-text));
   }
 
   &:hover {
     @media (min-width: 1024px) {
-      background-color: var(--cover-flow-accent);
+      background-color: var(--accent, var(--color-text));
     }
   }
 }

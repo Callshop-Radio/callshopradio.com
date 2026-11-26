@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 
 import { safeNextPath } from "~/utils/accountPaths";
@@ -223,7 +223,7 @@ onBeforeUnmount(stopCooldown);
 .login__field {
 	display: grid;
 	gap: 0.45rem;
-	font-size: 0.78rem;
+	font-size: var(--text-m);
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
 }
@@ -232,11 +232,11 @@ onBeforeUnmount(stopCooldown);
 	width: 100%;
 	padding: 0.95rem 1rem;
 	border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
-	border-radius: 10px;
+	border-radius: var(--radius-surface);
 	background: transparent;
 	color: inherit;
 	font: inherit;
-	font-size: 1.05rem;
+	font-size: var(--text-m);
 	letter-spacing: normal;
 	text-transform: none;
 	transition:
@@ -251,7 +251,7 @@ onBeforeUnmount(stopCooldown);
 }
 
 .login__field--code input {
-	font-size: 1.5rem;
+	font-size: var(--text-l);
 	letter-spacing: 0.4em;
 	font-variant-numeric: tabular-nums;
 }
@@ -261,11 +261,11 @@ onBeforeUnmount(stopCooldown);
 	margin-top: 0.4rem;
 	padding: 0.9rem 1.6rem;
 	border: 0;
-	border-radius: 999px;
+	border-radius: var(--radius-pill);
 	background: var(--color-pink);
-	color: #0b0b0b;
+	color: var(--color-black);
 	font: inherit;
-	font-weight: 600;
+	font-family: var(--font-text-semibold);
 	cursor: pointer;
 	transition:
 		transform 160ms ease,
@@ -285,20 +285,20 @@ onBeforeUnmount(stopCooldown);
 .login__hint {
 	margin: 0;
 	max-width: 38ch;
-	font-size: 0.85rem;
+	font-size: var(--text-m);
 	opacity: 0.6;
 }
 
 .login__sent {
 	margin: 0;
-	font-size: 0.9rem;
+	font-size: var(--text-m);
 	opacity: 0.75;
 }
 
 .login__error {
 	margin: 0;
 	color: var(--color-pink);
-	font-size: 0.9rem;
+	font-size: var(--text-m);
 }
 
 .login__actions {
@@ -313,7 +313,7 @@ onBeforeUnmount(stopCooldown);
 	background: none;
 	color: inherit;
 	font: inherit;
-	font-size: 0.85rem;
+	font-size: var(--text-m);
 	opacity: 0.7;
 	text-decoration: underline;
 	cursor: pointer;
@@ -352,7 +352,7 @@ onBeforeUnmount(stopCooldown);
   display: flex;
   gap: 0.6rem;
   align-items: flex-start;
-  font-size: 0.85rem;
+  font-size: var(--text-m);
   line-height: 1.45;
   opacity: 0.85;
   cursor: pointer;

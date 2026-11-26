@@ -434,7 +434,7 @@ watch(
 <style lang="postcss" scoped>
 .search-result-block {
   min-width: calc(var(--page-max-width) + var(--big-margin));
-  margin: 0 0 var(--large-margin) calc(var(--big-margin) * -0.5);
+  margin: 0 0 0 calc(var(--big-margin) * -0.5);
   margin-bottom: var(--first-content-distance);
 
   &__header {
@@ -453,8 +453,8 @@ watch(
   &__pill {
     display: inline-block;
     padding: var(--small-padding) var(--mid-padding);
-    border-radius: 100px;
-    font-size: var(--small-font-size);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-s);
     font-family: var(--font-text-semibold);
     text-transform: uppercase;
     margin: 0;
@@ -481,7 +481,7 @@ watch(
   }
 
   &__count {
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     opacity: 0.6;
   }
 
@@ -505,7 +505,7 @@ watch(
 
   /* Content-type based styling for sets/shows */
   &--sets {
-    --load-more-accent: var(--color-pink);
+    --accent: var(--color-pink);
 
     .teaser-item__tags.city-tags .tag.city {
       background-color: var(--color-pink);
@@ -520,7 +520,7 @@ watch(
 
   /* Content-type based styling for words */
   &--words {
-    --load-more-accent: var(--color-green);
+    --accent: var(--color-green);
 
     .teaser-item__tags.city-tags .tag.city {
       background-color: var(--color-green);
@@ -530,7 +530,7 @@ watch(
 
   /* Content-type based styling for pool */
   &--pool {
-    --load-more-accent: var(--color-blue);
+    --accent: var(--color-blue);
 
     .teaser-item__tags.city-tags .tag.city {
       background-color: var(--color-blue);
@@ -616,7 +616,7 @@ watch(
       align-items: center;
 
       .teaser-item__date {
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         text-transform: uppercase;
       }
 
@@ -627,14 +627,14 @@ watch(
         margin: 0 0 0 auto;
         color: transparent;
         background-color: var(--color-text);
-        border-radius: 100px;
+        border-radius: var(--radius-circle);
         border: none;
         padding: 4px;
-        width: calc(var(--base-font-size) + 4px);
-        height: calc(var(--base-font-size) + 4px);
+        width: calc(var(--text-m) + 4px);
+        height: calc(var(--text-m) + 4px);
 
         svg {
-          height: var(--base-font-size);
+          height: var(--text-m);
           transform: translate(1px, 0);
           path {
             fill: var(--color-bg);
@@ -645,7 +645,7 @@ watch(
 
     &__show {
       min-height: calc(
-        var(--base-font-size) * 1.15 + var(--base-font-size) +
+        var(--text-m) * 1.15 + var(--text-m) +
           var(--mid-padding)
       );
     }
@@ -653,7 +653,7 @@ watch(
 
   &__title,
   &__artist {
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
     margin: 0;
@@ -698,7 +698,7 @@ watch(
   }
 }
 .teaser-item--sets .teaser-item__title {
-  font-size: 1.25rem;
+  font-size: var(--text-l);
   line-height: 1.05;
 }
 </style>

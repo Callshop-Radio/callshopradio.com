@@ -64,14 +64,6 @@ const itemTitle = computed(
 	() => props.showItem?.title || props.showItem?.name || "",
 );
 
-const titleClass = computed(() => {
-	const length = itemTitle.value.length;
-	return {
-		"is-long": length > 20 && length <= 32,
-		"is-very-long": length > 32,
-	};
-});
-
 const cityTags = computed(() =>
 	(props.showItem?.tags ?? []).filter((tag) => tag._type === "tag.city"),
 );
@@ -119,7 +111,7 @@ function tagLabel(tag: Tag): string {
 					</template>
 				</p>
 
-				<h1 class="show-project__title" :class="titleClass">
+				<h1 class="show-project__title">
 					{{ itemTitle }}
 				</h1>
 
@@ -210,7 +202,7 @@ function tagLabel(tag: Tag): string {
   aspect-ratio: 2.35 / 1;
   margin: 0;
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: var(--color-grey);
 }
 
@@ -231,9 +223,9 @@ function tagLabel(tag: Tag): string {
   z-index: 1;
   max-width: min(62%, 46rem);
   padding: 1.25rem 1.5rem;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background: var(--color-pink);
-  color: #1a1013;
+  color: var(--color-ink);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
 }
 
@@ -243,8 +235,8 @@ function tagLabel(tag: Tag): string {
   align-items: center;
   gap: 0.4rem;
   margin: 0;
-  color: color-mix(in srgb, #1a1013 68%, transparent);
-  font-size: var(--small-font-size);
+  color: color-mix(in srgb, var(--color-ink) 68%, transparent);
+  font-size: var(--text-s);
   line-height: 1.2;
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
@@ -254,7 +246,7 @@ function tagLabel(tag: Tag): string {
   width: 0.55rem;
   height: 0.55rem;
   border-radius: 50%;
-  background: #1a1013;
+  background: var(--color-ink);
   flex: none;
 }
 
@@ -266,22 +258,13 @@ function tagLabel(tag: Tag): string {
   margin: 0.5rem 0 0;
   max-width: 100%;
   overflow-wrap: anywhere;
-  color: #1a1013;
+  color: var(--color-ink);
   font-family: var(--font-text-semibold);
-  font-weight: 500;
-  font-size: clamp(2.2rem, 5.6vw, 4.2rem);
+  font-size: var(--text-display);
   line-height: 0.92;
   letter-spacing: -0.01em;
   text-transform: uppercase;
-  text-wrap: balance;
-
-  &.is-long {
-    font-size: clamp(1.9rem, 4.2vw, 3.2rem);
-  }
-
-  &.is-very-long {
-    font-size: clamp(1.6rem, 3.2vw, 2.5rem);
-  }
+  text-wrap: balance;
 }
 
 .show-project__tags {
@@ -293,11 +276,11 @@ function tagLabel(tag: Tag): string {
 
 .show-project__tag {
   padding: calc(var(--small-padding) / 2) var(--small-padding);
-  border: 1px solid #1a1013;
-  border-radius: 5px;
-  background: #1a1013;
+  border: 1px solid var(--color-ink);
+  border-radius: var(--radius-media);
+  background: var(--color-ink);
   color: var(--color-white);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-s);
   line-height: 1.1;
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
@@ -329,8 +312,7 @@ function tagLabel(tag: Tag): string {
 .show-project__label {
   margin: 0 0 var(--mid-padding);
   font-family: var(--font-text-semibold);
-  font-weight: 500;
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
   opacity: 0.6;
@@ -339,7 +321,7 @@ function tagLabel(tag: Tag): string {
 .show-project__rich {
   :deep(p) {
     margin: 0 0 var(--mid-padding);
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     line-height: 1.6;
   }
 
@@ -360,10 +342,10 @@ function tagLabel(tag: Tag): string {
   gap: 0.35rem;
   padding: 0.35rem 0.65rem;
   border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   color: var(--color-text);
   font-family: var(--font-text-semibold);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   line-height: 1.1;
   text-transform: uppercase;
   text-decoration: none;
@@ -421,7 +403,7 @@ function tagLabel(tag: Tag): string {
   }
 
   .show-project__title {
-    font-size: clamp(2rem, 10vw, 3.2rem);
+    font-size: var(--text-xxl);
   }
 
   .show-project__body {

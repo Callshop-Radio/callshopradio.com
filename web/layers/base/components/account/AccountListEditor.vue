@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
 import { SETS_BY_IDS_QUERY } from "~~/queries/sanity.queries";
@@ -228,7 +228,7 @@ onMounted(load);
 	min-width: 0;
 	padding: 0.85rem 1.1rem;
 	border: 0;
-	border-radius: 12px;
+	border-radius: var(--radius-surface);
 	background-color: color-mix(in srgb, var(--color-text) 6%, transparent);
 	color: inherit;
 	font: inherit;
@@ -242,11 +242,11 @@ onMounted(load);
 .editor__save {
 	padding: 0.85rem 1.2rem;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background-color: var(--color-text);
 	color: var(--color-bg);
 	font: inherit;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	cursor: pointer;
@@ -259,13 +259,13 @@ onMounted(load);
 
 .editor__hint {
 	margin: 0;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	color: var(--color-pink);
 }
 
 .editor__meta {
 	margin: 0;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	color: color-mix(in srgb, var(--color-text) 45%, transparent);
@@ -308,7 +308,7 @@ onMounted(load);
 	flex: none;
 	width: 3.25rem;
 	height: 3.25rem;
-	border-radius: 5px;
+	border-radius: var(--radius-media);
 	overflow: hidden;
 	background-color: color-mix(in srgb, var(--color-text) 7%, transparent);
 
@@ -328,7 +328,7 @@ onMounted(load);
 
 .row__name {
 	font-family: var(--font-text-medium);
-	font-size: var(--base-font-size);
+	font-size: var(--text-m);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -336,7 +336,7 @@ onMounted(load);
 }
 
 .row__sub {
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 50%, transparent);
 	white-space: nowrap;
 	overflow: hidden;
@@ -349,7 +349,7 @@ onMounted(load);
 	background: none;
 	color: color-mix(in srgb, var(--color-text) 45%, transparent);
 	font: inherit;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	cursor: pointer;
 
 	&:hover {
@@ -362,11 +362,11 @@ onMounted(load);
 	margin-top: 0.5rem;
 	padding: 0.5rem 1rem;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background-color: color-mix(in srgb, var(--color-pink) 14%, transparent);
 	color: var(--color-pink);
 	font: inherit;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	cursor: pointer;
 }
 </style>

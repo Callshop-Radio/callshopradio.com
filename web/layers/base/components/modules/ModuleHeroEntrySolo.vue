@@ -404,7 +404,7 @@ onMounted(() => {
       right: calc(var(--big-margin) * 2);
       top: calc(
         35.3125rem - var(--big-margin) * 2 + var(--mid-margin) +
-          var(--menu-text-size) / 2
+          var(--text-m) / 2
       );
       transform: translate(33%, -100%);
       z-index: 0;
@@ -444,7 +444,7 @@ onMounted(() => {
   .hero-entry-media {
     overflow: hidden;
     order: 2;
-    border-radius: 1.5625rem;
+    border-radius: var(--radius-media);
     z-index: 500;
 
     @media screen and (max-width: 900px) {
@@ -490,7 +490,7 @@ onMounted(() => {
     gap: var(--mid-margin);
     order: 1;
     padding: 1rem 2.25rem;
-    border-radius: 999px;
+    border-radius: var(--radius-circle);
     border: none;
     shape-rendering: crispEdges;
     width: clamp(300px, max-content, 397px);
@@ -516,7 +516,7 @@ onMounted(() => {
       flex-flow: column wrap;
       justify-content: center;
       align-items: center;
-      border-radius: 100px;
+      border-radius: var(--radius-circle);
       aspect-ratio: 1/1;
       flex: none;
       width: 5.5rem;
@@ -554,9 +554,8 @@ onMounted(() => {
 
       .hero-entry-title,
       .hero-entry-show-artists-artist {
-        font-size: var(--base-font-size);
+        font-size: var(--text-m);
         font-family: var(--font-text-semibold);
-        font-weight: 500;
         text-transform: uppercase;
         width: max-content;
         max-width: 100%;
@@ -568,7 +567,7 @@ onMounted(() => {
         align-items: center;
 
         .hero-date {
-          font-size: var(--small-font-size);
+          font-size: var(--text-s);
           text-transform: uppercase;
         }
 
@@ -580,8 +579,8 @@ onMounted(() => {
           color: var(--color-bg);
           border: none;
           padding: var(--small-padding) var(--mid-padding);
-          border-radius: 100px;
-          font-size: var(--small-font-size);
+          border-radius: var(--radius-circle);
+          font-size: var(--text-s);
           transition: background-color 0.2s ease;
           cursor: pointer;
 
@@ -603,7 +602,7 @@ onMounted(() => {
     }
 
     .hero-entry-text {
-      font-size: var(--base-font-size);
+      font-size: var(--text-m);
 
       :deep(p) {
         margin-bottom: var(--mid-padding);
@@ -625,7 +624,6 @@ onMounted(() => {
         background-color: var(--color-text);
         color: var(--color-bg);
         text-decoration: none;
-        font-weight: 500;
         transition: background-color 0.2s ease;
 
         &:hover {

@@ -61,39 +61,28 @@ export const useMainStore = defineStore("mainStore", () => {
 			isDarkMode.value = darkModeMediaQuery.matches;
 
 			// Update colors
-			updateColors();
+			applyTheme();
 
 			// React to changes
 			darkModeMediaQuery.addEventListener("change", (e) => {
 				isDarkMode.value = e.matches;
-				updateColors();
+				applyTheme();
 			});
 		}
 	}
 
-	function updateColors() {
-		if (isDarkMode.value) {
-			document.documentElement.style.setProperty("--color-bg", "#000");
-			document.documentElement.style.setProperty("--color-text", "#fff");
-			document.documentElement.style.setProperty(
-				"--color-dark-grey",
-				"#878787",
-			);
-			document.documentElement.style.setProperty("--logo-invert", "1");
-		} else {
-			document.documentElement.style.setProperty("--color-bg", "#fff");
-			document.documentElement.style.setProperty("--color-text", "#000");
-			document.documentElement.style.setProperty(
-				"--color-dark-grey",
-				"#525252",
-			);
-			document.documentElement.style.setProperty("--logo-invert", "0");
-		}
+	function applyTheme() {
+		/* The palette lives in CSS: every colour token is a light-dark() pair and
+		   color-scheme decides which value applies. The store only pins the scheme
+		   on <html>; it never writes a colour. */
+		document.documentElement.dataset.theme = isDarkMode.value
+			? "dark"
+			: "light";
 	}
 
 	function toggleDarkMode() {
 		isDarkMode.value = !isDarkMode.value;
-		updateColors();
+		applyTheme();
 	}
 
 	return {
@@ -112,7 +101,7 @@ export const useMainStore = defineStore("mainStore", () => {
 		addToRepro,
 		setActiveScheduleLocation,
 		setCurrentHeroContentType, // Export new function
-		updateColors,
+		applyTheme,
 		toggleDarkMode,
 	};
 });

@@ -39,7 +39,7 @@
     .module-carousel {
       &.pool {
         .module-carousel__header__type__pill {
-          --pill-accent: var(--color-blue);
+          --accent: var(--color-blue);
         }
         .city-tags {
           .tag {
@@ -66,7 +66,7 @@
 
       &.words {
         .module-carousel__header__type__pill {
-          --pill-accent: var(--color-green);
+          --accent: var(--color-green);
         }
         .city-tags {
           .tag {
@@ -93,7 +93,7 @@
             display: none;
           }
           .slide-title {
-            font-size: var(--large-font-size);
+            font-size: var(--text-l);
             text-transform: none !important;
           }
         }
@@ -104,11 +104,11 @@
       &.sets {
         .module-carousel__header__type__pill,
         .module-teaser__header__type__pill {
-          --pill-accent: var(--color-pink);
+          --accent: var(--color-pink);
         }
         .city-tags {
           .tag {
-            font-size: var(--mini-font-size);
+            font-size: var(--text-s);
           }
         }
         .embla__nav__dots {
@@ -148,20 +148,20 @@
           }
           &__pill {
             @apply uppercase rounded-full;
-            font-size: var(--base-font-size);
+            font-size: var(--text-m);
             padding: var(--small-padding) var(--base-padding);
             min-width: 8.5rem;
             max-width: max-content;
             text-align: center;
-            color: var(--pill-accent, var(--color-text));
+            color: var(--accent, var(--color-text));
             background-color: transparent;
-            border: 0.09325rem solid var(--pill-accent, var(--color-text));
+            border: 0.09325rem solid var(--accent, var(--color-text));
             transition:
               background-color 0.2s ease,
               color 0.2s ease;
 
             &:hover {
-              background-color: var(--pill-accent, var(--color-text));
+              background-color: var(--accent, var(--color-text));
               color: var(--color-white);
             }
           }
@@ -171,15 +171,13 @@
       .embla__nav {
         margin: 0 0 var(--base-margin) 0;
       }
-      &__title {
-      }
     }
     .module-teaser {
       &.words {
-        --load-more-accent: var(--color-green);
+        --accent: var(--color-green);
 
         .module-teaser__header__type__pill {
-          --pill-accent: var(--color-green);
+          --accent: var(--color-green);
         }
         .city-tags {
           .tag {
@@ -204,10 +202,10 @@
         }
       }
       &.pool {
-        --load-more-accent: var(--color-blue);
+        --accent: var(--color-blue);
 
         .module-teaser__header__type__pill {
-          --pill-accent: var(--color-blue);
+          --accent: var(--color-blue);
         }
         .city-tags {
           .tag {
@@ -234,14 +232,14 @@
       &.shows,
       &.episodes,
       &.sets {
-        --load-more-accent: var(--color-pink);
+        --accent: var(--color-pink);
 
         .module-teaser__header__type__pill {
-          --pill-accent: var(--color-pink);
+          --accent: var(--color-pink);
         }
         .city-tags {
           .tag {
-            font-size: var(--mini-font-size);
+            font-size: var(--text-s);
           }
         }
         .embla__nav__dots {
@@ -267,20 +265,20 @@
           margin: 0 0 var(--big-margin);
           &__pill {
             @apply uppercase rounded-full;
-            font-size: var(--base-font-size);
+            font-size: var(--text-m);
             font-family: var(--font-text-semibold);
             padding: var(--small-padding) var(--big-padding);
             max-width: max-content;
             text-align: center;
-            color: var(--pill-accent, var(--color-text));
+            color: var(--accent, var(--color-text));
             background-color: transparent;
-            border: 0.09325rem solid var(--pill-accent, var(--color-text));
+            border: 0.09325rem solid var(--accent, var(--color-text));
             transition:
               background-color 0.2s ease,
               color 0.2s ease;
 
             &:hover {
-              background-color: var(--pill-accent, var(--color-text));
+              background-color: var(--accent, var(--color-text));
               color: var(--color-white);
               text-decoration: none;
             }
@@ -330,14 +328,14 @@
   width: 2.75rem;
   height: 2.75rem;
   padding: 0;
-  border: 0.09325rem solid var(--load-more-accent, var(--color-pink));
+  border: 0.09325rem solid var(--accent, var(--color-pink));
   border-radius: 50%;
   background-color: transparent;
-  color: var(--load-more-accent, var(--color-pink));
+  color: var(--accent, var(--color-pink));
   box-shadow: none;
   cursor: pointer;
   font-family: var(--font-text-semibold);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
   transition:
@@ -357,7 +355,7 @@
   }
 
   &:hover {
-    background-color: var(--load-more-accent, var(--color-pink));
+    background-color: var(--accent, var(--color-pink));
     color: var(--color-white);
 
     svg {
@@ -366,7 +364,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--load-more-accent, var(--color-pink));
+    outline: 2px solid var(--accent, var(--color-pink));
     outline-offset: 3px;
   }
 }
@@ -382,14 +380,14 @@
   }
   .tag {
     color: var(--color-bg);
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     font-family: var(--font-text);
     font-weight: 400;
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     padding: calc(var(--small-padding) / 2) var(--base-padding);
     background-color: var(--color-text);
-    border-radius: 100px;
+    border-radius: var(--radius-pill);
     border: 0.09325rem solid var(--color-text);
   }
 }
@@ -430,7 +428,7 @@
       border-top-right-radius: 4px;
       padding: calc(var(--small-padding) / 2) var(--mid-padding)
         calc(var(--small-padding) / 2) var(--mid-padding);
-      font-size: var(--mini-font-size);
+      font-size: var(--text-s);
       line-height: 1;
     }
   }
@@ -441,7 +439,7 @@
 .pool-archive {
   .related-content .load-more-button,
   .content-grid .load-more-button {
-    --load-more-accent: var(--color-blue);
+    --accent: var(--color-blue);
   }
 }
 
@@ -449,10 +447,9 @@
 .shows-archive {
   .related-content .load-more-button,
   .content-grid .load-more-button {
-    --load-more-accent: var(--color-pink);
+    --accent: var(--color-pink);
   }
 }
-
 
 /* Branded play button (public/icons/play-button.svg) */
 .play-button {
@@ -480,7 +477,7 @@
   width: 4rem !important;
   height: 4rem !important;
   padding: 0 !important;
-  border-radius: 100px !important;
+  border-radius: var(--radius-circle) !important;
   box-shadow: none !important;
   background: transparent url("/icons/play-button.svg") center / contain no-repeat !important;
 }

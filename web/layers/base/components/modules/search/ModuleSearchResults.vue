@@ -914,7 +914,7 @@ watch(
     justify-content: center;
     gap: var(--base-padding);
     padding: var(--big-padding);
-    color: var(--color-text-light, #888);
+    color: var(--color-text-light);
 
     .loading-spinner {
       width: 24px;
@@ -935,17 +935,17 @@ watch(
     margin-right: calc(var(--big-margin) * -1);
     padding-left: var(--big-margin);
     padding-right: var(--big-margin);
-    border-radius: 100px;
+    border-radius: var(--radius-pill);
     &::before {
       content: "";
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
-      height: calc(var(--first-content-distance) + (var(--small-padding) * 2 + var(--small-font-size) / 2));
+      height: calc(var(--first-content-distance) + (var(--small-padding) * 2 + var(--text-s) / 2));
       background-color: var(--color-bg);
       z-index: -1;
-      transform: translateY(calc(-100% + (var(--small-padding) * 2 + var(--small-font-size) / 2)));
+      transform: translateY(calc(-100% + (var(--small-padding) * 2 + var(--text-s) / 2)));
     }
   }
 
@@ -956,7 +956,7 @@ watch(
     justify-content: space-between;
     padding: var(--small-padding) 0;
     background-color: var(--color-text);
-    border-radius: 100px;
+    border-radius: var(--radius-pill);
     z-index: 50;
 
     .active-filters {
@@ -980,16 +980,16 @@ watch(
         flex-flow: row wrap;
         align-items: center;
         justify-content: center;
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
-        height: var(--small-font-size);
+        height: var(--text-s);
         cursor: pointer;
 
         .toggle-arrow {
           position: absolute;
-          font-size: var(--small-font-size);
+          font-size: var(--text-s);
           transform: translate(0, -1px);
         }
 
@@ -1026,7 +1026,7 @@ watch(
       .active-filter {
         background-color: var(--color-grey);
         color: var(--color-dark-grey);
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         position: relative;
         min-width: max-content;
 
@@ -1039,7 +1039,7 @@ watch(
         &__name {
           min-width: max-content;
           cursor: pointer;
-          font-size: var(--small-font-size);
+          font-size: var(--text-s);
           padding: 0 8px 0 0;
         }
       }
@@ -1055,7 +1055,7 @@ watch(
       padding: 0 calc(var(--mid-margin) / 2);
 
       &__title {
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
@@ -1094,7 +1094,7 @@ watch(
         flex-flow: row wrap;
         align-items: center;
         justify-content: center;
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
@@ -1108,7 +1108,7 @@ watch(
         align-items: center;
         gap: var(--small-padding);
         background-color: transparent;
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         color: var(--color-dark-grey);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
@@ -1225,7 +1225,7 @@ watch(
     .filter-category {
       &__label {
         display: block;
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-text);
@@ -1236,7 +1236,7 @@ watch(
     }
 
     .filter-tag {
-      font-size: var(--small-font-size);
+      font-size: var(--text-s);
       cursor: pointer;
       transition: all 0.2s ease;
       background-color: var(--color-bg);
@@ -1255,7 +1255,7 @@ watch(
       }
 
       &--subgenre {
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
       }
       
       /* Color-specific styles */
@@ -1416,7 +1416,7 @@ watch(
         align-items: center;
 
         .grid-item__date {
-          font-size: var(--small-font-size);
+          font-size: var(--text-s);
           text-transform: uppercase;
         }
 
@@ -1427,14 +1427,14 @@ watch(
           margin: 0 0 0 auto;
           color: transparent;
           background-color: var(--color-text);
-          border-radius: 100px;
+          border-radius: var(--radius-circle);
           border: none;
           padding: 4px;
-          width: calc(var(--base-font-size) + 4px);
-          height: calc(var(--base-font-size) + 4px);
+          width: calc(var(--text-m) + 4px);
+          height: calc(var(--text-m) + 4px);
 
           svg {
-            height: var(--base-font-size);
+            height: var(--text-m);
             transform: translate(1px, 0);
             path {
               fill: var(--color-bg);
@@ -1445,7 +1445,7 @@ watch(
 
       .grid-item__title,
       .grid-item__artist {
-        font-size: var(--base-font-size);
+        font-size: var(--text-m);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
@@ -1462,7 +1462,9 @@ watch(
   }
 
   &__title {
-    @apply text-2xl font-bold mb-4;
+    font-size: var(--text-l);
+  font-family: var(--font-text-semibold);
+  margin-bottom: 1rem;
   }
   &__header {
     display: flex;
@@ -1480,18 +1482,18 @@ watch(
   margin: var(--big-margin) auto;
 
   .empty-icon {
-    font-size: 3rem;
+    font-size: var(--text-xxl);
     margin-bottom: var(--base-padding);
   }
 
   h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: var(--text-l);
+    font-family: var(--font-text-semibold);
     margin-bottom: var(--small-padding);
   }
 
   p {
-    color: var(--color-text-light, #888);
+    color: var(--color-text-light);
     max-width: 400px;
     margin: 0 auto;
     line-height: 1.6;
@@ -1518,7 +1520,7 @@ watch(
     flex: 1 1 50%;
     max-width: calc(50% - var(--big-padding) * 1.5);
     background-color: var(--color-text);
-    border-radius: 12px;
+    border-radius: var(--radius-media);
     overflow: hidden;
     padding: 0;
 
@@ -1535,11 +1537,11 @@ watch(
     }
 
     &__image {
-      border-radius: 5px 5px 0 0 !important;
+      border-radius: var(--radius-media) var(--radius-media) 0 0;
 
       img {
         aspect-ratio: 3 / 1.5;
-        border-radius: 5px 5px 0 0 !important;
+        border-radius: var(--radius-media) var(--radius-media) 0 0;
       }
     }
 
@@ -1565,9 +1567,9 @@ watch(
       }
 
       .grid-item__title {
-        font-size: var(--large-font-size);
+        font-size: var(--text-l);
         font-weight: 400;
-        font-family: var(--font-text-regular);
+        font-family: var(--font-text);
         color: var(--color-bg);
       }
 

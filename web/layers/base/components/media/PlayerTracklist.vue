@@ -58,7 +58,7 @@ onBeforeUnmount(() => {
   max-height: 40vh;
   overflow: auto;
   border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
-  border-radius: 10px;
+  border-radius: var(--radius-surface);
   background: var(--color-bg);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
 
@@ -75,7 +75,7 @@ onBeforeUnmount(() => {
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
   font-family: var(--font-text-semibold);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
 
   button {
     width: 44px;
@@ -102,7 +102,7 @@ onBeforeUnmount(() => {
     justify-content: space-between;
     gap: 0.75rem;
     padding: 0.375rem 0.75rem;
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
   }
 
   li + li {
@@ -125,6 +125,6 @@ onBeforeUnmount(() => {
   margin: 0;
   padding: 0.75rem;
   color: var(--color-dark-grey);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
 }
 </style>

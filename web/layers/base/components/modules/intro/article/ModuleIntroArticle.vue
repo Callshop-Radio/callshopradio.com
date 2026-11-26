@@ -217,7 +217,7 @@ const coverFlowTeaserBlocks = computed(() => {
   justify-content: flex-start;
   width: 100%;
   background-color: var(--color-text);
-  border-radius: 12px;
+  border-radius: var(--radius-media);
   overflow: hidden;
   padding: 0;
   height: auto;
@@ -305,7 +305,7 @@ const coverFlowTeaserBlocks = computed(() => {
         background-color: var(--color-bg);
         color: var(--color-text);
         padding: calc(var(--small-padding) / 2) var(--base-padding);
-        font-size: var(--base-font-size);
+        font-size: var(--text-m);
 
         &:hover {
           background-color: var(--color-green);
@@ -340,16 +340,16 @@ const coverFlowTeaserBlocks = computed(() => {
         a {
           width: 100%;
           h2 {
-            font-size: var(--h1-size);
+            font-size: var(--text-l);
           }
         }
       }
 
       .article-title {
-        font-size: var(--large-font-size);
+        font-size: var(--text-l);
         font-weight: 400;
         text-transform: uppercase;
-        font-family: var(--font-text-regular);
+        font-family: var(--font-text);
         margin: 0;
         color: var(--color-bg);
       }
@@ -366,7 +366,7 @@ const coverFlowTeaserBlocks = computed(() => {
   max-width: 100%;
   min-height: var(--cover-flow-uniform-height, auto);
   height: var(--cover-flow-uniform-height, auto);
-  border-radius: 12px;
+  border-radius: var(--radius-media);
   display: flex;
   flex-direction: column;
 
@@ -421,9 +421,8 @@ const coverFlowTeaserBlocks = computed(() => {
 
       .article-title-container a h2,
       .article-title {
-        font-size: var(--base-font-size);
+        font-size: var(--text-m);
         font-family: var(--font-text-semibold);
-        font-weight: 500;
         text-transform: uppercase;
         margin: 0;
       }
@@ -431,7 +430,7 @@ const coverFlowTeaserBlocks = computed(() => {
 
     .article-teaser {
       flex: 0 0 auto;
-      font-size: var(--base-font-size);
+      font-size: var(--text-m);
       line-height: 1.4;
 
       & > *,
@@ -445,7 +444,7 @@ const coverFlowTeaserBlocks = computed(() => {
     }
 
     .read-more .tag {
-      font-size: var(--base-font-size);
+      font-size: var(--text-m);
     }
   }
 }
@@ -473,7 +472,7 @@ const coverFlowTeaserBlocks = computed(() => {
       gap: var(--card-content-gap);
 
       .read-more .tag {
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         padding: calc(var(--small-padding) / 2) var(--small-padding);
       }
 
@@ -483,7 +482,7 @@ const coverFlowTeaserBlocks = computed(() => {
       }
 
       .article-teaser {
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
       }
     }
   }

@@ -81,7 +81,7 @@ usePageSeo(data?.value?.seo);
      part of the glass dock instead of a black plate (same as Words). */
   :deep(.content-grid__filter-section),
   :deep(.content-grid__filter-bar) {
-    border-radius: 5px !important;
+    border-radius: var(--radius-media) !important;
   }
 
 }

@@ -91,19 +91,19 @@ onMounted(load);
 	margin: 0;
 	padding: 0.4rem 0.9rem;
 	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
-	border-radius: 999px;
-	font-size: 0.85rem;
+	border-radius: var(--radius-pill);
+	font-size: var(--text-m);
 }
 
 .account-role__label {
 	opacity: 0.6;
 	text-transform: uppercase;
-	letter-spacing: 0.08em;
-	font-size: 0.7rem;
+	letter-spacing: var(--kicker-letter-spacing);
+	font-size: var(--text-s);
 }
 
 .account-role__value {
-	font-weight: 600;
+	font-family: var(--font-text-semibold);
 }
 
 .account-cards {
@@ -117,14 +117,14 @@ onMounted(load);
 	gap: 0.35rem;
 	padding: 1.25rem;
 	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
-	border-radius: 5px;
+	border-radius: var(--radius-media);
 	text-decoration: none;
 	color: inherit;
 }
 
 .account-card__value {
-	font-size: 2rem;
-	font-weight: 600;
+	font-size: var(--text-xl);
+	font-family: var(--font-text-semibold);
 }
 
 .account-secondary {

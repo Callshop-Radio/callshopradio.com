@@ -115,11 +115,11 @@ function setSort(value: SortMode) {
     height: 2.25rem;
     padding: 0 0.9rem 0 2.3rem;
     border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
-    border-radius: 100px;
+    border-radius: var(--radius-pill);
     background: transparent;
     color: var(--color-text);
     font: inherit;
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
 
     &::placeholder {
       color: var(--color-dark-grey);
@@ -128,8 +128,8 @@ function setSort(value: SortMode) {
     }
 
     &:focus-visible {
-      border-color: var(--index-accent, var(--color-purple));
-      outline: 2px solid var(--index-accent, var(--color-purple));
+      border-color: var(--accent, var(--color-purple));
+      outline: 2px solid var(--accent, var(--color-purple));
       outline-offset: 2px;
     }
   }
@@ -151,11 +151,11 @@ function setSort(value: SortMode) {
   button {
     padding: 0.32rem 0.75rem;
     border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
-    border-radius: 100px;
+    border-radius: var(--radius-circle);
     background: transparent;
     color: var(--color-text);
     font-family: var(--font-text-medium);
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     cursor: pointer;
@@ -165,18 +165,18 @@ function setSort(value: SortMode) {
       color var(--transition-fast);
 
     &:hover {
-      border-color: var(--index-accent, var(--color-purple));
-      color: var(--index-accent, var(--color-purple));
+      border-color: var(--accent, var(--color-purple));
+      color: var(--accent, var(--color-purple));
     }
 
     &[aria-pressed="true"] {
-      border-color: var(--index-accent, var(--color-purple));
-      background-color: var(--index-accent, var(--color-purple));
+      border-color: var(--accent, var(--color-purple));
+      background-color: var(--accent, var(--color-purple));
       color: var(--color-bg);
     }
 
     &:focus-visible {
-      outline: 2px solid var(--index-accent, var(--color-purple));
+      outline: 2px solid var(--accent, var(--color-purple));
       outline-offset: 2px;
     }
   }
@@ -184,8 +184,8 @@ function setSort(value: SortMode) {
 
 .index-filter__count {
   margin: 0 0 0 auto;
-  color: var(--index-accent, var(--color-purple));
-  font-size: var(--small-font-size);
+  color: var(--accent, var(--color-purple));
+  font-size: var(--text-s);
   font-variant-numeric: tabular-nums;
   letter-spacing: var(--button-letter-spacing);
   text-transform: uppercase;
