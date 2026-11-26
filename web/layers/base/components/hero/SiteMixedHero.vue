@@ -311,6 +311,7 @@ onUnmounted(() => {
 		<HeroWorm :page="activeKind" :shift="realIndex" />
 
 		<div class="site-hero__inner">
+			<span class="mixed-hero__eyebrow">Picks</span>
 			<div
 				ref="viewport"
 				class="mixed-hero__viewport"
@@ -443,6 +444,20 @@ onUnmounted(() => {
   margin-inline: calc(50% - 50vw);
 }
 
+/* Quiet section marker above the cards, on the page's right content edge. */
+.mixed-hero__eyebrow {
+  position: absolute;
+  top: 0.3rem;
+  right: var(--mixed-inset);
+  z-index: 12;
+  color: color-mix(in srgb, var(--color-text) 62%, transparent);
+  font-family: var(--font-text);
+  font-size: var(--mini-font-size);
+  letter-spacing: var(--button-letter-spacing);
+  line-height: 1;
+  pointer-events: none;
+}
+
 /* ---------------------------------------------------------------- formats */
 
 .mixed-hero {
@@ -536,7 +551,8 @@ onUnmounted(() => {
   overscroll-behavior-x: contain;
   scrollbar-width: none;
   cursor: grab;
-  padding-block: 0.75rem 1.25rem;
+  /* Top padding leaves room for the "Picks" label above the cards. */
+  padding-block: 1.65rem 1.25rem;
 
   @media screen and (min-width: 901px) {
     mask-image: linear-gradient(
