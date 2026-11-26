@@ -45,9 +45,12 @@ const dirty = computed(
 	() => Boolean(list.value) && name.value.trim() !== list.value?.name,
 );
 
-const fallbackCover = computed(
-	() => mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url ?? "",
-);
+const fallbackCover = computed(() => {
+	const fallback = mainStore?.siteFallbacks?.fallbackSet as
+		| { image?: { asset?: { url?: string } | null } | null }
+		| undefined;
+	return fallback?.image?.asset?.url ?? "";
+});
 
 function imageOf(setId: string): string {
 	const url = cards.value[setId]?.image?.asset?.url || fallbackCover.value;

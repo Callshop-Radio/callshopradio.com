@@ -46,9 +46,12 @@ const meta = computed(() => {
 	return `${savedCount.value} ${savedCount.value === 1 ? "gemerktes Set" : "gemerkte Sets"} · ${lists.value.length} ${lists.value.length === 1 ? "Liste" : "Listen"}`;
 });
 
-const fallbackCover = computed(
-	() => mainStore?.siteFallbacks?.fallbackSet?.image?.asset?.url ?? "",
-);
+const fallbackCover = computed(() => {
+	const fallback = mainStore?.siteFallbacks?.fallbackSet as
+		| { image?: { asset?: { url?: string } | null } | null }
+		| undefined;
+	return fallback?.image?.asset?.url ?? "";
+});
 
 function imageOf(card: SetCard | undefined): string {
 	const url = card?.image?.asset?.url || fallbackCover.value;
