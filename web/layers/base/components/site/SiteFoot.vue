@@ -4,6 +4,8 @@ import { useMainStore } from "~/stores/mainStore";
 const { locale } = useI18n();
 const localePath = useLocalePath();
 const mainStore = useMainStore();
+const { openPopup: openTimetablePopup, expand: expandTimetable } =
+	useTimetableUi();
 
 const discordUrl = computed(
 	() => mainStore?.siteNav?.discordLink || "https://discord.gg/ZNpKHSgQkR",
@@ -49,6 +51,7 @@ const copy = computed(() => {
 		shows: "Shows",
 		pool: "Pool",
 		words: "Words",
+		schedule: de ? "Programm" : "Schedule",
 		search: de ? "Suche" : "Search",
 		merch: "Merch",
 		legal: de ? "Impressum" : "Legal Notice",
@@ -120,6 +123,12 @@ function mapsUrl(query) {
 
 function stationCity(station) {
 	return station.city[locale.value] || station.city.en;
+}
+
+function openTimetable() {
+	openTimetablePopup("day");
+	// From the footer the full schedule is the point, not the compact panel.
+	expandTimetable();
 }
 
 function scrollToTop() {
@@ -320,6 +329,17 @@ function scrollToTop() {
 								<SitePageIcon name="account" />
 								{{ copy.account }}
 							</NuxtLink>
+						</li>
+						<li>
+							<button
+								type="button"
+								class="site-footer__link-button"
+								aria-haspopup="dialog"
+								@click="openTimetable"
+							>
+								<SitePageIcon name="calendar" />
+								{{ copy.schedule }}
+							</button>
 						</li>
 						<li>
 							<NuxtLink :to="localePath('/legal')">

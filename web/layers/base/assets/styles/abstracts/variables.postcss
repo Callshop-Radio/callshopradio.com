@@ -62,6 +62,16 @@
   /* Fixed player bar: 56 px row plus the top and bottom rules. */
   --player-bar-height: 58px;
 
+  /* Chat and timetable share one footprint. Both open below the fixed
+     navigation + player strip, so their height has to leave room for both. */
+  --side-panel-width: 24rem;
+  --side-panel-height: min(
+    34rem,
+    calc(
+      100svh - var(--nav-bar-height) - var(--player-bar-height) - 3rem
+    )
+  );
+
   /* Top navigation: the 56 px row plus 20 %. */
   --nav-bar-height: 67.2px;
 
