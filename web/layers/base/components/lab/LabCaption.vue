@@ -172,9 +172,7 @@ const teaserBlocks = computed(() => {
 
 <style lang="postcss" scoped>
 .lab-caption {
-  --lab-caption-gap: 0.5rem;
-  --lab-caption-title-size: var(--text-l);
-
+  --lab-caption-gap: 0.5rem;
   display: flex;
   flex-direction: column;
   gap: var(--lab-caption-gap);
@@ -205,7 +203,7 @@ const teaserBlocks = computed(() => {
   &__title {
     margin: 0;
     font-family: var(--font-text-semibold);
-    font-size: var(--lab-caption-title-size);
+    font-size: var(--text-l);
     line-height: 1.08;
     text-transform: uppercase;
     letter-spacing: 0.01em;
@@ -301,7 +299,6 @@ const teaserBlocks = computed(() => {
 
   &--stack {
     padding-top: 0.7rem;
-    border-top: 2px solid var(--accent, var(--color-text));
   }
 
   &--column {
@@ -333,8 +330,6 @@ const teaserBlocks = computed(() => {
     row-gap: var(--small-padding);
     min-height: var(--lab-band-min-height, 9.5rem);
     padding-top: var(--mid-padding);
-    border-top: 1px solid
-      color-mix(in srgb, var(--color-text) 18%, transparent);
 
     .lab-caption__head {
       grid-area: head;
@@ -370,9 +365,7 @@ const teaserBlocks = computed(() => {
     height: 100%;
     padding-left: var(--base-margin);
     border-left: 1px solid
-      color-mix(in srgb, var(--color-text) 18%, transparent);
-    --lab-caption-title-size: var(--text-l);
-  }
+      color-mix(in srgb, var(--color-text) 18%, transparent);  }
 
   &--overlay {
     width: min(22rem, 86%);
@@ -405,8 +398,6 @@ const teaserBlocks = computed(() => {
       padding-left: 0;
       padding-top: var(--small-padding);
       border-left: none;
-      border-top: 1px solid
-        color-mix(in srgb, var(--color-text) 16%, transparent);
     }
 
     &--column {

@@ -27,16 +27,6 @@ const displayTitle = computed(() =>
 		: (props.set?.title ?? ""),
 );
 
-// Long show names must not break the magazine headline: the size steps down
-// with the character count instead of overflowing the column.
-const titleClass = computed(() => {
-	const length = displayTitle.value.length;
-	return {
-		"is-long": length > 20 && length <= 32,
-		"is-very-long": length > 32,
-	};
-});
-
 const formattedDate = computed(() => {
 	const value = props.set?.datetime ?? props.set?._updatedAt;
 	return value ? formatDate(value) : "";
@@ -229,7 +219,7 @@ onUnmounted(() => {
 					</template>
 				</p>
 
-				<h1 class="set-title" :class="titleClass">
+				<h1 class="set-title">
 					<ElementsContentLink
 						v-if="hasShow"
 						class="set-title__link"
@@ -510,21 +500,13 @@ onUnmounted(() => {
 .set-title {
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-size: clamp(2.4rem, 5.6vw, 5rem);
+  font-size: var(--text-display);
   line-height: 0.92;
   text-transform: uppercase;
   letter-spacing: -0.01em;
   max-width: 100%;
   overflow-wrap: anywhere;
   text-wrap: balance;
-
-  &.is-long {
-    font-size: clamp(2rem, 4.2vw, 3.6rem);
-  }
-
-  &.is-very-long {
-    font-size: clamp(1.7rem, 3.2vw, 2.7rem);
-  }
 
   &__link {
     color: var(--color-text);
@@ -715,7 +697,6 @@ onUnmounted(() => {
   margin-top: var(--big-margin);
   margin-left: calc(50% - 50svw);
   padding: var(--base-margin) 0;
-  border-top: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
   border-bottom: 1px solid
     color-mix(in srgb, var(--color-text) 14%, transparent);
   overflow: hidden;
@@ -829,7 +810,7 @@ onUnmounted(() => {
 
   &__text {
     font-family: var(--font-text-semibold);
-    font-size: clamp(1rem, 1.5vw, 1.35rem);
+    font-size: var(--text-l);
     text-transform: uppercase;
     letter-spacing: 0.01em;
   }

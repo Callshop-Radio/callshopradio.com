@@ -96,7 +96,7 @@ usePageSeo(legalDoc.value?.seo ?? privacyDoc.value?.seo);
   h1 {
     margin: 0;
     font-family: var(--font-text-semibold);
-    font-size: clamp(2.2rem, 4.6vw, 4rem);
+    font-size: var(--text-display);
     line-height: 0.95;
     text-transform: uppercase;
   }

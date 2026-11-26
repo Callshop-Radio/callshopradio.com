@@ -705,7 +705,6 @@ const tagPath = (tag: string) =>
     grid-template-columns: 2.25rem minmax(0, 1fr);
     gap: 0.5rem;
     padding: 0.6rem 0;
-    border-top: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
     font-size: var(--text-m);
     line-height: 1.4;
 
@@ -797,7 +796,7 @@ const tagPath = (tag: string) =>
   }
 
   &__show {
-    font-size: clamp(2rem, 4.4vw, 3.6rem);
+    font-size: var(--text-xxl);
     line-height: 0.95;
     font-family: var(--font-text-semibold);
     text-transform: uppercase;
@@ -902,7 +901,7 @@ const tagPath = (tag: string) =>
   }
 
   &__show {
-    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-size: var(--text-xxl);
     line-height: 0.95;
     font-family: var(--font-text-semibold);
     text-transform: uppercase;
@@ -951,7 +950,7 @@ const tagPath = (tag: string) =>
 
   &__title {
     margin: 0;
-    font-size: clamp(2.6rem, 7vw, 6rem);
+    font-size: var(--text-display);
     line-height: 0.9;
     font-family: var(--font-text-semibold);
     text-transform: uppercase;
@@ -1054,7 +1053,7 @@ const tagPath = (tag: string) =>
   }
 
   &__show {
-    font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+    font-size: var(--text-xxl);
     line-height: 0.95;
     font-family: var(--font-text-semibold);
     text-transform: uppercase;
@@ -1146,7 +1145,7 @@ const tagPath = (tag: string) =>
 
   &__title {
     margin: 0;
-    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-size: var(--text-display);
     line-height: 0.86;
     font-family: var(--font-text-semibold);
     text-transform: uppercase;

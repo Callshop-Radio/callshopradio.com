@@ -64,14 +64,6 @@ const itemTitle = computed(
 	() => props.showItem?.title || props.showItem?.name || "",
 );
 
-const titleClass = computed(() => {
-	const length = itemTitle.value.length;
-	return {
-		"is-long": length > 20 && length <= 32,
-		"is-very-long": length > 32,
-	};
-});
-
 const cityTags = computed(() =>
 	(props.showItem?.tags ?? []).filter((tag) => tag._type === "tag.city"),
 );
@@ -119,7 +111,7 @@ function tagLabel(tag: Tag): string {
 					</template>
 				</p>
 
-				<h1 class="show-project__title" :class="titleClass">
+				<h1 class="show-project__title">
 					{{ itemTitle }}
 				</h1>
 
@@ -268,19 +260,11 @@ function tagLabel(tag: Tag): string {
   overflow-wrap: anywhere;
   color: var(--color-ink);
   font-family: var(--font-text-semibold);
-  font-size: clamp(2.2rem, 5.6vw, 4.2rem);
+  font-size: var(--text-display);
   line-height: 0.92;
   letter-spacing: -0.01em;
   text-transform: uppercase;
-  text-wrap: balance;
-
-  &.is-long {
-    font-size: clamp(1.9rem, 4.2vw, 3.2rem);
-  }
-
-  &.is-very-long {
-    font-size: clamp(1.6rem, 3.2vw, 2.5rem);
-  }
+  text-wrap: balance
 }
 
 .show-project__tags {
@@ -419,7 +403,7 @@ function tagLabel(tag: Tag): string {
   }
 
   .show-project__title {
-    font-size: clamp(2rem, 10vw, 3.2rem);
+    font-size: var(--text-xxl);
   }
 
   .show-project__body {

@@ -202,15 +202,6 @@ const activeAccent = computed(
 	() => activeItem.value?.accent ?? "var(--color-pink)",
 );
 
-// Hero titles must stay on one line. Long set titles step down in size instead
-// of wrapping; the ellipsis is only the last resort on narrow screens.
-const titleClass = computed(() => {
-	const length = activeItem.value?.title.length ?? 0;
-	if (length > 64) return "is-xlong";
-	if (length > 46) return "is-long";
-	return "";
-});
-
 const ready = ref(false);
 const formSeed = ref<number | null>(null);
 
@@ -369,7 +360,7 @@ onUnmounted(() => {
 					</template>
 				</div>
 
-				<h2 class="mixed-caption__title" :class="titleClass">
+				<h2 class="mixed-caption__title">
 					<NuxtLink v-if="activeItem.href" :to="localePath(activeItem.href)">
 						{{ activeItem.title }}
 					</NuxtLink>
@@ -624,8 +615,6 @@ onUnmounted(() => {
   width: min(calc(100% - 2 * var(--mixed-inset)), var(--page-max-width));
   margin: clamp(1.25rem, 2.5vw, 2rem) auto 0;
   padding-top: var(--mid-padding);
-  border-top: 1px solid
-    color-mix(in srgb, var(--accent, var(--color-text)) 45%, transparent);
   animation: mixed-caption-in 340ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -652,20 +641,12 @@ onUnmounted(() => {
   max-width: none;
   overflow: hidden;
   font-family: var(--font-text);
-  font-size: clamp(1.5rem, 2.6vw, 2.4rem);
+  font-size: var(--text-xxl);
   line-height: 1.02;
   letter-spacing: -0.01em;
   text-transform: uppercase;
   white-space: nowrap;
   text-overflow: ellipsis;
-
-  &.is-long {
-    font-size: clamp(1.25rem, 2.1vw, 1.95rem);
-  }
-
-  &.is-xlong {
-    font-size: clamp(1.1rem, 1.7vw, 1.6rem);
-  }
 
   a {
     color: inherit;
@@ -816,7 +797,7 @@ onUnmounted(() => {
   }
 
   .mixed-caption__title {
-    font-size: clamp(1.35rem, 6vw, 1.9rem);
+    font-size: var(--text-xl);
   }
 
   .mixed-caption__actions {

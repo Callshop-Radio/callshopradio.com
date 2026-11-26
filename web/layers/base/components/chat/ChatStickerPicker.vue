@@ -98,7 +98,6 @@ button {
 }
 
 .picker {
-	border-top: 1px solid var(--color-line);
 	padding: 0.625rem 0.75rem 0.75rem;
 	background-color: color-mix(in srgb, var(--color-text) 2.5%, transparent);
 }

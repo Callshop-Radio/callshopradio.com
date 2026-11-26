@@ -193,7 +193,7 @@ onMounted(load);
 	display: grid;
 	place-items: center;
 	font-family: var(--font-text-semibold);
-	font-size: 2rem;
+	font-size: var(--text-xl);
 	text-transform: uppercase;
 	color: color-mix(in srgb, var(--color-text) 55%, transparent);
 }
@@ -289,7 +289,6 @@ onMounted(load);
 	flex-wrap: wrap;
 	gap: 1.25rem;
 	padding-top: 0.5rem;
-	border-top: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
 }
 
 .link {

@@ -786,7 +786,7 @@ onUnmounted(() => {
   }
 
   .hero-title {
-    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-size: var(--text-xxl);
     letter-spacing: -0.02em;
     margin-bottom: var(--small-padding);
     font-family: var(--font-text-semibold);
@@ -1084,7 +1084,6 @@ onUnmounted(() => {
 .tag-filters-section {
   margin-top: var(--big-padding);
   padding-top: var(--base-padding);
-  border-top: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.1));
 }
 
 .tag-filter-row {
@@ -1274,7 +1273,7 @@ onUnmounted(() => {
   }
 
   .card-icon {
-    font-size: 2rem;
+    font-size: var(--text-xl);
     margin-bottom: var(--small-padding);
   }
 

@@ -692,8 +692,16 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   height: 0;
-  border-top: 1px solid var(--color-pink);
   z-index: 1;
+}
+
+/* Current-time marker. A line, not a border: the design has no top rules. */
+.tt-day__now::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: var(--color-pink);
 }
 
 .tt-day__now span {
@@ -820,7 +828,7 @@ onBeforeUnmount(() => {
   opacity: 0.55;
 }
 
-.tt-week__head span strong { font-size: 12px; opacity: 1; }
+.tt-week__head span strong { font-size: var(--text-m); opacity: 1; }
 
 .tt-week__head span.is-today strong { color: var(--color-pink); }
 
@@ -858,8 +866,8 @@ onBeforeUnmount(() => {
 .tt-week__event.is-notumb { grid-template-columns: minmax(0, 1fr); }
 .tt-week__event.is-live { background: var(--color-pink); color: var(--color-ink); }
 
-.tt-week__time { font-size: 9px; opacity: 0.6; font-variant-numeric: tabular-nums; }
-.tt-week__title { font-size: 10.5px; font-family: var(--font-text-semibold); }
+.tt-week__time { font-size: var(--text-s); opacity: 0.6; font-variant-numeric: tabular-nums; }
+.tt-week__title { font-size: var(--text-s); font-family: var(--font-text-semibold); }
 
 .tt-week__now {
   position: absolute;
@@ -932,7 +940,7 @@ onBeforeUnmount(() => {
 
 .tt-month__pill.is-live { background: var(--color-pink); color: var(--color-ink); font-family: var(--font-text-semibold); }
 
-.tt-month__empty { font-size: 10px; opacity: 0.25; }
+.tt-month__empty { font-size: var(--text-s); opacity: 0.25; }
 
 .tt-popup__foot {
   display: flex;

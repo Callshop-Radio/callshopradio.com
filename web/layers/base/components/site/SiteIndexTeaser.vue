@@ -90,8 +90,6 @@ const copy = computed(() => {
   max-width: var(--page-max-width);
   margin: clamp(3rem, 7vw, 6rem) auto clamp(4rem, 10vw, 8rem);
   padding: clamp(2rem, 5vw, 3.5rem) 0 clamp(2.5rem, 5vw, 4rem);
-  border-top: 1px solid
-    color-mix(in srgb, var(--color-text) 16%, transparent);
   border-bottom: 1px solid
     color-mix(in srgb, var(--color-text) 16%, transparent);
 }

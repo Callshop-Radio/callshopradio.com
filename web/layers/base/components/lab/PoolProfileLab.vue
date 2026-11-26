@@ -327,7 +327,7 @@ const sampleSocials = {
 .pool-card__name {
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-size: clamp(1.9rem, 3.4vw, 3rem);
+  font-size: var(--text-xxl);
   line-height: 0.94;
   letter-spacing: -0.015em;
   text-transform: uppercase;
@@ -379,8 +379,6 @@ const sampleSocials = {
   grid-template-columns: 4.5rem minmax(0, 1fr);
   gap: 1rem;
   padding: 0.85rem 0;
-  border-top: 1px solid
-    color-mix(in srgb, var(--color-text) 12%, transparent);
 
   dt {
     margin: 0;
@@ -509,7 +507,7 @@ const sampleSocials = {
 .pool-sheet__name {
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-size: clamp(1.9rem, 3.2vw, 2.9rem);
+  font-size: var(--text-xxl);
   line-height: 0.94;
   letter-spacing: -0.015em;
   text-transform: uppercase;
@@ -561,8 +559,6 @@ const sampleSocials = {
   gap: 0.35rem;
   min-width: 0;
   padding: 0.8rem 0;
-  border-top: 1px solid
-    color-mix(in srgb, var(--color-text) 12%, transparent);
 
   > span {
     color: var(--color-blue);
@@ -631,8 +627,6 @@ const sampleSocials = {
 
 .pool-sheet__about {
   padding: 1.2rem 1.5rem 1.5rem;
-  border-top: 1px solid
-    color-mix(in srgb, var(--color-text) 12%, transparent);
 
   p {
     max-width: 78ch;
@@ -676,7 +670,7 @@ const sampleSocials = {
 
   .pool-card__name,
   .pool-sheet__name {
-    font-size: clamp(1.7rem, 9vw, 2.5rem);
+    font-size: var(--text-xxl);
   }
 
   .pool-sheet__fields {

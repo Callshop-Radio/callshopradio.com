@@ -104,10 +104,6 @@ onBeforeUnmount(() => {
     padding: 0.375rem 0.75rem;
     font-size: var(--text-s);
   }
-
-  li + li {
-    border-top: 1px solid color-mix(in srgb, var(--color-text) 6%, transparent);
-  }
 }
 
 .player-tracklist__title {

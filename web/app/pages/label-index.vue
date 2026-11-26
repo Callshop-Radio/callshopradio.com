@@ -184,7 +184,7 @@ watch(
 .index-intro__title {
   margin: 0;
   font-family: var(--font-text-medium);
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-size: var(--text-display);
   letter-spacing: -0.045em;
   line-height: 0.9;
   text-transform: uppercase;

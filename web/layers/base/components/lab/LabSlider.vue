@@ -830,7 +830,7 @@ function itemLabel(item: LabItem) {
     background: transparent;
     color: #fff;
     font-family: var(--font-text-semibold);
-    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-size: var(--text-display);
     letter-spacing: -0.04em;
     line-height: 0.8;
     mix-blend-mode: difference;
@@ -862,8 +862,6 @@ function itemLabel(item: LabItem) {
 .lab-slider--aperture .lab-item--shows .lab-caption--stack {
   margin-top: 0.5rem;
   padding: 0.9rem var(--mid-padding) var(--mid-padding);
-  border-top-width: 1px;
-  border-top-color: color-mix(in srgb, var(--accent, var(--color-text)) 42%, transparent);
   border-radius: var(--radius-media);
   background-color: var(--color-bg);
 }
@@ -871,8 +869,6 @@ function itemLabel(item: LabItem) {
 .lab-slider--press.lab-slider--shows .lab-item--shows .lab-caption--stack {
   margin-top: 0.5rem;
   padding-top: var(--mid-padding);
-  border-top-width: 2px;
-  border-top-color: color-mix(in srgb, var(--accent, var(--color-text)) 70%, transparent);
 }
 
 /* ---------------------------------------------------------------- layouts */
@@ -961,8 +957,6 @@ function itemLabel(item: LabItem) {
 .lab-slider--press.lab-slider--pool .lab-item--pool .lab-caption--stack {
   margin-top: 0.5rem;
   padding-top: var(--mid-padding);
-  border-top: 2px solid
-    color-mix(in srgb, var(--accent, var(--color-text)) 70%, transparent);
   min-height: 8.5rem;
   max-height: 10rem;
   overflow: hidden;
@@ -994,8 +988,6 @@ function itemLabel(item: LabItem) {
   margin-top: 0.5rem;
   padding: var(--mid-padding) var(--mid-padding)
     calc(var(--mid-padding) + 0.25rem);
-  border-top-width: 1px;
-  border-top-color: color-mix(in srgb, var(--accent, var(--color-text)) 40%, transparent);
   border-radius: var(--radius-media);
   background-color: var(--color-bg);
   --lab-band-min-height: 9.5rem;
@@ -1103,8 +1095,6 @@ function itemLabel(item: LabItem) {
       padding-top: 0;
       padding-inline: 2rem;
       background: none;
-      border-top: 1px solid
-        color-mix(in srgb, var(--color-text) 14%, transparent);
     }
   }
 
@@ -1124,8 +1114,6 @@ function itemLabel(item: LabItem) {
 
   .lab-words-layout__aside {
     padding-top: 0;
-    border-top: 1px solid
-      color-mix(in srgb, var(--color-text) 14%, transparent);
   }
 
   .lab-slider--aperture .lab-item--shows .lab-caption--stack {

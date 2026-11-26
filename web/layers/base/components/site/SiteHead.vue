@@ -167,7 +167,6 @@ const chatEnabled = computed(
     height: var(--player-bar-height);
     box-sizing: border-box;
     background: var(--color-bg);
-    border-top: 1px solid var(--color-text);
     border-bottom: 1px solid var(--color-text);
   }
 }

@@ -877,7 +877,7 @@ onUnmounted(() => {
   &__title {
     margin: 0;
     font-family: var(--font-text);
-    font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+    font-size: var(--text-xl);
     line-height: 1.1;
   }
 
@@ -906,7 +906,6 @@ onUnmounted(() => {
     flex-direction: column;
     gap: var(--base-padding);
     padding: var(--base-padding) var(--big-padding) var(--mid-padding);
-    border-top: 1px solid var(--color-line);
   }
 
   &__label {
@@ -1101,7 +1100,6 @@ onUnmounted(() => {
     min-height: 6rem;
     overflow-y: auto;
     padding: var(--small-padding) var(--big-padding) var(--big-padding);
-    border-top: 1px solid var(--color-line);
   }
 
   &__empty {

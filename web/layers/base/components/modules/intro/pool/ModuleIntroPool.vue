@@ -657,7 +657,7 @@ const coverFlowDescriptionBlocks = computed(() => {
   }
 
   .pool-info .pool-header .pool-title {
-    font-size: clamp(1.25rem, 1.5vw, 1.6rem);
+    font-size: var(--text-l);
     line-height: 1.1;
   }
 

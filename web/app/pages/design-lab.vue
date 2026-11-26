@@ -421,7 +421,7 @@ onUnmounted(() => {
     border-radius: 5px;
     background: transparent;
     color: var(--color-text);
-    font-size: 0.95rem;
+    font-size: var(--text-m);
     cursor: pointer;
     transition:
       border-color var(--transition-fast),
@@ -630,7 +630,7 @@ onUnmounted(() => {
   }
 
   .lab-bg-note {
-    font-size: 0.62rem;
+    font-size: var(--text-s);
     line-height: 1.35;
   }
 }

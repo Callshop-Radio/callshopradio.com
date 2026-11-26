@@ -248,7 +248,6 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 	color: color-mix(in srgb, var(--color-text) 45%, transparent);
 	padding-top: 0.75rem;
 	margin-top: auto;
-	border-top: 1px solid var(--color-line);
 }
 
 .chat-room {

@@ -274,7 +274,7 @@ function onDialogClose() {
 .merch-intro__title {
   margin: 0;
   font-family: var(--font-text-medium);
-  font-size: clamp(2.75rem, 7vw, 5rem);
+  font-size: var(--text-display);
   letter-spacing: -0.045em;
   line-height: 0.9;
   text-transform: uppercase;
@@ -290,14 +290,8 @@ function onDialogClose() {
 }
 
 .merch-card {
-  border-top: 1px solid
-    color-mix(in srgb, var(--color-text) 16%, transparent);
   padding-top: 0.85rem;
-  transition: border-color var(--transition-fast);
-
-  &:hover {
-    border-top-color: var(--color-merch-ink);
-  }
+  transition: border-color var(--transition-fast)
 }
 
 .merch-card__media {
@@ -657,7 +651,7 @@ function onDialogClose() {
   max-width: 30ch;
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-size: clamp(1.2rem, 1rem + 0.8vw, 1.6rem);
+  font-size: var(--text-l);
   letter-spacing: 0.01em;
   line-height: 1.2;
   text-transform: uppercase;

@@ -85,7 +85,7 @@ withDefaults(
 .archive-masthead__title {
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-size: clamp(3.2rem, 8.2vw, 7.4rem);
+  font-size: var(--text-display);
   line-height: 0.82;
   letter-spacing: -0.025em;
   text-transform: uppercase;
@@ -123,7 +123,7 @@ withDefaults(
   }
 
   .archive-masthead__title {
-    font-size: clamp(2.8rem, 15vw, 4.4rem);
+    font-size: var(--text-display);
   }
 
   .archive-masthead__lede {

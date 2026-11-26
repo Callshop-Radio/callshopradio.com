@@ -525,7 +525,6 @@ onUnmounted(() => {
     margin-top: 0.25rem;
     padding: 0.55rem 0.6rem;
     border: 0;
-    border-top: 1px solid var(--color-grey);
     background: transparent;
     color: var(--color-text);
     font-family: var(--font-text-semibold);

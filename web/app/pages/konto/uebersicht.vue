@@ -123,7 +123,7 @@ onMounted(load);
 }
 
 .account-card__value {
-	font-size: 2rem;
+	font-size: var(--text-xl);
 	font-family: var(--font-text-semibold);
 }
 

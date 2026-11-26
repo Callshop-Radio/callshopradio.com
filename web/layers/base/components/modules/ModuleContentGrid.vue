@@ -3607,7 +3607,6 @@ onUnmounted(() => {
 
         &.content-grid__filters--no-active-above {
           margin-top: 0;
-          border-top: 0;
           border-radius: 0;
         }
 
@@ -3700,7 +3699,6 @@ onUnmounted(() => {
           padding: var(--mid-padding);
           border-radius: 0 0 var(--radius-media) var(--radius-media);
           border: none;
-          border-top: 1px solid var(--color-grey);
           background-color: var(--color-bg-transparent);
           backdrop-filter: blur(10px);
           display: flex;

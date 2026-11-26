@@ -1482,7 +1482,7 @@ watch(
   margin: var(--big-margin) auto;
 
   .empty-icon {
-    font-size: 3rem;
+    font-size: var(--text-xxl);
     margin-bottom: var(--base-padding);
   }
 
