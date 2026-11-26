@@ -18,3 +18,6 @@
   formats the whole repo.
 - Website copy lives in Sanity; code changes only touch markup, styles and
   queries.
+- **Design system: `DESIGN.md` is binding.** Colours, type sizes, radii,
+  spacing and component states come from it; a new value is a system change,
+  not a local decision. Check it before styling a component.
