@@ -162,7 +162,7 @@ button {
 	font-size: var(--small-font-size);
 	font-family: var(--font-text-medium);
 	padding: 0.3125rem 0.75rem;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background-color: var(--color-text);
 	color: var(--color-bg);
 	cursor: pointer;
@@ -197,7 +197,7 @@ button {
 	font-size: var(--small-font-size);
 	font-family: var(--font-text-medium);
 	padding: 0.3125rem 0.75rem;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	border: 1px solid var(--color-text);
 	background-color: transparent;
 	color: var(--color-text);

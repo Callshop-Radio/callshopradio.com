@@ -344,7 +344,7 @@ function onDialogClose() {
   top: 0.6rem;
   right: 0.7rem;
   padding: 0.18rem 0.5rem;
-  border-radius: var(--pill-radius-sm);
+  border-radius: var(--radius-pill-sm);
   background-color: var(--merch-accent);
   color: var(--color-black);
   font-family: var(--font-text-semibold);
@@ -450,7 +450,7 @@ function onDialogClose() {
   align-items: center;
   gap: 0.4rem;
   padding: 0.45rem 0.9rem;
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   background-color: var(--merch-accent);
   color: var(--color-black);
   font-family: var(--font-text-semibold);
@@ -648,7 +648,7 @@ function onDialogClose() {
 
 .merch-dialog__state {
   padding: 0.1rem 0.45rem;
-  border-radius: var(--pill-radius-sm);
+  border-radius: var(--radius-pill-sm);
   background-color: var(--merch-accent);
   color: var(--color-black);
   font-family: var(--font-text-semibold);

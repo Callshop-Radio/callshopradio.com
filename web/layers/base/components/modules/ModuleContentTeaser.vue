@@ -875,7 +875,7 @@ onMounted(() => {
       justify-content: flex-start;
       align-items: center;
       gap: var(--mid-margin);
-      border-radius: var(--pill-radius);
+      border-radius: var(--radius-pill);
 
       &__title {
         display: flex;
@@ -1185,7 +1185,7 @@ onMounted(() => {
           background-color: var(--color-grey);
           color: var(--color-text);
           padding: var(--small-padding) var(--mid-padding);
-          border-radius: var(--pill-radius);
+          border-radius: var(--radius-pill);
           font-size: var(--small-font-size);
           text-transform: uppercase;
         }

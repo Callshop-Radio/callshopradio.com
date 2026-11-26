@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { onMounted, ref } from "vue";
 
 const props = defineProps<{ setId: string }>();
@@ -66,7 +66,7 @@ async function add() {
 select {
 	padding: 0.45rem 0.7rem;
 	border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background: transparent;
 	color: inherit;
 	font: inherit;
@@ -76,7 +76,7 @@ select {
 .save-to-list__button {
 	padding: 0.45rem 0.9rem;
 	border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background: transparent;
 	color: inherit;
 	font: inherit;

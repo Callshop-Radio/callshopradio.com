@@ -481,7 +481,7 @@ const tagPath = (tag: string) =>
     gap: 0.4rem;
     padding: 0.375rem 0.75rem;
     border: 1px solid color-mix(in srgb, var(--color-text) 16%, transparent);
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     background: transparent;
     color: var(--color-text);
     font-family: var(--font-text);
@@ -567,7 +567,7 @@ const tagPath = (tag: string) =>
   gap: 0.5rem;
   padding: 0.45rem 1rem 0.45rem 0.45rem;
   border: 0;
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   background-color: var(--color-text);
   color: var(--color-bg);
   font-family: var(--font-text);

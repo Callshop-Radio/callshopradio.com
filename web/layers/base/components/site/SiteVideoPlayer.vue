@@ -417,7 +417,7 @@ onBeforeUnmount(() => {
   min-height: 40px;
   padding: 0 0.75rem;
   border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   background: var(--color-bg);
   color: var(--color-text);
   font-size: var(--small-font-size);

@@ -119,7 +119,7 @@ button {
 .picker__tab {
 	font-size: var(--small-font-size);
 	padding: 0.125rem 0.5rem;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	border: 1px solid var(--chat-line);
 	color: color-mix(in srgb, var(--color-text) 65%, transparent);
 	cursor: pointer;

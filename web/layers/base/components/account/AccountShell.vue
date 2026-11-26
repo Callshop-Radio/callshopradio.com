@@ -106,7 +106,7 @@ defineProps<{
 .account-page__actions :deep(a) {
 	padding: 0.5rem 1rem;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background-color: color-mix(in srgb, var(--color-text) 7%, transparent);
 	color: inherit;
 	font: inherit;

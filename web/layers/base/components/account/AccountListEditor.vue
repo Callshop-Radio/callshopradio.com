@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
 import { SETS_BY_IDS_QUERY } from "~~/queries/sanity.queries";
@@ -242,7 +242,7 @@ onMounted(load);
 .editor__save {
 	padding: 0.85rem 1.2rem;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background-color: var(--color-text);
 	color: var(--color-bg);
 	font: inherit;
@@ -362,7 +362,7 @@ onMounted(load);
 	margin-top: 0.5rem;
 	padding: 0.5rem 1rem;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background-color: color-mix(in srgb, var(--color-pink) 14%, transparent);
 	color: var(--color-pink);
 	font: inherit;

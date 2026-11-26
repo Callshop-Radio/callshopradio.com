@@ -251,7 +251,7 @@ onMounted(load);
 	justify-content: center;
 	padding: 0.6rem 1.1rem;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background-color: color-mix(in srgb, var(--color-text) 8%, transparent);
 	color: inherit;
 	font: inherit;

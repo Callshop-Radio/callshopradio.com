@@ -935,7 +935,7 @@ watch(
     margin-right: calc(var(--big-margin) * -1);
     padding-left: var(--big-margin);
     padding-right: var(--big-margin);
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     &::before {
       content: "";
       position: absolute;
@@ -956,7 +956,7 @@ watch(
     justify-content: space-between;
     padding: var(--small-padding) 0;
     background-color: var(--color-text);
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     z-index: 50;
 
     .active-filters {

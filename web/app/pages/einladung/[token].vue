@@ -236,7 +236,7 @@ onMounted(check);
 	margin-top: 0.4rem;
 	padding: 0.9rem 1.6rem;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background: var(--color-pink);
 	color: var(--color-black);
 	font: inherit;

@@ -592,7 +592,7 @@ onUnmounted(() => {
   gap: 0.5rem;
   padding: 0.45rem 1rem 0.45rem 0.45rem;
   border: 0;
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   background-color: var(--color-text);
   color: var(--color-bg);
   font-family: var(--font-text);
@@ -783,7 +783,7 @@ onUnmounted(() => {
     bottom: calc(100% + 0.45rem);
     transform: translateX(-50%) translateY(0.25rem);
     padding: 0.15rem 0.45rem;
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     background-color: var(--color-blue);
     color: #fff;
     font-family: var(--font-text);

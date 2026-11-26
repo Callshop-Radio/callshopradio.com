@@ -2431,7 +2431,7 @@ onUnmounted(() => {
     .action-btn {
       padding: var(--small-padding) var(--mid-padding);
       border: 1px solid var(--color-text);
-      border-radius: var(--pill-radius);
+      border-radius: var(--radius-pill);
       background: transparent;
       cursor: pointer;
       font-family: var(--font-text);
@@ -2455,7 +2455,7 @@ onUnmounted(() => {
     margin-right: calc(var(--big-margin) * -1);
     padding-left: var(--big-margin);
     padding-right: var(--big-margin);
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     &::before {
       content: "";
       position: absolute;
@@ -2481,7 +2481,7 @@ onUnmounted(() => {
     justify-content: space-between;
     padding: var(--small-padding) 0;
     background-color: var(--color-text);
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     z-index: 50;
 
     .active-filters {
@@ -3299,7 +3299,7 @@ onUnmounted(() => {
       padding: 8px 16px;
       transform: translateX(-50%);
       border: 1px solid var(--color-text);
-      border-radius: var(--pill-radius);
+      border-radius: var(--radius-pill);
       background-color: var(--color-bg-transparent);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
@@ -3324,7 +3324,7 @@ onUnmounted(() => {
         min-width: 16px;
         height: 16px;
         padding: 0 4px;
-        border-radius: var(--pill-radius);
+        border-radius: var(--radius-pill);
         background-color: var(--color-pink);
         color: var(--color-black);
         font-size: var(--small-font-size);
@@ -3360,7 +3360,7 @@ onUnmounted(() => {
       left: 50%;
       width: 44px;
       height: 5px;
-      border-radius: var(--pill-radius);
+      border-radius: var(--radius-pill);
       background-color: var(--color-dark-grey);
       transform: translateX(-50%);
     }
@@ -3456,7 +3456,7 @@ onUnmounted(() => {
           background-color: var(--color-dark-grey);
           color: var(--color-text);
           padding: var(--small-padding) var(--mid-padding);
-          border-radius: var(--pill-radius);
+          border-radius: var(--radius-pill);
           border: 1px solid transparent;
           font-size: var(--small-font-size);
           text-transform: uppercase;
@@ -3509,7 +3509,7 @@ onUnmounted(() => {
         background-color: var(--theme-color);
         color: var(--color-bg);
         border: 1px solid var(--theme-color);
-        border-radius: var(--pill-radius);
+        border-radius: var(--radius-pill);
         font-size: var(--small-font-size);
         letter-spacing: var(--button-letter-spacing);
         font-family: var(--font-text);
@@ -3546,7 +3546,7 @@ onUnmounted(() => {
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--color-bg);
-      border-radius: var(--pill-radius);
+      border-radius: var(--radius-pill);
 
       @media (prefers-color-scheme: dark) {
         background-color: rgba(0, 0, 0, 0.35);
@@ -4002,7 +4002,7 @@ onUnmounted(() => {
     margin: 0 auto;
     padding: 8px 14px;
     border: 1px solid var(--color-text);
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     background: transparent;
     backdrop-filter: blur(18px);
   }

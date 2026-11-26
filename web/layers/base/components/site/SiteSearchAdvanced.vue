@@ -856,7 +856,7 @@ onUnmounted(() => {
   /* No outline: the dialog separates itself with a hair-thin surface lift and
      the shadow, which reads in both themes. */
   background: color-mix(in srgb, var(--color-text) 3%, var(--color-bg));
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
 
   &__head {
@@ -936,7 +936,7 @@ onUnmounted(() => {
       height: 2.75rem;
       padding: 0 0.875rem;
       border: 0;
-      border-radius: var(--pill-radius);
+      border-radius: var(--radius-pill);
       background: var(--as-surface);
       color: var(--color-text);
       font-family: var(--font-text-semibold);
@@ -981,7 +981,7 @@ onUnmounted(() => {
     height: 3rem;
     padding: 0 1rem;
     border: 0;
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     background: var(--as-surface);
     color: var(--color-text);
     transition: background var(--transition-fast);
@@ -1062,7 +1062,7 @@ onUnmounted(() => {
   &__reset {
     height: 2.5rem;
     padding: 0 var(--mid-padding);
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     font-family: var(--font-text-semibold);
     font-size: var(--small-font-size);
     letter-spacing: var(--button-letter-spacing);
@@ -1229,7 +1229,7 @@ onUnmounted(() => {
   flex: none;
   padding: 0.05rem 0.4rem;
   border: 0;
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   background: color-mix(in srgb, currentColor 16%, transparent);
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);
@@ -1254,7 +1254,7 @@ onUnmounted(() => {
 .advanced-tag {
   padding: 0.0625rem 0.375rem;
   border: 0;
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   background: var(--as-surface, color-mix(in srgb, var(--color-text) 7%, var(--color-bg)));
   font-family: var(--font-text-semibold);
   font-size: var(--mini-font-size);

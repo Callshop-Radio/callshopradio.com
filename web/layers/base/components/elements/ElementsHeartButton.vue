@@ -396,7 +396,7 @@ onBeforeUnmount(clearTimers);
 	width: 100%;
 	padding: 0.55rem 0.7rem;
 	border: 0;
-	border-radius: var(--pill-radius-sm);
+	border-radius: var(--radius-pill-sm);
 	background: none;
 	color: inherit;
 	font: inherit;

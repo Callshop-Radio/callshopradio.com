@@ -380,7 +380,7 @@ watch(results, () => {
   text-align: left;
   cursor: pointer;
   transition: background 0.15s ease;
-  border-radius: var(--pill-radius-sm); /* hover row inside the search list */
+  border-radius: var(--radius-pill-sm); /* hover row inside the search list */
 
   &:hover,
   &.is-selected {
@@ -405,7 +405,7 @@ watch(results, () => {
     letter-spacing: var(--button-letter-spacing);
     padding: var(--small-padding) var(--base-padding);
     background-color: var(--color-bg);
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     border: 0.09325rem solid var(--color-text);
     white-space: nowrap; /* Prevent wrapping */
 

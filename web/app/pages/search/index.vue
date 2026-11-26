@@ -818,7 +818,7 @@ onUnmounted(() => {
   padding: var(--base-padding) var(--big-padding);
   background: var(--color-bg);
   border: 1px solid var(--color-text);
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   transition: all 0.2s ease;
   height: calc(var(--base-font-size) + var(--base-padding) * 2 + 2px);
 
@@ -904,7 +904,7 @@ onUnmounted(() => {
   letter-spacing: var(--button-letter-spacing);
   padding: var(--small-padding) var(--base-padding);
   background-color: var(--color-bg);
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   border: 0.09325rem solid var(--color-text);
   &.type-shows {
     border-color: var(--color-pink);
@@ -1039,7 +1039,7 @@ onUnmounted(() => {
     letter-spacing: var(--button-letter-spacing);
     padding: var(--small-padding) var(--base-padding);
     background-color: var(--color-bg);
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     border: 0.09325rem solid var(--color-text);
 
     &.type-shows {
@@ -1103,7 +1103,7 @@ onUnmounted(() => {
   padding: 10px 16px;
   background: transparent;
   border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.15));
-  border-radius: var(--pill-radius-sm);
+  border-radius: var(--radius-pill-sm);
   font-size: var(--body-large-font-size);
   font-family: var(--font-text);
   color: var(--color-text);
@@ -1147,14 +1147,14 @@ onUnmounted(() => {
   padding: var(--base-padding) var(--small-padding);
   margin-top: 8px;
   background: color-mix(in srgb, var(--color-text) 3%, transparent);
-  border-radius: var(--pill-radius-sm);
+  border-radius: var(--radius-pill-sm);
 }
 
 .tag-chip {
   padding: 6px 14px;
   background: var(--color-bg);
   border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.2));
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   font-size: var(--base-font-size);
   font-family: var(--font-text);
   color: var(--color-text);
@@ -1189,7 +1189,7 @@ onUnmounted(() => {
     padding: 6px 14px;
     background: transparent;
     border: 1px solid var(--color-pink);
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     font-size: var(--base-font-size);
     font-family: var(--font-text);
     color: var(--color-pink);

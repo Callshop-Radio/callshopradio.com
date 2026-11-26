@@ -334,7 +334,7 @@ onMounted(load);
 	gap: 0.4rem;
 	padding: 0.85rem 1.2rem;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background-color: var(--color-text);
 	color: var(--color-bg);
 	font: inherit;
@@ -439,7 +439,7 @@ onMounted(load);
 .list-card__tag {
 	margin-left: 0.4rem;
 	padding: 0.05rem 0.4rem;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background-color: color-mix(in srgb, var(--color-pink) 18%, transparent);
 	color: var(--color-pink);
 	font-size: var(--small-font-size);

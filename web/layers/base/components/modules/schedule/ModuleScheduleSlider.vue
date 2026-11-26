@@ -797,7 +797,7 @@ watch(
   padding: 4px;
   background: rgba(225, 225, 225, 0.25);
   backdrop-filter: blur(5px);
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
   height: 100%;
 
@@ -807,7 +807,7 @@ watch(
     z-index: 2;
     height: 100%;
     border: none;
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     background: transparent;
     color: #555;
     font-weight: 400;

@@ -107,8 +107,8 @@
   border-radius: 0 !important;
 }
 
-/* Pill roles: compact content tags stay flatter (--pill-radius-sm);
-   navigation, filters, search and buttons use --pill-radius. Role decides,
+/* Pill roles: compact content tags stay flatter (--radius-pill-sm);
+   navigation, filters, search and buttons use --radius-pill. Role decides,
    not font size — a 20 px tag and a 28 px nav pill are different things. */
 .tag:not(.city),
 .genre,
@@ -121,7 +121,7 @@
 .search-result-block__pill,
 .message__role,
 .track-card__label {
-  border-radius: var(--pill-radius-sm) !important;
+  border-radius: var(--radius-pill-sm) !important;
 }
 
 .menu-main .tag,
@@ -150,7 +150,7 @@
 .content-grid__mobile-filter-bar,
 .content-grid__mobile-filter-tab,
 .player-nav button {
-  border-radius: var(--pill-radius) !important;
+  border-radius: var(--radius-pill) !important;
 }
 
 /* Content tags share one box across cards, heroes, search and detail pages.
@@ -188,7 +188,7 @@
   justify-content: center;
   height: 1.25rem;
   padding: 0 var(--base-padding) !important;
-  border-radius: var(--pill-radius-sm) !important;
+  border-radius: var(--radius-pill-sm) !important;
   font-size: var(--small-font-size) !important;
   line-height: 1 !important;
   text-align: center;
@@ -205,5 +205,5 @@
 /* Cookie banner: its buttons ship with a 0.4rem radius and read as rectangles
    next to every other button. Use the site's pill radius. */
 #cc-main {
-  --cc-btn-border-radius: var(--pill-radius);
+  --cc-btn-border-radius: var(--radius-pill);
 }

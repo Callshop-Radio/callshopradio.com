@@ -91,7 +91,7 @@ onMounted(load);
 	margin: 0;
 	padding: 0.4rem 0.9rem;
 	border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	font-size: var(--base-font-size);
 }
 

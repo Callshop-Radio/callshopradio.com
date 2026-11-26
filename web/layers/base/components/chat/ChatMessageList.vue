@@ -225,7 +225,7 @@ onMounted(() => scrollToBottom());
 	font-size: var(--small-font-size);
 	line-height: 1.35;
 	padding: 0 0.3125rem;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	border: 1px solid currentcolor;
 	transform: translateY(-1px);
 
@@ -294,7 +294,7 @@ onMounted(() => scrollToBottom());
 	text-transform: uppercase;
 	line-height: 1.6;
 	padding: 0 0.375rem;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background-color: var(--color-pink);
 	color: var(--color-black);
 }

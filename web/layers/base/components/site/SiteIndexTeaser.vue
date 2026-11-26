@@ -139,7 +139,7 @@ const copy = computed(() => {
   padding: 0.45rem 0.9rem;
   border: 1px solid
     color-mix(in srgb, var(--color-text) 22%, transparent);
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   color: var(--color-text);
   font-family: var(--font-text-medium);
   font-size: var(--small-font-size);

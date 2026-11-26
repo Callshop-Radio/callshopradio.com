@@ -453,7 +453,7 @@ watch(
   &__pill {
     display: inline-block;
     padding: var(--small-padding) var(--mid-padding);
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     font-size: var(--small-font-size);
     font-family: var(--font-text-semibold);
     text-transform: uppercase;

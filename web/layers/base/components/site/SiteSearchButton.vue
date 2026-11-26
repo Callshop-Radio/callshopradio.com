@@ -314,7 +314,7 @@ onUnmounted(() => {
   box-sizing: border-box;
   overflow: hidden;
   border: 0.09325rem solid var(--color-text);
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   background-color: var(--color-bg);
   color: var(--color-text);
   transition:
@@ -426,7 +426,7 @@ onUnmounted(() => {
   padding: 0.375rem;
   background: var(--color-bg);
   border: 1px solid var(--color-text);
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
   scrollbar-width: thin;
 
@@ -486,7 +486,7 @@ onUnmounted(() => {
     flex: none;
     padding: 0.05rem 0.4rem;
     border: 1px solid currentColor;
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     font-size: var(--mini-font-size);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;

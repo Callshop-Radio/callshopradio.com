@@ -418,7 +418,7 @@ const currentArticleText = computed(() =>
     padding: 4px;
     background: var(--color-text);
     backdrop-filter: blur(5px);
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
     margin: 0 var(--base-margin);
 
@@ -428,7 +428,7 @@ const currentArticleText = computed(() =>
       z-index: 2;
       height: 100%;
       border: none;
-      border-radius: var(--pill-radius);
+      border-radius: var(--radius-pill);
       background: transparent;
       color: var(--color-bg);
       font-weight: 400;

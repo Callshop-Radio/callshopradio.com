@@ -621,7 +621,7 @@ onBeforeUnmount(() => {
   font: inherit;
   font-size: var(--small-font-size);
   padding: 6px 12px;
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   cursor: pointer;
 }
 
