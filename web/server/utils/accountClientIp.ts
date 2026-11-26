@@ -15,9 +15,12 @@ export function isIp(value: unknown): value is string {
 
 /**
  * The manager needs a trustworthy client IP for login throttling. Netlify gives
- * functions `context.ip`; its legacy `x-nf-client-connection-ip` header is only
- * read when the runtime proves it is running on Netlify. A browser-supplied
- * header is never trusted, and there is no production fallback.
+ * functions `context.ip`; Nitro's Netlify runtime drops that context, so the
+ * edge header `x-nf-client-connection-ip` is the remaining source. It is only
+ * read when the request demonstrably came through Netlify: either the runtime
+ * says so (`NETLIFY=true`) or the edge added its own `x-nf-request-id`. A
+ * browser-supplied header alone is never trusted, and there is no production
+ * fallback.
  */
 export function clientIpFrom({
 	contextIp,
@@ -30,7 +33,9 @@ export function clientIpFrom({
 }): string | null {
 	if (isIp(contextIp)) return contextIp.trim();
 
-	if (env.NETLIFY === "true") {
+	const throughNetlify =
+		env.NETLIFY === "true" || Boolean(headers["x-nf-request-id"]);
+	if (throughNetlify) {
 		const header = headers["x-nf-client-connection-ip"];
 		const value = Array.isArray(header) ? header[0] : header;
 		if (isIp(value)) return value.trim();
