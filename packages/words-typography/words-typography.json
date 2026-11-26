@@ -1,0 +1,80 @@
+{
+	"version": "1.0.0",
+	"styles": [
+		{
+			"key": "normal",
+			"label": "Standard",
+			"element": "p",
+			"className": "rt-normal",
+			"css": {}
+		},
+		{
+			"key": "lead",
+			"label": "Lead / Intro",
+			"element": "p",
+			"className": "rt-lead",
+			"css": {
+				"font-size": "clamp(1.125rem, 1.1rem + 0.6vw, 1.375rem)",
+				"line-height": "1.45",
+				"font-family": "var(--font-text-medium)",
+				"font-weight": "400",
+				"margin-bottom": "1.575rem"
+			}
+		},
+		{
+			"key": "small",
+			"label": "Klein / Caption",
+			"element": "p",
+			"className": "rt-small",
+			"css": {
+				"font-size": "0.75rem",
+				"line-height": "1.5",
+				"font-family": "var(--font-text)",
+				"font-weight": "300",
+				"margin-bottom": "1rem"
+			}
+		},
+		{
+			"key": "quote",
+			"label": "Zitat",
+			"element": "blockquote",
+			"className": "rt-quote",
+			"css": {
+				"font-size": "clamp(1.125rem, 1.1rem + 0.6vw, 1.375rem)",
+				"line-height": "1.45",
+				"font-family": "var(--font-text-medium)",
+				"font-weight": "400",
+				"margin-bottom": "1.575rem",
+				"margin": "2rem 0"
+			}
+		},
+		{
+			"key": "italic",
+			"label": "Kursiv",
+			"element": "p",
+			"className": "rt-italic",
+			"css": {
+				"font-size": "1rem",
+				"line-height": "1.4",
+				"font-family": "var(--font-text-italic)",
+				"font-weight": "300",
+				"margin-bottom": "1.575rem"
+			}
+		},
+		{
+			"key": "kicker",
+			"label": "Kicker / Eyebrow",
+			"element": "p",
+			"className": "rt-kicker",
+			"css": {
+				"color": "#a3145b",
+				"font-size": "0.6875rem",
+				"line-height": "1.3",
+				"font-family": "var(--font-text-medium)",
+				"font-weight": "400",
+				"margin": "2rem 0 0.5rem"
+			}
+		}
+	],
+	"hash": "sha256:bfe51bda142b1a0014a3f24cee4c8c07066c23ef77620306bdbf5be55a77f321"
+}

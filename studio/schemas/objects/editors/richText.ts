@@ -1,3 +1,4 @@
+import { styleList } from "@callshop/words-typography";
 import { defineType } from "sanity";
 
 import { annotations } from "./text/annotations";
@@ -10,6 +11,7 @@ export const richText = defineType({
   of: [
     {
       type: "block",
+      styles: styleList(),
       lists: [
         { title: "Bullet", value: "bullet" },
         { title: "Number", value: "number" },
