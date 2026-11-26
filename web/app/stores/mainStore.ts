@@ -61,60 +61,28 @@ export const useMainStore = defineStore("mainStore", () => {
 			isDarkMode.value = darkModeMediaQuery.matches;
 
 			// Update colors
-			updateColors();
+			applyTheme();
 
 			// React to changes
 			darkModeMediaQuery.addEventListener("change", (e) => {
 				isDarkMode.value = e.matches;
-				updateColors();
+				applyTheme();
 			});
 		}
 	}
 
-	function updateColors() {
-		/* The theme toggle writes the themable tokens inline. These values must
-		   mirror the `@media (--dark)` block in variables.postcss — the media
-		   query covers the system setting, this covers the manual toggle. */
-		if (isDarkMode.value) {
-			document.documentElement.style.setProperty("--color-bg", "#090909");
-			document.documentElement.style.setProperty("--color-text", "#fff");
-			document.documentElement.style.setProperty(
-				"--color-dark-grey",
-				"#878787",
-			);
-			document.documentElement.style.setProperty(
-				"--color-bg-transparent",
-				"rgba(9, 9, 9, 0.33)",
-			);
-			document.documentElement.style.setProperty("--color-bg-rgb", "9, 9, 9");
-			document.documentElement.style.setProperty(
-				"--color-text-rgb",
-				"255, 255, 255",
-			);
-			document.documentElement.style.setProperty("--logo-invert", "1");
-		} else {
-			document.documentElement.style.setProperty("--color-bg", "#fff");
-			document.documentElement.style.setProperty("--color-text", "#000");
-			document.documentElement.style.setProperty(
-				"--color-dark-grey",
-				"#525252",
-			);
-			document.documentElement.style.setProperty(
-				"--color-bg-transparent",
-				"rgba(255, 255, 255, 0.5)",
-			);
-			document.documentElement.style.setProperty(
-				"--color-bg-rgb",
-				"255, 255, 255",
-			);
-			document.documentElement.style.setProperty("--color-text-rgb", "0, 0, 0");
-			document.documentElement.style.setProperty("--logo-invert", "0");
-		}
+	function applyTheme() {
+		/* The palette lives in CSS: every colour token is a light-dark() pair and
+		   color-scheme decides which value applies. The store only pins the scheme
+		   on <html>; it never writes a colour. */
+		document.documentElement.dataset.theme = isDarkMode.value
+			? "dark"
+			: "light";
 	}
 
 	function toggleDarkMode() {
 		isDarkMode.value = !isDarkMode.value;
-		updateColors();
+		applyTheme();
 	}
 
 	return {
@@ -133,7 +101,7 @@ export const useMainStore = defineStore("mainStore", () => {
 		addToRepro,
 		setActiveScheduleLocation,
 		setCurrentHeroContentType, // Export new function
-		updateColors,
+		applyTheme,
 		toggleDarkMode,
 	};
 });

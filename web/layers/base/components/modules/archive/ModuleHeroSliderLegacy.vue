@@ -523,7 +523,7 @@ onMounted(() => {
         left: 0;
         width: 50%;
         padding: var(--big-margin);
-        background-color: rgba(var(--color-bg-rgb), 0.75);
+        background-color: color-mix(in srgb, var(--color-bg) 75%, transparent);
         backdrop-filter: blur(10px);
 
         @media (max-width: 768px) {

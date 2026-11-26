@@ -971,7 +971,7 @@ watch(
     background-color: var(--color-grey-transparent);
     padding: var(--small-padding);
     height: 100%;
-    border: 1px solid rgba(var(--color-text-rgb), 0.1);
+    border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
     box-sizing: border-box; /* Ensure padding doesn't affect total height */
 
     &.live {
@@ -990,7 +990,7 @@ watch(
 
   &--show {
     .event-item__content {
-      background-color: rgba(var(--color-pink-rgb), 0.1);
+      background-color: color-mix(in srgb, var(--color-pink) 10%, transparent);
       border: 2px solid var(--color-pink);
       position: relative;
       margin: 0 0 0 0;
@@ -998,7 +998,7 @@ watch(
       &.live {
         background-color: var(--color-pink);
         border-color: var(--color-pink);
-        box-shadow: 0 0 8px rgba(var(--color-pink-rgb), 0.4);
+        box-shadow: 0 0 8px color-mix(in srgb, var(--color-pink) 40%, transparent);
       }
     }
   }
@@ -1095,7 +1095,7 @@ watch(
     border-radius: var(--radius-xs);
     border: 1px solid var(--color-pink);
     white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(var(--color-pink-rgb), 0.2);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-pink) 20%, transparent);
   }
 }
 
