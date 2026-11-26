@@ -12,6 +12,7 @@
 		"preview:ssg": "nuxt preview --dotenv .env",
 		"analyze": "nuxt analyze",
 		"routes:check": "node scripts/prerender-routes.js",
+		"test:player": "node --experimental-strip-types --test tests/player-fallback.test.ts tests/player-pure.test.ts",
 		"postinstall": "nuxt prepare",
 		"typecheck": "nuxt typecheck"
 	},
