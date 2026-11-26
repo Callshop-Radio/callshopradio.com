@@ -29,12 +29,15 @@ this document covers markup, styles and the few strings baked into components.
 1. **Editorial, not app-like.** White (or near-black) page, one typeface, thin rules,
    coloured pills. No shadows except on fixed layers (player, chat, dialogs).
 2. **Small type, generous space.** The page is set at 13 px and the rhythm comes from
-   margins, not from size. Big type is reserved for page titles and display headlines.
+   margins, not from size. Big type is reserved for page titles and mastheads.
 3. **Colour is an accent, never a surface.** Pink, blue, green, purple and coral mark
    sections and tags; the page itself stays neutral.
 4. **One value per role.** Radii, sizes and colours are chosen by role, not per
    component. A new value is a system change, not a local decision.
-5. **Light and dark are equal.** Every token has both values; nothing is designed for
+5. **No frames.** Nothing draws a top rule. Separation comes from spacing, fills and
+   the radius, not from lines — `border-top` does not exist in the stylesheets (the
+   only exceptions are two icon triangles and the spinner arc).
+6. **Light and dark are equal.** Every token has both values; nothing is designed for
    one theme and patched for the other.
 
 ---
@@ -141,10 +144,12 @@ override. There is no separate tablet or desktop block — they were identical.
 | `--text-m` | 16 px | 14 px | body copy, forms, rich text, addresses |
 | `--text-l` | 20 px | 18 px | card titles, rich-text headings, section heads |
 | `--text-xl` | 25 px | 22 px | page titles |
+| `--text-xxl` | 40 px | 32 px | detail titles: set, show, pool profile, account head |
+| `--text-display` | 80 px | 48 px | section mastheads: Shows, Pool, Words, Index, Merch |
 
-**No other size exists.** Four steps is the whole scale. If a component needs a
-fifth, the layout is wrong. 8, 13, 14 and 18 px are gone: 8 and 13 were merged
-into 10 and 16 because the difference was too small to choose deliberately.
+**No other size exists.** Six steps cover the whole site — there is no `clamp()`
+and no element-specific size anywhere. A title that is too long wraps at its one
+size instead of stepping down; the `.is-long` / `.is-very-long` classes are gone.
 
 The names are sizes, not elements — `--h4-size` used to be the article body, which is
 exactly the confusion this removes.
@@ -170,16 +175,15 @@ user agent does not add a synthetic bold on top.
 
 Uppercase is used for tags, nav, artist lines and small labels — never for body copy.
 
-### Display tier
+### No exceptions
 
-Page and hero headlines may use `clamp()` and exceed the scale: `.set-title`,
-`.show-project__title`, `.pool-profile__name`, `.archive-masthead__title`,
-`.merch-intro__title`, `.index-intro__title`, `.mixed-caption__title`, `.set-marquee__text`
-and the `design-lab` prototypes. Rules for this tier:
+There is no display tier and no per-element size. A masthead uses
+`--text-display`, a detail title `--text-xxl`, a page title `--text-xl`. Long
+titles wrap; they do not get a smaller size of their own. If a headline does not
+fit, the container or the wording changes, not the type scale.
 
-- only for a single headline per section, never for UI or body;
-- the value is fluid and component-owned — it is not a token;
-- it does not change what any other element may use.
+Uppercase is used for tags, nav, artist lines and small labels — never for body copy.
+Negative tracking (`-0.01em` … `-0.045em`) belongs to the masthead and detail titles only.
 
 ### Case and tracking
 
@@ -189,9 +193,6 @@ and the `design-lab` prototypes. Rules for this tier:
 | `--kicker-letter-spacing` | `0.08em` | editorial kickers |
 | `--menu-letter-spacing` | `0.0625rem` | navigation |
 | `--button-letter-spacing` | `0.0425rem` | button labels |
-
-Uppercase is used for tags, nav, artist lines and small labels — never for body copy.
-Negative tracking (`-0.01em` … `-0.045em`) belongs to the display tier only.
 
 `letter-spacing` takes a length, never a percentage.
 
@@ -313,12 +314,12 @@ Input 35 px tall, `--radius-pill`, `--text-m`; type filter pills at
 `--color-text-light`.
 
 ### Surfaces
-Dialogs, dropdowns and popovers: `--radius-surface`, page background, 1 px
-`--color-grey` rule, no shadow except the fixed chat panel and the player.
+Dialogs, dropdowns and popovers: `--radius-surface`, page background, no shadow
+except the fixed chat panel and the player. No element draws a rule on its top edge.
 
 ### Lists and tables
 Timetable rows: title `--text-m`, meta `--text-s`, sub-meta
-`--text-s`, 1 px rule between rows, alternating `--color-grey` fill for the
+`--text-s`, alternating `--color-grey` fill for the
 current row only.
 
 ### Forms
@@ -354,7 +355,7 @@ inside running text, so touch devices do not keep a hover state.
 | Grid | 3–5 columns | 2 columns | 1 column |
 | Card title | `--text-xl` | `--text-xl` | `--text-xl` (18 px) |
 | Type scale | desktop column | desktop column | phone column (§ 4) |
-| Display headlines | `clamp()` max | `clamp()` mid | `clamp()` min |
+| Mastheads | `--text-display` (80) | `--text-display` (48) | `--text-display` (48) |
 
 ---
 
@@ -393,6 +394,14 @@ inside running text, so touch devices do not keep a hover state.
 ```
 
 ```css
+/* DO — separate with space or fill */
+.row + .row { margin-top: var(--small-padding); }
+
+/* DON'T — draw a rule on the top edge */
+.row + .row { border-top: 1px solid var(--color-line); }
+```
+
+```css
 /* DO — theme colours are tokens */
 .hint { color: var(--color-text-light); }
 
@@ -409,8 +418,8 @@ Measured over every `<style>` block in `web/layers` + `web/app` (excluding the
 
 | Metric | Before | After |
 | --- | --- | --- |
-| distinct `font-size` values | 92 in 486 declarations | 4 tokens cover the scale; the rest is the display tier |
-| type scale tokens | 10 (+ 3 aliases) | 4 |
+| distinct `font-size` values | 92 in 486 declarations | 6 tokens cover every size on the site; 0 declarations outside the scale |
+| type scale tokens | 10 (+ 3 aliases) | 6 |
 | distinct `border-radius` values | 39 in 348 declarations | 24, of which 7 tokens + `50%` + `0`; the rest is the design-lab |
 | hardcoded hex colours | 10 distinct outside tokens, 48 occurrences | 4 (`#000`, `#fff` in shadows/gradients, plus two lab values) |
 | undefined tokens in use | 33 (82 uses of `--color-text-light` alone) | 6, each either set by JS (`--grid-index`, `--filter-dock-global`) or read with a fallback (`--lab-motion`, `--mid-gap`, `--max-width`, `--lab-media-radius-mobile`) |
