@@ -10,6 +10,8 @@
   NODE_OPTIONS = "--max-old-space-size=8192"
   NPM_FLAGS = "--legacy-peer-deps"
   NITRO_PRESET = "netlify"
+  # groq 6 needs Node >= 22.12; CI builds on 22 as well.
+  NODE_VERSION = "22"
 
 # Netlify Functions für SSR
 [functions]
