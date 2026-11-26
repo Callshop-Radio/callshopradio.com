@@ -860,7 +860,9 @@ function poolCloudItemKey(item: PoolTagCloudItem) {
 }
 
 function poolCloudItemTitle(item: PoolTagCloudItem) {
-	return item.kind === "group" ? item.title : item.tag.title;
+	if (item.kind === "group") return item.title;
+	const tag = item.tag as Tag & { name?: string };
+	return getTagTitle(tag.title) || tag.name || "";
 }
 
 function poolCloudItemExpanded(item: PoolTagCloudItem) {
