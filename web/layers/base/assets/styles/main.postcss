@@ -38,26 +38,6 @@
   }
 }
 
-/* Guard layer. Every card and image uses --radius-media, whatever a
-   component or a third-party widget (plyr, embla, cookieconsent) declares.
-   New components set the token themselves; this only catches stragglers. */
-img:not(.avatar) {
-  border-radius: var(--radius-media) !important;
-}
-
-.grid-item,
-.teaser-item,
-.teaser-item__image,
-.teaser-item__content,
-.grid-item__image,
-.hero-entry-media,
-.pool-media,
-.module-carousel .embla__slide,
-.chat-popup,
-.card {
-  border-radius: var(--radius-media) !important;
-}
-
 /* Cards with a city flag keep a square top-left corner so the flag sits
    flush against the image. */
 .teaser-item:has(.city-tags),

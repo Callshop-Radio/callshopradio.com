@@ -2963,6 +2963,9 @@ onUnmounted(() => {
     max-width: calc(100% / 3 - var(--big-margin) * 1.325);
     width: 100%;
     padding: 0 0 calc(var(--big-margin) / 2) 0;
+    /* Every variant is a card: the radius belongs to the base rule, not to
+       one modifier or a global override. */
+    border-radius: var(--radius-media);
 
     .tag.clickable {
       cursor: pointer;
@@ -2982,6 +2985,7 @@ onUnmounted(() => {
     &__image {
       position: relative;
       overflow: hidden;
+      border-radius: var(--radius-media);
       /* .grid-item is align-items:flex-start, so the wrapper would otherwise
          shrink to the image's natural width and small originals stay small. */
       width: 100%;

@@ -1037,6 +1037,9 @@ onMounted(() => {
     max-width: calc(100% / 3 - var(--big-margin) * 1.325);
     width: 100%;
     padding: 0 0 calc(var(--big-margin) / 2) 0;
+    /* Every variant is a card: the radius belongs to the base rule, not to
+       one modifier or a global override. */
+    border-radius: var(--radius-media);
 
     &:last-of-type {
       justify-self: flex-start;
@@ -1063,6 +1066,7 @@ onMounted(() => {
       position: relative;
       overflow: hidden;
       width: 100%;
+      border-radius: var(--radius-media);
 
       img {
         width: 100%;
@@ -1093,6 +1097,7 @@ onMounted(() => {
       flex-grow: 1;
       margin: var(--mid-padding) 0 0 0;
       gap: var(--mid-padding);
+      border-radius: var(--radius-media);
 
       .read-more {
         position: absolute;
