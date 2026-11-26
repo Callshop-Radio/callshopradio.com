@@ -108,44 +108,53 @@ onMounted(load);
 </script>
 
 <template>
-	<div class="account-profile">
-		<p v-if="state === 'loading'">â€¦</p>
-		<p v-else-if="state === 'error'">{{ copy.unavailable }}</p>
+	<div class="profile">
+		<p v-if="state === 'loading'" class="profile__state">…</p>
+		<p v-else-if="state === 'error'" class="profile__state">
+			{{ copy.unavailable }}
+		</p>
 
 		<template v-else>
-			<div class="avatar-row">
-				<img v-if="avatarSrc" :src="avatarSrc" alt="" class="avatar">
-				<div v-else class="avatar avatar--empty">{{ (profile?.displayName || profile?.email || "?").slice(0, 1) }}</div>
-				<div class="avatar-actions">
-					<label class="account-secondary">
+			<div class="profile__avatar-row">
+				<img v-if="avatarSrc" :src="avatarSrc" alt="" class="profile__avatar">
+				<div v-else class="profile__avatar profile__avatar--empty">
+					{{ (profile?.displayName || profile?.email || "?").slice(0, 1) }}
+				</div>
+				<div class="profile__avatar-actions">
+					<label class="pill">
 						{{ copy.uploadAvatar }}
 						<input type="file" accept="image/jpeg,image/png,image/webp" hidden @change="upload">
 					</label>
-					<button v-if="avatarSrc" type="button" class="account-secondary" @click="removeAvatar">
+					<button v-if="avatarSrc" type="button" class="link" @click="removeAvatar">
 						{{ copy.removeAvatar }}
 					</button>
+					<span class="profile__hint">{{ copy.avatarType }}</span>
 				</div>
 			</div>
 
-			<form class="account-form" @submit.prevent="save">
-				<label>
+			<form class="profile__form" @submit.prevent="save">
+				<label class="profile__field">
 					<span>{{ copy.name }}</span>
 					<input v-model="form.displayName" maxlength="60" autocomplete="nickname">
 				</label>
-				<label>
+				<label class="profile__field">
 					<span>{{ copy.language }}</span>
 					<select v-model="form.locale">
 						<option value="de">Deutsch</option>
 						<option value="en">English</option>
 					</select>
 				</label>
-				<button type="submit" class="account-action">{{ copy.saveChanges }}</button>
+				<button type="submit" class="pill pill--solid">
+					{{ copy.saveChanges }}
+				</button>
 			</form>
-			<p v-if="savedMessage" class="account-hint">{{ savedMessage }}</p>
+			<p v-if="savedMessage" class="profile__saved">{{ savedMessage }}</p>
 
-			<div class="account-links">
-				<button type="button" class="account-secondary" @click="exportData">{{ copy.exportData }}</button>
-				<button type="button" class="account-secondary account-danger" @click="removeAccount">
+			<div class="profile__links">
+				<button type="button" class="link" @click="exportData">
+					{{ copy.exportData }}
+				</button>
+				<button type="button" class="link link--danger" @click="removeAccount">
 					{{ copy.deleteAccount }}
 				</button>
 			</div>
@@ -154,101 +163,150 @@ onMounted(load);
 </template>
 
 <style scoped>
-.account-form {
+.profile {
 	display: grid;
-	gap: 1rem;
+	gap: 1.75rem;
+	width: 100%;
+	max-width: 46rem;
 }
 
-label {
-	display: grid;
-	gap: 0.4rem;
-	font-size: 0.85rem;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
+.profile__state {
+	margin: 0;
+	opacity: 0.6;
 }
 
-input,
-select {
-	padding: 0.8rem 1rem;
-	border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
-	border-radius: 10px;
-	background: transparent;
-	color: inherit;
-	font: inherit;
-}
-
-.account-action {
-	padding: 0.85rem 1.2rem;
-	border: 0;
-	border-radius: 999px;
-	background: transparent;
-	color: inherit;
-	font: inherit;
-	font-weight: 600;
-	cursor: pointer;
-}
-
-.account-secondary {
-	border: 0;
-	background: none;
-	color: inherit;
-	opacity: 0.75;
-	text-decoration: underline;
-	cursor: pointer;
-	font: inherit;
-}
-
-.account-danger {
-	color: #b02a2a;
-}
-
-.account-links {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 1.5rem;
-}
-
-.avatar-row {
+.profile__avatar-row {
 	display: flex;
 	align-items: center;
 	gap: 1.25rem;
 }
 
-.avatar {
-	width: 96px;
-	height: 96px;
+.profile__avatar {
+	width: 5.5rem;
+	height: 5.5rem;
 	border-radius: 50%;
 	object-fit: cover;
-	background: color-mix(in srgb, currentColor 10%, transparent);
+	background-color: color-mix(in srgb, var(--color-text) 8%, transparent);
 }
 
-.avatar--empty {
+.profile__avatar--empty {
 	display: grid;
 	place-items: center;
+	font-family: var(--font-text-semibold);
 	font-size: 2rem;
 	text-transform: uppercase;
+	color: color-mix(in srgb, var(--color-text) 55%, transparent);
 }
 
-.avatar-actions {
+.profile__avatar-actions {
 	display: flex;
 	flex-direction: column;
-	gap: 0.6rem;
 	align-items: flex-start;
+	gap: 0.5rem;
 }
 
-.avatar-actions label {
-	text-transform: none;
+.profile__hint {
+	font-size: var(--small-font-size);
+	color: color-mix(in srgb, var(--color-text) 42%, transparent);
+}
+
+.profile__form {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+	gap: 1rem;
+	align-items: end;
+}
+
+.profile__field {
+	display: grid;
+	gap: 0.4rem;
+	font-size: var(--small-font-size);
+	letter-spacing: var(--button-letter-spacing);
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+.profile__field input,
+.profile__field select {
+	width: 100%;
+	padding: 0.85rem 1.1rem;
+	border: 0;
+	border-radius: 12px;
+	background-color: color-mix(in srgb, var(--color-text) 6%, transparent);
+	color: var(--color-text);
+	font: inherit;
+	font-size: var(--base-font-size);
 	letter-spacing: normal;
-	font-size: 1rem;
-	gap: 0;
+	text-transform: none;
+
+	&:focus {
+		outline: none;
+		background-color: color-mix(in srgb, var(--color-text) 10%, transparent);
+	}
 }
 
-.account-hint {
+.pill {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.6rem 1.1rem;
+	border: 0;
+	border-radius: var(--pill-radius);
+	background-color: color-mix(in srgb, var(--color-text) 8%, transparent);
+	color: inherit;
+	font: inherit;
+	font-size: var(--small-font-size);
+	letter-spacing: var(--button-letter-spacing);
+	text-transform: uppercase;
+	cursor: pointer;
+	transition: background-color var(--transition-fast);
+
+	&:hover {
+		background-color: color-mix(in srgb, var(--color-text) 14%, transparent);
+	}
+}
+
+.pill--solid {
+	grid-column: 1 / -1;
+	justify-self: start;
+	background-color: var(--color-text);
+	color: var(--color-bg);
+
+	&:hover {
+		background-color: var(--color-pink);
+		color: #111;
+	}
+}
+
+.profile__saved {
 	margin: 0;
-	opacity: 0.75;
+	font-size: var(--small-font-size);
+	color: var(--color-pink);
+}
+
+.profile__links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.25rem;
+	padding-top: 0.5rem;
+	border-top: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+
+.link {
+	padding: 0;
+	border: 0;
+	background: none;
+	color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	font: inherit;
+	font-size: var(--small-font-size);
+	cursor: pointer;
+
+	&:hover {
+		color: var(--color-text);
+	}
+}
+
+.link--danger:hover {
+	color: var(--color-pink);
 }
 </style>
-
-
-
-

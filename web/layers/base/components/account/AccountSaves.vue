@@ -336,7 +336,8 @@ onMounted(load);
 	transition: background-color var(--transition-fast);
 
 	&:disabled {
-		opacity: 0.35;
+		background-color: color-mix(in srgb, var(--color-text) 8%, transparent);
+		color: color-mix(in srgb, var(--color-text) 40%, transparent);
 		cursor: default;
 	}
 
