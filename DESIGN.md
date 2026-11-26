@@ -137,16 +137,14 @@ override. There is no separate tablet or desktop block — they were identical.
 
 | Token | Desktop | ≤ 599 px | Role |
 | --- | --- | --- | --- |
-| `--text-xs` | 8 px | 10 px | city flags, counters, index numbers |
-| `--text-sm` | 10 px | 10 px | tags, meta, artist lines, nav labels |
-| `--text-md` | 13 px | 12 px | body copy, links, form labels |
-| `--text-lg` | 16 px | 14 px | article body, form fields, card subheads |
-| `--text-xl` | 20 px | 18 px | card titles, rich-text headings, section heads |
-| `--text-2xl` | 25 px | 22 px | page titles |
+| `--text-s` | 10 px | 10 px | tags, meta, artist lines, labels |
+| `--text-m` | 16 px | 14 px | body copy, forms, rich text, addresses |
+| `--text-l` | 20 px | 18 px | card titles, rich-text headings, section heads |
+| `--text-xl` | 25 px | 22 px | page titles |
 
-**No other size exists.** Six steps is the whole scale. If a component needs a
-seventh, the layout is wrong. There is no 14 px and no 18 px step: they were merged
-into 16 and 20 because the difference was too small to choose deliberately.
+**No other size exists.** Four steps is the whole scale. If a component needs a
+fifth, the layout is wrong. 8, 13, 14 and 18 px are gone: 8 and 13 were merged
+into 10 and 16 because the difference was too small to choose deliberately.
 
 The names are sizes, not elements — `--h4-size` used to be the article body, which is
 exactly the confusion this removes.
@@ -273,21 +271,21 @@ that is not valid CSS and the block is silently dropped.
 ## 7. Components
 
 ### Navigation pill
-`.menu-main .tag` — 28 px tall, `--radius-pill`, 1 px accent border, `--text-sm`
+`.menu-main .tag` — 28 px tall, `--radius-pill`, 1 px accent border, `--text-s`
 uppercase, `--menu-letter-spacing`. One pill per section, accent = section colour.
 Active pill is filled with the accent.
 
 ### Content tag
 `.tag:not(.city)`, `.filter-tag`, `.genre` — 20 px tall, `--radius-pill-sm`,
-`--text-sm`, uppercase, `padding: 0 var(--base-padding)`, no rule unless the
+`--text-s`, uppercase, `padding: 0 var(--base-padding)`, no rule unless the
 variant is outlined. Filled = black surface, white text.
 
 ### City flag
-`.tag.city` — 15–16 px tall (`--city-tag-height`), `--radius-flag`, `--text-xs`,
+`.tag.city` — 15–16 px tall (`--city-tag-height`), `--radius-flag`, `--text-s`,
 uppercase, sits flush on the card's top-left corner. The card loses that corner.
 
 ### Artist line
-`.show-artists` — `--text-sm`, uppercase, `--label-letter-spacing`, 0.4 rem dot
+`.show-artists` — `--text-s`, uppercase, `--label-letter-spacing`, 0.4 rem dot
 before each name. Dot is `--color-dark-grey` without a linked profile and `--color-blue`
 with one.
 
@@ -298,7 +296,7 @@ line, then tags. No shadow, no border.
 
 ### Buttons
 `.action-btn`, `.type-filter-btn`, `.sort-options`, `.account-action`, `.login__primary`,
-`.save-to-list__button` — `--radius-pill`, `--text-sm`, uppercase for filters,
+`.save-to-list__button` — `--radius-pill`, `--text-s`, uppercase for filters,
 `--button-letter-spacing`. Primary = black fill, secondary = outline, both 1 px.
 
 ### Play button
@@ -307,10 +305,10 @@ corner or under the title; it never carries a label.
 
 ### Player bar
 58 px, fixed, `--color-bg-transparent` over the page, cover thumb at `--radius-xs`, time
-and status in `--text-sm`, controls as icon buttons at `--radius-circle`.
+and status in `--text-s`, controls as icon buttons at `--radius-circle`.
 
 ### Search
-Input 35 px tall, `--radius-pill`, `--text-md`; type filter pills at
+Input 35 px tall, `--radius-pill`, `--text-m`; type filter pills at
 `--radius-pill`; suggestion rows at `--radius-pill-sm` on hover; hints in
 `--color-text-light`.
 
@@ -319,14 +317,14 @@ Dialogs, dropdowns and popovers: `--radius-surface`, page background, 1 px
 `--color-grey` rule, no shadow except the fixed chat panel and the player.
 
 ### Lists and tables
-Timetable rows: title `--text-md`, meta `--text-sm`, sub-meta
-`--text-xs`, 1 px rule between rows, alternating `--color-grey` fill for the
+Timetable rows: title `--text-m`, meta `--text-s`, sub-meta
+`--text-s`, 1 px rule between rows, alternating `--color-grey` fill for the
 current row only.
 
 ### Forms
-Labels `--text-md` in the medium face; fields `--text-lg`,
+Labels `--text-m` in the medium face; fields `--text-m`,
 `--radius-surface` or `--radius-pill` when the field is a single line; error text
-`--text-lg` in the section accent; helper text in `--color-text-light`.
+`--text-m` in the section accent; helper text in `--color-text-light`.
 
 ---
 
@@ -411,8 +409,8 @@ Measured over every `<style>` block in `web/layers` + `web/app` (excluding the
 
 | Metric | Before | After |
 | --- | --- | --- |
-| distinct `font-size` values | 92 in 486 declarations | 6 tokens cover the scale; the rest is the display tier |
-| type scale tokens | 10 (+ 3 aliases) | 6 |
+| distinct `font-size` values | 92 in 486 declarations | 4 tokens cover the scale; the rest is the display tier |
+| type scale tokens | 10 (+ 3 aliases) | 4 |
 | distinct `border-radius` values | 39 in 348 declarations | 24, of which 7 tokens + `50%` + `0`; the rest is the design-lab |
 | hardcoded hex colours | 10 distinct outside tokens, 48 occurrences | 4 (`#000`, `#fff` in shadows/gradients, plus two lab values) |
 | undefined tokens in use | 33 (82 uses of `--color-text-light` alone) | 6, each either set by JS (`--grid-index`, `--filter-dock-global`) or read with a fallback (`--lab-motion`, `--mid-gap`, `--max-width`, `--lab-media-radius-mobile`) |
@@ -474,7 +472,7 @@ rhythm was intended, set it deliberately in a media query and update this file.
 ## 13. Checklist for a new component
 
 - [ ] Every colour is a token; nothing hardcoded except raw black/white in overlays.
-- [ ] Every size is one of the six scale tokens.
+- [ ] Every size is one of the four scale tokens.
 - [ ] Radius comes from § 5 by role, not by eye: 5 px surface, 12 px button.
 - [ ] Weight comes from the family token; no `font-weight` above 550.
 - [ ] A rule or separator uses `--color-line`, not a local mix.
