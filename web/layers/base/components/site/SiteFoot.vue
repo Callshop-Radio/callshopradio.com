@@ -4,9 +4,14 @@ import { useMainStore } from "~/stores/mainStore";
 const { locale } = useI18n();
 const localePath = useLocalePath();
 const mainStore = useMainStore();
+const config = useRuntimeConfig();
+const { open: chatOpen } = useChatUi();
 const { openPopup: openTimetablePopup, expand: expandTimetable } =
 	useTimetableUi();
 
+const chatEnabled = computed(
+	() => import.meta.dev || Boolean(config.public.chatEnabled),
+);
 const discordUrl = computed(
 	() => mainStore?.siteNav?.discordLink || "https://discord.gg/ZNpKHSgQkR",
 );
@@ -54,6 +59,7 @@ const copy = computed(() => {
 		schedule: de ? "Programm" : "Schedule",
 		search: de ? "Suche" : "Search",
 		merch: "Merch",
+		chat: "Chat",
 		legal: de ? "Impressum" : "Legal Notice",
 		legalPrivacy: de ? "Impressum & Datenschutz" : "Legal & Privacy",
 		privacy: de ? "Datenschutz" : "Privacy",
@@ -123,6 +129,10 @@ function mapsUrl(query) {
 
 function stationCity(station) {
 	return station.city[locale.value] || station.city.en;
+}
+
+function openChat() {
+	chatOpen.value = true;
 }
 
 function openTimetable() {
@@ -329,6 +339,16 @@ function scrollToTop() {
 								<SitePageIcon name="account" />
 								{{ copy.account }}
 							</NuxtLink>
+						</li>
+						<li v-if="chatEnabled">
+							<button
+								type="button"
+								class="site-footer__link-button"
+								@click="openChat"
+							>
+								<SitePageIcon name="chat" />
+								{{ copy.chat }}
+							</button>
 						</li>
 						<li>
 							<button

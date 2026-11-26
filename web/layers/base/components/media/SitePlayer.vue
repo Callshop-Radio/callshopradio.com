@@ -18,10 +18,14 @@ interface PlayerLink {
 const store = usePlayerStore();
 const controller = usePlayerController();
 const analytics = usePlayerAnalytics();
+const config = useRuntimeConfig();
 const mainStore = useMainStore();
 const localePath = useLocalePath();
 const playerRef = ref<HTMLElement | null>(null);
 
+const chatEnabled = computed(
+	() => import.meta.dev || Boolean(config.public.chatEnabled),
+);
 const showSchedule = computed(() => Boolean(mainStore?.siteNav?.schedulePage));
 
 const isSet = computed(() => store.mode === "set" && Boolean(store.set));
@@ -481,6 +485,7 @@ onBeforeUnmount(() => {
 
 		<!-- Chat and schedule stay reachable in every player state. -->
 		<span class="site-player__actions">
+			<SiteChatButton v-if="chatEnabled" />
 			<SiteTimetablePopover v-if="showSchedule" placement="top" mode="panel" />
 		</span>
 

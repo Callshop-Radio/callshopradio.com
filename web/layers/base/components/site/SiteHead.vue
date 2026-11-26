@@ -6,6 +6,11 @@ const localePath = useLocalePath();
 
 const mainStore = useMainStore();
 const _mainMenu = computed(() => mainStore?.siteNav?.mainMenu);
+
+const config = useRuntimeConfig();
+const chatEnabled = computed(
+	() => import.meta.dev || Boolean(config.public.chatEnabled),
+);
 </script>
 
 <template>
