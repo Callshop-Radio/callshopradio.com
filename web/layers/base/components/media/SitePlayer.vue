@@ -39,8 +39,8 @@ const scheduleWindow = computed(() => {
 	return store.schedule;
 });
 const scheduleProgress = computed(() =>
-	// A spontaneous live source is not the scheduled show: no window, no
-	// progress bar, no "Until" for the plan.
+	// A spontaneous live source is not the scheduled show: no window and no
+	// progress bar for the plan.
 	store.feed?.state === "live"
 		? null
 		: scheduleShowProgress(scheduleWindow.value, nowMs.value),
@@ -213,15 +213,6 @@ const progressTimeWidth = computed(() => {
 const streamProgress = computed(
 	() => scheduleProgress.value ?? streamShowProgress(store.feed, nowMs.value),
 );
-const streamEndLabel = computed(() => {
-	const value = streamProgress.value;
-	if (!value) return "";
-	const time = new Date(value.endMs).toLocaleTimeString("de-DE", {
-		hour: "2-digit",
-		minute: "2-digit",
-	});
-	return `Until ${time}`;
-});
 const streamTimes = computed(() => {
 	if (!streamProgress.value) return null;
 	const value = store.feed?.progress;
@@ -381,7 +372,6 @@ onBeforeUnmount(() => {
 						<span class="site-player__now">{{ streamTimes.now }}</span>
 						<span class="site-player__total">/ {{ streamTimes.total }}</span>
 					</span>
-					<span v-if="streamEndLabel" class="site-player__until">{{ streamEndLabel }}</span>
 					<span class="site-player__status">
 						<span class="site-player__dot" :class="{ 'is-on-air': isOnAir }" aria-hidden="true" />
 						<span>{{ statusLabel }}</span>
@@ -862,21 +852,13 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
-/* The running position reads at full contrast; total and "Until" stay quiet. */
+/* The running position reads at full contrast, the total stays quiet. */
 .site-player__now {
   color: var(--color-text);
 }
 
 .site-player__total {
   color: var(--color-dark-grey);
-}
-
-.site-player__until {
-  flex: none;
-  color: var(--color-dark-grey);
-  font-size: var(--text-s);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
 
 .site-player__heart {
