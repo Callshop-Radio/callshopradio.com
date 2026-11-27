@@ -139,7 +139,7 @@ override. There is no separate tablet or desktop block — they were identical.
 
 | Token | Desktop | ≤ 599 px | Role |
 | --- | --- | --- | --- |
-| `--text-s` | 10 px | 10 px | tags, meta, artist lines, labels |
+| `--text-s` | 12 px | 12 px | tags, meta, artist lines, labels |
 | `--text-m` | 16 px | 14 px | body copy, forms, rich text, addresses |
 | `--text-l` | 20 px | 18 px | card titles, rich-text headings, section heads |
 | `--text-xl` | 25 px | 22 px | page titles |
