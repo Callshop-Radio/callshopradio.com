@@ -19,6 +19,12 @@ export const usePlayerStore = defineStore("player", () => {
 	const error = ref<string | null>(null);
 	const stale = ref(false);
 	const streamWasPlaying = ref(false);
+	/**
+	 * What the listener asked for, independent of what the engine is doing.
+	 * A paused player stays paused: no automatic resume after a set, a stream
+	 * error or a show change.
+	 */
+	const intent = ref<"playing" | "paused">("paused");
 
 	function setFeed(next: PlayerFeed) {
 		feed.value = next;
@@ -51,6 +57,10 @@ export const usePlayerStore = defineStore("player", () => {
 
 	function setPlaying(value: boolean) {
 		playing.value = value;
+	}
+
+	function setIntent(value: "playing" | "paused") {
+		intent.value = value;
 	}
 
 	function setWaveform(value: PlayerWaveform | null) {
@@ -87,11 +97,13 @@ export const usePlayerStore = defineStore("player", () => {
 		error,
 		stale,
 		streamWasPlaying,
+		intent,
 		setFeed,
 		setSchedule,
 		openSet,
 		closeSet,
 		setPlaying,
+		setIntent,
 		setWaveform,
 		setLoading,
 		setProgress,

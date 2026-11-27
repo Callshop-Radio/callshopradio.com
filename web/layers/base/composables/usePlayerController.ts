@@ -21,6 +21,12 @@ export function usePlayerController() {
 	if (!wired) {
 		wired = true;
 		stream.on("playing", () => {
+			// Last line of defence: nothing may start while the listener has
+			// the player paused, whatever triggered it.
+			if (store.intent === "paused") {
+				stream.pause();
+				return;
+			}
 			store.setPlaying(true);
 			store.setLoading(false);
 		});
@@ -31,6 +37,10 @@ export function usePlayerController() {
 			store.setLoading(false);
 		});
 		soundcloud.on("play", () => {
+			if (store.intent === "paused") {
+				soundcloud.pause();
+				return;
+			}
 			store.setPlaying(true);
 			store.setLoading(false);
 		});
@@ -54,6 +64,7 @@ export function usePlayerController() {
 				else void playStream();
 			});
 			navigator.mediaSession.setActionHandler("pause", () => {
+				store.setIntent("paused");
 				if (store.mode === "set") soundcloud.pause();
 				else stream.pause();
 			});
@@ -99,6 +110,7 @@ export function usePlayerController() {
 			store.setError("Kein Audio für dieses Set");
 			return;
 		}
+		store.setIntent("playing");
 		if (store.mode === "stream" && store.playing) stream.pause();
 		store.openSet(playable);
 		void loadWaveform(playable.soundcloudId);
@@ -118,6 +130,7 @@ export function usePlayerController() {
 	async function retrySet() {
 		const current = store.set;
 		if (!current?.soundcloudUrl) return;
+		store.setIntent("playing");
 		if (!store.waveform) void loadWaveform(current.soundcloudId);
 		store.clearError();
 		store.setLoading(true);
@@ -137,6 +150,7 @@ export function usePlayerController() {
 		waveformGeneration += 1;
 		store.closeSet();
 		store.streamWasPlaying = false;
+		store.setIntent("playing");
 		store.setLoading(true);
 		store.clearError();
 		try {
@@ -146,22 +160,35 @@ export function usePlayerController() {
 		}
 	}
 
+	function pauseStream() {
+		// Intent first: an in-flight play() may still resolve after this click.
+		store.setIntent("paused");
+		stream.pause();
+	}
+
 	function toggle() {
 		if (store.mode === "set") {
 			if (store.error) {
 				void retrySet();
 				return;
 			}
-			if (store.playing) soundcloud.pause();
-			else soundcloud.play();
+			if (store.playing || store.loading) {
+				store.setIntent("paused");
+				soundcloud.pause();
+			} else {
+				store.setIntent("playing");
+				soundcloud.play();
+			}
 			return;
 		}
-		if (store.playing) stream.pause();
+		// A click while the stream is still buffering is a pause, not a second
+		// start: "loading" means the listener already asked for audio.
+		if (store.playing || store.loading) pauseStream();
 		else void playStream();
 	}
 
 	function closeSet() {
-		const resume = store.streamWasPlaying;
+		const resume = store.streamWasPlaying && store.intent === "playing";
 		soundcloud.stop();
 		waveformGeneration += 1;
 		store.closeSet();
