@@ -169,7 +169,7 @@ onMounted(() => scrollToBottom());
 .messages__empty {
 	padding: 2.5rem 1rem;
 	text-align: center;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 45%, transparent);
 }
 
@@ -192,7 +192,7 @@ onMounted(() => scrollToBottom());
 	border-radius: 50%;
 	background-color: color-mix(in srgb, var(--color-text) 8%, transparent);
 	color: color-mix(in srgb, var(--color-text) 70%, transparent);
-	font-size: 0.5625rem;
+	font-size: var(--text-s);
 	font-family: var(--font-text-medium);
 	letter-spacing: 0.02em;
 	user-select: none;
@@ -218,14 +218,14 @@ onMounted(() => scrollToBottom());
 
 .message__name {
 	font-family: var(--font-text-medium);
-	font-size: var(--base-font-size);
+	font-size: var(--text-m);
 }
 
 .message__role {
-	font-size: 0.625rem;
+	font-size: var(--text-s);
 	line-height: 1.35;
 	padding: 0 0.3125rem;
-	border-radius: 999px;
+	border-radius: var(--radius-pill);
 	border: 1px solid currentcolor;
 	transform: translateY(-1px);
 
@@ -243,13 +243,13 @@ onMounted(() => scrollToBottom());
 
 .message__time {
 	margin-left: 0.1875rem;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 52%, transparent);
 	font-variant-numeric: tabular-nums;
 }
 
 .message__text {
-	font-size: var(--base-font-size);
+	font-size: var(--text-m);
 	line-height: 1.45;
 	white-space: pre-wrap;
 	overflow-wrap: anywhere;
@@ -282,25 +282,25 @@ onMounted(() => scrollToBottom());
 	gap: 0.5rem;
 	padding: 0.5rem 0.75rem;
 	border-left: 3px solid var(--color-pink);
-	border-radius: 0 5px 5px 0;
+	border-radius: 0 var(--radius-media) var(--radius-media) 0;
 	background-color: color-mix(in srgb, var(--color-pink) 9%, transparent);
 }
 
 .track-card__label {
 	flex: none;
-	font-size: 0.5625rem;
+	font-size: var(--text-s);
 	font-family: var(--font-text-semibold);
-	letter-spacing: 0.06em;
+	letter-spacing: var(--label-letter-spacing);
 	text-transform: uppercase;
 	line-height: 1.6;
 	padding: 0 0.375rem;
-	border-radius: 999px;
+	border-radius: var(--radius-pill-sm);
 	background-color: var(--color-pink);
-	color: #111;
+	color: var(--color-black);
 }
 
 .track-card__title {
-	font-size: var(--base-font-size);
+	font-size: var(--text-m);
 	line-height: 1.35;
 	min-width: 0;
 }
@@ -311,7 +311,7 @@ onMounted(() => scrollToBottom());
 
 .track-card__time {
 	margin-left: auto;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 50%, transparent);
 	font-variant-numeric: tabular-nums;
 	flex: none;
@@ -322,7 +322,7 @@ onMounted(() => scrollToBottom());
 	align-items: center;
 	justify-content: center;
 	gap: 0.4375rem;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 55%, transparent);
 	text-align: center;
 }

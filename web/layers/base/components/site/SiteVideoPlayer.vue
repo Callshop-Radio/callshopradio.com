@@ -245,7 +245,7 @@ onBeforeUnmount(() => {
   width: var(--video-width, 360px);
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
-  border-radius: 12px;
+  border-radius: var(--radius-surface);
   background: var(--color-bg);
   color: var(--color-text);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
@@ -282,7 +282,7 @@ onBeforeUnmount(() => {
   flex: 1;
   overflow: hidden;
   font-family: var(--font-text-semibold);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   line-height: 1.2;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -298,7 +298,7 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   background: transparent;
   color: inherit;
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   cursor: pointer;
 
   svg {
@@ -341,7 +341,7 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.6);
   color: #fff;
-  font-size: 1.25rem;
+  font-size: var(--text-l);
   cursor: pointer;
   transform: translate(-50%, -50%);
 }
@@ -357,7 +357,7 @@ onBeforeUnmount(() => {
   padding: 1rem;
   background: rgba(0, 0, 0, 0.7);
   color: #fff;
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   text-align: center;
 
   p {
@@ -367,7 +367,7 @@ onBeforeUnmount(() => {
   button {
     padding: 0.25rem 0.75rem;
     border: 1px solid currentColor;
-    border-radius: 100px;
+    border-radius: var(--radius-circle);
     background: transparent;
     color: inherit;
     cursor: pointer;
@@ -417,10 +417,10 @@ onBeforeUnmount(() => {
   min-height: 40px;
   padding: 0 0.75rem;
   border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--color-bg);
   color: var(--color-text);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
 

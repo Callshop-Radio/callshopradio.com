@@ -40,7 +40,7 @@ const emit = defineEmits<{
   width: 100%;
   padding: 0;
   border: 1px solid color-mix(in srgb, var(--color-text) 16%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background-color: var(--color-bg);
   color: var(--color-text);
   font: inherit;
@@ -54,13 +54,13 @@ const emit = defineEmits<{
 
   &:hover {
     transform: translateY(-2px);
-    border-color: var(--index-accent, var(--color-purple));
+    border-color: var(--accent, var(--color-purple));
     box-shadow: 0 0.8rem 2rem
-      color-mix(in srgb, var(--index-accent, var(--color-purple)) 18%, transparent);
+      color-mix(in srgb, var(--accent, var(--color-purple)) 18%, transparent);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--index-accent, var(--color-purple));
+    outline: 2px solid var(--accent, var(--color-purple));
     outline-offset: 3px;
   }
 
@@ -87,7 +87,7 @@ const emit = defineEmits<{
     justify-content: center;
     column-gap: 0.3rem;
     padding: 0.65rem 0.5rem 0.7rem;
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     line-height: 1.25;
   }
 

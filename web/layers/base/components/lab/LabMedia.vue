@@ -141,15 +141,15 @@ function onArtworkError() {
     place-items: center;
     padding: var(--mid-padding);
     text-align: center;
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     color: var(--color-bg);
     background:
       linear-gradient(
         135deg,
-        color-mix(in srgb, var(--lab-accent) 70%, var(--color-bg)) 0%,
-        color-mix(in srgb, var(--lab-accent) 28%, var(--color-bg)) 100%
+        color-mix(in srgb, var(--accent, var(--color-text)) 70%, var(--color-bg)) 0%,
+        color-mix(in srgb, var(--accent, var(--color-text)) 28%, var(--color-bg)) 100%
       );
   }
 

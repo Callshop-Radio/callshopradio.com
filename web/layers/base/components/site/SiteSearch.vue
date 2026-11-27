@@ -240,7 +240,7 @@ watch(results, () => {
 
   &.is-modal {
     background: var(--color-bg);
-    border-radius: 12px;
+    border-radius: var(--radius-surface);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     overflow: hidden;
   }
@@ -254,7 +254,7 @@ watch(results, () => {
   position: relative;
 
   .search-icon {
-    color: var(--color-text-light, #888);
+    color: var(--color-text-light);
     display: flex;
     align-items: center;
   }
@@ -263,13 +263,13 @@ watch(results, () => {
     flex: 1;
     border: none;
     background: transparent;
-    font-size: 1.125rem;
+    font-size: var(--text-l);
     color: var(--color-text);
     outline: none;
     font-family: var(--font-text);
 
     &::placeholder {
-      color: var(--color-text-light, #888);
+      color: var(--color-text-light);
     }
   }
 
@@ -280,9 +280,9 @@ watch(results, () => {
     padding: 4px;
     background: transparent;
     border: none;
-    color: var(--color-text-light, #888);
+    color: var(--color-text-light);
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
     transition: all 0.15s ease;
 
     &:hover {
@@ -320,7 +320,7 @@ watch(results, () => {
   font-family: var(--font-text-semibold);
   
   .link-text {
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     color: var(--color-text);
     white-space: nowrap;
     overflow: hidden;
@@ -329,7 +329,7 @@ watch(results, () => {
   }
   
   svg {
-    color: var(--color-text-light, #888);
+    color: var(--color-text-light);
     flex-shrink: 0;
     transition: all 0.15s ease;
   }
@@ -361,7 +361,7 @@ watch(results, () => {
   
   &::-webkit-scrollbar-thumb {
     background-color: var(--color-text-light, rgba(0, 0, 0, 0.2));
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
     
     &:hover {
       background-color: var(--color-text-light, rgba(0, 0, 0, 0.3));
@@ -380,7 +380,7 @@ watch(results, () => {
   text-align: left;
   cursor: pointer;
   transition: background 0.15s ease;
-  border-radius: 8px; /* Added for better hover look in list */
+  border-radius: var(--radius-pill-sm); /* hover row inside the search list */
 
   &:hover,
   &.is-selected {
@@ -389,7 +389,7 @@ watch(results, () => {
 
   .autocomplete-title {
     flex: 1;
-    font-size: 0.9375rem; /* Matched from previous result-title */
+    font-size: var(--text-m); /* Matched from previous result-title */
     font-family: var(--font-text-semibold);
     color: var(--color-text);
     white-space: nowrap;
@@ -398,14 +398,14 @@ watch(results, () => {
   }
 
   .autocomplete-type {
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     font-family: var(--font-text-semibold);
-    color: var(--color-text-light, #888);
+    color: var(--color-text-light);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     padding: var(--small-padding) var(--base-padding);
     background-color: var(--color-bg);
-    border-radius: 100px;
+    border-radius: var(--radius-pill);
     border: 0.09325rem solid var(--color-text);
     white-space: nowrap; /* Prevent wrapping */
 
@@ -435,17 +435,16 @@ watch(results, () => {
 .no-results {
   padding: var(--big-padding);
   text-align: center;
-  color: var(--color-text-light, #888);
+  color: var(--color-text-light);
 
   p {
-    font-size: 0.9375rem;
-    font-weight: 500;
+    font-size: var(--text-m);
     margin-bottom: var(--small-padding);
     color: var(--color-text);
   }
 
   span {
-    font-size: 0.8125rem;
+    font-size: var(--text-m);
   }
 }
 
@@ -461,8 +460,8 @@ watch(results, () => {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.75rem;
-    color: var(--color-text-light, #888);
+    font-size: var(--text-m);
+    color: var(--color-text-light);
 
     kbd {
       display: inline-flex;
@@ -473,8 +472,8 @@ watch(results, () => {
       padding: 0 6px;
       background: var(--color-bg);
       border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.15));
-      border-radius: 4px;
-      font-size: 0.6875rem;
+      border-radius: var(--radius-xs);
+      font-size: var(--text-s);
       font-family: var(--font-text);
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }

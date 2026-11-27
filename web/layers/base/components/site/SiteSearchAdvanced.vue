@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import {
 	ARCHIVE_DURATIONS,
 	ARCHIVE_FILTER_OPTIONS_QUERY,
@@ -839,13 +839,6 @@ onUnmounted(() => {
 .advanced-search {
   /* One filled-surface scale for the whole dialog: inputs, reset, close and the
      quiet row hovers share it, so almost nothing needs an outline. */
-  --as-surface: color-mix(in srgb, var(--color-text) 7%, var(--color-bg));
-  --as-surface-hover: color-mix(
-    in srgb,
-    var(--color-text) 11%,
-    var(--color-bg)
-  );
-  --as-line: color-mix(in srgb, var(--color-text) 12%, transparent);
 
   display: flex;
   flex-direction: column;
@@ -856,7 +849,7 @@ onUnmounted(() => {
   /* No outline: the dialog separates itself with a hair-thin surface lift and
      the shadow, which reads in both themes. */
   background: color-mix(in srgb, var(--color-text) 3%, var(--color-bg));
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
 
   &__head {
@@ -875,7 +868,7 @@ onUnmounted(() => {
 
   &__eyebrow {
     font-family: var(--font-text-semibold);
-    font-size: var(--mini-font-size);
+    font-size: var(--text-s);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     color: var(--color-text-light, var(--color-dark-grey));
@@ -883,8 +876,8 @@ onUnmounted(() => {
 
   &__title {
     margin: 0;
-    font-family: var(--font-headline);
-    font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+    font-family: var(--font-text);
+    font-size: var(--text-xl);
     line-height: 1.1;
   }
 
@@ -897,7 +890,7 @@ onUnmounted(() => {
     padding: 0;
     border: 0;
     border-radius: 50%;
-    background: var(--as-surface);
+    background: var(--color-surface);
     color: var(--color-text);
     cursor: pointer;
     transition: background var(--transition-fast), color var(--transition-fast);
@@ -913,12 +906,12 @@ onUnmounted(() => {
     flex-direction: column;
     gap: var(--base-padding);
     padding: var(--base-padding) var(--big-padding) var(--mid-padding);
-    border-top: 1px solid var(--as-line);
+    border-top: 1px solid var(--color-line);
   }
 
   &__label {
     font-family: var(--font-text-semibold);
-    font-size: var(--mini-font-size);
+    font-size: var(--text-s);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     color: var(--color-text-light, var(--color-dark-grey));
@@ -936,20 +929,20 @@ onUnmounted(() => {
       height: 2.75rem;
       padding: 0 0.875rem;
       border: 0;
-      border-radius: var(--pill-radius);
-      background: var(--as-surface);
+      border-radius: var(--radius-pill);
+      background: var(--color-surface);
       color: var(--color-text);
       font-family: var(--font-text-semibold);
-      font-size: var(--small-font-size);
+      font-size: var(--text-s);
       outline: none;
       transition: background var(--transition-fast);
 
       &:hover {
-        background: var(--as-surface-hover);
+        background: var(--color-surface-hover);
       }
 
       &:focus-visible {
-        background: var(--as-surface-hover);
+        background: var(--color-surface-hover);
         box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-pink) 40%, transparent);
       }
     }
@@ -981,17 +974,17 @@ onUnmounted(() => {
     height: 3rem;
     padding: 0 1rem;
     border: 0;
-    border-radius: var(--pill-radius);
-    background: var(--as-surface);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
     color: var(--color-text);
     transition: background var(--transition-fast);
 
     &:hover {
-      background: var(--as-surface-hover);
+      background: var(--color-surface-hover);
     }
 
     &:focus-within {
-      background: var(--as-surface-hover);
+      background: var(--color-surface-hover);
       box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-pink) 40%, transparent);
     }
 
@@ -1017,7 +1010,7 @@ onUnmounted(() => {
       background: transparent;
       color: inherit;
       font-family: var(--font-text-semibold);
-      font-size: var(--base-font-size);
+      font-size: var(--text-m);
       outline: none;
       box-shadow: none;
 
@@ -1062,9 +1055,9 @@ onUnmounted(() => {
   &__reset {
     height: 2.5rem;
     padding: 0 var(--mid-padding);
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     font-family: var(--font-text-semibold);
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     cursor: pointer;
@@ -1087,7 +1080,7 @@ onUnmounted(() => {
 
   &__reset {
     border: 0;
-    background: var(--as-surface);
+    background: var(--color-surface);
     color: var(--color-text);
 
     &:hover {
@@ -1099,7 +1092,7 @@ onUnmounted(() => {
   &__count {
     margin-left: auto;
     font-family: var(--font-text);
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     color: var(--color-text-light, var(--color-dark-grey));
   }
 
@@ -1108,7 +1101,7 @@ onUnmounted(() => {
     min-height: 6rem;
     overflow-y: auto;
     padding: var(--small-padding) var(--big-padding) var(--big-padding);
-    border-top: 1px solid var(--as-line);
+    border-top: 1px solid var(--color-line);
   }
 
   &__empty {
@@ -1133,22 +1126,22 @@ onUnmounted(() => {
   &__hint {
     padding: var(--small-padding) 0 0;
     font-family: var(--font-text);
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     color: var(--color-text-light, var(--color-dark-grey));
   }
 }
 
 .advanced-other {
-  --row-accent: var(--color-pink);
+  --accent: var(--color-pink);
   padding: 0.25rem 0 0.55rem;
-  border-bottom: 1px solid var(--as-line, var(--color-grey));
+  border-bottom: 1px solid var(--color-line);
 
   &--pool {
-    --row-accent: var(--color-blue);
+    --accent: var(--color-blue);
   }
 
   &--words {
-    --row-accent: var(--color-green);
+    --accent: var(--color-green);
   }
 
   &__heading {
@@ -1157,7 +1150,7 @@ onUnmounted(() => {
     gap: 0.35rem;
     margin: 0.75rem 0 0.35rem;
     font-family: var(--font-text-semibold);
-    font-size: var(--mini-font-size);
+    font-size: var(--text-s);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     color: var(--color-text-light, var(--color-dark-grey));
@@ -1178,7 +1171,7 @@ onUnmounted(() => {
     width: 100%;
     padding: 0.45rem 0.5rem;
     border: 0;
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     background: transparent;
     color: var(--color-text);
     text-align: left;
@@ -1187,7 +1180,7 @@ onUnmounted(() => {
 
     &:hover,
     &:focus-visible {
-      background: color-mix(in srgb, var(--row-accent) 14%, transparent);
+      background: color-mix(in srgb, var(--accent, var(--color-text)) 14%, transparent);
       outline: none;
     }
   }
@@ -1196,7 +1189,7 @@ onUnmounted(() => {
     width: 2.25rem;
     height: 2.25rem;
     object-fit: cover;
-    border-radius: 0.25rem;
+    border-radius: var(--radius-xs);
     flex: none;
   }
 
@@ -1210,7 +1203,7 @@ onUnmounted(() => {
 
   &__title {
     font-family: var(--font-text-semibold);
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1229,10 +1222,10 @@ onUnmounted(() => {
   flex: none;
   padding: 0.05rem 0.4rem;
   border: 0;
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   background: color-mix(in srgb, currentColor 16%, transparent);
   font-family: var(--font-text-semibold);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-s);
   letter-spacing: var(--button-letter-spacing);
   line-height: 1.25;
   text-transform: uppercase;
@@ -1254,17 +1247,17 @@ onUnmounted(() => {
 .advanced-tag {
   padding: 0.0625rem 0.375rem;
   border: 0;
-  border-radius: var(--pill-radius);
-  background: var(--as-surface, color-mix(in srgb, var(--color-text) 7%, var(--color-bg)));
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
   font-family: var(--font-text-semibold);
-  font-size: var(--mini-font-size);
+  font-size: var(--text-s);
   line-height: 1.2;
   color: var(--color-text-light, var(--color-dark-grey));
   white-space: nowrap;
 }
 
 .advanced-group {
-  border-bottom: 1px solid var(--as-line, var(--color-grey));
+  border-bottom: 1px solid var(--color-line);
 
   &:last-child {
     border-bottom: 0;
@@ -1278,7 +1271,7 @@ onUnmounted(() => {
     margin: 0 -0.4rem;
     padding: var(--base-padding) 0.4rem;
     border: 0;
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     background: var(--color-bg);
     color: var(--color-text);
     text-align: left;
@@ -1298,7 +1291,7 @@ onUnmounted(() => {
     flex: none;
     margin-left: 0.4rem;
     font-family: var(--font-text-semibold);
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     line-height: 1;
   }
 
@@ -1306,7 +1299,7 @@ onUnmounted(() => {
     width: 2.5rem;
     height: 2.5rem;
     object-fit: cover;
-    border-radius: 0.25rem;
+    border-radius: var(--radius-xs);
     flex: none;
   }
 
@@ -1320,7 +1313,7 @@ onUnmounted(() => {
 
   &__title {
     font-family: var(--font-text-semibold);
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1328,14 +1321,14 @@ onUnmounted(() => {
 
   &__meta {
     font-family: var(--font-text);
-    font-size: var(--mini-font-size);
+    font-size: var(--text-s);
     color: var(--color-text-light, var(--color-dark-grey));
   }
 
   &__count {
     flex: none;
     font-family: var(--font-text);
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     color: var(--color-text-light, var(--color-dark-grey));
 
     b {
@@ -1358,7 +1351,7 @@ onUnmounted(() => {
   width: 100%;
   padding: 0.25rem;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   transition: background var(--transition-fast);
 
   &:hover {
@@ -1375,7 +1368,7 @@ onUnmounted(() => {
     padding: 0;
     border: 0;
     border-radius: 50%;
-    background: var(--as-surface, color-mix(in srgb, var(--color-text) 7%, var(--color-bg)));
+    background: var(--color-surface);
     color: var(--color-text);
     cursor: pointer;
     transition:
@@ -1421,7 +1414,7 @@ onUnmounted(() => {
     width: 2.75rem;
     height: 2.75rem;
     object-fit: cover;
-    border-radius: 0.25rem;
+    border-radius: var(--radius-xs);
     flex: none;
   }
 
@@ -1435,7 +1428,7 @@ onUnmounted(() => {
 
   &__title {
     font-family: var(--font-text-semibold);
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1455,7 +1448,7 @@ onUnmounted(() => {
     gap: 0.125rem;
     flex: none;
     font-family: var(--font-text);
-    font-size: var(--mini-font-size);
+    font-size: var(--text-s);
     color: var(--color-text-light, var(--color-dark-grey));
     white-space: nowrap;
   }

@@ -62,32 +62,32 @@ const excerpt = computed(() => {
   background: none;
   color: var(--color-text);
   font-family: var(--font-text-medium);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   letter-spacing: var(--button-letter-spacing);
   text-align: left;
   text-transform: uppercase;
   cursor: pointer;
 
   &:hover {
-    color: var(--index-accent, var(--color-purple));
+    color: var(--accent, var(--color-purple));
   }
 
   &:focus-visible {
-    outline: 2px solid var(--index-accent, var(--color-purple));
+    outline: 2px solid var(--accent, var(--color-purple));
     outline-offset: 3px;
   }
 }
 
 .index-about__sign {
-  font-size: var(--base-font-size);
-  color: var(--index-accent, var(--color-purple));
+  font-size: var(--text-m);
+  color: var(--accent, var(--color-purple));
 }
 
 .index-about__excerpt {
   max-width: 82ch;
   margin: 0.9rem 0 0;
   color: var(--color-dark-grey);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   line-height: 1.55;
 }
 
@@ -96,7 +96,7 @@ const excerpt = computed(() => {
   columns: 2;
   column-gap: clamp(2rem, 4vw, 4rem);
   color: var(--color-text);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   line-height: 1.65;
 
   p {
@@ -116,7 +116,7 @@ const excerpt = computed(() => {
 @media screen and (max-width: 900px) {
   .index-about__body {
     columns: 1;
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
   }
 }
 </style>

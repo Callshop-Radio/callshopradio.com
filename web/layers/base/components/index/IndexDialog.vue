@@ -236,7 +236,7 @@ function orDash(value: string) {
   max-height: calc(100svh - 2rem);
   margin: auto;
   border: 1px solid color-mix(in srgb, var(--color-text) 16%, transparent);
-  border-radius: 5px;
+  border-radius: var(--radius-media);
   background-color: var(--color-bg);
   overflow: hidden;
 }
@@ -261,12 +261,12 @@ function orDash(value: string) {
     border-color var(--transition-fast);
 
   &:hover {
-    border-color: var(--index-accent, var(--color-purple));
-    color: var(--index-accent, var(--color-purple));
+    border-color: var(--accent, var(--color-purple));
+    color: var(--accent, var(--color-purple));
   }
 
   &:focus-visible {
-    outline: 2px solid var(--index-accent, var(--color-purple));
+    outline: 2px solid var(--accent, var(--color-purple));
     outline-offset: 2px;
   }
 }
@@ -299,7 +299,7 @@ function orDash(value: string) {
   margin: 0;
   padding-right: 2.5rem;
   font-family: var(--font-text-medium);
-  font-size: var(--h2-size);
+  font-size: var(--text-l);
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -316,14 +316,14 @@ function orDash(value: string) {
 
   dt {
     color: var(--color-dark-grey);
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
   }
 
   dd {
     margin: 0;
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     line-height: 1.4;
   }
 }
@@ -340,9 +340,9 @@ function orDash(value: string) {
     gap: 0.35rem;
     padding: 0.35rem 0.75rem;
     border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
-    border-radius: 100px;
+    border-radius: var(--radius-circle);
     color: var(--color-text);
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     text-decoration: none;
@@ -351,12 +351,12 @@ function orDash(value: string) {
       border-color var(--transition-fast);
 
     &:hover {
-      border-color: var(--index-accent, var(--color-purple));
-      color: var(--index-accent, var(--color-purple));
+      border-color: var(--accent, var(--color-purple));
+      color: var(--accent, var(--color-purple));
     }
 
     &:focus-visible {
-      outline: 2px solid var(--index-accent, var(--color-purple));
+      outline: 2px solid var(--accent, var(--color-purple));
       outline-offset: 2px;
     }
   }

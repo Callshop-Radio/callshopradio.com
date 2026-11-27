@@ -786,16 +786,15 @@ onUnmounted(() => {
   }
 
   .hero-title {
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 700;
+    font-size: var(--text-xxl);
     letter-spacing: -0.02em;
     margin-bottom: var(--small-padding);
-    font-family: var(--font-headline);
+    font-family: var(--font-text-semibold);
   }
 
   .hero-subtitle {
-    font-size: 1.125rem;
-    color: var(--color-text-light, #888);
+    font-size: var(--text-l);
+    color: var(--color-text-light);
     font-family: var(--font-text);
   }
 }
@@ -818,19 +817,16 @@ onUnmounted(() => {
   padding: var(--base-padding) var(--big-padding);
   background: var(--color-bg);
   border: 1px solid var(--color-text);
-  border-radius: 100px;
+  border-radius: var(--radius-pill);
   transition: all 0.2s ease;
-  height: calc(var(--base-font-size) + var(--base-padding) * 2 + 2px);
-
-  &:focus-within {
-  }
+  height: calc(var(--text-m) + var(--base-padding) * 2 + 2px);
 
   .search-icon {
     display: flex;
     align-items: center;
     svg {
-      width: var(--base-font-size);
-      height: var(--base-font-size);
+      width: var(--text-m);
+      height: var(--text-m);
       path {
         fill: var(--color-text);
       }
@@ -844,8 +840,8 @@ onUnmounted(() => {
     flex: 1;
     border: none;
     background: transparent;
-    font-size: var(--base-font-size);
-    height: calc(var(--base-font-size) + var(--base-padding) * 2);
+    font-size: var(--text-m);
+    height: calc(var(--text-m) + var(--base-padding) * 2);
     color: var(--color-text);
     outline: none;
     font-family: var(--font-text-semibold);
@@ -854,7 +850,7 @@ onUnmounted(() => {
     white-space: nowrap;
 
     &::placeholder {
-      color: var(--color-text-light, #888);
+      color: var(--color-text-light);
     }
   }
 
@@ -865,7 +861,7 @@ onUnmounted(() => {
     padding: 6px;
     background: transparent;
     border: none;
-    color: var(--color-text-light, #888);
+    color: var(--color-text-light);
     cursor: pointer;
     border-radius: 50%;
     transition: all 0.15s ease;
@@ -897,14 +893,14 @@ onUnmounted(() => {
 
 .type-filter-btn {
   color: var(--color-text);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   font-family: var(--font-text-semibold);
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
   padding: var(--small-padding) var(--base-padding);
   background-color: var(--color-bg);
-  border-radius: 100px;
+  border-radius: var(--radius-pill);
   border: 0.09325rem solid var(--color-text);
   &.type-shows {
     border-color: var(--color-pink);
@@ -958,7 +954,7 @@ onUnmounted(() => {
   }
 
   .type-icon {
-    font-size: 1rem;
+    font-size: var(--text-m);
   }
 }
 
@@ -975,7 +971,7 @@ onUnmounted(() => {
   margin-top: 8px;
   background: var(--color-bg);
   border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.15));
-  border-radius: 12px;
+  border-radius: var(--radius-surface);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   overflow-y: auto;
   max-height: 200px;
@@ -991,9 +987,9 @@ onUnmounted(() => {
   background: color-mix(in srgb, var(--color-text) 5%, transparent);
   border: none;
   border-bottom: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.1));
-  font-size: 0.75rem;
+  font-size: var(--text-m);
   font-family: var(--font-text);
-  color: var(--color-text-light, #888);
+  color: var(--color-text-light);
   cursor: pointer;
   transition: all 0.15s ease;
 
@@ -1021,25 +1017,25 @@ onUnmounted(() => {
   }
 
   .autocomplete-icon {
-    font-size: 1.25rem;
+    font-size: var(--text-l);
   }
 
   .autocomplete-title {
     flex: 1;
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     font-family: var(--font-text-semibold);
     color: var(--color-text);
   }
 
   .autocomplete-type {
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     font-family: var(--font-text-semibold);
-    color: var(--color-text-light, #888);
+    color: var(--color-text-light);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     padding: var(--small-padding) var(--base-padding);
     background-color: var(--color-bg);
-    border-radius: 100px;
+    border-radius: var(--radius-pill);
     border: 0.09325rem solid var(--color-text);
 
     &.type-shows {
@@ -1103,8 +1099,8 @@ onUnmounted(() => {
   padding: 10px 16px;
   background: transparent;
   border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.15));
-  border-radius: 8px;
-  font-size: 0.9rem;
+  border-radius: var(--radius-pill-sm);
+  font-size: var(--text-m);
   font-family: var(--font-text);
   color: var(--color-text);
   cursor: pointer;
@@ -1120,22 +1116,21 @@ onUnmounted(() => {
   }
 
   .category-icon {
-    font-size: 1.1rem;
+    font-size: var(--text-m);
   }
 
   .category-label {
     flex: 1;
     text-align: left;
-    font-weight: 500;
   }
 
   .category-count {
-    color: var(--color-text-light, #888);
-    font-size: 0.85rem;
+    color: var(--color-text-light);
+    font-size: var(--text-m);
   }
 
   .expand-icon {
-    font-size: 1.25rem;
+    font-size: var(--text-l);
     font-weight: 300;
   }
 }
@@ -1147,15 +1142,15 @@ onUnmounted(() => {
   padding: var(--base-padding) var(--small-padding);
   margin-top: 8px;
   background: color-mix(in srgb, var(--color-text) 3%, transparent);
-  border-radius: 8px;
+  border-radius: var(--radius-pill-sm);
 }
 
 .tag-chip {
   padding: 6px 14px;
   background: var(--color-bg);
   border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.2));
-  border-radius: 100px;
-  font-size: 0.8rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-m);
   font-family: var(--font-text);
   color: var(--color-text);
   cursor: pointer;
@@ -1181,16 +1176,16 @@ onUnmounted(() => {
   margin-top: var(--small-padding);
 
   .active-label {
-    font-size: 0.85rem;
-    color: var(--color-text-light, #888);
+    font-size: var(--text-m);
+    color: var(--color-text-light);
   }
 
   .reset-tags-btn {
     padding: 6px 14px;
     background: transparent;
     border: 1px solid var(--color-pink);
-    border-radius: 100px;
-    font-size: 0.8rem;
+    border-radius: var(--radius-pill);
+    font-size: var(--text-m);
     font-family: var(--font-text);
     color: var(--color-pink);
     cursor: pointer;
@@ -1219,8 +1214,8 @@ onUnmounted(() => {
 }
 
 .empty-state-text {
-  color: var(--color-text-light, #888);
-  font-size: var(--base-font-size);
+  color: var(--color-text-light);
+  font-size: var(--text-m);
   font-family: var(--font-text);
   margin-bottom: var(--big-padding);
 }
@@ -1242,7 +1237,7 @@ onUnmounted(() => {
   padding: var(--big-padding);
   background: var(--color-bg);
   border: 1px solid var(--color-text-light, rgba(0, 0, 0, 0.1));
-  border-radius: 12px;
+  border-radius: var(--radius-media);
   text-decoration: none;
   transition: all 0.2s ease;
 
@@ -1279,20 +1274,20 @@ onUnmounted(() => {
   }
 
   .card-icon {
-    font-size: 2rem;
+    font-size: var(--text-xl);
     margin-bottom: var(--small-padding);
   }
 
   .card-title {
-    font-size: 1.125rem;
-    font-weight: 600;
+    font-size: var(--text-l);
+    font-family: var(--font-text-semibold);
     color: var(--color-text);
     margin-bottom: 4px;
   }
 
   .card-desc {
-    font-size: 0.875rem;
-    color: var(--color-text-light, #888);
+    font-size: var(--text-m);
+    color: var(--color-text-light);
   }
 }
 

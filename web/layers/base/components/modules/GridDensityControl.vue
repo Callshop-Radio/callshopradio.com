@@ -96,7 +96,7 @@ onUnmounted(() => {
 }
 
 .grid-density__label {
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	font-family: var(--font-text-semibold);
 	text-transform: uppercase;
 	color: var(--color-text);
@@ -111,7 +111,7 @@ onUnmounted(() => {
 	grid-template-columns: repeat(4, var(--density-step));
 	align-items: center;
 	padding: 3px;
-	border-radius: 100px;
+	border-radius: var(--radius-circle);
 	background-color: rgba(128, 128, 128, 0.18);
 	background-color: color-mix(in srgb, var(--color-text) 14%, transparent);
 	touch-action: manipulation;
@@ -127,11 +127,11 @@ onUnmounted(() => {
 	height: 1.55rem;
 	padding: 0;
 	border: 0;
-	border-radius: 100px;
+	border-radius: var(--radius-circle);
 	background: transparent;
 	color: var(--color-text);
 	font-family: var(--font-text-semibold);
-	font-size: 0.625rem;
+	font-size: var(--text-s);
 	line-height: 1;
 	font-variant-numeric: tabular-nums;
 	text-align: center;
@@ -158,7 +158,7 @@ onUnmounted(() => {
 	bottom: 3px;
 	left: calc(3px + var(--grid-index, 0) * var(--density-step));
 	width: var(--density-step);
-	border-radius: 100px;
+	border-radius: var(--radius-circle);
 	background-color: var(--color-text);
 	transition:
 		left 0.38s cubic-bezier(0.22, 1, 0.36, 1),

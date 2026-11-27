@@ -285,7 +285,7 @@ onMounted(load);
 
 .saves__meta {
 	margin: 0;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	color: color-mix(in srgb, var(--color-text) 45%, transparent);
@@ -299,7 +299,7 @@ onMounted(load);
 .saves__error {
 	margin: 0;
 	color: var(--color-pink);
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 }
 
 .new-list {
@@ -313,7 +313,7 @@ onMounted(load);
 	min-width: 0;
 	padding: 0.85rem 1.1rem;
 	border: 0;
-	border-radius: 12px;
+	border-radius: var(--radius-surface);
 	background-color: color-mix(in srgb, var(--color-text) 6%, transparent);
 	color: var(--color-text);
 	font: inherit;
@@ -334,11 +334,11 @@ onMounted(load);
 	gap: 0.4rem;
 	padding: 0.85rem 1.2rem;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: var(--radius-pill);
 	background-color: var(--color-text);
 	color: var(--color-bg);
 	font: inherit;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	cursor: pointer;
@@ -352,12 +352,12 @@ onMounted(load);
 
 	&:hover:not(:disabled) {
 		background-color: var(--color-pink);
-		color: #111;
+		color: var(--color-black);
 	}
 }
 
 .new-list__plus {
-	font-size: 1rem;
+	font-size: var(--text-m);
 	line-height: 1;
 }
 
@@ -375,7 +375,7 @@ onMounted(load);
 	align-items: center;
 	gap: 0.9rem;
 	padding: 0.85rem 1rem;
-	border-radius: 12px;
+	border-radius: var(--radius-media);
 	background-color: color-mix(in srgb, var(--color-text) 5%, transparent);
 	color: inherit;
 	text-decoration: none;
@@ -401,7 +401,7 @@ onMounted(load);
 	display: block;
 	width: 2.1rem;
 	height: 2.1rem;
-	border-radius: 5px;
+	border-radius: var(--radius-media);
 	overflow: hidden;
 	background-color: color-mix(in srgb, var(--color-text) 8%, transparent);
 
@@ -425,25 +425,25 @@ onMounted(load);
 
 .list-card__name {
 	font-family: var(--font-text-medium);
-	font-size: var(--base-font-size);
+	font-size: var(--text-m);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
 .list-card__meta {
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 48%, transparent);
 }
 
 .list-card__tag {
 	margin-left: 0.4rem;
 	padding: 0.05rem 0.4rem;
-	border-radius: 999px;
+	border-radius: var(--radius-pill);
 	background-color: color-mix(in srgb, var(--color-pink) 18%, transparent);
 	color: var(--color-pink);
-	font-size: 0.625rem;
-	letter-spacing: 0.06em;
+	font-size: var(--text-s);
+	letter-spacing: var(--label-letter-spacing);
 	text-transform: uppercase;
 }
 
@@ -464,7 +464,7 @@ onMounted(load);
 .saved__title {
 	margin: 0;
 	font-family: var(--font-text-medium);
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	letter-spacing: var(--button-letter-spacing);
 	text-transform: uppercase;
 	color: color-mix(in srgb, var(--color-text) 55%, transparent);
@@ -507,7 +507,7 @@ onMounted(load);
 	flex: none;
 	width: 3.25rem;
 	height: 3.25rem;
-	border-radius: 5px;
+	border-radius: var(--radius-media);
 	overflow: hidden;
 	background-color: color-mix(in srgb, var(--color-text) 7%, transparent);
 
@@ -527,7 +527,7 @@ onMounted(load);
 
 .saved__name {
 	font-family: var(--font-text-medium);
-	font-size: var(--base-font-size);
+	font-size: var(--text-m);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -535,7 +535,7 @@ onMounted(load);
 }
 
 .saved__sub {
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 50%, transparent);
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -548,7 +548,7 @@ onMounted(load);
 	background: none;
 	color: color-mix(in srgb, var(--color-text) 45%, transparent);
 	font: inherit;
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	cursor: pointer;
 
 	&:hover {

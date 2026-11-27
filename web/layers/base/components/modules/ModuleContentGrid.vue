@@ -209,6 +209,46 @@ if (initialSubgenres.length) {
 	]);
 }
 
+// Tag pills on detail pages link with ?tag=<slug>. Genres keep their own
+// ?genre/?subgenre parameters; everything else (city, venue, craft, article)
+// lands here and becomes a normal filter chip.
+const initialTagSlugs = querySlugList(route.query.tag);
+
+const availablePlainTags = Object.values(props.module?.availableTags ?? {})
+	.flat()
+	.filter((tag): tag is Tag => Boolean(tag && (tag as Tag)._id))
+	.filter((tag) => !["tag.genre", "tag.subGenre"].includes(String(tag._type)))
+	.map((tag) => ({
+		tag,
+		slug: tagSlug(
+			getI18nLabel(tag.title) || (tag as { name?: string }).name || "",
+		),
+	}));
+
+const initialPlainTags = availablePlainTags.filter((entry) =>
+	initialTagSlugs.includes(entry.slug),
+);
+
+if (initialPlainTags.length) {
+	const groupFor = (type: string) =>
+		type === "tag.city"
+			? "cities"
+			: type === "tag.musician"
+				? "musicians"
+				: type === "tag.venue"
+					? "venues"
+					: type === "tag.crafts"
+						? "crafts"
+						: type === "tag.article"
+							? "articles"
+							: "";
+	for (const entry of initialPlainTags) {
+		activeFilters.value.add(entry.tag._id);
+		const group = groupFor(String(entry.tag._type));
+		if (group) expandedTagTypes.value.add(group);
+	}
+}
+
 function querySlugList(raw: unknown): string[] {
 	return (Array.isArray(raw) ? raw : raw ? [raw] : [])
 		.map((value) => String(value))
@@ -218,7 +258,7 @@ function querySlugList(raw: unknown): string[] {
 // Keep the URL in sync with the selection, so a filtered view can be linked
 // and several genres/subgenres survive a reload.
 watch(
-	[activeGenres, activeSubGenres],
+	[activeGenres, activeSubGenres, activeFilters],
 	([genres, subgenres]) => {
 		const subgenreSlugs = [...subgenres]
 			.map(
@@ -236,9 +276,17 @@ watch(
 		const currentSubgenres = querySlugList(route.query.subgenre);
 		const currentGenres = querySlugList(route.query.genre);
 
+		const tagSlugs = [...activeFilters.value]
+			.map(
+				(id) => availablePlainTags.find((entry) => entry.tag._id === id)?.slug,
+			)
+			.filter((slug): slug is string => Boolean(slug));
+		const currentTags = querySlugList(route.query.tag);
+
 		if (
 			currentSubgenres.join("\u0000") === subgenreSlugs.join("\u0000") &&
-			currentGenres.join("\u0000") === genreSlugs.join("\u0000")
+			currentGenres.join("\u0000") === genreSlugs.join("\u0000") &&
+			currentTags.join("\u0000") === tagSlugs.join("\u0000")
 		)
 			return;
 
@@ -247,11 +295,30 @@ watch(
 				...route.query,
 				genre: genreSlugs.length ? genreSlugs : undefined,
 				subgenre: subgenreSlugs.length ? subgenreSlugs : undefined,
+				tag: tagSlugs.length ? tagSlugs : undefined,
 			},
 		});
 	},
 	{ deep: true },
 );
+
+// A tag pill jumps into the archive; the reader wants the filtered list, not
+// the masthead again, so the filter area lands right under the fixed header.
+onMounted(() => {
+	if (!initialTagSlugs.length) return;
+	window.setTimeout(() => {
+		const target =
+			filterSection.value ??
+			(document.querySelector(".module-section") as HTMLElement | null);
+		if (!target) return;
+		const rect = target.getBoundingClientRect();
+		const headerOffset = 67.2 + 58 + 12;
+		window.scrollTo({
+			top: window.scrollY + rect.top - headerOffset,
+			behavior: "smooth",
+		});
+	}, 250);
+});
 
 const needsSelfLoad = computed(() => {
 	if (forceSelfLoad.value) return true;
@@ -730,6 +797,7 @@ const poolTags = computed(() => {
 	const tags = availableTags.value;
 	const byType = (type: string) => tags.filter((t: Tag) => t._type === type);
 	return {
+		cities: byType("tag.city"),
 		musicians: byType("tag.musician"),
 		venues: byType("tag.venue"),
 		crafts: byType("tag.crafts"),
@@ -745,6 +813,7 @@ const poolTags = computed(() => {
  */
 const poolTagGroups = computed(() => {
 	const groups = [
+		{ key: "cities", title: "Cities", tags: poolTags.value.cities },
 		{ key: "musicians", title: "Musicians", tags: poolTags.value.musicians },
 		{ key: "venues", title: "Venues", tags: poolTags.value.venues },
 		{ key: "crafts", title: "Crafts", tags: poolTags.value.crafts },
@@ -2298,8 +2367,8 @@ onUnmounted(() => {
 .skeleton-header {
   width: 200px;
   height: 24px;
-  background: var(--color-fg-muted, #e0e0e0);
-  border-radius: 4px;
+  background: var(--color-fg-muted, var(--color-grey));
+  border-radius: var(--radius-xs);
   margin-bottom: var(--mid-margin, 1rem);
 }
 
@@ -2311,8 +2380,8 @@ onUnmounted(() => {
 
 .skeleton-item {
   aspect-ratio: 1 / 1;
-  background: var(--color-fg-muted, #e0e0e0);
-  border-radius: 4px;
+  background: var(--color-fg-muted, var(--color-grey));
+  border-radius: var(--radius-xs);
 }
 
 @keyframes skeleton-pulse {
@@ -2431,11 +2500,11 @@ onUnmounted(() => {
     .action-btn {
       padding: var(--small-padding) var(--mid-padding);
       border: 1px solid var(--color-text);
-      border-radius: 100px;
+      border-radius: var(--radius-pill);
       background: transparent;
       cursor: pointer;
       font-family: var(--font-text);
-      font-size: var(--small-font-size);
+      font-size: var(--text-s);
       text-transform: uppercase;
       transition: all 0.2s ease;
 
@@ -2455,7 +2524,7 @@ onUnmounted(() => {
     margin-right: calc(var(--big-margin) * -1);
     padding-left: var(--big-margin);
     padding-right: var(--big-margin);
-    border-radius: 100px;
+    border-radius: var(--radius-pill);
     &::before {
       content: "";
       position: absolute;
@@ -2464,12 +2533,12 @@ onUnmounted(() => {
       width: 100%;
       height: calc(
         var(--first-content-distance) +
-          (var(--small-padding) * 2 + var(--small-font-size) / 2)
+          (var(--small-padding) * 2 + var(--text-s) / 2)
       );
       background-color: var(--color-bg);
       z-index: -1;
       transform: translateY(
-        calc(-100% + (var(--small-padding) * 2 + var(--small-font-size) / 2))
+        calc(-100% + (var(--small-padding) * 2 + var(--text-s) / 2))
       );
     }
   }
@@ -2481,7 +2550,7 @@ onUnmounted(() => {
     justify-content: space-between;
     padding: var(--small-padding) 0;
     background-color: var(--color-text);
-    border-radius: 100px;
+    border-radius: var(--radius-pill);
     z-index: 50;
 
     .active-filters {
@@ -2505,16 +2574,16 @@ onUnmounted(() => {
         flex-flow: row wrap;
         align-items: center;
         justify-content: center;
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
-        height: var(--small-font-size);
+        height: var(--text-s);
         cursor: pointer;
 
         .toggle-arrow {
           position: absolute;
-          font-size: var(--small-font-size);
+          font-size: var(--text-s);
           transform: translate(0, -1px);
         }
 
@@ -2551,7 +2620,7 @@ onUnmounted(() => {
       .active-filter {
         background-color: var(--theme-color);
         color: white;
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         letter-spacing: var(--button-letter-spacing);
         font-family: var(--font-text);
         position: relative;
@@ -2566,7 +2635,7 @@ onUnmounted(() => {
         &__name {
           min-width: max-content;
           cursor: pointer;
-          font-size: var(--small-font-size);
+          font-size: var(--text-s);
           letter-spacing: var(--button-letter-spacing);
           font-family: var(--font-text);
           padding: 0 8px 0 0;
@@ -2584,7 +2653,7 @@ onUnmounted(() => {
       padding: 0 calc(var(--mid-margin) / 2);
 
       &__title {
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
@@ -2623,7 +2692,7 @@ onUnmounted(() => {
         flex-flow: row wrap;
         align-items: center;
         justify-content: center;
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-bg);
@@ -2637,7 +2706,7 @@ onUnmounted(() => {
         align-items: center;
         gap: var(--small-padding);
         background-color: transparent;
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         color: var(--color-dark-grey);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
@@ -2757,7 +2826,7 @@ onUnmounted(() => {
     }
 
     .filter-tag {
-      font-size: var(--small-font-size);
+      font-size: var(--text-s);
       cursor: pointer;
       transition: all 0.2s ease;
       background-color: var(--color-bg);
@@ -2889,7 +2958,7 @@ onUnmounted(() => {
           padding: calc(var(--small-padding) * 0.4)
             calc(var(--base-padding) * 0.45);
           border-width: 1px;
-          font-size: calc(var(--small-font-size) * 0.86);
+          font-size: var(--text-s);
           line-height: 1.05;
         }
       }
@@ -2902,7 +2971,7 @@ onUnmounted(() => {
         .tag {
           padding: calc(var(--small-padding) * 0.32)
             calc(var(--base-padding) * 0.36);
-          font-size: calc(var(--small-font-size) * 0.78);
+          font-size: var(--text-s);
         }
       }
     }
@@ -2914,7 +2983,7 @@ onUnmounted(() => {
     margin: 0;
     padding: var(--mid-padding) 0 0;
     text-align: center;
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     letter-spacing: var(--button-letter-spacing);
     text-transform: uppercase;
     color: var(--color-text);
@@ -2963,6 +3032,9 @@ onUnmounted(() => {
     max-width: calc(100% / 3 - var(--big-margin) * 1.325);
     width: 100%;
     padding: 0 0 calc(var(--big-margin) / 2) 0;
+    /* Every variant is a card: the radius belongs to the base rule, not to
+       one modifier or a global override. */
+    border-radius: var(--radius-media);
 
     .tag.clickable {
       cursor: pointer;
@@ -2982,6 +3054,7 @@ onUnmounted(() => {
     &__image {
       position: relative;
       overflow: hidden;
+      border-radius: var(--radius-media);
       /* .grid-item is align-items:flex-start, so the wrapper would otherwise
          shrink to the image's natural width and small originals stay small. */
       width: 100%;
@@ -3033,7 +3106,7 @@ onUnmounted(() => {
         align-items: center;
 
         .grid-item__date {
-          font-size: var(--small-font-size);
+          font-size: var(--text-s);
           text-transform: uppercase;
         }
 
@@ -3044,14 +3117,14 @@ onUnmounted(() => {
           margin: 0 0 0 auto;
           color: transparent;
           background-color: var(--color-text);
-          border-radius: 100px;
+          border-radius: var(--radius-circle);
           border: none;
           padding: 4px;
-          width: calc(var(--base-font-size) + 4px);
-          height: calc(var(--base-font-size) + 4px);
+          width: calc(var(--text-m) + 4px);
+          height: calc(var(--text-m) + 4px);
 
           svg {
-            height: var(--base-font-size);
+            height: var(--text-m);
             transform: translate(1px, 0);
             path {
               fill: var(--color-bg);
@@ -3062,7 +3135,7 @@ onUnmounted(() => {
 
       .grid-item__title,
       .grid-item__artist {
-        font-size: var(--base-font-size);
+        font-size: var(--text-m);
         text-transform: uppercase;
         font-family: var(--font-text-semibold);
         margin: 0;
@@ -3080,7 +3153,7 @@ onUnmounted(() => {
 
   /* Content type specific styles */
   &.sets .grid-item__content .grid-item__title {
-    font-size: 1.25rem;
+    font-size: var(--text-l);
     line-height: 1.05;
   }
 
@@ -3105,7 +3178,7 @@ onUnmounted(() => {
       flex: 1 1 50%;
       max-width: calc(50% - var(--big-padding) * 1.5);
       background-color: var(--color-text);
-      border-radius: 12px;
+      border-radius: var(--radius-media);
       overflow: hidden;
       padding: 0;
       margin-right: 0;
@@ -3121,12 +3194,12 @@ onUnmounted(() => {
 
       &__image {
         width: 100%;
-        border-radius: 5px 5px 0 0 !important;
+        border-radius: var(--radius-media) var(--radius-media) 0 0;
 
         img {
           aspect-ratio: 3 / 1.5 !important;
           width: 100%;
-          border-radius: 5px 5px 0 0 !important;
+          border-radius: var(--radius-media) var(--radius-media) 0 0;
         }
       }
 
@@ -3180,7 +3253,9 @@ onUnmounted(() => {
   }
 
   &__title {
-    @apply text-2xl font-bold mb-4;
+    font-size: var(--text-l);
+  font-family: var(--font-text-semibold);
+  margin-bottom: 1rem;
   }
   &__header {
     display: flex;
@@ -3220,7 +3295,7 @@ onUnmounted(() => {
       -webkit-overflow-scrolling: touch;
       border: 1px solid var(--color-bg);
       border-bottom: 0;
-      border-radius: 1.56125rem 1.56125rem 0 0;
+      border-radius: var(--radius-media);
       background-color: var(--color-bg-transparent);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
@@ -3250,7 +3325,7 @@ onUnmounted(() => {
       &::-webkit-scrollbar-thumb {
         background: var(--color-pink);
         border: 2px solid transparent;
-        border-radius: 100px;
+        border-radius: var(--radius-circle);
         background-clip: padding-box;
       }
 
@@ -3295,13 +3370,13 @@ onUnmounted(() => {
       padding: 8px 16px;
       transform: translateX(-50%);
       border: 1px solid var(--color-text);
-      border-radius: 100px;
+      border-radius: var(--radius-pill);
       background-color: var(--color-bg-transparent);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
       color: var(--color-text);
       font-family: var(--font-text-semibold);
-      font-size: var(--small-font-size);
+      font-size: var(--text-s);
       text-transform: uppercase;
       letter-spacing: var(--button-letter-spacing);
       box-shadow: 0 4px 24px rgba(0, 0, 0, 0.16);
@@ -3320,10 +3395,10 @@ onUnmounted(() => {
         min-width: 16px;
         height: 16px;
         padding: 0 4px;
-        border-radius: 100px;
+        border-radius: var(--radius-pill);
         background-color: var(--color-pink);
         color: var(--color-black);
-        font-size: 9px;
+        font-size: var(--text-s);
         line-height: 1;
       }
 
@@ -3356,14 +3431,14 @@ onUnmounted(() => {
       left: 50%;
       width: 44px;
       height: 5px;
-      border-radius: 100px;
+      border-radius: var(--radius-pill);
       background-color: var(--color-dark-grey);
       transform: translateX(-50%);
     }
 
     &__sheet-title {
       font-family: var(--font-text-semibold);
-      font-size: var(--small-font-size);
+      font-size: var(--text-s);
       text-transform: uppercase;
       letter-spacing: var(--button-letter-spacing);
     }
@@ -3393,7 +3468,7 @@ onUnmounted(() => {
       gap: var(--small-padding);
 
       &__title {
-        font-size: var(--small-font-size);
+        font-size: var(--text-s);
         font-family: var(--font-text-semibold);
         text-transform: uppercase;
         color: var(--color-text);
@@ -3406,7 +3481,7 @@ onUnmounted(() => {
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid var(--color-bg);
-        border-radius: 1.56125rem;
+        border-radius: var(--radius-media);
         padding: var(--mid-padding);
         overflow: hidden;
 
@@ -3452,9 +3527,9 @@ onUnmounted(() => {
           background-color: var(--color-dark-grey);
           color: var(--color-text);
           padding: var(--small-padding) var(--mid-padding);
-          border-radius: 100px;
+          border-radius: var(--radius-pill);
           border: 1px solid transparent;
-          font-size: var(--small-font-size);
+          font-size: var(--text-s);
           text-transform: uppercase;
           font-family: var(--font-text);
           cursor: pointer;
@@ -3505,8 +3580,8 @@ onUnmounted(() => {
         background-color: var(--theme-color);
         color: var(--color-bg);
         border: 1px solid var(--theme-color);
-        border-radius: 100px;
-        font-size: var(--small-font-size);
+        border-radius: var(--radius-pill);
+        font-size: var(--text-s);
         letter-spacing: var(--button-letter-spacing);
         font-family: var(--font-text);
         text-transform: uppercase;
@@ -3524,7 +3599,7 @@ onUnmounted(() => {
         &__name {
           min-width: max-content;
           cursor: pointer;
-          font-size: var(--small-font-size);
+          font-size: var(--text-s);
           letter-spacing: var(--button-letter-spacing);
           font-family: var(--font-text);
           padding: 0;
@@ -3542,7 +3617,7 @@ onUnmounted(() => {
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--color-bg);
-      border-radius: 100px;
+      border-radius: var(--radius-pill);
 
       @media (prefers-color-scheme: dark) {
         background-color: rgba(0, 0, 0, 0.35);
@@ -3561,7 +3636,7 @@ onUnmounted(() => {
           gap: var(--small-padding);
           background-color: transparent;
           border: none;
-          font-size: var(--small-font-size);
+          font-size: var(--text-s);
           color: var(--color-text);
           text-transform: uppercase;
           font-family: var(--font-text-semibold);
@@ -3692,7 +3767,7 @@ onUnmounted(() => {
           transform: none;
           opacity: 1;
           padding: var(--mid-padding);
-          border-radius: 0 0 1.56125rem 1.56125rem;
+          border-radius: 0 0 var(--radius-media) var(--radius-media);
           border: none;
           border-top: 1px solid var(--color-grey);
           background-color: var(--color-bg-transparent);
@@ -3772,7 +3847,7 @@ onUnmounted(() => {
   .content-grid {
     &__mobile-filter-cities {
       &__tags .filter-tag--city {
-        font-size: 11px;
+        font-size: var(--text-s);
         padding: 6px 12px;
       }
     }
@@ -3781,7 +3856,7 @@ onUnmounted(() => {
       gap: var(--mid-padding);
 
       .sort-button {
-        font-size: 11px;
+        font-size: var(--text-s);
 
         .dot {
           width: 8px;
@@ -3948,7 +4023,7 @@ onUnmounted(() => {
     &::-webkit-scrollbar-thumb {
       background: var(--color-pink);
       border: 2px solid transparent;
-      border-radius: 100px;
+      border-radius: var(--radius-circle);
       background-clip: padding-box;
     }
 
@@ -3998,7 +4073,7 @@ onUnmounted(() => {
     margin: 0 auto;
     padding: 8px 14px;
     border: 1px solid var(--color-text);
-    border-radius: 100px;
+    border-radius: var(--radius-pill);
     background: transparent;
     backdrop-filter: blur(18px);
   }

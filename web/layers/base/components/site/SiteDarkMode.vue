@@ -36,7 +36,7 @@ function toggleDarkMode() {
   height: 1.5rem;
   padding: 0;
   border: 1px solid var(--color-text);
-  border-radius: 999px;
+  border-radius: var(--radius-circle);
   background-color: var(--color-bg);
   cursor: pointer;
   transition:

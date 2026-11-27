@@ -110,7 +110,7 @@ const copy = computed(() => {
 .index-teaser__eyebrow {
   margin: 0;
   color: var(--color-purple);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   letter-spacing: var(--menu-letter-spacing);
   text-transform: uppercase;
 }
@@ -118,8 +118,7 @@ const copy = computed(() => {
 .index-teaser__title {
   margin: 0;
   font-family: var(--font-text-medium);
-  font-size: var(--h2-size);
-  font-weight: 550;
+  font-size: var(--text-l);
   line-height: 1.1;
   text-transform: uppercase;
 }
@@ -127,7 +126,7 @@ const copy = computed(() => {
 .index-teaser__text {
   max-width: 46ch;
   margin: 0;
-  font-size: var(--base-font-size);
+  font-size: var(--text-m);
   line-height: 1.5;
 }
 
@@ -139,10 +138,10 @@ const copy = computed(() => {
   padding: 0.45rem 0.9rem;
   border: 1px solid
     color-mix(in srgb, var(--color-text) 22%, transparent);
-  border-radius: 100px;
+  border-radius: var(--radius-pill);
   color: var(--color-text);
   font-family: var(--font-text-medium);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   letter-spacing: var(--button-letter-spacing);
   text-decoration: none;
   text-transform: uppercase;
@@ -177,7 +176,7 @@ const copy = computed(() => {
     padding: 18%;
     border: 1px solid
       color-mix(in srgb, var(--color-text) 14%, transparent);
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     background-color: #fff;
     transition: border-color var(--transition-fast);
 
@@ -190,7 +189,7 @@ const copy = computed(() => {
     display: block;
     width: 100%;
     height: 100%;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
   }
 
   a:focus-visible {

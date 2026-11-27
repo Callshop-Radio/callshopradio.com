@@ -30,7 +30,6 @@ usePageSeo(data?.value?.seo);
 	<div class="words">
 		<SiteArchiveMasthead
 			title="Words"
-			lede="Essays, interviews and writing from the community."
 			accent="var(--color-green)"
 		/>
 		<section v-if="featuredArticles.length > 0" class="intro-section">
@@ -87,37 +86,19 @@ usePageSeo(data?.value?.seo);
   }
 
   @media (min-width: 901px) {
-    /* The cover story runs edge to edge; the next one only arrives after a
-       wide breath of space instead of a peeking neighbour card. */
-    :deep(.lab-slider--words) {
-      --lab-start-offset: 0px;
-    }
-
+    /* The story image sits on the page's content column: same left edge as the
+       WORDS headline, same right edge as the rule under it. */
     :deep(.lab-slider--words.lab-slider--aperture) {
-      --lab-item-width: 100vw;
-      --lab-gap: clamp(3rem, 6vw, 7rem);
-      /* Edge to edge means no rounded corner notch at the viewport border. */
-      --lab-media-radius: 0px;
+      --lab-item-width: calc(
+        100vw - 2 * (var(--lab-inset) + var(--base-margin))
+      );
+      --lab-gap: clamp(2rem, 4vw, 4.5rem);
+      --lab-media-radius: 5px;
     }
 
-    /* A 21:9 crop at 100vw would push the caption and the transport below the
-       fold. The band keeps the full width and caps its height instead, so the
-       story still reads as a full-bleed cover. */
+    /* Keep the hero above the fold: the content-wide crop becomes a band. */
     :deep(.lab-slider--words .lab-media--words) {
       max-height: 40svh;
-    }
-
-    /* A full-bleed cover must not shrink and blur while it slides in; the
-       depth effect would show black bars on both edges on every change. */
-    :deep(.lab-slider--words .lab-item__body) {
-      transform: none !important;
-      filter: none !important;
-      opacity: 1 !important;
-    }
-
-    /* The image is edge to edge, the copy stays on the page grid. */
-    :deep(.lab-slider--words .lab-caption--band) {
-      padding-inline: calc(var(--lab-inset) + var(--base-margin));
     }
   }
 

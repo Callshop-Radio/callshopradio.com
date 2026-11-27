@@ -354,9 +354,9 @@ const currentArticleText = computed(() =>
       padding: 0 var(--base-padding);
       border: none;
       /* A city flag: rounded on top, square where it meets the edge. */
-      border-radius: 8px 8px 0 0;
+      border-radius: var(--radius-flag);
       background-color: var(--color-green);
-      font-size: var(--small-font-size);
+      font-size: var(--text-s);
       line-height: 1;
     }
   }
@@ -388,13 +388,13 @@ const currentArticleText = computed(() =>
   max-width: var(--page-max-width);
   margin: 0 auto var(--big-margin);
   .article-title {
-    font-size: var(--h1-size);
+    font-size: var(--text-l);
     font-family: var(--font-text-medium);
     margin: 0 0 var(--base-padding);
   }
   .article-date {
-    font-size: var(--base-font-size);
-    font-family: var(--font-text-regular);
+    font-size: var(--text-m);
+    font-family: var(--font-text);
     color: var(--color-green);
     margin-bottom: var(--base-padding);
   }
@@ -414,12 +414,12 @@ const currentArticleText = computed(() =>
     display: flex;
     align-items: center;
     width: 70px;
-    height: calc(var(--base-font-size) + var(--small-padding));
+    height: calc(var(--text-m) + var(--small-padding));
     padding: 4px;
     background: var(--color-text);
     backdrop-filter: blur(5px);
-    border-radius: 30px;
-    max-height: calc(var(--base-font-size) + var(--small-padding) * 2);
+    border-radius: var(--radius-pill);
+    max-height: calc(var(--text-m) + var(--small-padding) * 2);
     margin: 0 var(--base-margin);
 
     .lang-btn {
@@ -428,11 +428,11 @@ const currentArticleText = computed(() =>
       z-index: 2;
       height: 100%;
       border: none;
-      border-radius: 24px;
+      border-radius: var(--radius-pill);
       background: transparent;
       color: var(--color-bg);
       font-weight: 400;
-      font-size: var(--small-font-size);
+      font-size: var(--text-s);
       font-family: var(--font-text-medium);
       cursor: pointer;
       transition: color 0.2s ease;
@@ -460,10 +460,10 @@ const currentArticleText = computed(() =>
       position: absolute;
       top: 2px;
       width: calc(50% - 4px);
-      max-height: calc(var(--base-font-size) - var(--small-padding) * 2);
+      max-height: calc(var(--text-m) - var(--small-padding) * 2);
       height: 100%;
       background-color: var(--color-green);
-      border-radius: 24px;
+      border-radius: var(--radius-circle);
       transition: transform 0.2s ease;
       z-index: 1;
     }
@@ -517,7 +517,7 @@ const currentArticleText = computed(() =>
     padding: 0;
 
     .article-title {
-      font-size: var(--h2-size);
+      font-size: var(--text-l);
     }
   }
 

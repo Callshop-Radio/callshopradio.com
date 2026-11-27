@@ -45,7 +45,7 @@ onMounted(() => {
 		ref="root"
 		class="site-hero"
 		:class="{ 'is-ready': ready }"
-		:style="{ '--lab-accent': accent }"
+		:style="{ '--accent': accent }"
 	>
 		<LabAtmosphere
 			variant="form"

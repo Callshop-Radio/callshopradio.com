@@ -2,10 +2,18 @@
   /* Limits */
   --page-max-width: clamp(0rem, 78rem, 100%);
 
-  /* Colors */
-  --color-bg: #fff;
-  --color-bg-transparent: rgba(255, 255, 255, 0.5);
-  --color-text: #000;
+  /* Colours. light-dark() keeps both themes in one declaration: light value
+     first, dark value second. `color-scheme` decides which applies, so the OS
+     setting is the default and a [data-theme] attribute on <html> overrides it.
+     Accents are identical in both themes and stay plain values. */
+  color-scheme: light dark;
+
+  --color-bg: light-dark(#fff, #090909);
+  --color-bg-transparent: light-dark(
+    rgba(255, 255, 255, 0.5),
+    rgba(9, 9, 9, 0.33)
+  );
+  --color-text: light-dark(#000, #fff);
   --color-black: #090909;
   --color-link: currentcolor;
 
@@ -23,30 +31,38 @@
   );
   --color-white: #f6f6f8;
   --color-grey: rgb(232, 232, 232);
-
-  /* Logo artwork is dark; inverted for dark surfaces. Overridden inline by
-     the theme store so the toggle, not only the OS setting, controls it. */
-  --logo-invert: 0;
   --color-grey-transparent: rgba(232, 232, 232, 0.66);
-  --color-dark-grey: #525252;
+  --color-dark-grey: light-dark(#525252, #878787);
   --color-darker-grey: #2c2c2c;
-  --color-yellow: #f9ab0f;
+  /* Warm near-black used for poster surfaces and name cards. */
+  --color-ink: #1a1013;
 
-  @media (--dark) {
-    --color-bg: #090909;
-    --color-bg-transparent: rgba(9, 9, 9, 0.33);
-    --color-text: #fff;
-    --color-dark-grey: #878787;
-    --logo-invert: 1;
-  }
+  /* Muted meta text (hints, counts, placeholders). One value in both
+     themes: it sits on the page background, not on a surface. */
+  --color-text-light: #888;
+  /* Rules, borders and separators: a tint of the text colour, so they follow
+     the theme without a second palette. */
+  --color-line: color-mix(in srgb, var(--color-text) 14%, transparent);
+  /* Raised surface inside a panel (search rows, hint blocks). */
+  --color-surface: color-mix(in srgb, var(--color-text) 7%, var(--color-bg));
+  --color-surface-hover: color-mix(
+    in srgb,
+    var(--color-text) 12%,
+    var(--color-bg)
+  );
+  /* Link underline inside running text. */
+  --color-underline: currentcolor;
+  /* Inline code chip. */
+  --color-code-bg: var(--color-grey);
+  /* Loading skeleton fill. */
+  --color-fg-muted: var(--color-grey);
 
-  /* Video Player */
-  --video-player-btn-color-rgb: 255 255 255;
-  --video-player-btn-color-background: 0 0 0;
+  /* Logo artwork is dark; inverted on dark surfaces. */
+  --logo-invert: 0;
 
   /* Modules */
   --city-tag-height: calc(
-    var(--small-padding) / 2 + var(--small-padding) / 2 + var(--mini-font-size)
+    var(--small-padding) / 2 + var(--small-padding) / 2 + var(--text-s)
   );
 
   /* Carousel */
@@ -56,7 +72,7 @@
   /* Calculated Heights */
   --nav-height: calc(
     28px + (var(--base-padding) * 2) + (var(--small-padding) * 2) +
-      var(--base-font-size)
+      var(--text-m)
   );
 
   /* Fixed player bar: 56 px row plus the top and bottom rules. */
@@ -78,25 +94,36 @@
   --first-content-distance: calc(28px + (var(--base-padding) * 2) - 4px);
 
   --schedule-block-height: calc(
-    (var(--small-padding) * 2) + (var(--base-font-size) * 4) +
-      var(--small-font-size) + (var(--small-padding) / 2)
+    (var(--small-padding) * 2) + (var(--text-m) * 4) +
+      var(--text-s) + (var(--small-padding) / 2)
   );
 
-  --schedule-nav-height: calc(var(--base-font-size) + var(--base-margin) * 2);
-
   /* Sizes */
-  --content-gap: 10.5rem;
+  /* Section rhythm. Every width used 7.5rem in practice; the 10.5rem base
+     value was overridden by each breakpoint, so it lives here as one value. */
+  --content-gap: 7.5rem;
   --base-padding: 0.75rem;
   --big-padding: 1.25rem;
   --mid-padding: 1rem;
   --small-padding: 0.5rem;
 
-  /* Two pill sizes: compact tags stay flatter, navigation and buttons use
-     the full radius. Keep the role-based split; font size alone cannot tell
-     a 20 px tag from a 28 px navigation pill. */
-  --pill-radius: 0.75rem;
-  --pill-radius-sm: 0.4rem;
+  /* Radii: one value per role. See DESIGN.md.
+     --radius-xs      hairline chips: kbd, thumbs, focus rings
+     --radius-media   images, cards, panels, media frames
+     --radius-flag    city flags sitting flush on a card's top edge
+     --radius-surface overlays: dialogs, dropdowns, popovers, menus
+     --radius-pill    every text-bearing pill: nav, buttons, filters, inputs
+     --radius-pill-sm compact content tags inside cards (20 px tall)
+     --radius-circle  square icon buttons, avatars, dots, play buttons */
+  --radius-xs: 4px;
+  --radius-media: 5px;
+  --radius-flag: 4px 4px 0 0;
+  --radius-surface: 0.75rem;
+  --radius-pill: 0.75rem;
+  --radius-pill-sm: 0.4rem;
+  --radius-circle: 999px;
 
+  --huge-margin: 11rem;
   --big-margin: 4.25rem;
   --base-margin: 2.75rem;
   --mid-margin: 2rem;
@@ -114,11 +141,8 @@
   /* Transitions */
   --transition-normal: 400ms ease;
   --transition-fast: 200ms ease;
-  --transition-slow: 400ms ease-out;
 
   @media (--phone-only) {
-    --content-gap: 7.5rem;
-
     --base-padding: 0.625rem;
     --big-padding: 1.125rem;
     --mid-padding: 0.8125rem;
@@ -130,11 +154,8 @@
     --mid-margin: 0.575rem;
     --small-margin: 0.4375rem;
 
-    --base-line-height: calc(var(--base-font-size) * 1.25);
   }
   @media (--tablet-portrait-up) {
-    --content-gap: 7.5rem;
-
     --base-padding: 0.625rem;
     --big-padding: 1.125rem;
     --mid-padding: 0.8125rem;
@@ -146,25 +167,26 @@
     --mid-margin: 1.575rem;
     --small-margin: 0.4375rem;
 
-    --base-line-height: calc(var(--base-font-size) * 1.25);
-  }
-  @media (desktop-up: 1024px) {
-    --content-gap: 10.5rem;
-
-    --base-padding: 0.625rem;
-    --big-padding: 1.125rem;
-    --mid-padding: 0.8125rem;
-    --small-padding: 0.4375rem;
-
-    --huge-margin: 11rem;
-    --big-margin: 4rem;
-    --base-margin: 2.5rem;
-    --mid-margin: 1.575rem;
-    --small-margin: 0.4375rem;
-
-    --base-line-height: calc(var(--base-font-size) * 1.25);
   }
   @media (--xl-up) {
     --page-max-width: clamp(0rem, 96rem, 100%);
+  }
+}
+
+/* The toggle pins the scheme on <html>; without the attribute the OS decides.
+   --logo-invert is a number, not a colour, so it cannot use light-dark() and
+   needs the attribute plus a media query for the no-JS case. */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --logo-invert: 1;
+}
+
+@media (--dark) {
+  :root:not([data-theme="light"]) {
+    --logo-invert: 1;
   }
 }

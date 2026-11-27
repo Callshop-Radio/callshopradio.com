@@ -185,7 +185,9 @@ onMounted(() => {
   }
 
   &__title {
-    @apply text-2xl font-bold mb-4;
+    font-size: var(--text-l);
+  font-family: var(--font-text-semibold);
+  margin-bottom: 1rem;
   }
 
   &__header {
@@ -315,7 +317,7 @@ onMounted(() => {
       @apply flex row items-center justify-space-between;
       padding: var(--mid-padding);
       background-color: var(--color-bg);
-      border-radius: 100px;
+      border-radius: var(--radius-circle);
       border: 0.0625rem solid var(--color-text);
       shape-rendering: crispEdges;
       z-index: 10;
@@ -523,7 +525,7 @@ onMounted(() => {
         left: 0;
         width: 50%;
         padding: var(--big-margin);
-        background-color: rgba(var(--color-bg-rgb), 0.75);
+        background-color: color-mix(in srgb, var(--color-bg) 75%, transparent);
         backdrop-filter: blur(10px);
 
         @media (max-width: 768px) {

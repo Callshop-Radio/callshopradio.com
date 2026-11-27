@@ -463,7 +463,7 @@ const tagPath = (tag: string) =>
   }
 
   &__label {
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     opacity: 0.6;
@@ -481,11 +481,11 @@ const tagPath = (tag: string) =>
     gap: 0.4rem;
     padding: 0.375rem 0.75rem;
     border: 1px solid color-mix(in srgb, var(--color-text) 16%, transparent);
-    border-radius: var(--pill-radius);
+    border-radius: var(--radius-pill);
     background: transparent;
     color: var(--color-text);
     font-family: var(--font-text);
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     cursor: pointer;
@@ -499,14 +499,14 @@ const tagPath = (tag: string) =>
 
   &__tab-index {
     opacity: 0.55;
-    font-size: 0.625rem;
+    font-size: var(--text-s);
   }
 
   &__toggle {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     cursor: pointer;
@@ -514,7 +514,7 @@ const tagPath = (tag: string) =>
 
   &__hint {
     margin: 0.4rem 0 0;
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     opacity: 0.55;
   }
 }
@@ -525,7 +525,7 @@ const tagPath = (tag: string) =>
 
 .eyebrow {
   margin: 0;
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
 
@@ -567,11 +567,11 @@ const tagPath = (tag: string) =>
   gap: 0.5rem;
   padding: 0.45rem 1rem 0.45rem 0.45rem;
   border: 0;
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-pill);
   background-color: var(--color-text);
   color: var(--color-bg);
   font-family: var(--font-text);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
   cursor: pointer;
@@ -613,23 +613,22 @@ const tagPath = (tag: string) =>
 
   h2 {
     margin: 0 0 var(--mid-padding);
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     font-family: var(--font-text-semibold);
-    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
   }
 
   p {
     margin: 0 0 var(--mid-padding);
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     line-height: 1.6;
   }
 
   blockquote {
     margin: var(--mid-margin) 0 0;
     font-family: var(--font-text-italic);
-    font-size: var(--large-font-size);
+    font-size: var(--text-l);
     line-height: 1.5;
     font-style: normal;
 
@@ -641,7 +640,7 @@ const tagPath = (tag: string) =>
       display: block;
       margin-top: var(--small-padding);
       font-family: var(--font-text);
-      font-size: var(--small-font-size);
+      font-size: var(--text-s);
       font-style: normal;
       text-transform: uppercase;
       opacity: 0.55;
@@ -667,16 +666,15 @@ const tagPath = (tag: string) =>
 
   &__title {
     margin: 0;
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     font-family: var(--font-text-semibold);
-    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
   }
 
   &__show {
     font-family: var(--font-text-semibold);
-    font-size: var(--large-font-size);
+    font-size: var(--text-l);
     text-transform: uppercase;
     color: var(--color-text);
     text-decoration: none;
@@ -688,7 +686,7 @@ const tagPath = (tag: string) =>
 
   &__meta {
     margin: 0;
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     line-height: 1.55;
     opacity: 0.75;
   }
@@ -708,7 +706,7 @@ const tagPath = (tag: string) =>
     gap: 0.5rem;
     padding: 0.6rem 0;
     border-top: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     line-height: 1.4;
 
     &:last-child {
@@ -717,7 +715,7 @@ const tagPath = (tag: string) =>
   }
 
   &__index {
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     opacity: 0.45;
     font-variant-numeric: tabular-nums;
     padding-top: 0.1rem;
@@ -749,10 +747,9 @@ const tagPath = (tag: string) =>
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
-    font-weight: 500;
   }
 
   a {
@@ -780,7 +777,7 @@ const tagPath = (tag: string) =>
   }
 
   &__art {
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     overflow: hidden;
     background-color: var(--color-grey);
 
@@ -800,7 +797,7 @@ const tagPath = (tag: string) =>
   }
 
   &__show {
-    font-size: clamp(2rem, 4.4vw, 3.6rem);
+    font-size: var(--text-xxl);
     line-height: 0.95;
     font-family: var(--font-text-semibold);
     text-transform: uppercase;
@@ -818,10 +815,9 @@ const tagPath = (tag: string) =>
     align-items: center;
     gap: 0.45rem;
     margin: 0;
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
-    font-weight: 500;
   }
 
   &__artist {
@@ -840,7 +836,7 @@ const tagPath = (tag: string) =>
   &__lead {
     margin: 0;
     max-width: 46ch;
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     line-height: 1.6;
     opacity: 0.85;
   }
@@ -850,7 +846,7 @@ const tagPath = (tag: string) =>
 .v2 {
   &__stage {
     position: relative;
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     overflow: hidden;
     background: #0a0a0a;
     aspect-ratio: 16 / 9;
@@ -890,7 +886,7 @@ const tagPath = (tag: string) =>
     flex-flow: column;
     gap: var(--small-padding);
     padding: var(--mid-padding) var(--mid-margin) var(--mid-padding) var(--mid-padding);
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     background: color-mix(in srgb, var(--color-bg) 86%, transparent);
     backdrop-filter: blur(16px);
 
@@ -906,7 +902,7 @@ const tagPath = (tag: string) =>
   }
 
   &__show {
-    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-size: var(--text-xxl);
     line-height: 0.95;
     font-family: var(--font-text-semibold);
     text-transform: uppercase;
@@ -924,10 +920,9 @@ const tagPath = (tag: string) =>
     align-items: center;
     gap: 0.45rem;
     margin: 0;
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
-    font-weight: 500;
 
     a {
       color: var(--color-text);
@@ -956,7 +951,7 @@ const tagPath = (tag: string) =>
 
   &__title {
     margin: 0;
-    font-size: clamp(2.6rem, 7vw, 6rem);
+    font-size: var(--text-display);
     line-height: 0.9;
     font-family: var(--font-text-semibold);
     text-transform: uppercase;
@@ -970,10 +965,9 @@ const tagPath = (tag: string) =>
     align-items: center;
     gap: 0.45rem;
     margin: 0;
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
-    font-weight: 500;
 
     a {
       color: var(--color-text);
@@ -988,7 +982,7 @@ const tagPath = (tag: string) =>
   &__art {
     width: min(34rem, 100%);
     margin: var(--base-margin) 0 0;
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     overflow: hidden;
     background-color: var(--color-grey);
 
@@ -1040,7 +1034,7 @@ const tagPath = (tag: string) =>
   }
 
   &__thumb {
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     overflow: hidden;
     background-color: var(--color-grey);
 
@@ -1060,7 +1054,7 @@ const tagPath = (tag: string) =>
   }
 
   &__show {
-    font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+    font-size: var(--text-xxl);
     line-height: 0.95;
     font-family: var(--font-text-semibold);
     text-transform: uppercase;
@@ -1078,10 +1072,9 @@ const tagPath = (tag: string) =>
     align-items: center;
     gap: 0.45rem;
     margin: 0;
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
-    font-weight: 500;
 
     a {
       color: var(--color-text);
@@ -1153,7 +1146,7 @@ const tagPath = (tag: string) =>
 
   &__title {
     margin: 0;
-    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-size: var(--text-display);
     line-height: 0.86;
     font-family: var(--font-text-semibold);
     text-transform: uppercase;
@@ -1166,10 +1159,9 @@ const tagPath = (tag: string) =>
     align-items: center;
     gap: 0.45rem;
     margin: 0;
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     text-transform: uppercase;
     font-family: var(--font-text-semibold);
-    font-weight: 500;
 
     a {
       color: var(--color-text);
@@ -1184,7 +1176,7 @@ const tagPath = (tag: string) =>
   &__lead {
     margin: 0;
     max-width: 42ch;
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     line-height: 1.6;
     opacity: 0.85;
   }
@@ -1192,7 +1184,7 @@ const tagPath = (tag: string) =>
   &__art {
     position: sticky;
     top: calc(var(--nav-height) + var(--mid-padding));
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     overflow: hidden;
     background-color: var(--color-grey);
 

@@ -5,6 +5,131 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-11-26] — Site rebuild (local phase)
+
+The whole public site was reworked in this checkout. Most of it is live on
+`callshopradio.live` via `develop` (up to `9d24230`); the last four commits —
+footer contact, tag-archive scroll, pool cities group, tag pills — are local
+only until the repository ruleset question is settled.
+
+### Added
+
+#### Landing hero: one slider for all three content types
+
+- **Mixed hero.** A single curated slider renders sets (square, pink), pool
+  profiles (3:4 portrait, blue) and words (3:2 landscape, green) on one shared
+  height. The type is readable from the format, the accent colour and the
+  `SET` / `POOL` / `WORDS` badge before the caption is read.
+- **Type accents** drive the atmosphere glow, the contour lines, the worm, the
+  badge, the caption rule and the primary action; the page switches colour as
+  the slide changes.
+- **Caption** keeps one frame for all types: kicker (`SET · 10.11.2026`), title,
+  metadata, action. Sets get **Play set** (starts the player in place) plus
+  *Open set*; pool gets *Open profile*, words *Read story*.
+- **Navigation** matches the archive heroes: blurred depth neighbours, arrows,
+  `01 — 04` counter, drag hint, arrow keys, endless loop.
+- **Full-bleed** at every width; titles never wrap (size steps by length, one
+  line with ellipsis on phones).
+- **Picks** label, top left on the page's content edge.
+
+#### Index
+
+- **Static index** baked into the build: 226 labels with WebP logos and the
+  `#B178CE` accent, independent of Sanity.
+- **Landing teaser** shows eight random index logos.
+
+#### Pool profile (card A)
+
+- Portrait **3:4 on the left**, name, tags, shows, about and contact on the
+  right; 5 px radius throughout.
+- About text capped at **52ch** with a larger size.
+- **Tags and shows are links**: city/role tags open the filtered pool search,
+  show names open the show page. Only artists with a published pool profile are
+  linked from the player.
+
+#### Chat and timetable
+
+- Chat and timetable share one height via CSS variables and the **5 px** radius.
+- **Expand/collapse** on the timetable is a real toggle (centred modal above the
+  player, full screen on phones).
+- **Now** scrolls the strip to the live entry in one click; the footer strip
+  re-renders when the show changes.
+
+### Changed
+
+#### Navigation and footer
+
+- Burger menu and sub-navigation removed; section links live in the header and,
+  on phones, as section icons. The pool icon reads as a contact card / ID badge.
+- **Footer rebuilt** into Callshop info and stations on the left, then Explore
+  (Shows, Pool, Words, Index, Merch), Pages (Account, Chat, Schedule, Legal) and
+  Follow; theme switch and back-to-top at the end.
+- **Contact lives in the footer** now: central mail, registered office and the
+  three stations with address and mail per city. `/contact` redirects to `/`.
+- **Legal and privacy are one page** at `/legal` (Impressum + Datenschutz from
+  two Sanity documents). `/shop` redirects to `/merch`.
+
+#### Archives (Shows, Pool, Words)
+
+- Mastheads without the `01 / 02` numbering.
+- **Sets are consistent site-wide**: no pink line under the cover, larger set
+  title, smaller artist names with indicator dots and no commas.
+- Heroes run full-bleed with no bright edge against the page background.
+- **Filter dock**: 5 px radius, glass background; the genre/tag row is
+  transparent like Words instead of a black plate.
+
+#### Show page
+
+- Show detail is a **landscape poster with a pink title card** plus about,
+  residents, venues and socials — clearly distinct from a set page.
+
+#### Words
+
+- Hero is **full-bleed**: the active story spans `100vw`, height capped at
+  `40svh` so the caption and transport stay above the fold; the next story
+  arrives after a wide gap.
+- Caption aligned to the page grid (same edge as the WORDS headline).
+- Titles stay on one line.
+- The **worm runs across the story image** (contour sized to the image band and
+  raised above the card) instead of through the caption.
+
+#### Timeline
+
+- The active **recorded** show is grey without a border; only a live show is
+  pink. The ON-AIR dot pulses permanently, and the card no longer repeats an
+  ON AIR badge.
+
+### Fixed
+
+- Hero slider full-width regression: `.site-hero` is `100vw`, so slider,
+  atmosphere and grain share one surface.
+- Chat button in the player toggled chat **and** timetable; it now owns the chat
+  only.
+- Player artist links pointed at `/pool/<slug>` for unpublished drafts; they are
+  gated by `poolVisibility`.
+- Tag pills opened the search; they now open the matching archive filter, and
+  tag archives scroll only after the lab layout has rendered.
+- Pool archive gained a cities group, and a linked tag group opens its filter.
+
+### Air panel (site-facing)
+
+- **Feature-Slider** is curated only under **Öffentlich → Site** (removed from
+  Übersicht): reorder, search sets/pool/words, add and remove slides.
+- **Site → Seiten** edits the legal page's two documents (Impressum,
+  Datenschutz) as drafts with an explicit publish step.
+- **Site → Footer contact** edits the central mail and the three stations; the
+  data is an additive `contact` field on `siteSettings`, read by the footer with
+  a fallback. Writes stay gated until `SANITY_WRITE_TOKEN` is configured.
+- Storage block removed from the overview.
+
+### Open
+
+- **Words card redesign** (dark editorial card instead of the white paper card)
+  is designed but not built — the archive still uses the paper card.
+- **Footer contact and the three archive commits** are waiting on a direct push
+  to `develop`.
+- Sanity write access for the Site panel is not configured yet.
+
 ## [Unreleased]
 
 Local clone / development-environment fixes. Nothing here has been committed or

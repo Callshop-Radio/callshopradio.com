@@ -207,7 +207,6 @@ onBeforeUnmount(() => {
 
 <style lang="postcss" scoped>
 .chat-popup {
-  --chat-line: color-mix(in srgb, var(--color-text) 14%, transparent);
 
   position: fixed;
   right: 1.5rem;
@@ -223,15 +222,15 @@ onBeforeUnmount(() => {
   overflow: hidden;
   background-color: var(--color-bg);
   color: var(--color-text);
-  border: 1px solid var(--chat-line);
-  border-radius: 5px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-media);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
 }
 
 /* The site-wide pill rule rounds these to 12px; keep the panel at 5px. */
 .chat-popup :deep(.composer__send),
 .chat-popup :deep(.composer__signin-btn) {
-  border-radius: 5px !important;
+  border-radius: var(--radius-media) !important;
 }
 
 .chat-popup__head {
@@ -243,7 +242,7 @@ onBeforeUnmount(() => {
 
 .chat-popup__title {
   font-family: var(--font-text-semibold);
-  font-size: var(--h3-size);
+  font-size: var(--text-l);
   line-height: 1.2;
 }
 
@@ -252,7 +251,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.3125rem;
   margin-left: auto;
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   color: color-mix(in srgb, var(--color-text) 58%, transparent);
   font-variant-numeric: tabular-nums;
 }
@@ -308,7 +307,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   color: color-mix(in srgb, var(--color-text) 70%, transparent);
 }
 
@@ -317,19 +316,19 @@ onBeforeUnmount(() => {
   align-items: baseline;
   gap: 0.4375rem;
   padding: 0.5rem 1rem;
-  border-top: 1px solid var(--chat-line);
-  border-bottom: 1px solid var(--chat-line);
-  font-size: var(--small-font-size);
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+  font-size: var(--text-s);
   color: color-mix(in srgb, var(--color-text) 50%, transparent);
   flex: none;
 
   &.is-live {
     background-color: var(--color-pink);
     border-color: var(--color-pink);
-    color: #111;
+    color: var(--color-black);
 
     .chat-popup__dot {
-      background-color: #111;
+      background-color: var(--color-black);
     }
   }
 }
@@ -344,12 +343,12 @@ onBeforeUnmount(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: color-mix(in srgb, #111 62%, transparent);
+  color: color-mix(in srgb, var(--color-black) 62%, transparent);
 }
 
 .chat-popup__people {
   padding: 0.375rem 1rem 0.5rem;
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   line-height: 1.4;
   color: color-mix(in srgb, var(--color-text) 58%, transparent);
   flex: none;

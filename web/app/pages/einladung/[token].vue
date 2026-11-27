@@ -201,13 +201,13 @@ onMounted(check);
 
 .invite__title {
 	margin: 0;
-	font-size: 1.2rem;
+	font-size: var(--text-l);
 }
 
 .invite__field {
 	display: grid;
 	gap: 0.45rem;
-	font-size: 0.78rem;
+	font-size: var(--text-m);
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
 }
@@ -216,11 +216,11 @@ onMounted(check);
 	width: 100%;
 	padding: 0.95rem 1rem;
 	border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
-	border-radius: 10px;
+	border-radius: var(--radius-surface);
 	background: transparent;
 	color: inherit;
 	font: inherit;
-	font-size: 1.05rem;
+	font-size: var(--text-m);
 	letter-spacing: normal;
 	text-transform: none;
 }
@@ -236,11 +236,11 @@ onMounted(check);
 	margin-top: 0.4rem;
 	padding: 0.9rem 1.6rem;
 	border: 0;
-	border-radius: 999px;
+	border-radius: var(--radius-pill);
 	background: var(--color-pink);
-	color: #0b0b0b;
+	color: var(--color-black);
 	font: inherit;
-	font-weight: 600;
+	font-family: var(--font-text-semibold);
 	text-decoration: none;
 	cursor: pointer;
 }
@@ -253,13 +253,13 @@ onMounted(check);
 .invite-hint {
 	margin: 0;
 	max-width: 38ch;
-	font-size: 0.9rem;
+	font-size: var(--text-m);
 	opacity: 0.72;
 }
 
 .invite-mail {
 	margin: 0;
-	font-weight: 600;
+	font-family: var(--font-text-semibold);
 }
 
 .invite-secret {
@@ -272,7 +272,7 @@ onMounted(check);
 
 .invite-secret code,
 .invite-codes code {
-	font-size: 0.95rem;
+	font-size: var(--text-m);
 	word-break: break-all;
 }
 
@@ -285,6 +285,6 @@ onMounted(check);
 .invite-error {
 	margin: 0;
 	color: var(--color-pink);
-	font-size: 0.9rem;
+	font-size: var(--text-m);
 }
 </style>

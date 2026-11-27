@@ -2,7 +2,6 @@
 withDefaults(
 	defineProps<{
 		title: string;
-		lede: string;
 		accent: string;
 		meta?: string;
 	}>(),
@@ -15,7 +14,7 @@ withDefaults(
 <template>
 	<section
 		class="archive-masthead"
-		:style="{ '--archive-accent': accent }"
+		:style="{ '--accent': accent }"
 	>
 		<div class="archive-masthead__glow" aria-hidden="true" />
 
@@ -25,7 +24,6 @@ withDefaults(
 
 		<div class="archive-masthead__main">
 			<h1 class="archive-masthead__title">{{ title }}</h1>
-			<p class="archive-masthead__lede">{{ lede }}</p>
 		</div>
 
 		<div class="archive-masthead__rule" aria-hidden="true" />
@@ -52,7 +50,7 @@ withDefaults(
   pointer-events: none;
   background: radial-gradient(
     circle at center,
-    var(--archive-accent) 0%,
+    var(--accent, var(--color-text)) 0%,
     transparent 68%
   );
   opacity: 0.16;
@@ -64,7 +62,7 @@ withDefaults(
   justify-content: flex-end;
   align-items: center;
   gap: var(--mid-padding);
-  font-size: var(--small-font-size);
+  font-size: var(--text-s);
   line-height: 1.1;
   text-transform: uppercase;
   letter-spacing: var(--button-letter-spacing);
@@ -85,26 +83,16 @@ withDefaults(
 .archive-masthead__title {
   margin: 0;
   font-family: var(--font-text-semibold);
-  font-weight: 500;
-  font-size: clamp(3.2rem, 8.2vw, 7.4rem);
+  font-size: var(--text-display);
   line-height: 0.82;
   letter-spacing: -0.025em;
   text-transform: uppercase;
 }
 
-.archive-masthead__lede {
-  max-width: 32ch;
-  margin: 0 0 0.35rem;
-  font-size: var(--base-font-size);
-  line-height: 1.45;
-  color: color-mix(in srgb, var(--color-text) 68%, transparent);
-  text-wrap: balance;
-}
-
 .archive-masthead__rule {
   height: 2px;
   margin-top: 1.5rem;
-  background: var(--archive-accent);
+  background: var(--accent, var(--color-text));
 }
 
 @media screen and (max-width: 900px) {
@@ -124,7 +112,7 @@ withDefaults(
   }
 
   .archive-masthead__title {
-    font-size: clamp(2.8rem, 15vw, 4.4rem);
+    font-size: var(--text-display);
   }
 
   .archive-masthead__lede {

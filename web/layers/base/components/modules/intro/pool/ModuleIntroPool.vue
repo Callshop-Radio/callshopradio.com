@@ -403,7 +403,7 @@ const coverFlowDescriptionBlocks = computed(() => {
     width: 100%;
     height: 100%;
     border: 0.0625rem solid var(--color-text);
-    border-radius: 1.5625rem;
+    border-radius: var(--radius-media);
     overflow: hidden;
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
@@ -411,7 +411,7 @@ const coverFlowDescriptionBlocks = computed(() => {
 
     .pool-media {
       order: 2;
-      border-radius: 1.5625rem;
+      border-radius: var(--radius-media);
       width: 100%;
       height: 100%;
       max-width: 35.3125rem;
@@ -443,14 +443,14 @@ const coverFlowDescriptionBlocks = computed(() => {
     border-bottom: 0.0625rem solid var(--color-text);
     shape-rendering: crispEdges;
     z-index: 10;
-    height: calc(var(--h3-size) + var(--base-font-size) * 2 + var(--mid-margin) + var(--big-margin));
+    height: calc(var(--text-l) + var(--text-m) * 2 + var(--mid-margin) + var(--big-margin));
 
     .pool-type-icon {
       display: flex;
       flex-flow: column wrap;
       justify-content: center;
       align-items: center;
-      border-radius: 100px;
+      border-radius: var(--radius-circle);
       aspect-ratio: 1/1;
       width: max-content;
       width: 4rem;
@@ -486,9 +486,8 @@ const coverFlowDescriptionBlocks = computed(() => {
       }
 
       .pool-title {
-        font-size: var(--h4-size);
+        font-size: var(--text-m);
         font-family: var(--font-text-semibold);
-        font-weight: 500;
         text-transform: uppercase;
         width: 100%;
         color: var(--color-bg);
@@ -501,7 +500,7 @@ const coverFlowDescriptionBlocks = computed(() => {
 
         .pool-type,
         .pool-location {
-          font-size: var(--small-font-size);
+          font-size: var(--text-s);
           text-transform: uppercase;
         }
       }
@@ -523,7 +522,7 @@ const coverFlowDescriptionBlocks = computed(() => {
     width: 100%;
     overflow: hidden;
     border: 0.0625rem solid var(--color-text);
-    border-radius: 1.5625rem;
+    border-radius: var(--radius-media);
     display: flex;
     flex-direction: column;
   }
@@ -545,7 +544,7 @@ const coverFlowDescriptionBlocks = computed(() => {
     gap: var(--mid-margin);
     background-color: var(--color-bg);
     border-bottom: none;
-    border-radius: 1.5625rem 1.5625rem 0 0;
+    border-radius: var(--radius-media);
     padding: var(--mid-padding);
     padding-bottom: calc(var(--mid-padding) + 1.25rem);
   }
@@ -566,9 +565,8 @@ const coverFlowDescriptionBlocks = computed(() => {
 
     .pool-title,
     .set-title {
-      font-size: var(--base-font-size);
+      font-size: var(--text-m);
       font-family: var(--font-text-semibold);
-      font-weight: 500;
       text-transform: uppercase;
       color: var(--color-text);
       width: 100%;
@@ -621,7 +619,7 @@ const coverFlowDescriptionBlocks = computed(() => {
     max-width: 100%;
     aspect-ratio: 1 / 1;
     height: auto;
-    border-radius: 0 0 1.5625rem 1.5625rem;
+    border-radius: 0 0 var(--radius-media) var(--radius-media);
     overflow: hidden;
 
     .pool-image,
@@ -659,12 +657,12 @@ const coverFlowDescriptionBlocks = computed(() => {
   }
 
   .pool-info .pool-header .pool-title {
-    font-size: clamp(1.25rem, 1.5vw, 1.6rem);
+    font-size: var(--text-l);
     line-height: 1.1;
   }
 
   .pool-teaser {
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     max-width: 34ch;
   }
 
@@ -703,7 +701,7 @@ const coverFlowDescriptionBlocks = computed(() => {
     }
 
     .pool-info .pool-header .pool-title {
-      font-size: var(--base-font-size);
+      font-size: var(--text-m);
     }
 
     .pool-media {
@@ -743,7 +741,7 @@ const coverFlowDescriptionBlocks = computed(() => {
     }
 
     .pool-teaser {
-      font-size: var(--small-font-size);
+      font-size: var(--text-s);
     }
   }
 }

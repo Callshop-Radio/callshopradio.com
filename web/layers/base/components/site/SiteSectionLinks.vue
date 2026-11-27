@@ -119,8 +119,8 @@ const localePath = useLocalePath();
 
     svg {
       display: block;
-      width: calc(var(--base-font-size) + var(--small-padding) * 2);
-      height: calc(var(--base-font-size) + var(--small-padding) * 2);
+      width: calc(var(--text-m) + var(--small-padding) * 2);
+      height: calc(var(--text-m) + var(--small-padding) * 2);
       overflow: visible;
     }
 

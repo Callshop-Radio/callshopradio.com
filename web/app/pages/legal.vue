@@ -96,7 +96,7 @@ usePageSeo(legalDoc.value?.seo ?? privacyDoc.value?.seo);
   h1 {
     margin: 0;
     font-family: var(--font-text-semibold);
-    font-size: clamp(2.2rem, 4.6vw, 4rem);
+    font-size: var(--text-display);
     line-height: 0.95;
     text-transform: uppercase;
   }
@@ -124,13 +124,13 @@ usePageSeo(legalDoc.value?.seo ?? privacyDoc.value?.seo);
   scroll-margin-top: calc(var(--nav-height) + var(--mid-padding));
 
   :deep(.rich-text) {
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     line-height: 1.65;
   }
 
   :deep(h2) {
     margin-top: var(--base-margin);
-    font-size: var(--base-font-size);
+    font-size: var(--text-m);
     text-transform: uppercase;
   }
 

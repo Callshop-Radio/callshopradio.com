@@ -85,7 +85,7 @@ const fill = computed(() => {
     height: 2.25rem;
     padding: 0;
     border: 1px solid color-mix(in srgb, var(--color-text) 18%, transparent);
-    border-radius: 5px;
+    border-radius: var(--radius-media);
     background: transparent;
     color: var(--color-text);
     cursor: pointer;
@@ -104,12 +104,12 @@ const fill = computed(() => {
     }
 
     &:hover:not(:disabled) {
-      color: var(--lab-accent);
-      border-color: var(--lab-accent);
+      color: var(--accent, var(--color-text));
+      border-color: var(--accent, var(--color-text));
     }
 
     &:focus-visible {
-      outline: 2px solid var(--lab-accent);
+      outline: 2px solid var(--accent, var(--color-text));
       outline-offset: 2px;
     }
 
@@ -121,7 +121,7 @@ const fill = computed(() => {
 
   &__index {
     flex-shrink: 0;
-    font-size: var(--small-font-size);
+    font-size: var(--text-s);
     font-variant-numeric: tabular-nums;
     letter-spacing: var(--button-letter-spacing);
     color: var(--color-text);
@@ -138,13 +138,13 @@ const fill = computed(() => {
   &__fill {
     position: absolute;
     inset: 0;
-    background-color: var(--lab-accent);
+    background-color: var(--accent, var(--color-text));
     transform-origin: left center;
   }
 
   &__hint {
     flex-shrink: 0;
-    font-size: var(--mini-font-size);
+    font-size: var(--text-s);
     text-transform: uppercase;
     letter-spacing: var(--button-letter-spacing);
     color: var(--color-dark-grey);

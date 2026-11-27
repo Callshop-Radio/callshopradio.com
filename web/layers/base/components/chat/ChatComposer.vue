@@ -104,7 +104,7 @@ button {
 }
 
 .composer {
-	border-top: 1px solid var(--chat-line);
+	border-top: 1px solid var(--color-line);
 	padding: 0.625rem 0.75rem;
 }
 
@@ -117,10 +117,10 @@ button {
 .composer__input {
 	flex: 1 1 auto;
 	min-width: 0;
-	font-size: var(--base-font-size);
+	font-size: var(--text-m);
 	padding: 0.375rem 0;
 	border: 0;
-	border-bottom: 1px solid var(--chat-line);
+	border-bottom: 1px solid var(--color-line);
 	background: transparent;
 	color: var(--color-text);
 	border-radius: 0;
@@ -136,7 +136,7 @@ button {
 }
 
 .composer__count {
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	color: color-mix(in srgb, var(--color-text) 45%, transparent);
 	font-variant-numeric: tabular-nums;
 }
@@ -159,10 +159,10 @@ button {
 }
 
 .composer__send {
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	font-family: var(--font-text-medium);
 	padding: 0.3125rem 0.75rem;
-	border-radius: 999px;
+	border-radius: var(--radius-pill);
 	background-color: var(--color-text);
 	color: var(--color-bg);
 	cursor: pointer;
@@ -181,7 +181,7 @@ button {
 	min-height: 2rem;
 
 	p {
-		font-size: var(--small-font-size);
+		font-size: var(--text-s);
 		line-height: 1.35;
 		color: color-mix(in srgb, var(--color-text) 62%, transparent);
 	}
@@ -194,10 +194,10 @@ button {
 }
 
 .composer__signin-btn {
-	font-size: var(--small-font-size);
+	font-size: var(--text-s);
 	font-family: var(--font-text-medium);
 	padding: 0.3125rem 0.75rem;
-	border-radius: 999px;
+	border-radius: var(--radius-pill);
 	border: 1px solid var(--color-text);
 	background-color: transparent;
 	color: var(--color-text);
