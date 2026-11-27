@@ -43,6 +43,11 @@ function ensureAudio() {
 		});
 		element.addEventListener("error", () => {
 			clearTimer();
+			// A dropped mount is not an invitation to start: only a stream that
+			// was actually running may move to the fallback and continue. A
+			// player the user paused stays paused, even when the source goes
+			// away at a show boundary.
+			if (element.paused) return;
 			if (!usingFallback && fallbackUrl) {
 				usingFallback = true;
 				element.src = fallbackUrl;
@@ -76,7 +81,7 @@ export function useStreamEngine() {
 		el.src = primary;
 		el.load();
 		fallbackTimer = setTimeout(() => {
-			if (usingFallback || el.currentTime > 0.1) return;
+			if (usingFallback || el.currentTime > 0.1 || el.paused) return;
 			if (!fallback) {
 				emit("error");
 				return;
